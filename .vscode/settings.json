@@ -1,0 +1,4 @@
+{
+    "dbMcp.provider": "postgresql",
+    "dbMcp.connectionString": "postgresql://postgres:1464@localhost:5432/productos"
+}
