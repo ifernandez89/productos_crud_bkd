@@ -8,8 +8,8 @@ export class ModelService {
     constructor() { }
 
     public async create() {
-        this.model = new ChatOllama({
-            model: "gemma:2b",//gemma:2b //phi
+        this.model = new ChatOllama({//para 2 min
+            model: "mistral",//gemma:2b //phi
             temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
             topP: 0.95,         // limita un poco la aleatoriedad para coherencia
             topK: 40,           // suficiente para diversidad pero sin dispersarse
