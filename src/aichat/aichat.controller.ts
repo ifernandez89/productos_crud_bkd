@@ -10,18 +10,18 @@ import { ConverterService } from './utils/converter.service';
 
 @Controller('aichat')
 export class AichatController {
-  //private model: ChatOllama;
+  private model: ChatOllama;
 
   constructor(private readonly aichatService: AichatService, private readonly converter: ConverterService) {
-    /*  this.model = new ChatOllama({
-       model: "phi",
-       temperature: 0,
-       topP: 1,
-       topK: 1,
-       numPredict: 10,
-       repeatPenalty: 1,
-       stop: ["\n\n"], // opcional: cortar después de una respuesta
-     }); */
+    this.model = new ChatOllama({
+      model: "gemma3:1b",//gemma:2b //phi //gemma3:1b
+      temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
+      topP: 0.9,         // limita un poco la aleatoriedad para coherencia
+      topK: 20,           // suficiente para diversidad pero sin dispersarse
+      numPredict: 512,    // para respuestas medianas a largas
+      repeatPenalty: 1.1, // penaliza repeticiones y mejora fluidez
+      stop: [],     
+    });
   }
 
   @Post('preguntar')
@@ -36,10 +36,10 @@ export class AichatController {
       throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
     }
     try {
-      //const res = await this.model.invoke(texto)
-      const res = await this.aichatService.preguntarGet(pregunta, this.converter.toBoolean(agente));
-      return { respuesta: res };
-      //return { respuesta: res.content };
+      const res = await this.model.invoke(pregunta)
+      //const res = await this.aichatService.preguntarGet(pregunta, this.converter.toBoolean(agente));
+      //return { respuesta: res };
+      return { respuesta: res.content };
     } catch (error) {
       throw new HttpException(
         `Error al procesar la pregunta: ${error.message || error}`,
