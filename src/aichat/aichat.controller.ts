@@ -14,7 +14,7 @@ export class AichatController {
 
   constructor(private readonly aichatService: AichatService, private readonly converter: ConverterService) {
     this.model = new ChatOllama({
-      model: "phi4-mini:latest",//gemma:2b //phi //phi4-mini:latest(resumenes?)
+      model: "gemma3:1b",//gemma:2b //phi //gemma3:1b
       temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
       topP: 0.9,         // limita un poco la aleatoriedad para coherencia
       topK: 20,           // suficiente para diversidad pero sin dispersarse
