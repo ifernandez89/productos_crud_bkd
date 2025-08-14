@@ -43,12 +43,12 @@ export class AichatController {
     }
     try {
       console.log('Ejecutando script de Python...', pregunta);
-      const pythonPath = 'python3'; // o 'python' según tu entorno
+      const pythonPath = 'C:\\Users\\usuario\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe'; // o 'python' según tu entorno
       const scriptPath = path.join(__dirname, '../hrm/hrm_runner.py');
 
       return new Promise((resolve, reject) => {
-        const process = spawn('python', [scriptPath, pregunta]);
-
+        const process = spawn(pythonPath, [scriptPath, pregunta]);
+        console.log('Ejecutando:', pythonPath, [scriptPath, pregunta]); // Depuración
         let output = '';
         let errorOutput = '';
 
