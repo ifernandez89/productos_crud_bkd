@@ -1,107 +1,121 @@
 import sys
 import json
 import torch
-import urllib.parse
 from transformers import AutoTokenizer, GPT2LMHeadModel
 from hrm_act_v1 import HierarchicalReasoningModel_ACTV1 as HRMModel
 
-# Configuración completa
+# Configuración del HRM
 config_dict = {
     "batch_size": 1,
-    "seq_len": 32,
+    "seq_len": 64,
     "puzzle_emb_ndim": 0,
     "num_puzzle_identifiers": 0,
     "vocab_size": 50257,
     "H_cycles": 2,
-    "L_cycles": 2,
+    "L_cycles": 1,
     "H_layers": 2,
-    "L_layers": 2,
-    "hidden_size": 768,
-    "expansion": 4,
-    "num_heads": 12,
+    "L_layers": 1,
+    "hidden_size": 512,
+    "expansion": 2,
+    "num_heads": 8,
     "pos_encodings": "rope",
-    "halt_max_steps": 5,
-    "halt_exploration_prob": 0.1,
+    "halt_max_steps": 3,
+    "halt_exploration_prob": 0.05,
     "dropout_rate": 0.1
 }
 
-# Inicialización de modelos
-hrm_model = HRMModel(config_dict=config_dict)
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
-tokenizer.pad_token = tokenizer.eos_token
-decoder_model = GPT2LMHeadModel.from_pretrained("gpt2")
+def debug_log(message: str):
+    """Imprime mensajes de depuración en stderr para no romper el JSON en stdout."""
+    sys.stderr.write(f"{message}\n")
+    sys.stderr.flush()
 
-def generate_response(question, temperature=0.7, top_k=50):
-    # Crear prompt más estructurado
-    prompt = f"Por favor responde concisamente a la siguiente pregunta.\nPregunta: {question}\nRespuesta:"
-    
+def load_models():
+    debug_log("Cargando tokenizer y modelos en español...")
+    tokenizer = AutoTokenizer.from_pretrained("datificate/gpt2-small-spanish")
+    tokenizer.pad_token = tokenizer.eos_token
+
+    hrm_model = HRMModel(config_dict=config_dict)
+
+    decoder_model = GPT2LMHeadModel.from_pretrained(
+        "datificate/gpt2-small-spanish",
+        torch_dtype=torch.float32
+    )
+    decoder_model.eval()
+
+    debug_log("Modelos cargados correctamente.")
+    return hrm_model, tokenizer, decoder_model
+
+def generate_response(question, hrm_model, tokenizer, decoder_model, temperature=0.3, top_k=20):
+    debug_log(f"HRM type: {type(hrm_model)}")
+    test_output = hrm_model.initial_carry({"inputs": torch.tensor([[1, 2, 3]])})
+    debug_log(f"Test carry: {test_output}")
+
+    # Prompt especializado en soporte técnico
+    prompt = (
+        "Eres un asistente virtual especializado en soporte técnico informático. "
+        "Responde SIEMPRE en español claro, breve y profesional. "
+        "Evita inventar datos y, si no conoces la respuesta, indica que no estás seguro.\n\n"
+        f"Pregunta: {question}\nRespuesta:"
+    )
+
     inputs = tokenizer(
         prompt,
         return_tensors="pt",
-        padding="max_length",
+        max_length=config_dict["seq_len"],
         truncation=True,
-        max_length=config_dict["seq_len"]
+        padding="max_length"
     )
-    
-    batch = {
-        "inputs": inputs["input_ids"],
-        "puzzle_identifiers": torch.empty((1, 0))
-    }
-    
-    with torch.no_grad():
-        carry = hrm_model.initial_carry(batch)
-        carry, outputs = hrm_model(carry, batch)
-        
-        # Generación con parámetros optimizados
-        generated = decoder_model.generate(
-            inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            max_new_tokens=50,
-            temperature=temperature,
-            top_k=top_k,
-            do_sample=True,
-            pad_token_id=tokenizer.eos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-            no_repeat_ngram_size=2,  # Evitar repeticiones
-        )
-        
-    # Procesamiento mejorado de la respuesta
-    full_response = tokenizer.decode(generated[0], skip_special_tokens=True)
-    response = full_response.replace(prompt, "").strip()
-    
-    # Limpieza adicional
-    if "Pregunta:" in response:
-        response = response.split("Pregunta:")[0].strip()
-    if "\n" in response:
-        response = response.split("\n")[0].strip()
-    
-    return response if response else "No pude generar una respuesta adecuada."
+
+    output = decoder_model.generate(
+        inputs.input_ids,
+        attention_mask=inputs.attention_mask,
+        max_new_tokens=60,
+        temperature=temperature,
+        top_k=top_k,
+        do_sample=True,
+        pad_token_id=tokenizer.eos_token_id,
+        eos_token_id=tokenizer.eos_token_id,
+        no_repeat_ngram_size=3,
+        early_stopping=True
+    )
+
+    full_response = tokenizer.decode(output[0], skip_special_tokens=True)
+    response_text = full_response.split("Respuesta:")[-1].strip()
+    return response_text
 
 def main():
+    torch.set_num_threads(2)
+    
     try:
+        hrm_model, tokenizer, decoder_model = load_models()
+        
         if len(sys.argv) < 2:
             print(json.dumps({"error": "Se requiere una pregunta"}, ensure_ascii=False))
             return
+            
+        question = sys.argv[1].strip()
         
-        # Decodificar pregunta (maneja espacios y caracteres especiales)
-        question = urllib.parse.unquote(sys.argv[1])
+        temperature = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3
+        top_k = int(sys.argv[3]) if len(sys.argv) > 3 else 20
         
-        # =====================================
-        # AQUÍ VA TU LÓGICA DE GENERACIÓN ACTUAL
-        # =====================================
+        response_text = generate_response(question, hrm_model, tokenizer, decoder_model, temperature, top_k)
+
+        # Guardar respuesta en archivo (opcional)
+        with open("ultima_respuesta.txt", "w", encoding="utf-8") as f:
+            f.write(response_text)
         
-        # Ejemplo de respuesta (reemplaza con tu generación real)
-        response = {
-            "pregunta": question,
-            "respuesta": "La capital de Francia es París",
-            "parametros": {}
-        }
-        
-        print(json.dumps(response, ensure_ascii=False))
+        print(json.dumps({
+            "response": response_text,
+            "parameters": {
+                "temperature": temperature,
+                "top_k": top_k
+            }
+        }, ensure_ascii=False))
         
     except Exception as e:
         print(json.dumps({
-            "error": f"Error interno: {str(e)}"
+            "error": str(e),
+            "advice": "Verifique los parámetros e intente nuevamente"
         }, ensure_ascii=False))
 
 if __name__ == "__main__":

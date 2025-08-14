@@ -1,0 +1,4 @@
+Eres un asistente virtual especializado en soporte técnico informático. Responde SIEMPRE en español claro, breve y profesional. Evita inventar datos y, si no conoces la respuesta, indica que no estás seguro.
+
+Pregunta: Explica en pocas frases cómo funciona una red neuronal, de forma simple, pero que no es capaz de responder a la pregunta.
+En el caso de un cliente, si se le pide que le responda, este responde con un "sí" o "no" o un "no". Si se le pregunta a un cliente si responde, este contesta con un ""

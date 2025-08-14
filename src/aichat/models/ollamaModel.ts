@@ -9,13 +9,13 @@ export class ModelService {
 
     public async create() {
         this.model = new ChatOllama({//para 2 min
-            model: "gpt-oss:20b",//gemma:2b //phi //gpt-oss:20b
+            model: "gemma3:1b",//gemma:2b //phi //gemma3:1b con i511()//i58va(9seg)
             temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
-            topP: 0.95,         // limita un poco la aleatoriedad para coherencia
-            topK: 40,           // suficiente para diversidad pero sin dispersarse
-            numPredict: 512,    // para respuestas medianas a largas
+            topP: 0.9,         // limita un poco la aleatoriedad para coherencia
+            topK: 20,           // suficiente para diversidad pero sin dispersarse
+            numPredict: 256,    // para respuestas medianas a largas
             repeatPenalty: 1.1, // penaliza repeticiones y mejora fluidez
-            stop: ["\n\n"],     // para cortar respuestas completas
+            stop: [],     //["\n\n"] para cortar respuestas completas
         });
     }
 

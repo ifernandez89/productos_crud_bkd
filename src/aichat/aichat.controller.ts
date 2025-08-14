@@ -35,75 +35,91 @@ export class AichatController {
     }
 
     try {
+      console.log('Pregunta recibida:', pregunta);
       // 1. Configuración de rutas
-      const pythonExecutable ='C:\\Users\\usuario\\AppData\\Local\\Programs\\Python\\Python313\\python.exe';
+      const pythonExecutable = process.platform === 'win32'
+        ? 'python'  // O usa 'C:\\Python311\\python.exe' si es necesario
+        : 'python3';
+
       const scriptPath = path.join(
         process.cwd(),
         'src',
         'hrm',
         'hrm_runner.py'
       );
-
-      // 2. Verificar existencia del script
+      console.log('Ruta del script:', scriptPath);
+      // 2. Verificación de existencia
       if (!existsSync(scriptPath)) {
-        throw new HttpException(`Archivo no encontrado: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new HttpException(`Script no encontrado en: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
       }
+      console.log('Script encontrado, procediendo a ejecutar...');
+      // 3. Ejecución con manejo de tiempo de espera
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
-      console.log(`Ejecutando script: ${scriptPath} con pregunta: ${pregunta}`);
-
-      // 3. Ejecutar el proceso Python
-      const pythonProcess = spawn(pythonExecutable, [scriptPath, pregunta], {
+      const pythonProcess = spawn(pythonExecutable, [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`], {
         shell: true,
+        signal: controller.signal,
         env: {
           ...process.env,
           PYTHONUTF8: '1',
           PYTHONIOENCODING: 'utf-8'
-        },
-        stdio: ['pipe', 'pipe', 'pipe']
+        }
       });
-
-      console.log(`Proceso Python iniciado: PID ${pythonProcess.pid}`);
-
-      // 4. Manejo de streams con async/await
+      console.log('Proceso Python iniciado:', pythonProcess.pid);
+      // 4. Manejo de streams
       let output = '';
       let errorOutput = '';
 
-      pythonProcess.stdout.setEncoding('utf8');
-      pythonProcess.stderr.setEncoding('utf8');
-
-      pythonProcess.stdout.on('data', (data) => output += data);
-      pythonProcess.stderr.on('data', (data) => errorOutput += data);
-
-      // 5. Esperar finalización del proceso
-      const exitCode = await new Promise<number>((resolve) => {
-        pythonProcess.on('close', resolve);
+      pythonProcess.stdout.on('data', (data) => output += data.toString());
+      pythonProcess.stderr.on('data', (data) => errorOutput += data.toString());
+      console.log('Capturando salida del proceso...');
+      // 5. Esperar resultado con promesa
+      const exitCode = await new Promise<number>((resolve, reject) => {
+        pythonProcess.on('close', (code) => {
+          clearTimeout(timeout);
+          resolve(code || 0);
+        });
+        pythonProcess.on('error', (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        });
       });
-      console.log(`Proceso Python finalizado con código: ${exitCode}`);
-      // 6. Validar resultados
+      console.log('Proceso Python finalizado con código:', exitCode);
+      // 6. Validación de respuesta
       if (exitCode !== 0) {
         throw new HttpException(
-          `Error en script Python (${exitCode}): ${errorOutput}`,
+          `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
           HttpStatus.INTERNAL_SERVER_ERROR
         );
       }
 
       try {
         const result = JSON.parse(output);
-        if (!result?.respuesta) {
+        if (!result?.response) {
           throw new Error('Formato de respuesta inválido');
         }
-        console.log(`Respuesta del script: ${JSON.stringify(result)}`);
-        return result;
+        console.log('Respuesta del modelo:', result.response);
+        // 7. Respuesta estructurada
+        return {
+          pregunta: pregunta,
+          respuesta: result.response,
+          parametros: result.parameters || {},
+          estado: 'éxito'
+        };
+
       } catch (e) {
+        console.error('Error al parsear la respuesta:', e);
         throw new HttpException(
-          `Error procesando respuesta: ${e.message}`,
+          `Error parseando respuesta: ${e.message}`,
           HttpStatus.INTERNAL_SERVER_ERROR
         );
       }
 
     } catch (error) {
+      console.error('Error en preguntar():', error);
       throw new HttpException(
-        error.message || 'Error al procesar la solicitud',
+        error.response || error.message || 'Error al procesar la solicitud',
         error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
