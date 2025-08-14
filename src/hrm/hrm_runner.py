@@ -1,6 +1,7 @@
 import sys
 import json
 import torch
+import time
 from transformers import AutoTokenizer, GPT2LMHeadModel
 from hrm_act_v1 import HierarchicalReasoningModel_ACTV1 as HRMModel
 
@@ -31,6 +32,7 @@ def debug_log(message: str):
 
 def load_models():
     debug_log("Cargando tokenizer y modelos en español...")
+    start_time = time.time()
     tokenizer = AutoTokenizer.from_pretrained("datificate/gpt2-small-spanish")
     tokenizer.pad_token = tokenizer.eos_token
     hrm_model = HRMModel(config_dict=config_dict)
@@ -39,17 +41,36 @@ def load_models():
         torch_dtype=torch.float32
     )
     decoder_model.eval()
-    debug_log("Modelos cargados correctamente.")
+    debug_log(f"Modelos cargados correctamente en {time.time() - start_time:.2f} segundos.")
     return hrm_model, tokenizer, decoder_model
 
-def generate_response(question, hrm_model, tokenizer, decoder_model, temperature=0.3, top_k=20):
-    debug_log(f"HRM type: {type(hrm_model)}")
-    test_output = hrm_model.initial_carry({"inputs": torch.tensor([[1, 2, 3]])})
-    debug_log(f"Test carry: {test_output}")
+def is_generic_response(response_text: str) -> bool:
+    """Valida si la respuesta es genérica, poco útil o incoherente."""
+    generic_keywords = [
+        "no tengo suficiente información",
+        "no estoy seguro",
+        "no puedo responder",
+        "la respuesta de la red neuronal",
+        "los algoritmos de búsqueda",
+        "la función específica",
+        "el comportamiento de una red",
+        "la conducta de una persona",
+        "el algoritmo de búsqueda",
+        "no se pudo generar",
+        "la red neuronal está compuesta",
+    ]
+    return any(keyword in response_text.lower() for keyword in generic_keywords)
 
-    # Prompt más cerrado y claro
+def generate_response(question, hrm_model, tokenizer, decoder_model, temperature=0.3, top_k=20):
+    debug_log(f"Generando respuesta para: {question}")
+    start_time = time.time()
+
+    # Prompt especializado en soporte técnico
     prompt = (
-        "Responde a la siguiente pregunta de forma breve, clara y profesional en español.\n\n"
+        "Eres un asistente virtual especializado en soporte técnico informático. "
+        "Responde SIEMPRE en español, de forma clara, breve y profesional. "
+        "Si no conoces la respuesta, indica que no estás seguro. "
+        "Evita divagar o inventar información.\n\n"
         f"Pregunta: {question}\n"
         "Respuesta (máx. 3 frases):"
     )
@@ -62,10 +83,11 @@ def generate_response(question, hrm_model, tokenizer, decoder_model, temperature
         padding="max_length"
     )
 
+    # Reducir max_new_tokens para respuestas más rápidas
     output = decoder_model.generate(
         inputs.input_ids,
         attention_mask=inputs.attention_mask,
-        max_new_tokens=60,
+        max_new_tokens=30,  # Reducido de 60 a 30
         temperature=temperature,
         top_k=top_k,
         do_sample=True,
@@ -76,6 +98,7 @@ def generate_response(question, hrm_model, tokenizer, decoder_model, temperature
     )
 
     full_response = tokenizer.decode(output[0], skip_special_tokens=True)
+    debug_log(f"Respuesta completa generada en {time.time() - start_time:.2f} segundos.")
 
     # Limpieza de la respuesta
     if "Respuesta (máx. 3 frases):" in full_response:
@@ -87,29 +110,27 @@ def generate_response(question, hrm_model, tokenizer, decoder_model, temperature
     if "Pregunta:" in response_text:
         response_text = response_text.split("Pregunta:")[0].strip()
 
+    # Validar si la respuesta es genérica o poco útil
+    if not response_text.strip() or is_generic_response(response_text):
+        response_text = (
+            "No tengo suficiente información para responder tu pregunta. "
+            "Por favor, contacta a soporte técnico para ayuda especializada."
+        )
+
+    debug_log(f"Tiempo total de generación: {time.time() - start_time:.2f} segundos.")
     return response_text
 
 def main():
-    torch.set_num_threads(2)
-
+    torch.set_num_threads(1)  # Reducir hilos de CPU para evitar bloqueos
     try:
         hrm_model, tokenizer, decoder_model = load_models()
-
         if len(sys.argv) < 2:
             print(json.dumps({"error": "Se requiere una pregunta"}, ensure_ascii=False))
             return
-
         question = sys.argv[1].strip()
-
         temperature = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3
         top_k = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-
         response_text = generate_response(question, hrm_model, tokenizer, decoder_model, temperature, top_k)
-
-        # Guardar respuesta en archivo (opcional)
-        with open("ultima_respuesta.txt", "w", encoding="utf-8") as f:
-            f.write(response_text)
-
         print(json.dumps({
             "response": response_text,
             "parameters": {
@@ -117,11 +138,10 @@ def main():
                 "top_k": top_k
             }
         }, ensure_ascii=False))
-
     except Exception as e:
         print(json.dumps({
             "error": str(e),
-            "advice": "Verifique los parámetros e intente nuevamente"
+            "advice": "Verifica los parámetros e intenta nuevamente."
         }, ensure_ascii=False))
 
 if __name__ == "__main__":

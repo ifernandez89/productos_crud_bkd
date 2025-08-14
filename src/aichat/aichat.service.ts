@@ -17,15 +17,15 @@ export class AichatService {
 
   constructor(
     private prisma: PrismaService,
-    //private ollama: ModelService, para modelos locales
+    private ollama: ModelService, //para modelos locales
   ) { }
 
   async preguntarOllamaOexternal(texto: string, agente: boolean): Promise<string> {
     const maxAttempts = 6;
-    const timeout = 240000; // 4 minutos
+    const timeout = 60000; // 1 minuto
     let attempts = 0;
     let lastError: Error | null = null;
-
+    let respuesta = '';
     while (attempts < maxAttempts) {
       attempts++;
       try {
@@ -34,30 +34,43 @@ export class AichatService {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
           }, timeout);
         });
+        if (agente) {
+          console.log('Ejecución con agente');
+          const taskPromise = (async () => {
+            const response = await this.openaiClient.chat.completions.create({
+              model: 'mistralai/mistral-7b-instruct:free',
+              messages: [{ role: 'user', content: texto }],
+              temperature: 0.7,
+              max_tokens: 512,
+            });
+            const result = response.choices[0]?.message?.content || 'Sin respuesta';
+            //intenta ser un poco más conciso y fluido
+            return result;
+          })();
+          respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
+        } else {
+          console.log('Ejecución sin agente (modelo local con Ollama)');
+          const model = await this.ollama.getModel();
+          const aiMessageChunk = await (await model).invoke(texto);
+          // Handle MessageContent type (string or array)
+          if (typeof aiMessageChunk.content === 'string') {
+            respuesta = aiMessageChunk.content;
+          } else if (Array.isArray(aiMessageChunk.content)) {
+            // Concatenate all text parts from MessageContentComplex[]
+            respuesta = aiMessageChunk.content.map((part: any) => part.text || '').join(' ');
+          } else {
+            respuesta = 'Sin respuesta';
+          }
+        }
+        // Guardar en la base de datos
+        await this.prisma.pregunta.create({
+          data: {
+            texto,
+            respuesta,
+          },
+        })
 
-        const taskPromise = (async () => {
-          const response = await this.openaiClient.chat.completions.create({
-            model: 'mistralai/mistral-7b-instruct:free',
-            messages: [{ role: 'user', content: texto }],
-            temperature: 0.7,
-            max_tokens: 512,
-          });
-
-          const respuesta = response.choices[0]?.message?.content || 'Sin respuesta';
-          //intenta ser un poco más conciso y fluido
-          await this.prisma.pregunta.create({
-            data: {
-              texto,
-              respuesta,
-            },
-          });
-
-          return respuesta;
-        })();
-
-        const result = await Promise.race([taskPromise, timeoutPromise]) as string;
-        return result;
-
+        return respuesta;
       } catch (error) {
         console.error(`Intento ${attempts} fallido:`, error);
         lastError = error instanceof Error ? error : new Error(String(error));
@@ -66,72 +79,82 @@ export class AichatService {
         }
       }
     }
-
     throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);
   }
 
   async preguntarHRM(pregunta: string): Promise<any> {
-    try {
-      console.log('Pregunta recibida:', pregunta);
-      // 1. Configuración de rutas
-      const pythonExecutable = process.platform === 'win32'
-        ? 'python'  // O usa 'C:\\Python311\\python.exe' si es necesario
-        : 'python3';
-
-      const scriptPath = path.join(
-        process.cwd(),
-        'src',
-        'hrm',
-        'hrm_runner.py'
-      );
-      console.log('Ruta del script:', scriptPath);
-      // 2. Verificación de existencia
-      if (!existsSync(scriptPath)) {
-        throw new HttpException(`Script no encontrado en: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-      console.log('Script encontrado, procediendo a ejecutar...');
-      // 3. Ejecución con manejo de tiempo de espera
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
-
-      const pythonProcess = spawn(pythonExecutable, [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`], {
-        shell: true,
-        signal: controller.signal,
-        env: {
-          ...process.env,
-          PYTHONUTF8: '1',
-          PYTHONIOENCODING: 'utf-8'
-        }
-      });
-      console.log('Proceso Python iniciado:', pythonProcess.pid);
-      // 4. Manejo de streams
-      let output = '';
-      let errorOutput = '';
-
-      pythonProcess.stdout.on('data', (data) => output += data.toString());
-      pythonProcess.stderr.on('data', (data) => errorOutput += data.toString());
-      console.log('Capturando salida del proceso...');
-      // 5. Esperar resultado con promesa
-      const exitCode = await new Promise<number>((resolve, reject) => {
-        pythonProcess.on('close', (code) => {
-          clearTimeout(timeout);
-          resolve(code || 0);
-        });
-        pythonProcess.on('error', (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        });
-      });
-      console.log('Proceso Python finalizado con código:', exitCode);
-      // 6. Validación de respuesta
-      if (exitCode !== 0) {
-        throw new HttpException(
-          `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
+    const maxAttempts = 6;
+    const timeout = 60000; // 1 minuto
+    let attempts = 0;
+    let lastError: Error | null = null;
+    while (attempts < maxAttempts) {
+      attempts++;
       try {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
+          }, timeout);
+        });
+        console.log('Hierarchical Reasoning Model');
+        console.log('Pregunta recibida:', pregunta);
+        // 1. Configuración de rutas
+        const pythonExecutable = process.platform === 'win32'
+          ? 'python'  // O usa 'C:\\Python311\\python.exe' si es necesario
+          : 'python3';
+
+        const scriptPath = path.join(
+          process.cwd(),
+          'src',
+          'hrm',
+          'hrm_runner.py'
+        );
+        console.log('Ruta del script:', scriptPath);
+        // 2. Verificación de existencia
+        if (!existsSync(scriptPath)) {
+          throw new HttpException(`Script no encontrado en: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        console.log('Script encontrado, procediendo a ejecutar...');
+        // 3. Ejecución con manejo de tiempo de espera
+        const controller = new AbortController();
+        const timeoutHandle = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+
+        const pythonProcess = spawn(pythonExecutable, [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`], {
+          shell: true,
+          signal: controller.signal,
+          env: {
+            ...process.env,
+            PYTHONUTF8: '1',
+            PYTHONIOENCODING: 'utf-8'
+          }
+        });
+        console.log('Proceso Python iniciado:', pythonProcess.pid);
+        // 4. Manejo de streams
+        let output = '';
+        let errorOutput = '';
+
+        pythonProcess.stdout.on('data', (data) => output += data.toString());
+        pythonProcess.stderr.on('data', (data) => errorOutput += data.toString());
+        console.log('Capturando salida del proceso...');
+        // 5. Esperar resultado con promesa
+        const exitCode = await new Promise<number>((resolve, reject) => {
+          pythonProcess.on('close', (code) => {
+            clearTimeout(timeoutHandle);
+            resolve(code || 0);
+          });
+          pythonProcess.on('error', (err) => {
+            clearTimeout(timeoutHandle);
+            reject(err);
+          });
+        });
+        console.log('Proceso Python finalizado con código:', exitCode);
+        // 6. Validación de respuesta
+        if (exitCode !== 0) {
+          throw new HttpException(
+            `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
+            HttpStatus.INTERNAL_SERVER_ERROR
+          );
+        }
+
         const result = JSON.parse(output);
         if (!result?.response) {
           throw new Error('Formato de respuesta inválido');
@@ -148,20 +171,11 @@ export class AichatService {
         });
 
         return resp;
-      } catch (e) {
-        console.error('Error al parsear la respuesta:', e);
-        throw new HttpException(
-          `Error parseando respuesta: ${e.message}`,
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
+      } catch (error) {
+        console.error(`Intento ${attempts} fallido:`, error);
       }
-    } catch (error) {
-      console.error('Error en preguntarHRM():', error);
-      throw new HttpException(
-        error.response || error.message || 'Error al procesar la solicitud',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
-      );
     }
+    throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);
   }
 
   async obtenerPreguntas(): Promise<any[]> {
