@@ -35,7 +35,7 @@ export class ProductsService {
   findAll() {
    return this.prismaService.product.findMany().then((products) => {
     products.forEach((product) => {
-      console.log("Producto obtenido:", product);
+      //console.log("Producto obtenido:", product);
     });
     return products;
   });
