@@ -1,6 +1,7 @@
 import sys
 import json
 import torch
+import urllib.parse
 from transformers import AutoTokenizer, GPT2LMHeadModel
 from hrm_act_v1 import HierarchicalReasoningModel_ACTV1 as HRMModel
 
@@ -77,24 +78,31 @@ def generate_response(question, temperature=0.7, top_k=50):
     return response if response else "No pude generar una respuesta adecuada."
 
 def main():
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "Se requiere una pregunta"}, ensure_ascii=False))
-        return
-    
-    question = sys.argv[1]
-    temperature = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3  # Valor más bajo por defecto
-    top_k = int(sys.argv[3]) if len(sys.argv) > 3 else 30  # Valor más bajo por defecto
-    
-    response = generate_response(question, temperature, top_k)
-    
-    print(json.dumps({
-        "pregunta": question,
-        "respuesta": response,
-        "parametros": {
-            "temperature": temperature,
-            "top_k": top_k
+    try:
+        if len(sys.argv) < 2:
+            print(json.dumps({"error": "Se requiere una pregunta"}, ensure_ascii=False))
+            return
+        
+        # Decodificar pregunta (maneja espacios y caracteres especiales)
+        question = urllib.parse.unquote(sys.argv[1])
+        
+        # =====================================
+        # AQUÍ VA TU LÓGICA DE GENERACIÓN ACTUAL
+        # =====================================
+        
+        # Ejemplo de respuesta (reemplaza con tu generación real)
+        response = {
+            "pregunta": question,
+            "respuesta": "La capital de Francia es París",
+            "parametros": {}
         }
-    }, ensure_ascii=False, indent=2))
+        
+        print(json.dumps(response, ensure_ascii=False))
+        
+    except Exception as e:
+        print(json.dumps({
+            "error": f"Error interno: {str(e)}"
+        }, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()

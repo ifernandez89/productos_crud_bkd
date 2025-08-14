@@ -9,6 +9,8 @@ import { ApiQuery } from '@nestjs/swagger';
 import { ConverterService } from './utils/converter.service';
 import { spawn } from 'child_process';
 import * as path from 'path';
+import { promisify } from 'util';
+import { existsSync } from 'fs';
 
 @Controller('aichat')
 export class AichatController {
@@ -27,53 +29,83 @@ export class AichatController {
   }
 
   @Post('preguntar')
-  @ApiQuery({
-    name: 'agente',
-    type: 'boolean',
-    description: 'True en caso de necesitar agente',
-    required: false,
-  })
-  async preguntar(
-    @Body('pregunta') pregunta: string,
-    @Query('agente') agente: boolean
-  ) {
-    agente = true;
-    if (!pregunta || pregunta.trim() === '') {
+  async preguntar(@Body('pregunta') pregunta: string) {
+    if (!pregunta?.trim()) {
       throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
     }
+
     try {
-      console.log('Ejecutando script de Python...', pregunta);
-      const pythonPath = 'C:\\Users\\usuario\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe'; // o 'python' según tu entorno
-      const scriptPath = path.join(__dirname, '../hrm/hrm_runner.py');
+      // 1. Configuración de rutas
+      const pythonExecutable ='C:\\Users\\usuario\\AppData\\Local\\Programs\\Python\\Python313\\python.exe';
+      const scriptPath = path.join(
+        process.cwd(),
+        'src',
+        'hrm',
+        'hrm_runner.py'
+      );
 
-      return new Promise((resolve, reject) => {
-        const process = spawn(pythonPath, [scriptPath, pregunta]);
-        console.log('Ejecutando:', pythonPath, [scriptPath, pregunta]); // Depuración
-        let output = '';
-        let errorOutput = '';
+      // 2. Verificar existencia del script
+      if (!existsSync(scriptPath)) {
+        throw new HttpException(`Archivo no encontrado: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
 
-        process.stdout.on('data', (data) => {
-          output += data.toString();
-        });
+      console.log(`Ejecutando script: ${scriptPath} con pregunta: ${pregunta}`);
 
-        process.stderr.on('data', (data) => {
-          errorOutput += data.toString();
-        });
-
-        process.on('close', (code) => {
-          if (code === 0) {
-            try {
-              resolve(JSON.parse(output));
-            } catch (e) {
-              reject(new HttpException('Error al parsear respuesta de HRM', HttpStatus.INTERNAL_SERVER_ERROR));
-            }
-          } else {
-            reject(new HttpException(`Error HRM: ${errorOutput}`, HttpStatus.INTERNAL_SERVER_ERROR));
-          }
-        });
+      // 3. Ejecutar el proceso Python
+      const pythonProcess = spawn(pythonExecutable, [scriptPath, pregunta], {
+        shell: true,
+        env: {
+          ...process.env,
+          PYTHONUTF8: '1',
+          PYTHONIOENCODING: 'utf-8'
+        },
+        stdio: ['pipe', 'pipe', 'pipe']
       });
+
+      console.log(`Proceso Python iniciado: PID ${pythonProcess.pid}`);
+
+      // 4. Manejo de streams con async/await
+      let output = '';
+      let errorOutput = '';
+
+      pythonProcess.stdout.setEncoding('utf8');
+      pythonProcess.stderr.setEncoding('utf8');
+
+      pythonProcess.stdout.on('data', (data) => output += data);
+      pythonProcess.stderr.on('data', (data) => errorOutput += data);
+
+      // 5. Esperar finalización del proceso
+      const exitCode = await new Promise<number>((resolve) => {
+        pythonProcess.on('close', resolve);
+      });
+      console.log(`Proceso Python finalizado con código: ${exitCode}`);
+      // 6. Validar resultados
+      if (exitCode !== 0) {
+        throw new HttpException(
+          `Error en script Python (${exitCode}): ${errorOutput}`,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+
+      try {
+        const result = JSON.parse(output);
+        if (!result?.respuesta) {
+          throw new Error('Formato de respuesta inválido');
+        }
+        console.log(`Respuesta del script: ${JSON.stringify(result)}`);
+        return result;
+      } catch (e) {
+        throw new HttpException(
+          `Error procesando respuesta: ${e.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+
     } catch (error) {
-      throw new HttpException('Error al procesar la solicitud', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        error.message || 'Error al procesar la solicitud',
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
