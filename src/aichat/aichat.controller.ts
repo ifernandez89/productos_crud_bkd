@@ -7,10 +7,6 @@ import { runIA } from './agents/executor';
 import { ModelService } from '../aichat/models/ollamaModel'
 import { ApiQuery } from '@nestjs/swagger';
 import { ConverterService } from './utils/converter.service';
-import { spawn } from 'child_process';
-import * as path from 'path';
-import { promisify } from 'util';
-import { existsSync } from 'fs';
 
 @Controller('aichat')
 export class AichatController {
@@ -33,89 +29,11 @@ export class AichatController {
     if (!pregunta?.trim()) {
       throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
     }
-
     try {
-      console.log('Pregunta recibida:', pregunta);
-      // 1. Configuración de rutas
-      const pythonExecutable = process.platform === 'win32'
-        ? 'python'  // O usa 'C:\\Python311\\python.exe' si es necesario
-        : 'python3';
-
-      const scriptPath = path.join(
-        process.cwd(),
-        'src',
-        'hrm',
-        'hrm_runner.py'
-      );
-      console.log('Ruta del script:', scriptPath);
-      // 2. Verificación de existencia
-      if (!existsSync(scriptPath)) {
-        throw new HttpException(`Script no encontrado en: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-      console.log('Script encontrado, procediendo a ejecutar...');
-      // 3. Ejecución con manejo de tiempo de espera
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
-
-      const pythonProcess = spawn(pythonExecutable, [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`], {
-        shell: true,
-        signal: controller.signal,
-        env: {
-          ...process.env,
-          PYTHONUTF8: '1',
-          PYTHONIOENCODING: 'utf-8'
-        }
-      });
-      console.log('Proceso Python iniciado:', pythonProcess.pid);
-      // 4. Manejo de streams
-      let output = '';
-      let errorOutput = '';
-
-      pythonProcess.stdout.on('data', (data) => output += data.toString());
-      pythonProcess.stderr.on('data', (data) => errorOutput += data.toString());
-      console.log('Capturando salida del proceso...');
-      // 5. Esperar resultado con promesa
-      const exitCode = await new Promise<number>((resolve, reject) => {
-        pythonProcess.on('close', (code) => {
-          clearTimeout(timeout);
-          resolve(code || 0);
-        });
-        pythonProcess.on('error', (err) => {
-          clearTimeout(timeout);
-          reject(err);
-        });
-      });
-      console.log('Proceso Python finalizado con código:', exitCode);
-      // 6. Validación de respuesta
-      if (exitCode !== 0) {
-        throw new HttpException(
-          `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
-      try {
-        const result = JSON.parse(output);
-        if (!result?.response) {
-          throw new Error('Formato de respuesta inválido');
-        }
-        console.log('Respuesta del modelo:', result.response);
-        // 7. Respuesta estructurada
-        return {
-          pregunta: pregunta,
-          respuesta: result.response,
-          parametros: result.parameters || {},
-          estado: 'éxito'
-        };
-
-      } catch (e) {
-        console.error('Error al parsear la respuesta:', e);
-        throw new HttpException(
-          `Error parseando respuesta: ${e.message}`,
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
-      }
-
+      console.log('Pregunta recibida en el controlador:', pregunta);
+      // Llamar al servicio para procesar la pregunta
+      const respuesta = await this.aichatService.preguntarHRM(pregunta);
+      return { respuesta };
     } catch (error) {
       console.error('Error en preguntar():', error);
       throw new HttpException(

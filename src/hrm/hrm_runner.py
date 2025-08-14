@@ -33,15 +33,12 @@ def load_models():
     debug_log("Cargando tokenizer y modelos en español...")
     tokenizer = AutoTokenizer.from_pretrained("datificate/gpt2-small-spanish")
     tokenizer.pad_token = tokenizer.eos_token
-
     hrm_model = HRMModel(config_dict=config_dict)
-
     decoder_model = GPT2LMHeadModel.from_pretrained(
         "datificate/gpt2-small-spanish",
         torch_dtype=torch.float32
     )
     decoder_model.eval()
-
     debug_log("Modelos cargados correctamente.")
     return hrm_model, tokenizer, decoder_model
 
@@ -50,12 +47,11 @@ def generate_response(question, hrm_model, tokenizer, decoder_model, temperature
     test_output = hrm_model.initial_carry({"inputs": torch.tensor([[1, 2, 3]])})
     debug_log(f"Test carry: {test_output}")
 
-    # Prompt especializado en soporte técnico
+    # Prompt más cerrado y claro
     prompt = (
-        "Eres un asistente virtual especializado en soporte técnico informático. "
-        "Responde SIEMPRE en español claro, breve y profesional. "
-        "Evita inventar datos y, si no conoces la respuesta, indica que no estás seguro.\n\n"
-        f"Pregunta: {question}\nRespuesta:"
+        "Responde a la siguiente pregunta de forma breve, clara y profesional en español.\n\n"
+        f"Pregunta: {question}\n"
+        "Respuesta (máx. 3 frases):"
     )
 
     inputs = tokenizer(
@@ -80,30 +76,40 @@ def generate_response(question, hrm_model, tokenizer, decoder_model, temperature
     )
 
     full_response = tokenizer.decode(output[0], skip_special_tokens=True)
-    response_text = full_response.split("Respuesta:")[-1].strip()
+
+    # Limpieza de la respuesta
+    if "Respuesta (máx. 3 frases):" in full_response:
+        response_text = full_response.split("Respuesta (máx. 3 frases):")[-1].strip()
+    else:
+        response_text = full_response.strip()
+
+    # Evitar que repita la pregunta o meta frases raras
+    if "Pregunta:" in response_text:
+        response_text = response_text.split("Pregunta:")[0].strip()
+
     return response_text
 
 def main():
     torch.set_num_threads(2)
-    
+
     try:
         hrm_model, tokenizer, decoder_model = load_models()
-        
+
         if len(sys.argv) < 2:
             print(json.dumps({"error": "Se requiere una pregunta"}, ensure_ascii=False))
             return
-            
+
         question = sys.argv[1].strip()
-        
+
         temperature = float(sys.argv[2]) if len(sys.argv) > 2 else 0.3
         top_k = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-        
+
         response_text = generate_response(question, hrm_model, tokenizer, decoder_model, temperature, top_k)
 
         # Guardar respuesta en archivo (opcional)
         with open("ultima_respuesta.txt", "w", encoding="utf-8") as f:
             f.write(response_text)
-        
+
         print(json.dumps({
             "response": response_text,
             "parameters": {
@@ -111,7 +117,7 @@ def main():
                 "top_k": top_k
             }
         }, ensure_ascii=False))
-        
+
     except Exception as e:
         print(json.dumps({
             "error": str(e),
