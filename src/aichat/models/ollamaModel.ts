@@ -9,7 +9,7 @@ export class ModelService {
 
     public async create() {
         this.model = new ChatOllama({//para 2 min
-            model: "gemma3:1b",//gemma:2b //phi //gemma3:1b con i511()//i58va(9seg)
+            model: "llama3.2:1b",//gemma:2b //phi //gemma3:1b //llama3.2:1b(great for summarization)
             temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
             topP: 0.9,         // limita un poco la aleatoriedad para coherencia
             topK: 20,           // suficiente para diversidad pero sin dispersarse
