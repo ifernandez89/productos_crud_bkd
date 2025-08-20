@@ -30,38 +30,42 @@ export class AichatService {
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        // Reiniciar el temporizador para cada intento de la misma pregunta
+        // Crear un nuevo temporizador para cada intento
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
           }, timeout);
         });
 
+        let taskPromise;
         if (agente) {
           console.log('Ejecución con agente');
-          const taskPromise = (async () => {
+          taskPromise = (async () => {
             const response = await this.openaiClient.chat.completions.create({
               model: 'mistralai/mistral-7b-instruct:free',
               messages: [{ role: 'user', content: texto }],
               temperature: 0.7,
               max_tokens: 512,
             });
-            const result = response.choices[0]?.message?.content || 'Sin respuesta';
-            return result;
+            return response.choices[0]?.message?.content || 'Sin respuesta';
           })();
-          respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
         } else {
-          console.log('Ejecución sin agente (modelo local con Ollama)');
-          const model = await this.ollama.getModel();
-          const aiMessageChunk = await (await model).invoke(texto);
-          if (typeof aiMessageChunk.content === 'string') {
-            respuesta = aiMessageChunk.content;
-          } else if (Array.isArray(aiMessageChunk.content)) {
-            respuesta = aiMessageChunk.content.map((part: any) => part.text || '').join(' ');
-          } else {
-            respuesta = 'Sin respuesta';
-          }
+          console.log('Ejecución modelo local con Ollama');
+          taskPromise = (async () => {
+            const model = await this.ollama.getModel();
+            const aiMessageChunk = await model.invoke(texto);
+            if (typeof aiMessageChunk.content === 'string') {
+              return aiMessageChunk.content;
+            } else if (Array.isArray(aiMessageChunk.content)) {
+              return aiMessageChunk.content.map((part: any) => part.text || '').join(' ');
+            } else {
+              return 'Sin respuesta';
+            }
+          })();
         }
+
+        // Ejecutar la tarea con el temporizador
+        respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
 
         // Guardar en la base de datos
         await this.prisma.pregunta.create({
