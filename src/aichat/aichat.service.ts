@@ -26,14 +26,17 @@ export class AichatService {
     let attempts = 0;
     let lastError: Error | null = null;
     let respuesta = '';
+
     while (attempts < maxAttempts) {
       attempts++;
       try {
+        // Reiniciar el temporizador para cada intento de la misma pregunta
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
           }, timeout);
         });
+
         if (agente) {
           console.log('Ejecución con agente');
           const taskPromise = (async () => {
@@ -44,7 +47,6 @@ export class AichatService {
               max_tokens: 512,
             });
             const result = response.choices[0]?.message?.content || 'Sin respuesta';
-            //intenta ser un poco más conciso y fluido
             return result;
           })();
           respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
@@ -52,24 +54,22 @@ export class AichatService {
           console.log('Ejecución sin agente (modelo local con Ollama)');
           const model = await this.ollama.getModel();
           const aiMessageChunk = await (await model).invoke(texto);
-          // Handle MessageContent type (string or array)
           if (typeof aiMessageChunk.content === 'string') {
             respuesta = aiMessageChunk.content;
           } else if (Array.isArray(aiMessageChunk.content)) {
-            // Concatenate all text parts from MessageContentComplex[]
             respuesta = aiMessageChunk.content.map((part: any) => part.text || '').join(' ');
           } else {
             respuesta = 'Sin respuesta';
           }
         }
+
         // Guardar en la base de datos
         await this.prisma.pregunta.create({
           data: {
             texto,
             respuesta,
           },
-        })
-
+        });
         return respuesta;
       } catch (error) {
         console.error(`Intento ${attempts} fallido:`, error);
