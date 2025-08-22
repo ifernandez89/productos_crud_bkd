@@ -21,7 +21,7 @@ export class AichatService {
   ) { }
 
   async preguntarOllamaOexternal(texto: string, agente: boolean): Promise<string> {
-    const maxAttempts = 6;
+    const maxAttempts = 1;
     const timeout = 60000; // 1 minuto
     let attempts = 0;
     let lastError: Error | null = null;
@@ -63,10 +63,8 @@ export class AichatService {
             }
           })();
         }
-
         // Ejecutar la tarea con el temporizador
         respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
-
         // Guardar en la base de datos
         await this.prisma.pregunta.create({
           data: {
@@ -77,10 +75,10 @@ export class AichatService {
         return respuesta;
       } catch (error) {
         console.error(`Intento ${attempts} fallido:`, error);
-        lastError = error instanceof Error ? error : new Error(String(error));
-        if (attempts >= maxAttempts) {
-          throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError.message}`);
-        }
+          throw new HttpException(
+            error.response || error.message || 'Error al procesar la solicitud',
+            error.status || HttpStatus.INTERNAL_SERVER_ERROR
+          );
       }
     }
     throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);
