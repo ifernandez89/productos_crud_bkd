@@ -77,7 +77,7 @@ export class AichatService {
         console.error(`Intento ${attempts} fallido:`, error);
           throw new HttpException(
             error.response || error.message || 'Error al procesar la solicitud',
-            error.status || HttpStatus.INTERNAL_SERVER_ERROR
+            error.status
           );
       }
     }
