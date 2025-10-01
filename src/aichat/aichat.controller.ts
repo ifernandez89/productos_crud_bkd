@@ -15,7 +15,7 @@ export class AichatController {
     }
     try {
       //const respuesta = await this.aichatService.preguntarHRM(pregunta);
-      const respuesta = await this.aichatService.preguntarOllamaOexternal(pregunta, false);
+      const respuesta = await this.aichatService.preguntarOllamaOexternal(pregunta, true);
       return { respuesta };
     } catch (error) {
       throw new HttpException(
