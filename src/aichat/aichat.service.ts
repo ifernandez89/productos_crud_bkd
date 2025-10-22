@@ -40,10 +40,54 @@ export class AichatService {
         let taskPromise;
         if (agente) {
           console.log('Ejecución con agente');
+          const products = await this.prisma.product.findMany();
+          // Formatear la lista de productos para que sea legible y útil para el modelo
+          const productosFormateados = products.map(product => ({
+            id: product.id,
+            nombre: product.name,
+            descripcion: product.description,
+            precio: product.price,
+            stock: product.stock,
+            nuevo: product.isNew,
+            descuento: product.isOnSale,
+            destacado: product.isFeatured,
+            marca: product.marca,
+            // Agrega aquí otros campos relevantes como cámara, batería, etc.
+          }));
+
+          // Convertir la lista de productos a un string legible
+          const productosComoTexto = productosFormateados
+            .map(p =>
+              `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
+              `Descripcion: ${p.descripcion} ` +
+              `Stock: $${p.stock}` +
+              `Oferta: $${p.isOnSale}` +
+              `Destacado: $${p.isFeatured}` +
+              `Nuevo: $${p.isNew}` +
+              `Precio: $${p.precio}`
+            )
+            .join("\n");
+
+          // Construir el prompt para el modelo de IA
+          const textoParaIA = `
+**Pregunta del cliente:** ${texto}
+
+**Productos disponibles (para referencia y análisis):**
+${productosComoTexto}
+
+**Instrucciones para el modelo:**
+1. Responde la pregunta del cliente de manera clara y precisa.
+2. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
+   - Recomendar opciones basadas en sus necesidades (ej: en oferta, mejor marca, precio, etc.).
+   - Comparar productos si es necesario.
+   - Mencionar promociones o características destacadas.
+3. Si no hay suficiente información en la lista, indícalo y sugiere al cliente que consulte por más detalles.
+4. Sé conciso y profesional.
+`;
           taskPromise = (async () => {
             const response = await this.openaiClient.chat.completions.create({
               model: 'anthropic/claude-sonnet-4.5', //'mistralai/mistral-small-3.2-24b-instruct-2506:free',//'mistralai/mistral-7b-instruct:free',
-              messages: [{ role: 'user', content: texto }],
+              messages: [{ role: 'user', content: textoParaIA }],
               temperature: 0.7,
               max_tokens: 512,
             });
@@ -75,10 +119,10 @@ export class AichatService {
         return respuesta;
       } catch (error) {
         console.error(`Intento ${attempts} fallido:`, error);
-          throw new HttpException(
-            error.response || error.message || 'Error al procesar la solicitud',
-            error.status
-          );
+        throw new HttpException(
+          error.response || error.message || 'Error al procesar la solicitud',
+          error.status
+        );
       }
     }
     throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);

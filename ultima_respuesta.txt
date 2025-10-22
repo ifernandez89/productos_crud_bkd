@@ -1,7 +1,0 @@
-,
-
-
-Repetición:
-
-La respuesta de la red neuronal es la siguiente:
-La red neuronal está compuesta por neuronas que se proyectan en el espacio de memoria, y que se encuentran en el centro de memoria. Cada neurona tiene una función específica, que es la función que
