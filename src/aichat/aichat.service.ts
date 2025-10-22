@@ -20,6 +20,55 @@ export class AichatService {
     private ollama: ModelService, //para modelos locales
   ) { }
 
+  async promptAgente(texto: string): Promise<string> {
+    const products = await this.prisma.product.findMany();
+    // Formatear la lista de productos para que sea legible y útil para el modelo
+    const productosFormateados = products.map(product => ({
+      id: product.id,
+      nombre: product.name,
+      descripcion: product.description,
+      precio: product.price,
+      stock: product.stock,
+      nuevo: product.isNew,
+      descuento: product.isOnSale,
+      destacado: product.isFeatured,
+      marca: product.marca,
+      // Agrega aquí otros campos relevantes como cámara, batería, etc.
+    }));
+
+    // Convertir la lista de productos a un string legible
+    const productosComoTexto = productosFormateados
+      .map(p =>
+        `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
+        `Descripcion: ${p.descripcion} ` +
+        `Stock: $${p.stock}` +
+        `Oferta: $${p.isOnSale}` +
+        `Destacado: $${p.isFeatured}` +
+        `Nuevo: $${p.isNew}` +
+        `Precio: $${p.precio}`
+      )
+      .join("\n");
+
+    // Construir el prompt para el modelo de IA
+    const textoParaIA = `
+**Pregunta del cliente:** ${texto}
+
+**Productos disponibles (para referencia y análisis):**
+${productosComoTexto}
+
+**Instrucciones para el modelo:**
+1. Responde la pregunta del cliente de manera clara y precisa.
+2. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
+   - Recomendar opciones basadas en sus necesidades (ej: en oferta, mejor marca, precio, etc.).
+   - Comparar productos si es necesario.
+   - Mencionar promociones o características destacadas.
+3. Si no hay suficiente información en la lista, indícalo y sugiere al cliente que consulte por más detalles.
+4. Sé conciso y profesional.
+`;
+
+    return textoParaIA;
+  }
+
   async preguntarOllamaOexternal(texto: string, agente: boolean): Promise<string> {
     const maxAttempts = 1;
     const timeout = 60000; // 1 minuto
@@ -40,50 +89,8 @@ export class AichatService {
         let taskPromise;
         if (agente) {
           console.log('Ejecución con agente');
-          const products = await this.prisma.product.findMany();
-          // Formatear la lista de productos para que sea legible y útil para el modelo
-          const productosFormateados = products.map(product => ({
-            id: product.id,
-            nombre: product.name,
-            descripcion: product.description,
-            precio: product.price,
-            stock: product.stock,
-            nuevo: product.isNew,
-            descuento: product.isOnSale,
-            destacado: product.isFeatured,
-            marca: product.marca,
-            // Agrega aquí otros campos relevantes como cámara, batería, etc.
-          }));
+          const textoParaIA = await this.promptAgente(texto);
 
-          // Convertir la lista de productos a un string legible
-          const productosComoTexto = productosFormateados
-            .map(p =>
-              `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
-              `Descripcion: ${p.descripcion} ` +
-              `Stock: $${p.stock}` +
-              `Oferta: $${p.isOnSale}` +
-              `Destacado: $${p.isFeatured}` +
-              `Nuevo: $${p.isNew}` +
-              `Precio: $${p.precio}`
-            )
-            .join("\n");
-
-          // Construir el prompt para el modelo de IA
-          const textoParaIA = `
-**Pregunta del cliente:** ${texto}
-
-**Productos disponibles (para referencia y análisis):**
-${productosComoTexto}
-
-**Instrucciones para el modelo:**
-1. Responde la pregunta del cliente de manera clara y precisa.
-2. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
-   - Recomendar opciones basadas en sus necesidades (ej: en oferta, mejor marca, precio, etc.).
-   - Comparar productos si es necesario.
-   - Mencionar promociones o características destacadas.
-3. Si no hay suficiente información en la lista, indícalo y sugiere al cliente que consulte por más detalles.
-4. Sé conciso y profesional.
-`;
           taskPromise = (async () => {
             const response = await this.openaiClient.chat.completions.create({
               model: 'mistralai/mistral-small-3.2-24b-instruct-2506:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
@@ -95,9 +102,10 @@ ${productosComoTexto}
           })();
         } else {
           console.log('Ejecución modelo local con Ollama');
+          const textoParaIA = await this.promptAgente(texto);
           taskPromise = (async () => {
             const model = await this.ollama.getModel();
-            const aiMessageChunk = await model.invoke(texto);
+            const aiMessageChunk = await model.invoke(textoParaIA);
             if (typeof aiMessageChunk.content === 'string') {
               return aiMessageChunk.content;
             } else if (Array.isArray(aiMessageChunk.content)) {
