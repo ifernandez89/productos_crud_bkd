@@ -3,6 +3,8 @@ import {
   NotFoundException,
   ConflictException,
   InternalServerErrorException,
+  HttpException,
+  BadRequestException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -11,34 +13,40 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) { }
 
   async create(createProductDto: CreateProductDto) {
-    //necesita el async porque debe await para que se resuelva la peticion antes de asignarla
     try {
       return await this.prismaService.product.create({
         data: createProductDto,
       });
     } catch (error) {
-      console.error('Error al crear el producto:', error);
+      console.log('Errorrrr:', error.message);
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException(
             `Producto con name ${createProductDto.name}, ya existe`,
           );
         }
+
+        if (error.code === 'P2003' || error.message.includes('must not be null')) {
+          throw new BadRequestException(`Falta el campo obligatorio: ${error.meta?.field_name || 'desconocido'}`);
+        }
       }
-      throw new InternalServerErrorException();
+      else if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw new InternalServerErrorException('Error al crear el producto');
     }
   }
 
   findAll() {
-   return this.prismaService.product.findMany().then((products) => {
-    products.forEach((product) => {
-      //console.log("Producto obtenido:", product);
+    return this.prismaService.product.findMany().then((products) => {
+      products.forEach((product) => {
+        //console.log("Producto obtenido:", product);
+      });
+      return products;
     });
-    return products;
-  });
   }
 
   async findOne(id: number) {
