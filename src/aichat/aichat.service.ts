@@ -93,7 +93,7 @@ ${productosComoTexto}
 
           taskPromise = (async () => {
             const response = await this.openaiClient.chat.completions.create({
-              model: 'mistralai/mistral-small-3.2-24b-instruct-2506:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
+              model: 'tngtech/deepseek-r1t2-chimera:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
               messages: [{ role: 'user', content: textoParaIA }],
               temperature: 0.7,
               max_tokens: 512,
