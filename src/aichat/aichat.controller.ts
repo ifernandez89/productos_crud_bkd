@@ -2,20 +2,25 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch,
 import { AichatService } from './aichat.service';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { ConverterService } from './utils/converter.service';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { create } from 'domain';
+import { CreateAichatDto } from './dto/create-aichat.dto';
 
+@ApiTags('aichat')
 @Controller('aichat')
 export class AichatController {
   constructor(private readonly aichatService: AichatService, private readonly converter: ConverterService) {
   }
 
   @Post('preguntar')
-  async preguntar(@Body('pregunta') pregunta: string) {
-    if (!pregunta?.trim()) {
-      throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
-    }
+  @ApiOperation({ summary: 'Ask a question to the AI', description: `` })
+  async preguntar(@Body() createAichatDto: CreateAichatDto) {
     try {
+      if (!createAichatDto.pregunta?.trim()) {
+        throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
+      }
       //const respuesta = await this.aichatService.preguntarHRM(pregunta);
-      const respuesta = await this.aichatService.preguntarOllamaOexternal(pregunta, true);
+      const respuesta = await this.aichatService.preguntarOllamaOexternal(createAichatDto);
       return { respuesta };
     } catch (error) {
       throw new HttpException(

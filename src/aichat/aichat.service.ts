@@ -69,7 +69,8 @@ ${productosComoTexto}
     return textoParaIA;
   }
 
-  async preguntarOllamaOexternal(texto: string, agente: boolean): Promise<string> {
+  async preguntarOllamaOexternal(createAichatDto: CreateAichatDto): Promise<string> {
+    const { pregunta: texto, agente } = createAichatDto;
     const maxAttempts = 1;
     const timeout = 60000; // 1 minuto
     let attempts = 0;
@@ -92,8 +93,8 @@ ${productosComoTexto}
           const textoParaIA = await this.promptAgente(texto);
 
           taskPromise = (async () => {
-            const response = await this.openaiClient.chat.completions.create({
-              model: 'tngtech/deepseek-r1t2-chimera:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
+            const response = await this.openaiClient.chat.completions.create({ //xiaomi/mimo-v2-flash:free compite con ¿claude-sonnet-4.5?
+              model: 'xiaomi/mimo-v2-flash:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
               messages: [{ role: 'user', content: textoParaIA }],
               temperature: 0.7,
               max_tokens: 512,

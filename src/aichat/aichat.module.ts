@@ -5,9 +5,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ModelService } from './models/ollamaModel';
 import { ConverterService } from './utils/converter.service';
 
-@Global()
+//@Global()
 @Module({
   controllers: [AichatController],
-  providers: [AichatService,PrismaService,ModelService,ConverterService],
+  providers: [AichatService, PrismaService, ModelService, ConverterService],
 })
-export class AichatModule {}
+export class AichatModule { }
