@@ -19,6 +19,7 @@ export class AichatController {
       if (!createAichatDto.pregunta?.trim()) {
         throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
       }
+      createAichatDto.agente = false; //deshabilitado por ahora(open router necesita creditos)
       //const respuesta = await this.aichatService.preguntarHRM(pregunta);
       const respuesta = await this.aichatService.preguntarOllamaOexternal(createAichatDto);
       return { respuesta };

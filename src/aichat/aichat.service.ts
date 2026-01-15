@@ -7,12 +7,17 @@ import OpenAI from 'openai';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
+import axios from 'axios';
 
 @Injectable()
 export class AichatService {
   private readonly openaiClient = new OpenAI({
-    apiKey: process.env.API_KEY || '', // Asegurate de tener esta variable cargada
+    apiKey: process.env.OPENROUTER_API_KEY || '',
     baseURL: 'https://openrouter.ai/api/v1',
+    defaultHeaders: {
+      'HTTP-Referer': 'http://localhost:4000', // o el dominio de tu app
+      'X-Title': 'productos-crud-bkd',         // nombre de tu app
+    },
   });
 
   constructor(
@@ -93,13 +98,24 @@ ${productosComoTexto}
           const textoParaIA = await this.promptAgente(texto);
 
           taskPromise = (async () => {
-            const response = await this.openaiClient.chat.completions.create({ //xiaomi/mimo-v2-flash:free compite con ¿claude-sonnet-4.5?
-              model: 'xiaomi/mimo-v2-flash:free', //'anthropic/claude-sonnet-4.5'(requiere creditos),'mistralai/mistral-small-3.2-24b-instruct-2506:free','mistralai/mistral-7b-instruct:free',
-              messages: [{ role: 'user', content: textoParaIA }],
-              temperature: 0.7,
-              max_tokens: 512,
-            });
-            return response.choices[0]?.message?.content || 'Sin respuesta';
+            const response = await axios.post(
+              'https://openrouter.ai/api/v1/chat/completions',
+              {
+                model: 'mistralai/mistral-7b-instruct:free',
+                messages: [{ role: 'user', content: textoParaIA }],
+                temperature: 0.7,
+                max_tokens: 512,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                  'HTTP-Referer': 'http://localhost', // o tu dominio real
+                  'X-Title': 'productos-crud-bkd',
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            return response.data.choices[0]?.message?.content || 'Sin respuesta';
           })();
         } else {
           console.log('Ejecución modelo local con Ollama');

@@ -20,7 +20,7 @@ Es el mejor balance calidad tipo Opus / rendimiento local hoy.
     */
     public async create() {
         this.model = new ChatOllama({//para 2 min
-            model: "openchat:7b",//gemma:2b phi llama3.2:1b(great for summarization) openchat:7b(comparaciones?)
+            model: "phi3:mini",//gemma:2b phi llama3.2:1b(great for summarization) openchat:7b(comparaciones?)-chatbot minimo phi3:mini
             temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
             topP: 0.9,         // limita un poco la aleatoriedad para coherencia
             topK: 20,           // suficiente para diversidad pero sin dispersarse
