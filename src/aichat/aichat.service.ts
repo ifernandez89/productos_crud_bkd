@@ -1,34 +1,38 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateAichatDto } from './dto/create-aichat.dto';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ModelService } from './models/ollamaModel';
-import OpenAI from 'openai';
+import { PreguntasRepository } from './repositories/preguntas.repository';
+import { ProductsRepository } from '../products/repositories/products.repository';
+import { OllamaModelService } from './models/ollamaModel';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import axios from 'axios';
 
+interface AIContentPart {
+  text?: string;
+}
+
+export interface PreguntaRecord {
+  id: number;
+  texto: string;
+  respuesta: string;
+  createdAt: Date;
+}
+
 @Injectable()
 export class AichatService {
-  private readonly openaiClient = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY || '',
-    baseURL: 'https://openrouter.ai/api/v1',
-    defaultHeaders: {
-      'HTTP-Referer': 'http://localhost:4000', // o el dominio de tu app
-      'X-Title': 'productos-crud-bkd',         // nombre de tu app
-    },
-  });
+  private readonly logger = new Logger(AichatService.name);
 
   constructor(
-    private prisma: PrismaService,
-    private ollama: ModelService, //para modelos locales
-  ) { }
+    private readonly preguntasRepository: PreguntasRepository,
+    private readonly productsRepository: ProductsRepository,
+    private readonly ollamaModel: OllamaModelService,
+  ) {}
 
   async promptAgente(texto: string): Promise<string> {
-    const products = await this.prisma.product.findMany();
-    // Formatear la lista de productos para que sea legible y útil para el modelo
-    const productosFormateados = products.map(product => ({
+    const products = await this.productsRepository.findAll();
+    const productosFormateados = products.map((product) => ({
       id: product.id,
       nombre: product.name,
       descripcion: product.description,
@@ -38,24 +42,22 @@ export class AichatService {
       descuento: product.isOnSale,
       destacado: product.isFeatured,
       marca: product.marca,
-      // Agrega aquí otros campos relevantes como cámara, batería, etc.
     }));
 
-    // Convertir la lista de productos a un string legible
     const productosComoTexto = productosFormateados
-      .map(p =>
-        `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
-        `Descripcion: ${p.descripcion} ` +
-        `Stock: $${p.stock}` +
-        `Oferta: $${p.isOnSale}` +
-        `Destacado: $${p.isFeatured}` +
-        `Nuevo: $${p.isNew}` +
-        `Precio: $${p.precio}`
+      .map(
+        (p) =>
+          `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
+          `Descripcion: ${p.descripcion} ` +
+          `Stock: ${p.stock} ` +
+          `Oferta: ${p.descuento} ` +
+          `Destacado: ${p.destacado} ` +
+          `Nuevo: ${p.nuevo} ` +
+          `Precio: $${p.precio}`,
       )
-      .join("\n");
+      .join('\n');
 
-    // Construir el prompt para el modelo de IA
-    const textoParaIA = `
+    return `
 **Pregunta del cliente:** ${texto}
 
 **Productos disponibles (para referencia y análisis):**
@@ -70,143 +72,141 @@ ${productosComoTexto}
 3. Si no hay suficiente información en la lista, indícalo y sugiere al cliente que consulte por más detalles.
 4. Sé conciso y profesional.
 `;
-
-    return textoParaIA;
   }
 
-  async preguntarOllamaOexternal(createAichatDto: CreateAichatDto): Promise<string> {
+  async preguntarOllamaOexternal(
+    createAichatDto: CreateAichatDto,
+  ): Promise<string> {
     const { pregunta: texto, agente } = createAichatDto;
     const maxAttempts = 1;
-    const timeout = 60000; // 1 minuto
+    const timeout = 60000;
     let attempts = 0;
-    let lastError: Error | null = null;
     let respuesta = '';
 
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        // Crear un nuevo temporizador para cada intento
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
           }, timeout);
         });
 
-        let taskPromise;
+        let taskPromise: Promise<string>;
         if (agente) {
-          console.log('Ejecución con agente');
+          this.logger.log('Ejecución con agente');
           const textoParaIA = await this.promptAgente(texto);
 
-          taskPromise = (async () => {
-            const response = await axios.post(
-              'https://openrouter.ai/api/v1/chat/completions',
-              {
-                model: 'mistralai/mistral-7b-instruct:free',
-                messages: [{ role: 'user', content: textoParaIA }],
-                temperature: 0.7,
-                max_tokens: 512,
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                  'HTTP-Referer': 'http://localhost', // o tu dominio real
-                  'X-Title': 'productos-crud-bkd',
-                  'Content-Type': 'application/json',
-                },
-              }
-            );
-            return response.data.choices[0]?.message?.content || 'Sin respuesta';
-          })();
+          taskPromise = this.callExternalAI(textoParaIA);
         } else {
-          console.log('Ejecución modelo local con Ollama');
+          this.logger.log('Ejecución modelo local con Ollama');
           const textoParaIA = await this.promptAgente(texto);
-          taskPromise = (async () => {
-            const model = await this.ollama.getModel();
-            const aiMessageChunk = await model.invoke(textoParaIA);
-            if (typeof aiMessageChunk.content === 'string') {
-              return aiMessageChunk.content;
-            } else if (Array.isArray(aiMessageChunk.content)) {
-              return aiMessageChunk.content.map((part: any) => part.text || '').join(' ');
-            } else {
-              return 'Sin respuesta';
-            }
-          })();
+          taskPromise = this.callOllamaModel(textoParaIA);
         }
-        // Ejecutar la tarea con el temporizador
-        respuesta = await Promise.race([taskPromise, timeoutPromise]) as string;
-        // Guardar en la base de datos
-        await this.prisma.pregunta.create({
-          data: {
-            texto,
-            respuesta,
-          },
-        });
+        respuesta = (await Promise.race([
+          taskPromise,
+          timeoutPromise,
+        ])) as string;
+        await this.preguntasRepository.create(texto, respuesta);
         return respuesta;
       } catch (error) {
-        console.error(`Intento ${attempts} fallido:`, error);
+        this.logger.error(`Intento ${attempts} fallido: ${error.message}`);
         throw new HttpException(
           error.response || error.message || 'Error al procesar la solicitud',
-          error.status
+          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
     }
-    throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);
+    throw new Error(
+      `Error al procesar la pregunta después de ${maxAttempts} intentos`,
+    );
   }
 
-  async preguntarHRM(pregunta: string): Promise<any> {
+  private async callExternalAI(prompt: string): Promise<string> {
+    const response = await axios.post(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        model: 'mistralai/mistral-7b-instruct:free',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 512,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'http://localhost',
+          'X-Title': 'productos-crud-bkd',
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    return response.data.choices[0]?.message?.content || 'Sin respuesta';
+  }
+
+  private async callOllamaModel(prompt: string): Promise<string> {
+    const aiMessageChunk = await this.ollamaModel.invoke(prompt);
+    if (typeof aiMessageChunk.content === 'string') {
+      return aiMessageChunk.content;
+    } else if (Array.isArray(aiMessageChunk.content)) {
+      return aiMessageChunk.content
+        .map((part: AIContentPart) => part.text || '')
+        .join(' ');
+    }
+    return 'Sin respuesta';
+  }
+
+  async preguntarHRM(pregunta: string): Promise<string> {
     const maxAttempts = 6;
-    const timeout = 60000; // 1 minuto
     let attempts = 0;
     let lastError: Error | null = null;
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => {
-            reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
-          }, timeout);
-        });
-        console.log('Hierarchical Reasoning Model');
-        console.log('Pregunta recibida:', pregunta);
-        // 1. Configuración de rutas
-        const pythonExecutable = process.platform === 'win32'
-          ? 'python'  // O usa 'C:\\Python311\\python.exe' si es necesario
-          : 'python3';
+        this.logger.log('Hierarchical Reasoning Model');
+        this.logger.log(`Pregunta recibida: ${pregunta}`);
+        const pythonExecutable =
+          process.platform === 'win32' ? 'python' : 'python3';
 
         const scriptPath = path.join(
           process.cwd(),
           'src',
           'hrm',
-          'hrm_runner.py'
+          'hrm_runner.py',
         );
-        console.log('Ruta del script:', scriptPath);
-        // 2. Verificación de existencia
+        this.logger.log(`Ruta del script: ${scriptPath}`);
         if (!existsSync(scriptPath)) {
-          throw new HttpException(`Script no encontrado en: ${scriptPath}`, HttpStatus.INTERNAL_SERVER_ERROR);
+          throw new HttpException(
+            `Script no encontrado en: ${scriptPath}`,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
         }
-        console.log('Script encontrado, procediendo a ejecutar...');
-        // 3. Ejecución con manejo de tiempo de espera
+        this.logger.log('Script encontrado, procediendo a ejecutar...');
         const controller = new AbortController();
-        const timeoutHandle = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
+        const timeoutHandle = setTimeout(() => controller.abort(), 30000);
 
-        const pythonProcess = spawn(pythonExecutable, [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`], {
-          shell: true,
-          signal: controller.signal,
-          env: {
-            ...process.env,
-            PYTHONUTF8: '1',
-            PYTHONIOENCODING: 'utf-8'
-          }
-        });
-        console.log('Proceso Python iniciado:', pythonProcess.pid);
-        // 4. Manejo de streams
+        const pythonProcess = spawn(
+          pythonExecutable,
+          [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`],
+          {
+            shell: true,
+            signal: controller.signal,
+            env: {
+              ...process.env,
+              PYTHONUTF8: '1',
+              PYTHONIOENCODING: 'utf-8',
+            },
+          },
+        );
+        this.logger.log(`Proceso Python iniciado: ${pythonProcess.pid}`);
         let output = '';
         let errorOutput = '';
 
-        pythonProcess.stdout.on('data', (data) => output += data.toString());
-        pythonProcess.stderr.on('data', (data) => errorOutput += data.toString());
-        console.log('Capturando salida del proceso...');
-        // 5. Esperar resultado con promesa
+        pythonProcess.stdout.on('data', (data) => (output += data.toString()));
+        pythonProcess.stderr.on(
+          'data',
+          (data) => (errorOutput += data.toString()),
+        );
+        this.logger.log('Capturando salida del proceso...');
         const exitCode = await new Promise<number>((resolve, reject) => {
           pythonProcess.on('close', (code) => {
             clearTimeout(timeoutHandle);
@@ -217,12 +217,11 @@ ${productosComoTexto}
             reject(err);
           });
         });
-        console.log('Proceso Python finalizado con código:', exitCode);
-        // 6. Validación de respuesta
+        this.logger.log(`Proceso Python finalizado con código: ${exitCode}`);
         if (exitCode !== 0) {
           throw new HttpException(
             `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
-            HttpStatus.INTERNAL_SERVER_ERROR
+            HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
 
@@ -230,48 +229,42 @@ ${productosComoTexto}
         if (!result?.response) {
           throw new Error('Formato de respuesta inválido');
         }
-        console.log('Respuesta del modelo:', result.response);
-        // 7. Respuesta estructurada
-        // Guardar en la base de datos
+        this.logger.log(`Respuesta del modelo: ${result.response}`);
         const resp = result.response;
-        await this.prisma.pregunta.create({
-          data: {
-            texto: pregunta,
-            respuesta: resp,
-          },
-        });
+        await this.preguntasRepository.create(pregunta, resp);
 
         return resp;
       } catch (error) {
-        console.error(`Intento ${attempts} fallido:`, error);
+        this.logger.error(`Intento ${attempts} fallido: ${error.message}`);
+        lastError = error;
       }
     }
-    throw new Error(`Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`);
+    throw new Error(
+      `Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`,
+    );
   }
 
-  async obtenerPreguntas(): Promise<any[]> {
-    return this.prisma.pregunta.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+  async obtenerPreguntas(): Promise<PreguntaRecord[]> {
+    return this.preguntasRepository.findAll();
   }
 
-  create(createAichatDto: CreateAichatDto) {
+  create(): string {
     return 'This action adds a new aichat';
   }
 
-  findAll() {
+  findAll(): string {
     return 'This action returns all aichat';
   }
 
-  findOne(id: number) {
+  findOne(id: number): string {
     return `This action returns a #${id} aichat`;
   }
 
-  update(id: number, updateAichatDto: UpdateAichatDto) {
+  update(id: number, _updateAichatDto: UpdateAichatDto): string {
     return `This action updates a #${id} aichat`;
   }
 
-  remove(id: number) {
+  remove(id: number): string {
     return `This action removes a #${id} aichat`;
   }
 }

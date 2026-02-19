@@ -1,13 +1,22 @@
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AichatService } from './aichat.service';
 import { AichatController } from './aichat.controller';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { ModelService } from './models/ollamaModel';
+import { OllamaModelService } from './models/ollamaModel';
+import { PreguntasRepository } from './repositories/preguntas.repository';
+import { ProductsRepository } from '../products/repositories/products.repository';
+import { PrismaModule } from '../prisma/prisma.module';
 import { ConverterService } from './utils/converter.service';
 
-//@Global()
 @Module({
+  imports: [PrismaModule],
   controllers: [AichatController],
-  providers: [AichatService, PrismaService, ModelService, ConverterService],
+  providers: [
+    AichatService,
+    OllamaModelService,
+    PreguntasRepository,
+    ProductsRepository,
+    ConverterService,
+  ],
+  exports: [AichatService],
 })
-export class AichatModule { }
+export class AichatModule {}

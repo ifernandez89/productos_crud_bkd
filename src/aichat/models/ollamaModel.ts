@@ -1,39 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ChatOllama } from '@langchain/ollama';
+import {
+  IModelService,
+  AIMessageResponse,
+} from '../interfaces/model.interface';
 
 @Injectable()
-export class ModelService {
-    public model: ChatOllama | null = null;;
+export class OllamaModelService implements IModelService {
+  private readonly logger = new Logger(OllamaModelService.name);
+  private model: ChatOllama | null = null;
 
-    constructor() { }
-    /* 
-ollama pull qwen2.5-coder:14b
-Entrenado específicamente para código
-Muy fuerte en:
-TypeScript / JS
-Python
-Backend (NestJS, APIs)
-Refactors
-Explicaciones técnicas
-Corre muy bien con 32 GB RAM
-Es el mejor balance calidad tipo Opus / rendimiento local hoy.
-    */
-    public async create() {
-        this.model = new ChatOllama({//para 2 min
-            model: "tinyllama:1.1b",//gemma:2b phi llama3.2:1b(great for summarization) openchat:7b(comparaciones?)-phi3:mini(LENTO)-chatbot minimo qwen2.5:3b-instruct(eficiente?/no se testeo)-tinyllama:1.1b(ultra liviano)
-            temperature: 0.3,   // creatividad balanceada para naturalidad sin divagar
-            topP: 0.9,         // limita un poco la aleatoriedad para coherencia
-            topK: 20,           // suficiente para diversidad pero sin dispersarse
-            numPredict: 512,    // para respuestas medianas a largas
-            repeatPenalty: 1.1, // penaliza repeticiones y mejora fluidez
-            stop: [],     //["\n\n"] para cortar respuestas completas
-        });
+  async getModel(): Promise<ChatOllama> {
+    if (!this.model) {
+      await this.create();
     }
+    return this.model;
+  }
 
-    async getModel() {
-        if (!this.model) {
-            await this.create();
-        }
-        return this.model;
-    }
+  async invoke(prompt: string): Promise<AIMessageResponse> {
+    const model = await this.getModel();
+    const response = await model.invoke(prompt);
+    return {
+      content: response.content as string | AIMessageResponse['content'],
+    };
+  }
+
+  private async create(): Promise<void> {
+    this.model = new ChatOllama({
+      model: 'qwen2.5:3b-instruct',
+      temperature: 0.3,
+      topP: 0.9,
+      topK: 20,
+      numPredict: 512,
+      repeatPenalty: 1.1,
+      stop: [],
+    });
+    this.logger.log('Ollama model initialized');
+  }
 }

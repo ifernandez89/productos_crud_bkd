@@ -19,6 +19,6 @@
     "noFallthroughCasesInSwitch": false,
     "typeRoots": ["./node_modules/@types", "./global.d.ts"]
   },
-  "include": ["src/**/*", "global.d.ts"],
+  "include": ["src/**/*", "test/**/*", "global.d.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,32 +1,47 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { AichatService } from './aichat.service';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
+import { CreateAichatDto } from './dto/create-aichat.dto';
 import { ConverterService } from './utils/converter.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { create } from 'domain';
-import { CreateAichatDto } from './dto/create-aichat.dto';
 
 @ApiTags('aichat')
 @Controller('aichat')
 export class AichatController {
-  constructor(private readonly aichatService: AichatService, private readonly converter: ConverterService) {
-  }
+  constructor(
+    private readonly aichatService: AichatService,
+    private readonly converter: ConverterService,
+  ) {}
 
   @Post('preguntar')
-  @ApiOperation({ summary: 'Ask a question to the AI', description: `` })
+  @ApiOperation({ summary: 'Ask a question to the AI' })
   async preguntar(@Body() createAichatDto: CreateAichatDto) {
     try {
       if (!createAichatDto.pregunta?.trim()) {
-        throw new HttpException('La pregunta es requerida', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'La pregunta es requerida',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-      createAichatDto.agente = false; //deshabilitado por ahora(open router necesita creditos)
-      //const respuesta = await this.aichatService.preguntarHRM(pregunta);
-      const respuesta = await this.aichatService.preguntarOllamaOexternal(createAichatDto);
+      createAichatDto.agente = false;
+      const respuesta =
+        await this.aichatService.preguntarOllamaOexternal(createAichatDto);
       return { respuesta };
     } catch (error) {
       throw new HttpException(
         error.response || error.message || 'Error al procesar la solicitud',
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -42,17 +57,20 @@ export class AichatController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.aichatService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.aichatService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAichatDto: UpdateAichatDto) {
-    return this.aichatService.update(+id, updateAichatDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAichatDto: UpdateAichatDto,
+  ) {
+    return this.aichatService.update(id, updateAichatDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.aichatService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.aichatService.remove(id);
   }
 }
