@@ -3,6 +3,7 @@ import { AichatService } from './aichat.service';
 import { PreguntasRepository } from './repositories/preguntas.repository';
 import { ProductsRepository } from '../products/repositories/products.repository';
 import { OllamaModelService } from './models/ollamaModel';
+import { AssistantToolsService } from './utils/assistant-tools.service';
 import { Product, Pregunta } from '@prisma/client';
 
 describe('AichatService', () => {
@@ -54,6 +55,10 @@ describe('AichatService', () => {
     invoke: jest.fn(),
   };
 
+  const mockAssistantTools = {
+    resolve: jest.fn().mockResolvedValue(null),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -69,6 +74,10 @@ describe('AichatService', () => {
         {
           provide: OllamaModelService,
           useValue: mockOllamaModel,
+        },
+        {
+          provide: AssistantToolsService,
+          useValue: mockAssistantTools,
         },
       ],
     }).compile();

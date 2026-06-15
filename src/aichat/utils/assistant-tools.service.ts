@@ -316,30 +316,42 @@ export class AssistantToolsService {
 
   // ── PAÍSES (REST Countries) ──────────────────────────────────────────────────
 
-  private async getCountryAnswer(query: string): Promise<string> {
+  private async getCountryAnswer(query: string): Promise<string | null> {
     const country = this.extractCountry(query);
     if (!country) throw new HttpException('Necesito el nombre de un país.', HttpStatus.BAD_REQUEST);
 
-    const response = await axios.get<CountryRecord[]>(
-      `https://restcountries.com/v3.1/name/${encodeURIComponent(country)}`,
-    );
-    const info = response.data?.[0];
-    if (!info) throw new HttpException(`No pude encontrar datos para ${country}.`, HttpStatus.NOT_FOUND);
+    try {
+      const response = await axios.get<CountryRecord[]>(
+        `https://restcountries.com/v3.1/name/${encodeURIComponent(country)}`,
+      );
+      const info = response.data?.[0];
+      if (!info) {
+        this.logger.log(`[tool:country → ollama] sin datos para "${country}"`);
+        return null;
+      }
 
-    const capital    = info.capital?.[0] || 'No disponible';
-    const population = info.population ? info.population.toLocaleString('es-AR') : 'No disponible';
-    const currencies = info.currencies
-      ? Object.values(info.currencies).map((c) => `${c.name} (${c.symbol})`).join(', ')
-      : 'No disponible';
-    const languages = info.languages ? Object.values(info.languages).join(', ') : 'No disponible';
+      const capital    = info.capital?.[0] || 'No disponible';
+      const population = info.population ? info.population.toLocaleString('es-AR') : 'No disponible';
+      const currencies = info.currencies
+        ? Object.values(info.currencies).map((c) => `${c.name} (${c.symbol})`).join(', ')
+        : 'No disponible';
+      const languages = info.languages ? Object.values(info.languages).join(', ') : 'No disponible';
 
-    return [
-      `País: ${info.name?.common || country}`,
-      `Capital: ${capital}`,
-      `Población: ${population}`,
-      `Monedas: ${currencies}`,
-      `Idiomas: ${languages}`,
-    ].join('\n');
+      return [
+        `País: ${info.name?.common || country}`,
+        `Capital: ${capital}`,
+        `Población: ${population}`,
+        `Monedas: ${currencies}`,
+        `Idiomas: ${languages}`,
+      ].join('\n');
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === HttpStatus.NOT_FOUND) {
+        this.logger.log(`[tool:country → ollama] sin coincidencia para "${country}"`);
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   // ── ASTRONOMÍA (astronomy-engine — sin clave, cálculo local) ────────────────
@@ -383,10 +395,10 @@ export class AssistantToolsService {
 
   private getMoonPhaseAnswer(now: Date, adate: Astronomy.AstroTime): string {
     const illumination = Astronomy.Illumination(Astronomy.Body.Moon, adate);
-    const phaseAngle   = illumination.phase_angle;
+    const moonPhaseDegrees = Astronomy.MoonPhase(adate); // 0-360: 0=New, 90=1stQ, 180=Full, 270=3rdQ
     const phaseFraction = illumination.phase_fraction;
 
-    const phaseLabel = this.describeMoonPhase(phaseAngle);
+    const phaseLabel = this.describeMoonPhase(moonPhaseDegrees);
 
     // Próximas fases
     const nextNewMoon  = Astronomy.SearchMoonPhase(0,  adate, 30);
@@ -400,7 +412,7 @@ export class AssistantToolsService {
     return [
       `Fase lunar actual: ${phaseLabel}`,
       `Iluminación: ${(phaseFraction * 100).toFixed(1)}%`,
-      `Ángulo de fase: ${phaseAngle.toFixed(1)}°`,
+      `Ángulo de fase: ${moonPhaseDegrees.toFixed(1)}°`,
       ``,
       `Próximas fases:`,
       `🌑 Luna nueva:        ${fmt(nextNewMoon)}`,
