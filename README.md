@@ -22,9 +22,25 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## Overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This backend combines product catalog management, AI-assisted question handling, image upload conversion, and PostgreSQL persistence through Prisma. The main business value is to let clients manage products and ask the system questions using the live catalog as context.
+
+### What it does
+
+- Manages products with commercial fields such as brand, stock, featured, sale, and new flags.
+- Answers questions through local Ollama using `llama3.2:3b` or remote OpenRouter execution.
+- Stores question and answer history for audit and traceability.
+- Accepts image uploads and converts them to base64 strings.
+- Exposes Swagger documentation for the public API.
+
+## System Documentation
+
+For a detailed explanation of what this system is, how it is designed, what it supports, and which parts are experimental, read [docs/arquitectura-sistema.md](docs/arquitectura-sistema.md).
+
+## Changelog
+
+Project changes are tracked in [CHANGELOG.md](CHANGELOG.md). Add every user-facing change under `Unreleased`, then move it into a versioned section when you cut a release.
 
 ## Project setup
 

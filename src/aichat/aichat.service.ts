@@ -32,6 +32,11 @@ export class AichatService {
 
   async promptAgente(texto: string): Promise<string> {
     const products = await this.productsRepository.findAll();
+    const preguntasRelevantes = await this.preguntasRepository.findRelevant(
+      texto,
+      5,
+    );
+
     const productosFormateados = products.map((product) => ({
       id: product.id,
       nombre: product.name,
@@ -57,20 +62,31 @@ export class AichatService {
       )
       .join('\n');
 
+    const preguntasComoTexto = preguntasRelevantes
+      .map(
+        (pregunta) =>
+          `Pregunta: ${pregunta.texto}\nRespuesta: ${pregunta.respuesta}`,
+      )
+      .join('\n\n');
+
     return `
 **Pregunta del cliente:** ${texto}
+
+**Preguntas previas relevantes (recuperadas del historial):**
+${preguntasComoTexto || 'No hay preguntas previas relevantes.'}
 
 **Productos disponibles (para referencia y análisis):**
 ${productosComoTexto}
 
 **Instrucciones para el modelo:**
 1. Responde la pregunta del cliente de manera clara y precisa.
-2. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
+2. Si las preguntas previas aportan contexto útil, úsalas como referencia, pero no inventes datos que no estén respaldados por el historial.
+3. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
    - Recomendar opciones basadas en sus necesidades (ej: en oferta, mejor marca, precio, etc.).
    - Comparar productos si es necesario.
    - Mencionar promociones o características destacadas.
-3. Si no hay suficiente información en la lista, indícalo y sugiere al cliente que consulte por más detalles.
-4. Sé conciso y profesional.
+4. Si no hay suficiente información en el historial o en la lista, indícalo y sugiere al cliente que consulte por más detalles.
+5. Sé conciso y profesional.
 `;
   }
 
