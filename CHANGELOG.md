@@ -20,6 +20,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The documentation now explains supported intents, routing behavior, persistence rules, and known limitations.
 - The request payload now controls the AI route correctly again: `agente=true` uses OpenRouter and `agente=false` or omitted uses Ollama.
 - Weather queries now default to `Paraná, Entre Rios, Argentina` when the user does not provide a city.
+- Placeholder greeting responses like `HOLA` are no longer persisted as successful AI answers.
+- The AI prompt now explicitly rejects greeting-only outputs so Ollama/OpenRouter must return a substantive answer before it is saved.
 
 ### Fixed
 - Record bug fixes that affect API behavior, validation, or deployment.

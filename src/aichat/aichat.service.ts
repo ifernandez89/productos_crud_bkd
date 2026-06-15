@@ -92,6 +92,7 @@ ${productosComoTexto}
    - Mencionar promociones o características destacadas.
 4. Si no hay suficiente información en el historial o en la lista, indícalo y sugiere al cliente que consulte por más detalles.
 5. Sé conciso y profesional.
+6. No respondas solo con saludos, una sola palabra o frases vacías como "HOLA" o "Sin respuesta"; devuelve una respuesta útil y específica.
 `;
   }
 
@@ -109,12 +110,9 @@ ${productosComoTexto}
       try {
         const toolAnswer = await this.assistantTools.resolve(texto);
         if (toolAnswer) {
-          await this.preguntasRepository.create({
-            texto,
-            respuesta: toolAnswer,
-            estado: 'success',
-          });
-          return toolAnswer;
+          const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
+          await this.persistSuccessfulQuestion(texto, finalToolAnswer);
+          return finalToolAnswer;
         }
 
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -138,12 +136,9 @@ ${productosComoTexto}
           taskPromise,
           timeoutPromise,
         ])) as string;
-        await this.preguntasRepository.create({
-          texto,
-          respuesta,
-          estado: 'success',
-        });
-        return respuesta;
+        const finalAnswer = this.validateAnswerContent(respuesta, texto);
+        await this.persistSuccessfulQuestion(texto, finalAnswer);
+        return finalAnswer;
       } catch (error) {
         this.logger.error(`Intento ${attempts} fallido: ${this.getErrorMessage(error)}`);
         await this.persistFailedQuestion(texto, error);
@@ -348,12 +343,8 @@ ${productosComoTexto}
           throw new Error('Formato de respuesta inválido');
         }
         this.logger.log(`Respuesta del modelo: ${result.response}`);
-        const resp = result.response;
-        await this.preguntasRepository.create({
-          texto: pregunta,
-          respuesta: resp,
-          estado: 'success',
-        });
+        const resp = this.validateAnswerContent(result.response, pregunta);
+        await this.persistSuccessfulQuestion(pregunta, resp);
 
         return resp;
       } catch (error) {
@@ -389,5 +380,54 @@ ${productosComoTexto}
 
   remove(id: number): string {
     return `This action removes a #${id} aichat`;
+  }
+
+  private async persistSuccessfulQuestion(
+    texto: string,
+    respuesta: string,
+  ): Promise<void> {
+    await this.preguntasRepository.create({
+      texto,
+      respuesta,
+      estado: 'success',
+    });
+  }
+
+  private validateAnswerContent(answer: string, question: string): string {
+    const normalizedAnswer = answer.trim();
+
+    if (!normalizedAnswer) {
+      throw new Error('La IA devolvió una respuesta vacía');
+    }
+
+    if (
+      this.isPlaceholderAnswer(normalizedAnswer) &&
+      !this.isGreetingQuestion(question)
+    ) {
+      throw new Error('La IA devolvió una respuesta placeholder no válida');
+    }
+
+    return normalizedAnswer;
+  }
+
+  private isPlaceholderAnswer(answer: string): boolean {
+    const normalized = answer.toLowerCase();
+    return (
+      /^hola[!\s.]*$/.test(normalized) ||
+      /^sin respuesta[!\s.]*$/.test(normalized) ||
+      /^no response[!\s.]*$/.test(normalized) ||
+      /^hello[!\s.]*$/.test(normalized)
+    );
+  }
+
+  private isGreetingQuestion(question: string): boolean {
+    const normalized = question
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    return /(\bhola\b|\bbuenas\b|\bbuen dia\b|\bbuenos dias\b|\bbuenas tardes\b|\bbuenas noches\b)/i.test(
+      normalized,
+    );
   }
 }
