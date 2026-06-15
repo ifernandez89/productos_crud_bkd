@@ -47,6 +47,7 @@ type CountryRecord = {
 @Injectable()
 export class AssistantToolsService {
   private readonly logger = new Logger(AssistantToolsService.name);
+  private readonly defaultWeatherLocation = 'Paraná, Entre Rios, Argentina';
 
   async resolve(query: string): Promise<string | null> {
     const normalized = this.normalize(query);
@@ -179,14 +180,7 @@ export class AssistantToolsService {
   }
 
   private async getWeatherAnswer(query: string): Promise<string> {
-    const location = this.extractLocation(query);
-
-    if (!location) {
-      throw new HttpException(
-        'Necesito una ciudad o localidad para consultar el clima.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
 
     const geocoded = await this.geocodeLocation(location);
     const weather = await this.fetchCurrentWeather(geocoded.lat, geocoded.lon);

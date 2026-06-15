@@ -110,6 +110,7 @@ Si el texto no coincide con una de esas intenciones, el sistema cae al flujo de 
 - Una consulta climática se resuelve con geocoding + clima y no pasa por Ollama.
 - Una consulta de feriado consulta el calendario oficial argentino del año correspondiente.
 - Una consulta de país devuelve capital, moneda, idiomas y población.
+- Cuando una consulta de clima no incluye ciudad, el sistema usa por defecto `Paraná, Entre Rios, Argentina`.
 
 La estructura interna separa responsabilidades así:
 

@@ -19,6 +19,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - The chatbot can now answer weather, time, holiday, and country-data questions through external tools before falling back to Ollama or OpenRouter.
 - The documentation now explains supported intents, routing behavior, persistence rules, and known limitations.
 - The request payload now controls the AI route correctly again: `agente=true` uses OpenRouter and `agente=false` or omitted uses Ollama.
+- Weather queries now default to `Paraná, Entre Rios, Argentina` when the user does not provide a city.
 
 ### Fixed
 - Record bug fixes that affect API behavior, validation, or deployment.
