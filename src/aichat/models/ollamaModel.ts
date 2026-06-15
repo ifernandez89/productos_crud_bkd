@@ -29,11 +29,12 @@ export class OllamaModelService implements IModelService {
     this.model = new ChatOllama({
       model: 'llama3.2:3b',       //llama3.2:3b rapido para chat; qwen3.5:4b excedido de tiempo "Programacion"
       temperature: 0.3,
-      topP: 0.9,
-      topK: 20,
-      numPredict: 512,
+      topP: 0.85,
+      topK: 15,
+      numPredict: 256,            // reducido de 512: respuestas más cortas y rápidas
       repeatPenalty: 1.1,
-      stop: [],
+      numCtx: 2048,               // limitar contexto para acelerar inferencia
+      stop: ['\n\n\n'],
     });
     this.logger.log('Ollama model initialized');
   }

@@ -36,64 +36,41 @@ export class AichatService {
   ) {}
 
   async promptAgente(texto: string): Promise<string> {
-    const products = await this.productsRepository.findAll();
-    const preguntasRelevantes = await this.preguntasRepository.findRelevant(
-      texto,
-      5,
-    );
+    const [products, preguntasRelevantes] = await Promise.all([
+      this.productsRepository.findAll(),
+      this.preguntasRepository.findRelevant(texto, 3),
+    ]);
 
-    const productosFormateados = products.map((product) => ({
-      id: product.id,
-      nombre: product.name,
-      descripcion: product.description,
-      precio: product.price,
-      stock: product.stock,
-      nuevo: product.isNew,
-      descuento: product.isOnSale,
-      destacado: product.isFeatured,
-      marca: product.marca,
-    }));
+    const textoNorm = texto.toLowerCase();
+    const esPreguntaProductos = /(producto|precio|stock|oferta|marca|comprar|recomendar|disponible|barato|caro|nuevo|descuento)/i.test(textoNorm);
 
-    const productosComoTexto = productosFormateados
-      .map(
-        (p) =>
-          `ID: ${p.id}, Nombre: ${p.nombre}, Marca: ${p.marca}, ` +
-          `Descripcion: ${p.descripcion} ` +
-          `Stock: ${p.stock} ` +
-          `Oferta: ${p.descuento} ` +
-          `Destacado: ${p.destacado} ` +
-          `Nuevo: ${p.nuevo} ` +
-          `Precio: $${p.precio}`,
-      )
+    // Solo incluir productos si la pregunta es sobre productos
+    const productosComoTexto = esPreguntaProductos
+      ? products
+          .slice(0, 15)
+          .map(
+            (p) =>
+              `${p.name} (${p.marca}) $${p.price} stock:${p.stock}` +
+              (p.isOnSale ? ' OFERTA' : '') +
+              (p.isNew ? ' NUEVO' : '') +
+              (p.isFeatured ? ' DEST' : ''),
+          )
+          .join('\n')
+      : '';
+
+    const historialTexto = preguntasRelevantes
+      .map((p) => `Q: ${p.texto}\nA: ${p.respuesta.slice(0, 200)}`)
       .join('\n');
 
-    const preguntasComoTexto = preguntasRelevantes
-      .map(
-        (pregunta) =>
-          `Pregunta: ${pregunta.texto}\nRespuesta: ${pregunta.respuesta}`,
-      )
-      .join('\n\n');
+    const contextoProductos = productosComoTexto
+      ? `\nProductos:\n${productosComoTexto}`
+      : '';
 
-    return `
-**Pregunta del cliente:** ${texto}
+    const contextoHistorial = historialTexto
+      ? `\nHistorial relevante:\n${historialTexto}`
+      : '';
 
-**Preguntas previas relevantes (recuperadas del historial):**
-${preguntasComoTexto || 'No hay preguntas previas relevantes.'}
-
-**Productos disponibles (para referencia y análisis):**
-${productosComoTexto}
-
-**Instrucciones para el modelo:**
-1. Responde la pregunta del cliente de manera clara y precisa.
-2. Si las preguntas previas aportan contexto útil, úsalas como referencia, pero no inventes datos que no estén respaldados por el historial.
-3. Si la pregunta está relacionada con productos, usa la lista de productos disponible para:
-   - Recomendar opciones basadas en sus necesidades (ej: en oferta, mejor marca, precio, etc.).
-   - Comparar productos si es necesario.
-   - Mencionar promociones o características destacadas.
-4. Si no hay suficiente información en el historial o en la lista, indícalo y sugiere al cliente que consulte por más detalles.
-5. Sé conciso y profesional.
-6. No respondas solo con saludos, una sola palabra o frases vacías como "HOLA" o "Sin respuesta"; devuelve una respuesta útil y específica.
-`;
+    return `Eres un asistente de ventas. Responde en español, de forma concisa y directa.${contextoHistorial}${contextoProductos}\n\nPregunta: ${texto}`;
   }
 
   async preguntarOllamaOexternal(
