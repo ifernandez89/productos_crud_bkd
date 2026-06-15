@@ -27,7 +27,7 @@ export class OllamaModelService implements IModelService {
 
   private async create(): Promise<void> {
     this.model = new ChatOllama({
-      model: 'llama3.2:3b',
+      model: 'qwen3.5:4b',       //llama3.2:3b rapido para chat; qwen3.5:4b mas pesado "Programacion"
       temperature: 0.3,
       topP: 0.9,
       topK: 20,

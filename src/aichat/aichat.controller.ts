@@ -34,7 +34,6 @@ export class AichatController {
           HttpStatus.BAD_REQUEST,
         );
       }
-      createAichatDto.agente = false;
       const respuesta =
         await this.aichatService.preguntarOllamaOexternal(createAichatDto);
       return { respuesta };

@@ -4,6 +4,7 @@ import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { PreguntasRepository } from './repositories/preguntas.repository';
 import { ProductsRepository } from '../products/repositories/products.repository';
 import { OllamaModelService } from './models/ollamaModel';
+import { AssistantToolsService } from './utils/assistant-tools.service';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
@@ -17,6 +18,9 @@ export interface PreguntaRecord {
   id: number;
   texto: string;
   respuesta: string;
+  estado: string;
+  errorMessage: string | null;
+  errorStatus: number | null;
   createdAt: Date;
 }
 
@@ -28,6 +32,7 @@ export class AichatService {
     private readonly preguntasRepository: PreguntasRepository,
     private readonly productsRepository: ProductsRepository,
     private readonly ollamaModel: OllamaModelService,
+    private readonly assistantTools: AssistantToolsService,
   ) {}
 
   async promptAgente(texto: string): Promise<string> {
@@ -102,6 +107,16 @@ ${productosComoTexto}
     while (attempts < maxAttempts) {
       attempts++;
       try {
+        const toolAnswer = await this.assistantTools.resolve(texto);
+        if (toolAnswer) {
+          await this.preguntasRepository.create({
+            texto,
+            respuesta: toolAnswer,
+            estado: 'success',
+          });
+          return toolAnswer;
+        }
+
         const timeoutPromise = new Promise<never>((_, reject) => {
           setTimeout(() => {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
@@ -123,19 +138,106 @@ ${productosComoTexto}
           taskPromise,
           timeoutPromise,
         ])) as string;
-        await this.preguntasRepository.create(texto, respuesta);
+        await this.preguntasRepository.create({
+          texto,
+          respuesta,
+          estado: 'success',
+        });
         return respuesta;
       } catch (error) {
-        this.logger.error(`Intento ${attempts} fallido: ${error.message}`);
+        this.logger.error(`Intento ${attempts} fallido: ${this.getErrorMessage(error)}`);
+        await this.persistFailedQuestion(texto, error);
         throw new HttpException(
-          error.response || error.message || 'Error al procesar la solicitud',
-          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+          this.getErrorMessage(error),
+          this.getErrorStatus(error),
         );
       }
     }
     throw new Error(
       `Error al procesar la pregunta después de ${maxAttempts} intentos`,
     );
+  }
+
+  private async persistFailedQuestion(
+    texto: string,
+    error: unknown,
+  ): Promise<void> {
+    try {
+      await this.preguntasRepository.create({
+        texto,
+        respuesta: '',
+        estado: 'error',
+        errorMessage: this.getErrorMessage(error),
+        errorStatus: this.getErrorStatus(error),
+      });
+    } catch (persistError) {
+      this.logger.error(
+        `No se pudo guardar el error de la pregunta: ${this.getErrorMessage(persistError)}`,
+      );
+    }
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof HttpException) {
+      const response = error.getResponse();
+      if (typeof response === 'string') {
+        return response;
+      }
+      if (response && typeof response === 'object') {
+        const responseObject = response as Record<string, unknown>;
+        const message = responseObject.message;
+        if (typeof message === 'string') {
+          return message;
+        }
+        if (Array.isArray(message)) {
+          return message.join(', ');
+        }
+      }
+      return error.message;
+    }
+
+    if (axios.isAxiosError(error)) {
+      const responseData = error.response?.data;
+      if (typeof responseData === 'string') {
+        return responseData;
+      }
+      if (responseData && typeof responseData === 'object') {
+        const responseObject = responseData as Record<string, unknown>;
+        const message = responseObject.message;
+        if (typeof message === 'string') {
+          return message;
+        }
+        if (Array.isArray(message)) {
+          return message.join(', ');
+        }
+      }
+      return error.message;
+    }
+
+    if (error instanceof Error) {
+      return error.message;
+    }
+
+    return 'Error desconocido al procesar la pregunta';
+  }
+
+  private getErrorStatus(error: unknown): number {
+    if (error instanceof HttpException) {
+      return error.getStatus();
+    }
+
+    if (axios.isAxiosError(error)) {
+      return error.response?.status ?? HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+
+    if (error && typeof error === 'object' && 'status' in error) {
+      const status = (error as { status?: unknown }).status;
+      if (typeof status === 'number') {
+        return status;
+      }
+    }
+
+    return HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   private async callExternalAI(prompt: string): Promise<string> {
@@ -247,7 +349,11 @@ ${productosComoTexto}
         }
         this.logger.log(`Respuesta del modelo: ${result.response}`);
         const resp = result.response;
-        await this.preguntasRepository.create(pregunta, resp);
+        await this.preguntasRepository.create({
+          texto: pregunta,
+          respuesta: resp,
+          estado: 'success',
+        });
 
         return resp;
       } catch (error) {
@@ -255,6 +361,7 @@ ${productosComoTexto}
         lastError = error;
       }
     }
+    await this.persistFailedQuestion(pregunta, lastError);
     throw new Error(
       `Error al procesar la pregunta después de ${maxAttempts} intentos: ${lastError?.message}`,
     );

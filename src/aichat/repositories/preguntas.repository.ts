@@ -2,8 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Pregunta } from '@prisma/client';
 
+export interface CreatePreguntaData {
+  texto: string;
+  respuesta?: string;
+  estado?: string;
+  errorMessage?: string | null;
+  errorStatus?: number | null;
+}
+
 export interface IPreguntasRepository {
-  create(texto: string, respuesta: string): Promise<Pregunta>;
+  create(data: CreatePreguntaData): Promise<Pregunta>;
   findAll(): Promise<Pregunta[]>;
   findRelevant(texto: string, limit?: number): Promise<Pregunta[]>;
 }
@@ -12,9 +20,15 @@ export interface IPreguntasRepository {
 export class PreguntasRepository implements IPreguntasRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(texto: string, respuesta: string): Promise<Pregunta> {
+  async create(data: CreatePreguntaData): Promise<Pregunta> {
     return this.prisma.pregunta.create({
-      data: { texto, respuesta },
+      data: {
+        texto: data.texto,
+        respuesta: data.respuesta ?? '',
+        estado: data.estado ?? 'success',
+        errorMessage: data.errorMessage ?? null,
+        errorStatus: data.errorStatus ?? null,
+      },
     });
   }
 

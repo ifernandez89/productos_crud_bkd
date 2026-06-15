@@ -23,8 +23,11 @@ model Product {
 }
 
 model Pregunta {
-  id        Int      @id @default(autoincrement())
-  texto     String
-  respuesta String
-  createdAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  texto        String
+  respuesta    String
+  estado       String   @default("success")
+  errorMessage String?
+  errorStatus  Int?
+  createdAt    DateTime @default(now())
 }

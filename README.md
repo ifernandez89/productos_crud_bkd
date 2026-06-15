@@ -29,14 +29,46 @@ This backend combines product catalog management, AI-assisted question handling,
 ### What it does
 
 - Manages products with commercial fields such as brand, stock, featured, sale, and new flags.
-- Answers questions through local Ollama using `llama3.2:3b` or remote OpenRouter execution.
+- Answers questions through local Ollama using `qwen3.5:4b` or remote OpenRouter execution.
 - Stores question and answer history for audit and traceability.
 - Accepts image uploads and converts them to base64 strings.
 - Exposes Swagger documentation for the public API.
 
+### Supported question types
+
+- Product questions: recommendations, comparisons, sale flags, stock, and brand-based suggestions.
+- Conversational memory: follow-up questions that benefit from previously stored Q&A.
+- Weather: city-level current conditions through Open-Meteo + Nominatim.
+- Holidays: Argentine public holidays through Nager.Date.
+- Time: current time and timezone lookups through WorldTimeAPI.
+- Country facts: capital, currency, population, and languages through REST Countries.
+
+### AI routing
+
+- Omit `agente` or set it to `false` to use local Ollama.
+- Set `agente` to `true` to use the remote OpenRouter path.
+- Tool-based answers always run before the model fallback when the question matches a supported intent.
+
+### How the bot answers
+
+1. It first checks whether the question can be answered directly with a utility tool.
+2. If not, it enriches the prompt with relevant prior questions and the current product catalog.
+3. It then routes to local Ollama or OpenRouter depending on the selected flow.
+4. Successful answers and failures are both stored in PostgreSQL with status metadata.
+
 ## System Documentation
 
 For a detailed explanation of what this system is, how it is designed, what it supports, and which parts are experimental, read [docs/arquitectura-sistema.md](docs/arquitectura-sistema.md).
+
+## Quick Examples
+
+- "¿Cuántos grados hace en Paraná?"
+- "¿Es feriado mañana en Argentina?"
+- "¿Qué hora es en Buenos Aires?"
+- "¿Cuál es la capital de Uruguay?"
+- "Recomendame un producto barato y destacado"
+- `{"pregunta":"¿Cuál es la capital de Uruguay?"}`
+- `{"pregunta":"¿Recomendame una notebook?","agente":true}`
 
 ## Changelog
 

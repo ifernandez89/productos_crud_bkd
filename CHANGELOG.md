@@ -9,12 +9,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Added
 - Changelog tracking for user-facing changes.
 - Detailed architecture documentation in [docs/arquitectura-sistema.md](docs/arquitectura-sistema.md).
-- Explicit documentation of the local Ollama model used by the AI flow: `llama3.2:3b`.
+- Explicit documentation of the local Ollama model used by the AI flow: `qwen3.5:4b`.
 
 ### Changed
 - Keep the latest implementation notes here before each release.
 - The AI prompt now includes lightweight retrieval over previously stored questions and answers, in addition to product context.
 - The README now includes an executive overview, endpoint summary, and environment variable summary.
+- Failed AI interactions are now persisted with `estado`, `errorMessage`, and `errorStatus` so error cases are auditable.
+- The chatbot can now answer weather, time, holiday, and country-data questions through external tools before falling back to Ollama or OpenRouter.
+- The documentation now explains supported intents, routing behavior, persistence rules, and known limitations.
+- The request payload now controls the AI route correctly again: `agente=true` uses OpenRouter and `agente=false` or omitted uses Ollama.
 
 ### Fixed
 - Record bug fixes that affect API behavior, validation, or deployment.

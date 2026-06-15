@@ -78,9 +78,38 @@ El módulo `aichat` maneja tres capacidades distintas:
 - almacenamiento del historial de respuestas,
 - ejecución de motores de IA local, remota y experimental.
 
-El modelo local de Ollama está fijado en `llama3.2:3b` dentro de `src/aichat/models/ollamaModel.ts`.
+El modelo local de Ollama está fijado en `qwen3.5:4b` dentro de `src/aichat/models/ollamaModel.ts`.
 
-La ruta principal de preguntas ahora realiza una recuperación ligera sobre el historial de preguntas y respuestas guardadas, además de usar el catálogo de productos como contexto. Esto no es un vector store completo, pero sí una forma práctica de RAG sobre el conocimiento ya persistido.
+La ruta principal de preguntas ahora realiza una recuperación ligera sobre el historial de preguntas y respuestas guardadas, además de usar el catálogo de productos como contexto. También puede resolver algunas consultas con herramientas externas de apoyo antes de caer al modelo. Esto no es un vector store completo, pero sí una forma práctica de RAG sobre el conocimiento ya persistido.
+
+#### Router de herramientas
+
+Antes de invocar Ollama o OpenRouter, el bot intenta resolver la consulta con un router simple de intención.
+
+El router actual cubre estas capacidades:
+
+| Tipo de consulta | Servicio usado | Ejemplo |
+| --- | --- | --- |
+| Clima | Nominatim + Open-Meteo | "¿Cuántos grados hace en Paraná?" |
+| Feriados | Nager.Date | "¿Es feriado mañana en Argentina?" |
+| Hora | WorldTimeAPI | "¿Qué hora es en Buenos Aires?" |
+| Países | REST Countries | "¿Cuál es la capital de Uruguay?" |
+
+Si el texto no coincide con una de esas intenciones, el sistema cae al flujo de IA con catálogo + historial.
+
+#### Reglas de persistencia
+
+- Las respuestas exitosas se guardan con `estado = success`.
+- Los errores se guardan con `estado = error`.
+- Los fallos incluyen `errorMessage` y `errorStatus` para auditoría.
+- Si falla el guardado del error, el bot no oculta el error original; solo registra el problema de persistencia en logs.
+
+#### Ejemplos de uso
+
+- Una pregunta sobre productos dispara contexto del catálogo y del historial.
+- Una consulta climática se resuelve con geocoding + clima y no pasa por Ollama.
+- Una consulta de feriado consulta el calendario oficial argentino del año correspondiente.
+- Una consulta de país devuelve capital, moneda, idiomas y población.
 
 La estructura interna separa responsabilidades así:
 
@@ -128,13 +157,17 @@ El sistema soporta dos caminos principales para responder preguntas:
 El cuerpo de entrada acepta:
 
 - `pregunta`, obligatoria.
-- `agente`, opcional, para seleccionar la ruta de ejecución.
+- `agente`, opcional, para seleccionar la ruta de ejecución. Si viene en `true`, se usa OpenRouter; si viene ausente o en `false`, se usa Ollama local.
 
 En ambos casos, el sistema construye un prompt enriquecido con el catálogo de productos para que la IA pueda recomendar, comparar o explicar artículos disponibles.
 
 Además, recupera preguntas previas relevantes desde la tabla `Pregunta` y las inyecta como contexto para aportar memoria conversacional.
 
-Además, guarda el intercambio en la tabla `Pregunta`.
+El historial guarda tanto respuestas exitosas como fallos. Cada registro puede llevar `estado`, `errorMessage` y `errorStatus` para auditar el resultado exacto de la interacción.
+
+Además, el bot puede responder directamente consultas de clima, hora, feriados y datos de países usando servicios externos gratuitos como Open-Meteo, Nominatim, Nager.Date, WorldTimeAPI y REST Countries.
+
+Una pregunta compleja con `agente = true` usa OpenRouter si no fue resuelta por una herramienta.
 
 ### HRM / Python
 
@@ -158,6 +191,14 @@ El endpoint de upload soporta:
 - validación de que exista archivo,
 - validación de que el MIME empiece por `image/`,
 - salida en base64 lista para transporte o almacenamiento temporal.
+
+## Limitaciones conocidas
+
+- El router de herramientas es por reglas y palabras clave, no por clasificación semántica avanzada.
+- El historial se usa como memoria ligera, no como índice vectorial.
+- El soporte de clima asume ciudades o localidades, idealmente argentinas.
+- La información de países depende de disponibilidad externa de REST Countries.
+- El modelo local de Ollama está fijado en `qwen3.5:4b` y el bot no alterna modelos dinámicamente todavía.
 
 ## Flujo de ejecución
 
