@@ -44,16 +44,59 @@ export class AssistantToolsService {
   async resolve(query: string): Promise<string | null> {
     const normalized = this.normalize(query);
 
-    if (this.isWeatherQuery(normalized))     return this.getWeatherAnswer(query);
-    if (this.isHolidayQuery(normalized))     return this.getHolidayAnswer(query);
-    if (this.isTimeQuery(normalized))        return this.getTimeAnswer(query);
-    if (this.isCountryQuery(normalized))     return this.getCountryAnswer(query);
-    if (this.isAstronomyQuery(normalized))   return this.getAstronomyAnswer(query, normalized);
-    if (this.isMayanCalendarQuery(normalized)) return this.getMayanCalendarAnswer(query);
-    if (this.isHebrewCalendarQuery(normalized)) return this.getHebrewCalendarAnswer(query);
-    if (this.isMathQuery(normalized))        return this.getMathAnswer(query, normalized);
+    // Si la pregunta mezcla dominios distintos, Ollama maneja mejor la respuesta completa
+    if (this.isMixedQuery(normalized)) {
+      this.logger.log(`[tool:mixed → ollama] "${query}"`);
+      return null;
+    }
 
+    if (this.isWeatherQuery(normalized)) {
+      this.logger.log(`[tool:weather] "${query}"`);
+      return this.getWeatherAnswer(query);
+    }
+    if (this.isHolidayQuery(normalized)) {
+      this.logger.log(`[tool:holiday] "${query}"`);
+      return this.getHolidayAnswer(query);
+    }
+    if (this.isTimeQuery(normalized)) {
+      this.logger.log(`[tool:time] "${query}"`);
+      return this.getTimeAnswer(query);
+    }
+    if (this.isCountryQuery(normalized)) {
+      this.logger.log(`[tool:country] "${query}"`);
+      return this.getCountryAnswer(query);
+    }
+    if (this.isAstronomyQuery(normalized)) {
+      this.logger.log(`[tool:astronomy] "${query}"`);
+      return this.getAstronomyAnswer(query, normalized);
+    }
+    if (this.isMayanCalendarQuery(normalized)) {
+      this.logger.log(`[tool:mayan] "${query}"`);
+      return this.getMayanCalendarAnswer(query);
+    }
+    if (this.isHebrewCalendarQuery(normalized)) {
+      this.logger.log(`[tool:hebrew] "${query}"`);
+      return this.getHebrewCalendarAnswer(query);
+    }
+    if (this.isMathQuery(normalized)) {
+      this.logger.log(`[tool:math] "${query}"`);
+      return this.getMathAnswer(query, normalized);
+    }
+
+    this.logger.log(`[tool:none → ollama] "${query}"`);
     return null;
+  }
+
+  // Detecta preguntas que combinan 2 o más dominios distintos → mejor dejarlas a Ollama
+  private isMixedQuery(n: string): boolean {
+    const domains = [
+      this.isWeatherQuery(n),
+      this.isAstronomyQuery(n),
+      this.isHolidayQuery(n),
+      this.isCountryQuery(n),
+      this.isMathQuery(n),
+    ];
+    return domains.filter(Boolean).length >= 2;
   }
 
   // ── Detectores de intención ─────────────────────────────────────────────────
@@ -75,7 +118,7 @@ export class AssistantToolsService {
   }
 
   private isAstronomyQuery(n: string): boolean {
-    return /(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante|eclipse|solsticio|equinoccio|planeta|mercurio|venus|marte|jupiter|saturno|urano|neptuno|amanecer|atardecer|alba|ocaso|astronomia|constelacion|elongacion|conjuncion)/i.test(n);
+    return /(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante|eclipse|solsticio|equinoccio|hemisferio|estacion del ano|primavera|verano|otono|invierno|planeta|mercurio|venus|marte|jupiter|saturno|urano|neptuno|amanecer|atardecer|alba|ocaso|astronomia|constelacion|elongacion|conjuncion)/i.test(n);
   }
 
   private isMayanCalendarQuery(n: string): boolean {

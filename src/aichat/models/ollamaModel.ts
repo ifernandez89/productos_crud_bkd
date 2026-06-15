@@ -31,7 +31,7 @@ export class OllamaModelService implements IModelService {
       temperature: 0.3,
       topP: 0.85,
       topK: 15,
-      numPredict: 256,            // reducido de 512: respuestas más cortas y rápidas
+      numPredict: 400,            // subido de 256: evita corte en respuestas de conocimiento general
       repeatPenalty: 1.1,
       numCtx: 2048,               // limitar contexto para acelerar inferencia
       stop: ['\n\n\n'],
