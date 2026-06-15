@@ -3,12 +3,19 @@ import { CreateAichatDto } from './dto/create-aichat.dto';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { PreguntasRepository } from './repositories/preguntas.repository';
 import { ProductsRepository } from '../products/repositories/products.repository';
-import { OllamaModelService } from './models/ollamaModel';
+import { OllamaModelService, StructuredPrompt } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import axios from 'axios';
+
+// ── Caché simple de productos para evitar DB roundtrip en cada mensaje ──────────
+interface ProductCache {
+  data: Awaited<ReturnType<ProductsRepository['findAll']>>;
+  expiresAt: number;
+}
+const PRODUCT_CACHE_TTL_MS = 30_000; // 30 segundos
 
 interface AIContentPart {
   text?: string;
@@ -35,42 +42,107 @@ export class AichatService {
     private readonly assistantTools: AssistantToolsService,
   ) {}
 
-  async promptAgente(texto: string): Promise<string> {
+  // ── Caché de productos ────────────────────────────────────────────────────────
+  private productCache: ProductCache | null = null;
+
+  private async getProducts() {
+    const now = Date.now();
+    if (this.productCache && now < this.productCache.expiresAt) {
+      return this.productCache.data;
+    }
+    const data = await this.productsRepository.findAll();
+    this.productCache = { data, expiresAt: now + PRODUCT_CACHE_TTL_MS };
+    return data;
+  }
+
+  /**
+   * Construye el prompt estructurado { system, user } para Ollama.
+   * - system: rol + reglas estrictas (no cambia por pregunta → token cacheado)
+   * - user:   contexto RAG + pregunta del usuario
+   */
+  async promptAgente(texto: string): Promise<StructuredPrompt> {
     const [products, preguntasRelevantes] = await Promise.all([
-      this.productsRepository.findAll(),
+      this.getProducts(),
       this.preguntasRepository.findRelevant(texto, 3),
     ]);
 
     const textoNorm = texto.toLowerCase();
-    const esPreguntaProductos = /(producto|precio|stock|oferta|marca|comprar|recomendar|disponible|barato|caro|nuevo|descuento)/i.test(textoNorm);
+    const esPreguntaProductos =
+      /(producto|precio|stock|oferta|marca|comprar|recomendar|disponible|barato|caro|nuevo|descuento)/i.test(
+        textoNorm,
+      );
 
-    // Solo incluir productos si la pregunta es sobre productos
-    const productosComoTexto = esPreguntaProductos
-      ? products
-          .slice(0, 15)
-          .map(
-            (p) =>
-              `${p.name} (${p.marca}) $${p.price} stock:${p.stock}` +
-              (p.isOnSale ? ' OFERTA' : '') +
-              (p.isNew ? ' NUEVO' : '') +
-              (p.isFeatured ? ' DEST' : ''),
-          )
-          .join('\n')
-      : '';
+    // ── Catálogo filtrado ─────────────────────────────────────────────────────
+    let catalogoTexto = '';
+    if (esPreguntaProductos) {
+      // Intentar filtrar por marca o término mencionado en la pregunta
+      const palabrasClave = textoNorm
+        .split(/\s+/)
+        .filter((w) => w.length >= 4);
 
+      let filtrados = products.filter((p) =>
+        palabrasClave.some(
+          (kw) =>
+            p.name.toLowerCase().includes(kw) ||
+            p.marca.toLowerCase().includes(kw),
+        ),
+      );
+
+      // Si no hay coincidencias específicas, usar los primeros 15 con stock
+      if (filtrados.length === 0) {
+        filtrados = products.filter((p) => p.stock > 0).slice(0, 15);
+      }
+
+      catalogoTexto = filtrados
+        .slice(0, 15)
+        .map(
+          (p) =>
+            `• ${p.name} | ${p.marca} | $${p.price} | stock:${p.stock}` +
+            (p.isOnSale ? ' | OFERTA' : '') +
+            (p.isNew ? ' | NUEVO' : '') +
+            (p.isFeatured ? ' | DEST' : ''),
+        )
+        .join('\n');
+    }
+
+    // ── Historial relevante ───────────────────────────────────────────────────
     const historialTexto = preguntasRelevantes
-      .map((p) => `Q: ${p.texto}\nA: ${p.respuesta.slice(0, 200)}`)
-      .join('\n');
+      .map((p) => {
+        // Truncar en el último espacio antes de los 250 chars (no cortar palabras)
+        const resp =
+          p.respuesta.length > 250
+            ? p.respuesta.slice(0, 250).replace(/\s\S+$/, '') + '…'
+            : p.respuesta;
+        return `Q: ${p.texto}\nA: ${resp}`;
+      })
+      .join('\n---\n');
 
-    const contextoProductos = productosComoTexto
-      ? `\nProductos:\n${productosComoTexto}`
-      : '';
+    // ── System prompt (rol + reglas) ──────────────────────────────────────────
+    const system = [
+      'Eres un asistente de ventas especializado. Respondés siempre en español, de forma concisa y directa.',
+      'Reglas:',
+      '1. Si la pregunta es sobre productos, usá solo el catálogo provisto.',
+      '2. Si el historial tiene una respuesta relevante, tomala como referencia.',
+      '3. No inventes productos ni precios. Si no tenés la información, decilo claramente.',
+      '4. Nunca incluyas en tu respuesta frases como "Según el contexto" o "De acuerdo al historial".',
+      '5. Respondé en máximo 3 oraciones a menos que se pidan detalles.',
+    ].join('\n');
 
-    const contextoHistorial = historialTexto
-      ? `\nHistorial relevante:\n${historialTexto}`
-      : '';
+    // ── User prompt (contexto + pregunta) ────────────────────────────────────
+    const contextBlocks: string[] = [];
 
-    return `Eres un asistente de ventas. Responde en español, de forma concisa y directa.${contextoHistorial}${contextoProductos}\n\nPregunta: ${texto}`;
+    if (historialTexto) {
+      contextBlocks.push(`### HISTORIAL RELEVANTE\n${historialTexto}`);
+    }
+    if (catalogoTexto) {
+      contextBlocks.push(`### CATÁLOGO DE PRODUCTOS\n${catalogoTexto}`);
+    }
+
+    const user = contextBlocks.length
+      ? `${contextBlocks.join('\n\n')}\n\n### PREGUNTA\n${texto}`
+      : texto;
+
+    return { system, user };
   }
 
   async preguntarOllamaOexternal(
@@ -101,13 +173,14 @@ export class AichatService {
         let taskPromise: Promise<string>;
         if (agente) {
           this.logger.log('Ejecución con agente');
-          const textoParaIA = await this.promptAgente(texto);
-
+          const prompt = await this.promptAgente(texto);
+          // External AI recibe el prompt como string plano concatenado
+          const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
           taskPromise = this.callExternalAI(textoParaIA);
         } else {
           this.logger.log('Ejecución modelo local con Ollama');
-          const textoParaIA = await this.promptAgente(texto);
-          taskPromise = this.callOllamaModel(textoParaIA);
+          const prompt = await this.promptAgente(texto);
+          taskPromise = this.callOllamaModel(prompt);
         }
         respuesta = (await Promise.race([
           taskPromise,
@@ -233,8 +306,8 @@ export class AichatService {
     return response.data.choices[0]?.message?.content || 'Sin respuesta';
   }
 
-  private async callOllamaModel(prompt: string): Promise<string> {
-    const aiMessageChunk = await this.ollamaModel.invoke(prompt);
+  private async callOllamaModel(prompt: StructuredPrompt): Promise<string> {
+    const aiMessageChunk = await this.ollamaModel.invokeWithMessages(prompt);
     if (typeof aiMessageChunk.content === 'string') {
       return aiMessageChunk.content;
     } else if (Array.isArray(aiMessageChunk.content)) {

@@ -29,12 +29,16 @@ describe('AichatService', () => {
     id: 1,
     texto: 'Test question',
     respuesta: 'Test answer',
+    estado: 'success',
+    errorMessage: null,
+    errorStatus: null,
     createdAt: new Date(),
   };
 
   const mockPreguntasRepository = {
     create: jest.fn(),
     findAll: jest.fn(),
+    findRelevant: jest.fn().mockResolvedValue([]),
   };
 
   const mockProductsRepository = {
@@ -94,13 +98,16 @@ describe('AichatService', () => {
   });
 
   describe('promptAgente', () => {
-    it('should format products and return a prompt', async () => {
+    it('should return a structured prompt with system and user fields', async () => {
       productsRepository.findAll.mockResolvedValue([mockProduct]);
+      mockPreguntasRepository.findRelevant = jest.fn().mockResolvedValue([]);
 
-      const result = await service.promptAgente('Test question');
+      const result = await service.promptAgente('quiero comprar un producto');
 
-      expect(result).toContain('Test question');
-      expect(result).toContain('Test Product');
+      expect(result).toHaveProperty('system');
+      expect(result).toHaveProperty('user');
+      expect(result.user).toContain('quiero comprar un producto');
+      expect(result.user).toContain('Test Product');
       expect(productsRepository.findAll).toHaveBeenCalled();
     });
   });

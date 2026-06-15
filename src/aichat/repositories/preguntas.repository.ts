@@ -43,6 +43,8 @@ export class PreguntasRepository implements IPreguntasRepository {
       new Set(
         texto
           .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
           .split(/[^\p{L}\p{N}]+/u)
           .map((term) => term.trim())
           .filter((term) => term.length >= 4),
@@ -51,31 +53,50 @@ export class PreguntasRepository implements IPreguntasRepository {
 
     if (terms.length === 0) {
       return this.prisma.pregunta.findMany({
+        where: { estado: 'success' },
         orderBy: { createdAt: 'desc' },
         take: limit,
       });
     }
 
+    // Busca en texto Y en respuesta, solo registros exitosos
     const matches = await this.prisma.pregunta.findMany({
       where: {
-        OR: terms.map((term) => ({
-          texto: {
-            contains: term,
-            mode: 'insensitive',
-          },
-        })),
+        estado: 'success',
+        respuesta: { not: '' },
+        OR: terms.flatMap((term) => [
+          { texto: { contains: term, mode: 'insensitive' as const } },
+          { respuesta: { contains: term, mode: 'insensitive' as const } },
+        ]),
       },
       orderBy: { createdAt: 'desc' },
-      take: limit * 2,
+      take: limit * 4, // traer más para poder rankear
     });
 
-    if (matches.length > 0) {
-      return matches.slice(0, limit);
+    if (matches.length === 0) {
+      // Fallback: últimas preguntas exitosas
+      return this.prisma.pregunta.findMany({
+        where: { estado: 'success', respuesta: { not: '' } },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+      });
     }
 
-    return this.prisma.pregunta.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: limit,
+    // Rankear por cantidad de términos que coinciden (texto tiene más peso que respuesta)
+    const scored = matches.map((m) => {
+      const textoNorm = m.texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const respNorm = m.respuesta.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const score = terms.reduce((acc, term) => {
+        if (textoNorm.includes(term)) acc += 2;   // coincidencia en pregunta vale doble
+        if (respNorm.includes(term)) acc += 1;
+        return acc;
+      }, 0);
+      return { record: m, score };
     });
+
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((s) => s.record);
   }
 }
