@@ -612,7 +612,10 @@ export class AssistantToolsService {
     try {
       const response = await axios.get<NewtonResponse>(
         `https://newton.vercel.app/api/v2/${operation}/${encoded}`,
-        { timeout: 8000 },
+        {
+          timeout: 5000,                          // corto: si cae, cae rápido
+          validateStatus: (s) => s === 200,
+        },
       );
       const opLabels: Record<string, string> = {
         derive:    'Derivada',
@@ -621,8 +624,10 @@ export class AssistantToolsService {
         factor:    'Factorizado',
       };
       return `${opLabels[operation] ?? operation} de "${expr}":\n${response.data.result}`;
-    } catch {
-      // Fallback a mathjs si Newton falla
+    } catch (err: unknown) {
+      // ECONNRESET / timeout / 4xx → fallback silencioso a mathjs
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`Newton API no disponible (${msg}), usando mathjs como fallback`);
       return this.evaluateWithMathJs(query);
     }
   }
