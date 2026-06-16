@@ -48,6 +48,110 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Router de intenciones ampliado con 4 nuevos detectores: `isAstronomyQuery`, `isMayanCalendarQuery`, `isHebrewCalendarQuery`, `isMathQuery`.
 - Todas las capacidades nuevas funcionan sin clave de API (stack completamente gratuito).
 
+---
+
+## [0.1.0] - 2026-06-16
+
+### Added — Upload Module
+- Nuevo módulo `src/upload/` con endpoint `POST /upload/image`.
+- Acepta una imagen via `multipart/form-data` (campo `image`) y retorna su representación Base64 en el formato `data:<mimetype>;base64,<data>`.
+- Validación de tipo MIME: rechaza con `400 Bad Request` si el archivo no es una imagen.
+- `@types/multer` agregado a devDependencies.
+- Documentación Swagger con `@ApiConsumes('multipart/form-data')` y schema de respuesta.
+
+### Fixed — Prisma client desincronizado
+- El cliente de Prisma no reflejaba los campos `estado`, `errorMessage` y `errorStatus` del modelo `Pregunta`, causando errores de compilación en `PreguntasRepository` y `AichatService`.
+- Resuelto ejecutando `prisma generate` para regenerar el cliente desde el schema actualizado. No requirió cambios en el schema.
+
+### Fixed — Puerto ocupado (EADDRINUSE :4000)
+- Proceso anterior del servidor bloqueaba el puerto 4000 al reiniciar en modo watch.
+- Identificado con `netstat -ano` y terminado con `taskkill /PID`.
+
+---
+
+## [0.2.0] - 2026-06-16
+
+### Added — Jarvis Architecture v1 (5-layer memory system)
+
+Refactorización del chatbot transaccional a asistente personal inteligente con arquitectura de 5 capas.
+
+#### Base de datos — nuevos modelos (migración `20260616135227_jarvis_architecture`)
+- `UserProfile` — perfil adaptativo del usuario (timezone, país, idioma, preferencias JSON). Valores por defecto: `America/Argentina/Buenos_Aires`, `Argentina`, `es-AR`.
+- `Memory` — memoria permanente key-value con `category` e `importance` (1–10) para rankeo en recuperación.
+- `ConversationMessage` — historial conversacional multi-sesión indexado por `sessionId` UUID. Reemplaza la tabla `Pregunta` como mecanismo de historial.
+- `Document` — documentos estructurados para RAG con `title`, `content`, `category` y `source`.
+- `Chunk` — fragmentos embeddables de documentos, con `embeddingId` preparado para pgvector. Relación cascade con `Document`.
+- `Task` — planner para descomponer objetivos complejos con `status` (`pending` / `in_progress` / `completed` / `failed`).
+- `Feedback` — registro de feedback del usuario con `score` y `comment` para aprendizaje continuo.
+
+#### Módulo `src/jarvis/`
+- `JarvisService` — orquestador principal de las 5 capas: tools pre-LLM → memoria → RAG → historial → LLM.
+- `JarvisController` — endpoints REST: `POST /jarvis/query`, `GET/POST /jarvis/memory`, `POST /jarvis/document/ingest`, `GET /jarvis/document/search`, `GET/PATCH /jarvis/profile`.
+- `MemoryRepository` — búsqueda de memorias por términos, ranking por `importance` y `updatedAt`.
+- `ConversationRepository` — manejo de sesiones con `getRecentMessages()` y búsqueda cross-session.
+- `DocumentRepository` — ingesta de documentos, creación de chunks, búsqueda textual en documentos y chunks.
+- `UserProfileRepository` — `getOrCreate()` con valores por defecto argentinos.
+
+#### Prompt reestructurado para Jarvis
+- `SystemMessage`: rol + reglas + perfil del usuario (fijo por sesión).
+- `HumanMessage`: bloques `### MEMORIA`, `### DOCUMENTOS`, `### HISTORIAL RECIENTE`, `### PREGUNTA ACTUAL` (dinámicos por request).
+- Español rioplatense neutro con prioridad de contexto argentino.
+
+### Changed
+- Ollama `temperature` bajado de `0.3` → `0.2` para respuestas más deterministas en rol de asistente personal.
+- Ollama `numCtx` subido de `2048` → `4096` para soportar contextos largos con memoria + documentos + historial.
+- Stop token `'Usuario:'` agregado a la lista de corte del modelo.
+- `AppModule` actualizado para importar `JarvisModule`.
+
+---
+
+## [0.3.0] - 2026-06-16
+
+### Added — Jarvis Architecture v2 (full 9.5/10 architecture)
+
+Evolución completa de la arquitectura con provider abstraction, observabilidad, session summaries y tool registry.
+
+#### Base de datos — nuevos modelos (migración `20260616140757_jarvis_v2_full_architecture`)
+- `MemoryChunk` — fragmentos de memoria con `embeddingId` preparado para búsqueda vectorial. Relación cascade con `Memory`. Permite vectorizar memorias individuales en el futuro con pgvector.
+- `SessionSummary` — resumen progresivo de sesión (único por `sessionId`). Se actualiza automáticamente cada 10 mensajes para evitar enviar el historial completo al LLM.
+- `KnowledgeSource` — registro de fuentes de conocimiento tipadas: `pdf`, `markdown`, `web`, `notion`, `github`, `postgres`, `api`. Los `Document` ahora pueden relacionarse con una `KnowledgeSource`.
+- `TaskStep` — pasos individuales de ejecución del planner con `stepNumber`, `description`, `result` y `status`. Relación cascade con `Task`. Reemplaza el campo `steps Json?` anterior.
+- `Tool` — registro dinámico de herramientas con `name` (único), `description`, `category`, `enabled` y `config Json?`. Sienta la base para activar/desactivar tools en runtime.
+- `AgentRun` — observabilidad completa por ejecución: `question`, `answer`, `toolsUsed Json`, `modelUsed`, `provider`, `durationMs`, `tokensUsed`, `success`, `errorMsg`.
+
+#### Base de datos — cambios en modelos existentes
+- `Memory`: eliminados `key` (unique) y `value`; reemplazados por `content Text` (semántico natural, e.g. "Ignacio trabaja con NestJS") y `lastAccessed DateTime?` para tracking de uso.
+- `Document`: agregado `sourceId` como FK opcional a `KnowledgeSource`.
+- `Task`: eliminado `steps Json?`; los pasos ahora viven en la tabla `TaskStep`.
+
+#### LLM Provider Abstraction (`src/jarvis/llm/`)
+- `ILLMProvider` — interfaz unificada con `generate(options)` y `embed(text)`. Permite intercambiar el modelo sin tocar lógica de negocio.
+- `OllamaProvider` — implementación para Ollama local (`llama3.2:3b`). Convierte `LLMMessage[]` a mensajes LangChain (`SystemMessage`, `HumanMessage`, `AIMessage`). Registra latencia.
+- `OpenRouterProvider` — implementación para OpenRouter (`mistralai/mistral-7b-instruct:free`). Lee `OPENROUTER_API_KEY` desde `.env`.
+
+#### Nuevos repositorios
+- `AgentRunRepository` — `create()`, `getStats()` (total, éxitos, fallos, tasa de éxito, latencia promedio), `getTopTools()` (conteo manual desde JSON array), `getRecentRuns()`.
+- `SessionSummaryRepository` — `upsert()`, `get()`, `delete()` por `sessionId`.
+
+#### Nuevos endpoints
+- `GET /jarvis/observability/stats` — estadísticas agregadas: total de runs, tasa de éxito, latencia promedio, top herramientas usadas.
+- `GET /jarvis/observability/runs?limit=N` — listado de runs recientes con todos los metadatos.
+
+### Changed
+- `JarvisService` reescrito para usar `ILLMProvider` en lugar de `OllamaModelService` directamente. El provider se selecciona por nombre (`'ollama'` | `'openrouter'`) en cada request.
+- `buildJarvisContext()` reemplaza `buildJarvisPrompt()`: retorna `systemPrompt` y `userPrompt` como strings separados, más `usedMemory` y `usedDocs` para tracking de herramientas.
+- Historial de sesión usa `SessionSummary` cuando existe, evitando enviar mensajes individuales al LLM en sesiones largas.
+- Memoria ahora se busca por `content` (campo texto libre) en lugar de `key`/`value`.
+- `JarvisModule` actualizado: registra `OllamaProvider` y `OpenRouterProvider` como providers independientes inyectados en `JarvisService`.
+- `Memory.content` — endpoint `POST /jarvis/memory` ahora acepta `{ content, category, importance }` en lugar de `{ key, value, category, importance }`.
+- `GET /jarvis/memory/:id` — ahora busca por `id` numérico en lugar de `key` string.
+
+### Fixed
+- Métodos `getObservabilityStats()` y `getRecentRuns()` estaban fuera del cuerpo de la clase `JarvisService` por un `fs_append` mal ubicado. Reescritura completa del archivo corrigió el problema.
+- Tipo de retorno de `DocumentRepository.searchChunks()` corregido a `(Chunk & { document: Document })[]` para que TypeScript reconozca la relación `include`.
+
+---
+
 ## [0.0.1] - 2026-06-15
 
 ### Added

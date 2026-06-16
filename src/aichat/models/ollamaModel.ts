@@ -51,16 +51,16 @@ export class OllamaModelService implements IModelService {
 
   private async create(): Promise<void> {
     this.model = new ChatOllama({
-      model: 'llama3.2:3b',       // llama3.2:3b rapido para chat; qwen3.5:4b excedido de tiempo "Programacion"
-      temperature: 0.3,
+      model: 'llama3.2:3b',       // llama3.2:3b rápido para chat
+      temperature: 0.2,            // bajado de 0.3 → más determinista
       topP: 0.85,
       topK: 15,
-      numPredict: 400,            // subido de 256: evita corte en respuestas de conocimiento general
+      numPredict: 400,
       repeatPenalty: 1.1,
-      numCtx: 2048,               // limitar contexto para acelerar inferencia
+      numCtx: 4096,                // subido de 2048 → mejor comprensión de contexto largo
       // Stop tokens ampliados: cortan antes si el modelo intenta "seguir hablando"
-      stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:'],
+      stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:'],
     });
-    this.logger.log('Ollama model initialized');
+    this.logger.log('Ollama model initialized (Jarvis config: temp=0.2, ctx=4096)');
   }
 }

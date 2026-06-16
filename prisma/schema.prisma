@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// LEGACY MODELS (mantener temporalmente para compatibilidad)
+// ══════════════════════════════════════════════════════════════════════════════
+
 model Product {
   id          Int      @id @default(autoincrement())
   name        String   @unique
@@ -30,4 +34,228 @@ model Pregunta {
   errorMessage String?
   errorStatus  Int?
   createdAt    DateTime @default(now())
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// JARVIS ARCHITECTURE — 5-Layer Memory System
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── 1) PERFIL DE USUARIO ──────────────────────────────────────────────────────
+// Jarvis debe conocer a su usuario
+
+model UserProfile {
+  id          Int      @id @default(autoincrement())
+  name        String?
+  timezone    String   @default("America/Argentina/Buenos_Aires")
+  country     String   @default("Argentina")
+  language    String   @default("es-AR")
+  preferences Json?    // JSON libre para customizaciones
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── 2) MEMORIA PERMANENTE ─────────────────────────────────────────────────────
+// Lo que diferencia Jarvis de ChatGPT: recuerda hechos sobre ti
+// NO es key-value rígido, sino memoria semántica natural
+
+model Memory {
+  id           Int            @id @default(autoincrement())
+  content      String         @db.Text // "Ignacio trabaja con NestJS", "Prefiere TypeScript"
+  category     String         // "preference", "fact", "context", "skill", "experience"
+  importance   Int            @default(1) // 1-10, para rankear recuperación
+  lastAccessed DateTime?      // tracking de uso para priorización
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  chunks       MemoryChunk[]
+
+  @@index([category])
+  @@index([importance])
+  @@index([lastAccessed])
+}
+
+// ── 2.1) CHUNKS DE MEMORIA CON EMBEDDINGS ────────────────────────────────────
+// Búsqueda semántica en vez de LIKE
+
+model MemoryChunk {
+  id          Int     @id @default(autoincrement())
+  memoryId    Int
+  content     String  @db.Text
+  embeddingId String? // referencia a vector store o futuro: embedding vector(768)
+  memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@index([memoryId])
+  @@index([embeddingId])
+}
+
+// ── 3) HISTORIAL CONVERSACIONAL ──────────────────────────────────────────────
+// Reemplaza Pregunta con un sistema de sesiones
+
+model ConversationMessage {
+  id        Int      @id @default(autoincrement())
+  sessionId String   // UUID de sesión, permite múltiples conversaciones
+  role      String   // "user" | "assistant" | "system" | "tool"
+  content   String   @db.Text
+  metadata  Json?    // { model, tokens, latency, toolCalls, etc }
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// ── 3.1) RESÚMENES DE SESIÓN ─────────────────────────────────────────────────
+// Los agentes modernos NO envían 100 mensajes al modelo
+// Envían resúmenes progresivos
+
+model SessionSummary {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique
+  summary   String   @db.Text // "Se habló de pgvector, diseño de Jarvis, NestJS"
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+// ── 4) CONOCIMIENTO (RAG) ─────────────────────────────────────────────────────
+// Documentos estructurados que Jarvis puede consultar
+
+model KnowledgeSource {
+  id        Int        @id @default(autoincrement())
+  name      String
+  type      String     // "pdf", "markdown", "web", "notion", "github", "postgres", "api"
+  url       String?    // URL o path
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  documents Document[]
+
+  @@index([type])
+  @@index([active])
+}
+
+model Document {
+  id        Int              @id @default(autoincrement())
+  sourceId  Int?             // relación con KnowledgeSource
+  title     String
+  content   String           @db.Text
+  category  String?          // "tech", "personal", "reference", "api-doc"
+  source    String?          // legacy: URL, file path, manual
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  chunks    Chunk[]
+  knowledgeSource KnowledgeSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([category])
+  @@index([sourceId])
+}
+
+// ── 5) CHUNKS VECTORIALES ─────────────────────────────────────────────────────
+// Fragmentos embeddables para búsqueda semántica
+// TODO: agregar `embedding vector(768)` cuando se active pgvector
+
+model Chunk {
+  id          Int      @id @default(autoincrement())
+  documentId  Int
+  content     String   @db.Text
+  embeddingId String?  // referencia a vector store externo (si no usamos pgvector)
+  metadata    Json?    // { page, section, language, etc }
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([embeddingId])
+}
+
+// ── 6) PLANNER (TAREAS) ───────────────────────────────────────────────────────
+// Jarvis puede descomponer objetivos complejos en pasos
+
+model Task {
+  id        Int        @id @default(autoincrement())
+  sessionId String?    // relacionar con conversación si aplica
+  objective String     @db.Text
+  status    String     @default("pending") // "pending" | "in_progress" | "completed" | "failed"
+  result    String?    @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  steps     TaskStep[]
+
+  @@index([status])
+  @@index([sessionId])
+}
+
+// ── 6.1) PASOS DE EJECUCIÓN ──────────────────────────────────────────────────
+// Cada tarea se descompone en pasos ejecutables
+
+model TaskStep {
+  id          Int      @id @default(autoincrement())
+  taskId      Int
+  stepNumber  Int      // orden de ejecución
+  description String   @db.Text // "Buscar documentación de Ollama"
+  result      String?  @db.Text // resultado del paso
+  status      String   @default("pending") // "pending" | "in_progress" | "completed" | "failed"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([status])
+}
+
+// ── 7) FEEDBACK ───────────────────────────────────────────────────────────────
+// Aprender de aciertos y errores
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  sessionId String?
+  question  String   @db.Text
+  answer    String   @db.Text
+  score     Int      // 1-5 stars, o -1/+1 thumbs
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([score])
+  @@index([sessionId])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AGENT INFRASTRUCTURE — Tool Registry + Observability
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── 8) REGISTRO DE TOOLS ──────────────────────────────────────────────────────
+// Tools dinámicamente registradas en vez de hardcoded
+
+model Tool {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique // "weather", "calendar", "rag", "memory", "search"
+  description String   @db.Text
+  category    String   // "external_api", "database", "llm", "system"
+  enabled     Boolean  @default(true)
+  config      Json?    // configuración específica de la tool
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([enabled])
+  @@index([category])
+}
+
+// ── 9) OBSERVABILIDAD ─────────────────────────────────────────────────────────
+// Métricas de ejecución del agente
+
+model AgentRun {
+  id         Int      @id @default(autoincrement())
+  sessionId  String?
+  question   String   @db.Text
+  answer     String?  @db.Text
+  toolsUsed  Json?    // ["weather", "rag", "memory"]
+  modelUsed  String   // "llama3.2:3b", "qwen3.5:8b"
+  provider   String   // "ollama", "openrouter", "openai"
+  durationMs Int      // latencia total
+  tokensUsed Int?     // tokens consumidos
+  success    Boolean  @default(true)
+  errorMsg   String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([success])
+  @@index([modelUsed])
+  @@index([provider])
+  @@index([createdAt])
 }

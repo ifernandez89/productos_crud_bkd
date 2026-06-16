@@ -5,6 +5,7 @@ import { AichatModule } from './aichat/aichat.module';
 import { UploadModule } from './upload/upload.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerModule } from './logger/logger.module';
+import { JarvisModule } from './jarvis/jarvis.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LoggerModule } from './logger/logger.module';
     ProductsModule,
     AichatModule,
     UploadModule,
+    JarvisModule,
   ],
 })
 export class AppModule {}
