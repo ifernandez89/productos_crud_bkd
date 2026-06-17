@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DateTime } from 'luxon';
 import { Pregunta } from '@prisma/client';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const log = new Logger('PreguntasRepository');
 
 export interface CreatePreguntaData {
   texto: string;
@@ -22,24 +26,58 @@ export class PreguntasRepository implements IPreguntasRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreatePreguntaData): Promise<Pregunta> {
-    // Guardar createdAt con zona horaria America/Argentina/Buenos_Aires
-    const createdAt = DateTime.now().setZone('America/Argentina/Buenos_Aires').toISO();
-    return this.prisma.pregunta.create({
-      data: {
-        texto: data.texto,
-        respuesta: data.respuesta ?? '',
-        estado: data.estado ?? 'success',
-        errorMessage: data.errorMessage ?? null,
-        errorStatus: data.errorStatus ?? null,
-        createdAt: createdAt,
-      },
-    });
+    // Guardar createdAt como Date en zona America/Argentina/Buenos_Aires
+    const createdAtDate = DateTime.now().setZone('America/Argentina/Buenos_Aires').toJSDate();
+    const payload = {
+      texto: data.texto,
+      respuesta: data.respuesta ?? '',
+      estado: data.estado ?? 'success',
+      errorMessage: data.errorMessage ?? null,
+      errorStatus: data.errorStatus ?? null,
+      createdAt: createdAtDate,
+    } as const;
+    // Intentar con reintentos en caso de errores transitorios
+    const maxAttempts = 3;
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      attempt++;
+      try {
+        const rec = await this.prisma.pregunta.create({ data: payload });
+        log.log(`Pregunta creada id=${rec.id} createdAt=${rec.createdAt.toISOString()}`);
+        return rec;
+      } catch (err) {
+        log.error(`Error creando pregunta (intento ${attempt}): ${err?.message || err}`);
+        // Exponemos una pequeña espera antes de reintentar
+        if (attempt < maxAttempts) {
+          const delay = 200 * Math.pow(2, attempt); // backoff: 400ms, 800ms
+          await new Promise((res) => setTimeout(res, delay));
+          continue;
+        }
+
+        // Si fallaron todos los reintentos, hacer un fallback escribiendo a disco
+        try {
+          const fallbackDir = path.join(process.cwd(), 'data');
+          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
+          const fallbackFile = path.join(fallbackDir, 'preguntas-fallback.jsonl');
+          const recordToWrite = JSON.stringify({ ...payload, fallbackAt: new Date().toISOString() });
+          fs.appendFileSync(fallbackFile, recordToWrite + '\n', { encoding: 'utf8' });
+          log.error(`Se escribió fallback de pregunta en ${fallbackFile}`);
+        } catch (fsErr) {
+          log.error(`No se pudo escribir fallback en disco: ${fsErr?.message || fsErr}`);
+        }
+
+        // Finalmente, relanzar el error para que el caller pueda reaccionar si lo necesita
+        throw err;
+      }
+    }
+    // Deberíamos haber retornado o lanzado antes
+    throw new Error('Error inesperado creando pregunta');
   }
 
   async findAll(): Promise<Pregunta[]> {
-    return this.prisma.pregunta.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
+    const rows = await this.prisma.pregunta.findMany({ orderBy: { createdAt: 'desc' } });
+    log.log(`findAll devuelve ${rows.length} preguntas (mostrando las más recientes primero)`);
+    return rows;
   }
 
   async findRelevant(texto: string, limit: number = 5): Promise<Pregunta[]> {

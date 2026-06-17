@@ -447,11 +447,20 @@ export class AichatService {
     texto: string,
     respuesta: string,
   ): Promise<void> {
-    await this.preguntasRepository.create({
-      texto,
-      respuesta,
-      estado: 'success',
-    });
+    try {
+      const payload = {
+        texto,
+        respuesta,
+        estado: 'success',
+      };
+      this.logger.log(`Persistiendo pregunta exitosa: ${texto.slice(0, 120)}`);
+      this.logger.debug(`DATABASE_URL set: ${!!process.env.DATABASE_URL}`);
+      const rec = await this.preguntasRepository.create(payload);
+      this.logger.log(`Pregunta persistida id=${rec.id}`);
+    } catch (err) {
+      this.logger.error(`Error al persistir pregunta exitosa: ${this.getErrorMessage(err)}`);
+      // No propagar el error para no bloquear la respuesta al usuario
+    }
   }
 
   private validateAnswerContent(answer: string, question: string): string {
