@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { DateTime } from 'luxon';
 import * as Astronomy from 'astronomy-engine';
 import { toJewishDate, formatJewishDateInHebrew, toGregorianDate } from 'jewish-date';
 import { create, all } from 'mathjs';
@@ -307,11 +308,31 @@ export class AssistantToolsService {
     const normalized = this.normalize(query);
     let timezone = 'America/Argentina/Buenos_Aires';
     if (normalized.includes('utc')) timezone = 'Etc/UTC';
+    try {
+      const response = await axios.get<WorldTimeResponse>(
+        `https://worldtimeapi.org/api/timezone/${timezone}`,
+        { timeout: 4000 },
+      );
+      if (response?.data?.datetime) {
+        const dt = DateTime.fromISO(response.data.datetime).setZone(timezone);
+        const abbrev = timezone === 'America/Argentina/Buenos_Aires' ? 'ART' : dt.offsetNameShort || dt.zoneName;
+        return `Hora actual en ${dt.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
+      }
+      this.logger.warn(`[tool:time] worldtimeapi devolvió sin datetime para ${timezone}`);
+    } catch (error) {
+      this.logger.warn(`[tool:time] fallo en worldtimeapi (${timezone}): ${error?.message || error}`);
+    }
 
-    const response = await axios.get<WorldTimeResponse>(
-      `https://worldtimeapi.org/api/timezone/${timezone}`,
-    );
-    return `Hora actual en ${response.data.timezone}: ${response.data.datetime}`;
+    // Fallback local si la API externa falla
+    try {
+      const now = DateTime.now().setZone(timezone);
+      const abbrev = timezone === 'America/Argentina/Buenos_Aires' ? 'ART' : now.offsetNameShort || now.zoneName;
+      return `Hora actual en ${now.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
+    } catch (err) {
+      // Último recurso: hora local del servidor en ISO
+      this.logger.warn(`[tool:time] fallback local simple por error: ${err?.message || err}`);
+      return `Hora actual (servidor): ${new Date().toISOString()}`;
+    }
   }
 
   // ── PAÍSES (REST Countries) ──────────────────────────────────────────────────

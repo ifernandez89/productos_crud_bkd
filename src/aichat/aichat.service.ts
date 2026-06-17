@@ -9,6 +9,7 @@ import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import axios from 'axios';
+import { DateTime } from 'luxon';
 
 // ── Caché simple de productos para evitar DB roundtrip en cada mensaje ──────────
 interface ProductCache {
@@ -28,7 +29,7 @@ export interface PreguntaRecord {
   estado: string;
   errorMessage: string | null;
   errorStatus: number | null;
-  createdAt: Date;
+  createdAt: string;
 }
 
 @Injectable()
@@ -410,7 +411,16 @@ export class AichatService {
   }
 
   async obtenerPreguntas(): Promise<PreguntaRecord[]> {
-    return this.preguntasRepository.findAll();
+    const rows = await this.preguntasRepository.findAll();
+    return rows.map((r) => ({
+      id: r.id,
+      texto: r.texto,
+      respuesta: r.respuesta,
+      estado: r.estado,
+      errorMessage: r.errorMessage ?? null,
+      errorStatus: r.errorStatus ?? null,
+      createdAt: DateTime.fromJSDate(r.createdAt).setZone('America/Argentina/Buenos_Aires').toISO(),
+    }));
   }
 
   create(): string {

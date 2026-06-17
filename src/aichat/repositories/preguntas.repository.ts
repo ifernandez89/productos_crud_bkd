@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { DateTime } from 'luxon';
 import { Pregunta } from '@prisma/client';
 
 export interface CreatePreguntaData {
@@ -21,6 +22,8 @@ export class PreguntasRepository implements IPreguntasRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreatePreguntaData): Promise<Pregunta> {
+    // Guardar createdAt con zona horaria America/Argentina/Buenos_Aires
+    const createdAt = DateTime.now().setZone('America/Argentina/Buenos_Aires').toISO();
     return this.prisma.pregunta.create({
       data: {
         texto: data.texto,
@@ -28,6 +31,7 @@ export class PreguntasRepository implements IPreguntasRepository {
         estado: data.estado ?? 'success',
         errorMessage: data.errorMessage ?? null,
         errorStatus: data.errorStatus ?? null,
+        createdAt: createdAt,
       },
     });
   }
