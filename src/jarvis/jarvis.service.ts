@@ -223,7 +223,7 @@ export class JarvisService {
       .join(' | ');
 
     const systemPrompt = [
-      `Sos ${identity.name}, un asistente personal inteligente.`,
+      `Tu nombre es: ${identity.name}, un asistente personal inteligente.`,
       `Tu tono es ${identity.personality.tone} y tu verbosidad es ${identity.personality.verbosity}.`,
       '',
       `Idioma principal: ${identity.language || 'es-AR'}.`,
