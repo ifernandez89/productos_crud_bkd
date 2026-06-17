@@ -1,7 +1,8 @@
 {
-  "name": "Jarvis",
+  "name": "jarbees",
   "language": "es-AR",
   "country": "Argentina",
+  "city": "Paraná",
   "timezone": "America/Argentina/Buenos_Aires",
   "personality": {
     "tone": "amigable",

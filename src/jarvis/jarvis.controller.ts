@@ -11,8 +11,8 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JarvisService } from './jarvis.service';
 
-@ApiTags('jarvis')
-@Controller('jarvis')
+@ApiTags('jarbees')
+@Controller('jarbees')
 export class JarvisController {
   constructor(private readonly jarvisService: JarvisService) {}
 
