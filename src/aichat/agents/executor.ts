@@ -27,7 +27,7 @@ export async function runIA(
 \`\`\`json
 {{
   "action": "Traer productos",
-  "action_input": "Traer celulares" 
+  "action_input": "Buscar información de productos" 
 }}
 \`\`\`
 
@@ -36,7 +36,7 @@ O, si querés dar la respuesta final al usuario:
 \`\`\`json
 {{
   "action": "Final Answer",
-  "action_input": "Hay 15 productos en total."
+  "action_input": "Aquí está la respuesta solicitada."
 }}
 \`\`\`
 
