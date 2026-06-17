@@ -197,18 +197,24 @@ export class AssistantToolsService {
 
   // ── CLIMA (Open-Meteo + Nominatim) ──────────────────────────────────────────
 
-  private async getWeatherAnswer(query: string): Promise<string> {
-    const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
-    const geocoded = await this.geocodeLocation(location);
-    const weather  = await this.fetchCurrentWeather(geocoded.lat, geocoded.lon);
-    return [
-      `Clima para ${geocoded.displayName}:`,
-      `Temperatura: ${weather.temperature}°C`,
-      `Sensación térmica: ${weather.apparentTemperature}°C`,
-      `Viento: ${weather.windSpeed} km/h`,
-      `Humedad: ${weather.humidity}%`,
-      `Estado: ${weather.label}`,
-    ].join('\n');
+  private async getWeatherAnswer(query: string): Promise<string | null> {
+    try {
+      const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
+      const geocoded = await this.geocodeLocation(location);
+      const weather  = await this.fetchCurrentWeather(geocoded.lat, geocoded.lon);
+      return [
+        `Clima para ${geocoded.displayName}:`,
+        `Temperatura: ${weather.temperature}°C`,
+        `Sensación térmica: ${weather.apparentTemperature}°C`,
+        `Viento: ${weather.windSpeed} km/h`,
+        `Humedad: ${weather.humidity}%`,
+        `Estado: ${weather.label}`,
+      ].join('\n');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[tool:weather] API no disponible (${msg}), cayendo a ollama`);
+      return null;
+    }
   }
 
   private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; displayName: string }> {
@@ -278,28 +284,35 @@ export class AssistantToolsService {
 
   // ── FERIADOS (Nager.Date) ────────────────────────────────────────────────────
 
-  private async getHolidayAnswer(query: string): Promise<string> {
-    const targetDate = this.extractHolidayDate(query);
-    const year       = targetDate.getFullYear();
-    const isoDate    = this.formatIsoDate(targetDate);
+  private async getHolidayAnswer(query: string): Promise<string | null> {
+    try {
+      const targetDate = this.extractHolidayDate(query);
+      const year       = targetDate.getFullYear();
+      const isoDate    = this.formatIsoDate(targetDate);
 
-    const response = await axios.get<HolidayRecord[]>(
-      `https://date.nager.at/api/v3/PublicHolidays/${year}/AR`,
-    );
-    const holidays = response.data || [];
-    const match    = holidays.find((h) => h.date === isoDate);
+      const response = await axios.get<HolidayRecord[]>(
+        `https://date.nager.at/api/v3/PublicHolidays/${year}/AR`,
+        { timeout: 5000, validateStatus: (s) => s === 200 },
+      );
+      const holidays = response.data || [];
+      const match    = holidays.find((h) => h.date === isoDate);
 
-    if (match) return `Sí, el ${isoDate} es feriado en Argentina: ${match.localName}.`;
+      if (match) return `Sí, el ${isoDate} es feriado en Argentina: ${match.localName}.`;
 
-    const upcoming = holidays
-      .filter((h) => h.date >= isoDate)
-      .slice(0, 3)
-      .map((h) => `${h.date}: ${h.localName}`)
-      .join('\n');
+      const upcoming = holidays
+        .filter((h) => h.date >= isoDate)
+        .slice(0, 3)
+        .map((h) => `${h.date}: ${h.localName}`)
+        .join('\n');
 
-    return upcoming
-      ? `No, el ${isoDate} no es feriado nacional en Argentina. Próximos feriados:\n${upcoming}`
-      : `No encontré feriados nacionales para ${year} en Argentina.`;
+      return upcoming
+        ? `No, el ${isoDate} no es feriado nacional en Argentina. Próximos feriados:\n${upcoming}`
+        : `No encontré feriados nacionales para ${year} en Argentina.`;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[tool:holiday] API no disponible (${msg}), cayendo a ollama`);
+      return null;
+    }
   }
 
   // ── HORA (WorldTimeAPI) ──────────────────────────────────────────────────────
@@ -366,12 +379,10 @@ export class AssistantToolsService {
         `Idiomas: ${languages}`,
       ].join('\n');
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === HttpStatus.NOT_FOUND) {
-        this.logger.log(`[tool:country → ollama] sin coincidencia para "${country}"`);
-        return null;
-      }
-
-      throw error;
+      // ENOTFOUND, timeout, red → fallback amigable sin romper
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`[tool:country] API no disponible (${msg}), cayendo a ollama`);
+      return null;  // null → JarvisService cae a LLM con contexto
     }
   }
 
