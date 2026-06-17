@@ -53,6 +53,7 @@ export class JarvisService {
 
   async query(userMessage: string, options: JarvisQueryOptions = {}): Promise<string> {
     const sessionId = options.sessionId || randomUUID();
+    const hasSessionId = Boolean(options.sessionId);
     const useMemory = options.useMemory !== false;
     const useDocuments = options.useDocuments !== false;
     const maxHistoryMessages = options.maxHistoryMessages || 6;
@@ -61,6 +62,49 @@ export class JarvisService {
 
     const startTime = Date.now();
     const toolsUsed: string[] = [];
+
+    if (this.isRepeatRequest(userMessage)) {
+      if (!hasSessionId) {
+        return 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
+      }
+
+      const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
+      if (lastAnswer) {
+        const repeatedContent = this.isVoiceRequest(userMessage)
+          ? `No puedo generar audio en este canal, pero te repito la respuesta en texto: ${lastAnswer.content}`
+          : lastAnswer.content;
+
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'user',
+          content: userMessage,
+        });
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: repeatedContent,
+          metadata: { source: 'repeat', repeatedMessageId: lastAnswer.id },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: repeatedContent,
+          toolsUsed: ['repeat'],
+          modelUsed: 'none',
+          provider: 'repeat',
+          durationMs: Date.now() - startTime,
+          success: true,
+        });
+        return repeatedContent;
+      }
+
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      return 'No encuentro una respuesta anterior para repetir dentro de esta conversación. Hacé otra pregunta primero y luego intentá repetirla.';
+    }
 
     await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
 
@@ -263,6 +307,20 @@ export class JarvisService {
 
   async listSkills() {
     return this.skillRegistry.getAllSkills();
+  }
+
+  private isRepeatRequest(message: string): boolean {
+    const normalized = message
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    return /\b(repiti[rt]|repeti[rt]|repite|repitelo|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat|say it again)\b/.test(normalized);
+  }
+
+  private isVoiceRequest(message: string): boolean {
+    const normalized = message.toLowerCase();
+    return /voz|audio|habl(a|e|o)|en voz alta|voz alta/.test(normalized);
   }
 
   async findRelevantSkills(query: string) {
