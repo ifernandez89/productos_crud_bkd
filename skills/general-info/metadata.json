@@ -1,0 +1,8 @@
+{
+  "name": "Información General",
+  "description": "Respuestas a preguntas de conocimiento general, definiciones y datos útiles.",
+  "category": "general",
+  "keywords": ["información", "datos", "definición", "ayuda"],
+  "priority": 1,
+  "capabilities": ["memory", "documentRetrieval"]
+}

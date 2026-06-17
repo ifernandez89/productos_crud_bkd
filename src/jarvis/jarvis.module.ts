@@ -11,6 +11,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AssistantToolsService } from '../aichat/utils/assistant-tools.service';
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
+import { JarvisIdentityService } from './config/jarvis-identity.service';
+import { CapabilitiesService } from './config/capabilities.service';
+import { SkillRegistryService } from './skills/skill-registry.service';
+import { ToolRegistryService } from './tools/registry/tool-registry.service';
 
 @Module({
   imports: [PrismaModule],
@@ -24,6 +28,10 @@ import { OpenRouterProvider } from './llm/openrouter.provider';
     AgentRunRepository,
     SessionSummaryRepository,
     AssistantToolsService,
+    JarvisIdentityService,
+    CapabilitiesService,
+    SkillRegistryService,
+    ToolRegistryService,
     OllamaProvider,
     OpenRouterProvider,
   ],

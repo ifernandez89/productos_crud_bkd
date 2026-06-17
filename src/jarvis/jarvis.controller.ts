@@ -129,4 +129,36 @@ export class JarvisController {
     );
     return { runs };
   }
+
+  // ── Jarvis config y registro ──────────────────────────────────────────────
+
+  @Get('identity')
+  @ApiOperation({ summary: 'Obtener identidad de Jarvis' })
+  async getIdentity() {
+    return { identity: await this.jarvisService.getIdentity() };
+  }
+
+  @Get('capabilities')
+  @ApiOperation({ summary: 'Obtener capacidades activas de Jarvis' })
+  async getCapabilities() {
+    return { capabilities: await this.jarvisService.getCapabilities() };
+  }
+
+  @Get('skills')
+  @ApiOperation({ summary: 'Listar todas las skills cargadas' })
+  async listSkills() {
+    return { skills: await this.jarvisService.listSkills() };
+  }
+
+  @Get('skills/relevant')
+  @ApiOperation({ summary: 'Buscar skills relevantes para una consulta' })
+  async findRelevantSkills(@Query('q') query: string) {
+    return { skills: await this.jarvisService.findRelevantSkills(query) };
+  }
+
+  @Get('tools')
+  @ApiOperation({ summary: 'Listar herramientas habilitadas' })
+  async listTools() {
+    return { tools: await this.jarvisService.listTools() };
+  }
 }

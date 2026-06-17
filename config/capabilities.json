@@ -1,0 +1,9 @@
+{
+  "voice": false,
+  "memory": true,
+  "astronomy": true,
+  "math": true,
+  "calendar": true,
+  "documentRetrieval": true,
+  "toolExecution": true
+}

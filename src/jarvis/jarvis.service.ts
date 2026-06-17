@@ -9,6 +9,10 @@ import { ILLMProvider } from './llm/llm-provider.interface';
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
 import { AssistantToolsService } from '../aichat/utils/assistant-tools.service';
+import { JarvisIdentityService } from './config/jarvis-identity.service';
+import { CapabilitiesService } from './config/capabilities.service';
+import { SkillRegistryService } from './skills/skill-registry.service';
+import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -32,6 +36,10 @@ export class JarvisService {
     private readonly agentRunRepo: AgentRunRepository,
     private readonly sessionSummaryRepo: SessionSummaryRepository,
     private readonly assistantTools: AssistantToolsService,
+    private readonly jarvisIdentity: JarvisIdentityService,
+    private readonly capabilitiesService: CapabilitiesService,
+    private readonly skillRegistry: SkillRegistryService,
+    private readonly toolRegistry: ToolRegistryService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
   ) {
@@ -152,27 +160,57 @@ export class JarvisService {
     maxHistoryMessages: number,
   ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
     const profile = await this.userProfileRepo.getOrCreate();
+    const identity = this.jarvisIdentity.getIdentity();
+    const capabilities = this.capabilitiesService.getCapabilities();
+    const relevantSkills = this.skillRegistry.findRelevant(userMessage, 3);
+
+    const activeCapabilities = Object.entries(capabilities)
+      .filter(([, enabled]) => enabled)
+      .map(([key]) => key)
+      .join(', ');
+
+    const profileSummary = [
+      profile.name ? `Usuario: ${profile.name}` : 'Usuario: desconocido',
+      profile.country ? `País del usuario: ${profile.country}` : undefined,
+      profile.language ? `Idioma del usuario: ${profile.language}` : undefined,
+      profile.timezone ? `Zona horaria del usuario: ${profile.timezone}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' | ');
 
     const systemPrompt = [
-      'Sos Jarvis, un asistente personal inteligente.',
+      `Sos ${identity.name}, un asistente personal inteligente.`,
+      `Tu tono es ${identity.personality.tone} y tu verbosidad es ${identity.personality.verbosity}.`,
       '',
-      `Idioma principal: Español de ${profile.country || 'Argentina'}.`,
+      `Idioma principal: ${identity.language || 'es-AR'}.`,
+      `País: ${identity.country || 'Argentina'}.`,
+      `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
       'Reglas:',
-      '1. Usar español rioplatense neutro (voseo ocasional, natural).',
-      '2. Priorizar contexto de Argentina: pesos argentinos, sistema métrico, zona horaria AR.',
-      '3. Responder conciso y directo, máximo 3 oraciones salvo que se pidan detalles.',
-      '4. No inventar datos. Si no sabés, decilo.',
-      '5. Usar memoria del usuario cuando sea relevante.',
+      '1. Usar un estilo claro, conciso y natural en español.',
+      '2. Priorizar memoria, contexto y documentos cuando sean relevantes.',
+      '3. No inventar datos. Si no sabés, decilo claramente.',
+      '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+      '5. Usar herramientas o memoria solo cuando ayude a resolver la pregunta.',
       '',
-      `Timezone: ${profile.timezone}`,
-      `País: ${profile.country}`,
+      `Timezone: ${identity.timezone}`,
+      `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
+      `Capacidades activas: ${activeCapabilities}`,
     ].join('\n');
 
     const contextParts: string[] = [];
     let usedMemory = false;
     let usedDocs = false;
 
-    // Memoria permanente
+    if (relevantSkills.length > 0) {
+      const skillText = relevantSkills
+        .map(
+          (skill) =>
+            `- ${skill.name}: ${skill.description} (${skill.keywords.join(', ')})\n  Resumen: ${skill.summary}`,
+        )
+        .join('\n');
+      contextParts.push(`### SKILLS RELEVANTES\n${skillText}`);
+    }
+
     if (useMemory) {
       const memories = await this.memoryRepo.search(userMessage, 3);
       if (memories.length > 0) {
@@ -210,10 +248,29 @@ export class JarvisService {
     }
 
     const userPrompt = contextParts.length > 0
-      ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}`
-      : userMessage;
-
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}`
+        : userMessage;
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
+  }
+
+  async getIdentity() {
+    return this.jarvisIdentity.getIdentity();
+  }
+
+  async getCapabilities() {
+    return this.capabilitiesService.getCapabilities();
+  }
+
+  async listSkills() {
+    return this.skillRegistry.getAllSkills();
+  }
+
+  async findRelevantSkills(query: string) {
+    return this.skillRegistry.findRelevant(query, 5);
+  }
+
+  async listTools() {
+    return this.toolRegistry.getEnabledTools();
   }
 
   // ── Session Summary ─────────────────────────────────────────────────────────
