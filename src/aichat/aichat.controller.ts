@@ -36,7 +36,8 @@ export class AichatController {
       }
       const respuesta =
         await this.aichatService.preguntarOllamaOexternal(createAichatDto);
-      return { respuesta };
+      const lastMessage = this.aichatService.getLastAssistantMessage();
+      return { respuesta, lastMessage };
     } catch (error) {
       throw new HttpException(
         error.response || error.message || 'Error al procesar la solicitud',
