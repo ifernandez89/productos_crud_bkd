@@ -36,6 +36,9 @@ export interface PreguntaRecord {
 export class AichatService {
   private readonly logger = new Logger(AichatService.name);
 
+  // ── Almacenamiento del último mensaje de IA ───────────────────────────────────
+  private lastAssistantMessage: string | null = null;
+
   constructor(
     private readonly preguntasRepository: PreguntasRepository,
     private readonly productsRepository: ProductsRepository,
@@ -151,6 +154,19 @@ export class AichatService {
     createAichatDto: CreateAichatDto,
   ): Promise<string> {
     const { pregunta: texto, agente } = createAichatDto;
+    
+    // ── Detectar comandos especiales para repetir el último mensaje ─────────────
+    if (this.isRepeatCommand(texto)) {
+      if (!this.lastAssistantMessage) {
+        throw new HttpException(
+          'No hay un mensaje anterior para repetir',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      this.logger.log(`Comando de repetición detectado. Devolviendo: ${this.lastAssistantMessage.slice(0, 50)}...`);
+      return this.lastAssistantMessage;
+    }
+
     const maxAttempts = 1;
     const timeout = 60000;
     let attempts = 0;
@@ -162,6 +178,7 @@ export class AichatService {
         const toolAnswer = await this.assistantTools.resolve(texto);
         if (toolAnswer) {
           const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
+          this.lastAssistantMessage = finalToolAnswer;
           await this.persistSuccessfulQuestion(texto, finalToolAnswer);
           return finalToolAnswer;
         }
@@ -189,6 +206,7 @@ export class AichatService {
           timeoutPromise,
         ])) as string;
         const finalAnswer = this.validateAnswerContent(respuesta, texto);
+        this.lastAssistantMessage = finalAnswer;
         await this.persistSuccessfulQuestion(texto, finalAnswer);
         return finalAnswer;
       } catch (error) {
@@ -396,6 +414,7 @@ export class AichatService {
         }
         this.logger.log(`Respuesta del modelo: ${result.response}`);
         const resp = this.validateAnswerContent(result.response, pregunta);
+        this.lastAssistantMessage = resp;
         await this.persistSuccessfulQuestion(pregunta, resp);
 
         return resp;
@@ -499,5 +518,39 @@ export class AichatService {
     return /(\bhola\b|\bbuenas\b|\bbuen dia\b|\bbuenos dias\b|\bbuenas tardes\b|\bbuenas noches\b)/i.test(
       normalized,
     );
+  }
+
+  /**
+   * Detecta si el texto es un comando para repetir el último mensaje.
+   * Soporta variaciones como: "repíteme eso", "léelo en voz alta", "repite", etc.
+   */
+  private isRepeatCommand(texto: string): boolean {
+    const normalized = texto
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+
+    const repeatPatterns = [
+      /^repite(me)?\s*(eso)?\s*[.!?]*$/,
+      /^repiteme\s*(eso)?\s*[.!?]*$/,
+      /^vuelve\s*a\s*repetir[.!?]*$/,
+      /^lee(lo)?\s*(en\s+)?voz\s+alta[.!?]*$/,
+      /^leelo\s*en\s*voz\s*alta[.!?]*$/,
+      /^read\s*(it)?\s*again[.!?]*$/,
+      /^say\s*that\s*again[.!?]*$/,
+      /^repet(ir)?\s*(eso|lo)?[.!?]*$/,
+      /^que\s*(lo\s+)?repita[.!?]*$/,
+      /^lo\s+mismo[.!?]*$/,
+    ];
+
+    return repeatPatterns.some((pattern) => pattern.test(normalized));
+  }
+
+  /**
+   * Obtiene el último mensaje de la IA.
+   */
+  getLastAssistantMessage(): string | null {
+    return this.lastAssistantMessage;
   }
 }

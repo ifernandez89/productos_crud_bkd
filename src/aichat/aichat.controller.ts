@@ -72,4 +72,17 @@ export class AichatController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.aichatService.remove(id);
   }
+
+  @Get('session/ultimo-mensaje')
+  @ApiOperation({ summary: 'Get the last assistant message' })
+  getLastAssistantMessage() {
+    const mensaje = this.aichatService.getLastAssistantMessage();
+    if (!mensaje) {
+      throw new HttpException(
+        'No hay un mensaje anterior',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return { mensaje };
+  }
 }
