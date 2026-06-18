@@ -158,6 +158,42 @@ Evolución completa de la arquitectura con provider abstraction, observabilidad,
 
 ---
 
+## [0.4.0] - 2026-06-18
+
+### Added — Model Router + Dual Ollama Support
+
+#### Segundo modelo Ollama (`qwen3:4b`) como experto técnico
+- `src/aichat/models/ollamaModel_2.ts` — nueva clase `OllamaQwenModelService` con configuración especializada para tareas técnicas: `temperature: 0.2`, `topK: 5`, `numCtx: 4096`, stop tokens extendidos.
+- System prompt dedicado con dominios de expertise: NestJS, PostgreSQL, Drizzle ORM, LangChain, pgvector, Ollama, Alfresco, arquitectura de software.
+- Variables `.env`: `OLLAMA_MODEL=llama3.2:3b` (general) y `OLLAMA_MODEL_2=qwen3:4b` (técnico).
+
+#### `ModelRouterService` (`src/aichat/utils/model-router.service.ts`)
+- Router inteligente que analiza el prompt y elige el modelo mediante detección de keywords técnicas.
+- Más de 100 keywords cubriendo: frameworks, bases de datos, DevOps, debugging, LLM/AI, patrones de diseño, Alfresco.
+- Si el prompt contiene keywords técnicas → `qwen3:4b`; caso contrario → `llama3.2:3b`.
+- Método `logRouting()` registra la decisión con modelo elegido, razón y keywords detectadas en cada request.
+
+#### Tokens de inyección desacoplados (`src/aichat/aichat.tokens.ts`)
+- `LLAMA_MODEL_TOKEN = 'LLAMA_MODEL'` y `QWEN_MODEL_TOKEN = 'QWEN_MODEL'` movidos a archivo independiente.
+- Elimina la dependencia circular entre `aichat.service.ts` y `aichat.module.ts`.
+
+### Fixed — Circular dependency (EADDRINUSE → `?` en índice [4])
+- `AichatService` importaba `LLAMA_MODEL_TOKEN` y `QWEN_MODEL_TOKEN` directamente desde `aichat.module.ts`.
+- `AichatModule` importa `AichatService`, creando un ciclo: módulo → service → módulo.
+- En `ts-node` (modo watch), el ciclo hacía que los tokens llegaran como `undefined` al service. NestJS los interpretaba como dependencia no resuelta y lanzaba el error de índice [4].
+- Solución: tokens extraídos a `aichat.tokens.ts`; el módulo re-exporta desde ahí para compatibilidad.
+
+### Fixed — Conflicto de nombre de clase en runtime
+- Ambas implementaciones de Ollama se llamaban `OllamaModelService`. NestJS usa el nombre de la clase como identificador interno en `useClass`, causando que un provider pisara al otro.
+- Solución: segunda clase renombrada a `OllamaQwenModelService`.
+
+### Fixed — `require()` dinámico incompatible con NestJS DI
+- El módulo original usaba `require('./models/ollamaModel_2')` dentro de un `try/catch` para registrar el provider condicionalmente.
+- Si el `require` fallaba silenciosamente, el token `QWEN_MODEL` nunca se registraba y NestJS no podía inyectarlo.
+- Solución: imports estáticos en `aichat.module.ts`; ambos providers siempre registrados.
+
+---
+
 ## [0.0.1] - 2026-06-15
 
 ### Added

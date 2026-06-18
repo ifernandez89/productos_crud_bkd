@@ -1,0 +1,2 @@
+export const LLAMA_MODEL_TOKEN = 'LLAMA_MODEL';
+export const QWEN_MODEL_TOKEN = 'QWEN_MODEL';

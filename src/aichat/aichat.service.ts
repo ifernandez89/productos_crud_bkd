@@ -1,10 +1,12 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import { CreateAichatDto } from './dto/create-aichat.dto';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { PreguntasRepository } from './repositories/preguntas.repository';
 import { ProductsRepository } from '../products/repositories/products.repository';
 import { OllamaModelService, StructuredPrompt } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
+import { ModelRouterService } from './utils/model-router.service';
+import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
 import { spawn } from 'child_process';
 import * as path from 'path';
 import { existsSync } from 'fs';
@@ -42,8 +44,13 @@ export class AichatService {
   constructor(
     private readonly preguntasRepository: PreguntasRepository,
     private readonly productsRepository: ProductsRepository,
-    private readonly ollamaModel: OllamaModelService,
     private readonly assistantTools: AssistantToolsService,
+    private readonly modelRouter: ModelRouterService,
+    @Inject(LLAMA_MODEL_TOKEN)
+    private readonly ollamaModel: OllamaModelService,
+    @Optional()
+    @Inject(QWEN_MODEL_TOKEN)
+    private readonly qwenModel?: OllamaModelService,
   ) {}
 
   // ── Caché de productos ────────────────────────────────────────────────────────
@@ -199,7 +206,7 @@ export class AichatService {
         } else {
           this.logger.log('Ejecución modelo local con Ollama');
           const prompt = await this.promptAgente(texto);
-          taskPromise = this.callOllamaModel(prompt);
+          taskPromise = this.callOllamaModel(prompt, texto);
         }
         respuesta = (await Promise.race([
           taskPromise,
@@ -326,8 +333,28 @@ export class AichatService {
     return response.data.choices[0]?.message?.content || 'Sin respuesta';
   }
 
-  private async callOllamaModel(prompt: StructuredPrompt): Promise<string> {
-    const aiMessageChunk = await this.ollamaModel.invokeWithMessages(prompt);
+  private async callOllamaModel(prompt: StructuredPrompt, preguntaOriginal: string): Promise<string> {
+    // 🔀 Router inteligente: elige modelo según el contenido
+    const routing = this.modelRouter.routeToModel(preguntaOriginal);
+    const modelToUse = routing.model;
+
+    this.modelRouter.logRouting(routing, preguntaOriginal);
+
+    // Seleccionar el modelo correcto
+    let model: OllamaModelService;
+    if (modelToUse === 'qwen3:4b' && this.qwenModel) {
+      this.logger.log('🧠 Usando Qwen3:4b (Experto Técnico)');
+      model = this.qwenModel;
+    } else {
+      if (modelToUse === 'qwen3:4b' && !this.qwenModel) {
+        this.logger.warn('⚠️ Qwen3:4b no disponible, usando fallback llama3.2:3b');
+      }
+      this.logger.log('🧠 Usando Llama3.2:3b (General)');
+      model = this.ollamaModel;
+    }
+
+    // Invocar el modelo seleccionado
+    const aiMessageChunk = await model.invokeWithMessages(prompt);
     if (typeof aiMessageChunk.content === 'string') {
       return aiMessageChunk.content;
     } else if (Array.isArray(aiMessageChunk.content)) {
