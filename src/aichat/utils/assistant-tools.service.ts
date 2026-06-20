@@ -45,6 +45,12 @@ export class AssistantToolsService {
   async resolve(query: string): Promise<string | null> {
     const normalized = this.normalize(query);
 
+    // Detector de saludo — prioridad máxima para evitar falsos positivos en clima/hora
+    if (this.isGreetingQuery(normalized)) {
+      this.logger.log(`[tool:greeting → ollama] "${query}"`);
+      return null;
+    }
+
     // Si la pregunta mezcla dominios distintos, Ollama maneja mejor la respuesta completa
     if (this.isMixedQuery(normalized)) {
       this.logger.log(`[tool:mixed → ollama] "${query}"`);
@@ -103,6 +109,14 @@ export class AssistantToolsService {
       this.isEconomyQuery(n),
     ];
     return domains.filter(Boolean).length >= 2;
+  }
+
+  // Detecta saludos simples para evitar falsos positivos en clima/hora
+  private isGreetingQuery(n: string): boolean {
+    const trimmed = n.trim();
+    // Saludo simple de máx 40 chars con palabras clave
+    if (trimmed.length > 40) return false;
+    return /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|como estas|como andas|que onda|como va|todo bien|hermano|amigo|brother|hey|hi|hello|como te va|que haces|que tal todo)[\s,?!.]*$/i.test(trimmed);
   }
 
   // ── Detectores de intención ─────────────────────────────────────────────────

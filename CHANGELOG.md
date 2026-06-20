@@ -49,6 +49,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed
 - Record bug fixes that affect API behavior, validation, or deployment.
 - **ENOTFOUND/ECONNRESET en tools externos**: `getWeatherAnswer`, `getHolidayAnswer`, `getCountryAnswer` ahora devuelven `null` (caída a Ollama con contexto) en lugar de lanzar error cuando la API externa falla (DNS, timeout, red). El usuario siempre recibe una respuesta.
+- **Falsos positivos en saludo → clima**: detector de saludo (`isGreetingQuery`) agregado con máxima prioridad. Preguntas como "¿cómo estás?" o "hermano, amigo, cómo estás tanto tiempo?" ahora caen a Ollama en lugar de disparar el tool de clima. El pattern valida saludos simples (máx 40 chars) con palabras clave específicas.
 ### Fixed
 - **Persistencia AI chat:** siempre persistir preguntas y respuestas. Se agregó manejo de errores y logging en `persistSuccessfulQuestion` para evitar que fallos de BD bloqueen la respuesta al usuario; `PreguntasRepository.create()` ahora implementa reintentos con backoff y, si todos los reintentos fallan, escribe un fallback en `data/preguntas-fallback.jsonl` para asegurar que ningún registro se pierda. Se añadieron logs informativos para facilitar diagnóstico en producción.
 
