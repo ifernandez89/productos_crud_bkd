@@ -7,6 +7,7 @@ export interface CreateDocumentData {
   content: string;
   category?: string;
   source?: string;
+  sourceId?: number;
 }
 
 export interface CreateChunkData {
@@ -23,10 +24,11 @@ export class DocumentRepository {
   async createDocument(data: CreateDocumentData): Promise<Document> {
     return this.prisma.document.create({
       data: {
-        title: data.title,
-        content: data.content,
+        title:    data.title,
+        content:  data.content,
         category: data.category,
-        source: data.source,
+        source:   data.source,
+        sourceId: data.sourceId,
       },
     });
   }
@@ -34,34 +36,30 @@ export class DocumentRepository {
   async createChunk(data: CreateChunkData): Promise<Chunk> {
     return this.prisma.chunk.create({
       data: {
-        documentId: data.documentId,
-        content: data.content,
+        documentId:  data.documentId,
+        content:     data.content,
         embeddingId: data.embeddingId,
-        metadata: data.metadata || {},
+        metadata:    data.metadata || {},
       },
     });
   }
 
   async findDocuments(category?: string): Promise<Document[]> {
     return this.prisma.document.findMany({
-      where: category ? { category } : undefined,
+      where:   category ? { category } : undefined,
       orderBy: { updatedAt: 'desc' },
-      include: { chunks: true },
+      include: { chunks: { select: { id: true } } },
     });
   }
 
   async searchDocuments(query: string, limit = 5): Promise<Document[]> {
-    const terms = query
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((t) => t.length >= 4);
-
+    const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
     if (terms.length === 0) return [];
 
     return this.prisma.document.findMany({
       where: {
         OR: terms.flatMap((term) => [
-          { title: { contains: term, mode: 'insensitive' } },
+          { title:   { contains: term, mode: 'insensitive' } },
           { content: { contains: term, mode: 'insensitive' } },
         ]),
       },
@@ -71,14 +69,10 @@ export class DocumentRepository {
   }
 
   async searchChunks(query: string, limit = 10): Promise<(Chunk & { document: Document })[]> {
-    const terms = query
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((t) => t.length >= 4);
-
+    const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
     if (terms.length === 0) return [];
 
-    return this.prisma.chunk.findMany({
+    const chunks = await this.prisma.chunk.findMany({
       where: {
         OR: terms.map((term) => ({
           content: { contains: term, mode: 'insensitive' },
@@ -86,7 +80,18 @@ export class DocumentRepository {
       },
       include: { document: true },
       take: limit,
-    }) as any;
+    }) as (Chunk & { document: Document })[];
+
+    // Actualizar tracking de uso en documentos recuperados
+    const docIds = [...new Set(chunks.map((c) => c.documentId))];
+    if (docIds.length > 0) {
+      await this.prisma.document.updateMany({
+        where: { id: { in: docIds } },
+        data:  { timesUsed: { increment: 1 }, lastUsed: new Date() },
+      });
+    }
+
+    return chunks;
   }
 
   async getDocumentWithChunks(id: number) {
@@ -98,5 +103,38 @@ export class DocumentRepository {
 
   async deleteDocument(id: number): Promise<void> {
     await this.prisma.document.delete({ where: { id } });
+  }
+
+  // ── Estadísticas de la biblioteca ──────────────────────────────────────────
+
+  async getLibraryStats() {
+    const [totalDocs, totalChunks, topDocs, byCategory] = await Promise.all([
+      this.prisma.document.count(),
+      this.prisma.chunk.count(),
+      this.prisma.document.findMany({
+        orderBy: { timesUsed: 'desc' },
+        take: 5,
+        select: { id: true, title: true, category: true, timesUsed: true, lastUsed: true },
+      }),
+      this.prisma.document.groupBy({
+        by: ['category'],
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+    ]);
+
+    return { totalDocs, totalChunks, topDocs, byCategory };
+  }
+
+  async getMostRecentDocuments(limit = 10) {
+    return this.prisma.document.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true, title: true, category: true,
+        timesUsed: true, lastUsed: true, createdAt: true,
+        _count: { select: { chunks: true } },
+      },
+    });
   }
 }

@@ -5,6 +5,8 @@ import { DocumentRepository } from './repositories/document.repository';
 import { UserProfileRepository } from './repositories/user-profile.repository';
 import { AgentRunRepository } from './repositories/agent-run.repository';
 import { SessionSummaryRepository } from './repositories/session-summary.repository';
+import { FeedbackRepository } from './repositories/feedback.repository';
+import { FeedbackDto } from './dto/feedback.dto';
 import { ILLMProvider } from './llm/llm-provider.interface';
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
@@ -40,6 +42,7 @@ export class JarvisService {
     private readonly capabilitiesService: CapabilitiesService,
     private readonly skillRegistry: SkillRegistryService,
     private readonly toolRegistry: ToolRegistryService,
+    private readonly feedbackRepo: FeedbackRepository,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
   ) {
@@ -422,5 +425,15 @@ export class JarvisService {
 
   async getRecentRuns(limit = 50) {
     return this.agentRunRepo.getRecentRuns(limit);
+  }
+
+  // ── Feedback ────────────────────────────────────────────────────────────────
+
+  async saveFeedback(dto: FeedbackDto) {
+    return this.feedbackRepo.create(dto);
+  }
+
+  async getRecentFeedback(limit = 50) {
+    return this.feedbackRepo.findRecent(limit);
   }
 }

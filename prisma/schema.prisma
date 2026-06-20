@@ -133,20 +133,55 @@ model KnowledgeSource {
   @@index([active])
 }
 
+// ── 4.1) COLECCIONES ─────────────────────────────────────────────────────────
+// Agrupa documentos en colecciones temáticas (Programación, Astronomía, etc.)
+
+model Collection {
+  id          Int                  @id @default(autoincrement())
+  name        String               @unique
+  description String?
+  color       String?              // "#4F46E5" — color de UI
+  icon        String?              // emoji o nombre de ícono
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  documents   CollectionDocument[]
+
+  @@index([name])
+}
+
+// Tabla pivote N:M entre Collection y Document
+model CollectionDocument {
+  id           Int        @id @default(autoincrement())
+  collectionId Int
+  documentId   Int
+  addedAt      DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  document     Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, documentId])
+  @@index([collectionId])
+  @@index([documentId])
+}
+
 model Document {
-  id        Int              @id @default(autoincrement())
-  sourceId  Int?             // relación con KnowledgeSource
-  title     String
-  content   String           @db.Text
-  category  String?          // "tech", "personal", "reference", "api-doc"
-  source    String?          // legacy: URL, file path, manual
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  chunks    Chunk[]
+  id          Int                  @id @default(autoincrement())
+  sourceId    Int?                 // relación con KnowledgeSource
+  title       String
+  content     String               @db.Text
+  category    String?              // "tech", "personal", "reference", "api-doc"
+  source      String?              // legacy: URL, file path, manual
+  timesUsed   Int                  @default(0)  // cuántas veces fue recuperado
+  lastUsed    DateTime?            // última vez que se usó en RAG
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  chunks      Chunk[]
   knowledgeSource KnowledgeSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  collections CollectionDocument[]
 
   @@index([category])
   @@index([sourceId])
+  @@index([timesUsed])
+  @@index([lastUsed])
 }
 
 // ── 5) CHUNKS VECTORIALES ─────────────────────────────────────────────────────

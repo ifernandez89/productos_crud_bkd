@@ -20,5 +20,5 @@
     "typeRoots": ["./node_modules/@types", "./global.d.ts"]
   },
   "include": ["src/**/*", "test/**/*", "global.d.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/project-nomad"]
 }

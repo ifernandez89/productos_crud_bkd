@@ -55,6 +55,10 @@ export class AssistantToolsService {
       this.logger.log(`[tool:weather] "${query}"`);
       return this.getWeatherAnswer(query);
     }
+    if (this.isEconomyQuery(normalized)) {
+      this.logger.log(`[tool:economy] "${query}"`);
+      return this.getEconomyAnswer(query, normalized);
+    }
     if (this.isHolidayQuery(normalized)) {
       this.logger.log(`[tool:holiday] "${query}"`);
       return this.getHolidayAnswer(query);
@@ -96,6 +100,7 @@ export class AssistantToolsService {
       this.isHolidayQuery(n),
       this.isCountryQuery(n),
       this.isMathQuery(n),
+      this.isEconomyQuery(n),
     ];
     return domains.filter(Boolean).length >= 2;
   }
@@ -104,6 +109,10 @@ export class AssistantToolsService {
 
   private isWeatherQuery(n: string): boolean {
     return /(clima|temperatura|tiempo|pronostico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio)/i.test(n);
+  }
+
+  private isEconomyQuery(n: string): boolean {
+    return /(dolar|dólar|cotizacion|cotización|riesgo pais|riesgo país|inflacion|inflación)/i.test(n);
   }
 
   private isHolidayQuery(n: string): boolean {
@@ -280,6 +289,52 @@ export class AssistantToolsService {
       { code: 99, label: 'Tormenta con granizo fuerte' },
     ];
     return map.find((e) => e.code === code)?.label ?? 'Estado meteorológico no disponible';
+  }
+
+  // ── ECONOMÍA ARGENTINA (DolarAPI) ───────────────────────────────────────────
+
+  private async getEconomyAnswer(query: string, normalized: string): Promise<string | null> {
+    try {
+      if (/(riesgo pais|riesgo país)/i.test(normalized)) {
+        const res = await axios.get('https://dolarapi.com/v1/riesgopais');
+        const data = res.data;
+        const dt = new Date(data.fechaActualizacion).toLocaleString('es-AR');
+        return `Riesgo País (Argentina): ${data.valor} puntos.\n(Actualizado: ${dt})`;
+      }
+
+      const res = await axios.get('https://dolarapi.com/v1/dolares');
+      const dolares: any[] = res.data;
+
+      // Si pide uno específico (blue, mep, ccl, oficial, tarjeta, mayorista)
+      let targetCasa = '';
+      if (/(blue|informal|ilegal)/i.test(normalized)) targetCasa = 'blue';
+      else if (/(mep|bolsa)/i.test(normalized)) targetCasa = 'mep';
+      else if (/(ccl|contado|liqui)/i.test(normalized)) targetCasa = 'contadoconliqui';
+      else if (/(oficial|banco nacion)/i.test(normalized)) targetCasa = 'oficial';
+      else if (/(tarjeta|turista)/i.test(normalized)) targetCasa = 'tarjeta';
+      else if (/(mayorista)/i.test(normalized)) targetCasa = 'mayorista';
+
+      let message = 'Cotizaciones del dólar en Argentina:\n';
+      
+      if (targetCasa) {
+        const item = dolares.find((d) => d.casa.toLowerCase().replace(/\s+/g, '') === targetCasa.replace(/\s+/g, ''));
+        if (item) {
+          return `Dólar ${item.nombre}:\nCompra: $${item.compra} | Venta: $${item.venta}\n(Actualizado: ${new Date(item.fechaActualizacion).toLocaleString('es-AR')})`;
+        }
+      }
+
+      // Si no especificó, devuelve los 3 más comunes
+      const defaults = ['oficial', 'blue', 'mep'];
+      for (const item of dolares) {
+        if (defaults.includes(item.casa)) {
+          message += `- ${item.nombre}: Compra $${item.compra} / Venta $${item.venta}\n`;
+        }
+      }
+      return message.trim();
+    } catch (err: unknown) {
+      this.logger.warn(`[tool:economy] DolarAPI no disponible: ${err}`);
+      return null;
+    }
   }
 
   // ── FERIADOS (Nager.Date) ────────────────────────────────────────────────────

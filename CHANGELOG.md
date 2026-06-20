@@ -7,10 +7,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Feedback (Nivel 3)**: Nuevo modelo `Feedback` y endpoint `POST /api/jarbees/feedback` para calificar respuestas del agente con puntuación y comentarios.
+- **Web Scraping (Nivel 3)**: `DocumentIngestService` ahora soporta ingestión directa desde URLs usando `cheerio` y `axios`. Endpoint expuesto en `POST /api/jarbees/library/document/url`.
+- **Agente Planificador (Nivel 4)**: Creado motor básico para dividir objetivos en tareas estructuradas (`Task` y `TaskStep`). Expuesto mediante endpoint `POST /api/jarbees/planner`.
+- **Tools de Economía Argentina (Nivel 4)**: Jarvis intercepta y responde sobre cotización del dólar (oficial, blue, bolsa, CCL) y riesgo país directamente usando `DolarAPI` sin consumir tokens, detectado en tiempo de router (`assistant-tools.service.ts`).
 - Changelog tracking for user-facing changes.
 - Detailed architecture documentation in [docs/arquitectura-sistema.md](docs/arquitectura-sistema.md).
 - Explicit documentation of the local Ollama model used by the AI flow: `qwen3.5:4b`.
 - **Logger global con Winston** (`nest-winston` + `winston-daily-rotate-file`): reemplaza el logger nativo de NestJS. Escribe a consola con formato colorizado y a archivos rotativos diarios — `logs/app-YYYY-MM-DD.log` (14 días, 20 MB) y `logs/error-YYYY-MM-DD.log` (30 días, 10 MB). Nivel configurable via `LOG_LEVEL` en `.env`.
+- **Knowledge Hub — Colecciones**: nuevo modelo `Collection` con relación N:M a `Document`. Permite agrupar documentos en colecciones temáticas (ej: Programación, Astronomía). Endpoints CRUD completos en `/api/jarbees/library/collection`.
+- **Knowledge Hub — PDF Upload**: nuevo endpoint `POST /api/jarbees/library/document/pdf` — acepta `multipart/form-data`, extrae texto con `pdf-parse`, aplica chunking deslizante (800 chars, 80 overlap) y persiste en la biblioteca.
+- **Knowledge Hub — Tracking de uso**: `Document` ahora tiene `timesUsed` y `lastUsed`. Cada vez que un chunk es recuperado por RAG, el contador del documento padre se incrementa automáticamente.
+- **Dashboard**: nuevo endpoint `GET /api/jarbees/dashboard` — devuelve resumen del sistema: memorias, conversaciones, sesiones, colecciones, documentos, chunks, top documentos más usados, breakdown por categoría y métricas del agente por modelo.
+- **Biblioteca — estadísticas**: `GET /api/jarbees/library/stats` con conteos, top usados y agrupación por categoría. `GET /api/jarbees/library/document/recent` para los N documentos más recientes.
+- **Chunking mejorado**: `DocumentIngestService` reemplaza el chunking por párrafos simple — usa ventana deslizante dentro de párrafos largos, configurable por `CHUNK_SIZE` y `CHUNK_OVERLAP`.
+- Dependencias nuevas: `pdf-parse`, `axios`, `cheerio`.
 - **Session message memory**: el servicio de chat ahora guarda `session.lastAssistantMessage` con cada respuesta exitosa. El endpoint `/aichat/preguntar` devuelve `{ respuesta, lastMessage }` en una única llamada HTTP, permitiendo al frontend acceder al último mensaje.
 - **Repeat commands**: soporte para comandos de repetición como "Repíteme eso", "Léelo en voz alta", "Repite", "Say that again" (inglés). Cuando el usuario envía un comando reconocido, la IA devuelve automáticamente el `lastAssistantMessage` sin hacer una consulta adicional.
 - **Endpoint GET `/aichat/session/ultimo-mensaje`**: acceso directo al último mensaje guardado (alternativa si se necesita de forma aislada).
