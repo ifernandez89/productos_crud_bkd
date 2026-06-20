@@ -7,6 +7,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **GitHub Pages Integration**: Scripts y documentación completa para conectar frontend en GitHub Pages con backend local usando ngrok o localtunnel.
+  - Scripts NPM: `start:ngrok` (automático), `ngrok` (solo túnel), `tunnel` (localtunnel)
+  - Scripts de inicio: `start-with-ngrok.bat` (Windows CMD) y `start-with-ngrok.ps1` (PowerShell)
+  - Documentación: `README.md` actualizado, `docs/NGROK_SETUP.md` (guía completa), `CHECKLIST.md` (paso a paso)
+
+### Changed
+- **CORS Configuration Enhanced**: `main.ts` ahora acepta requests desde múltiples orígenes con configuración específica:
+  - `https://ifernandez89.github.io` (GitHub Pages producción)
+  - URLs de ngrok (`*.ngrok.io`, `*.ngrok-free.app`)
+  - URLs de localtunnel (`*.loca.lt`)
+  - `localhost:3000` y `localhost:4000` (desarrollo local)
+  - Configurado con `credentials: true` y headers/métodos explícitos
+
+### Added
 - **Feedback (Nivel 3)**: Nuevo modelo `Feedback` y endpoint `POST /api/jarbees/feedback` para calificar respuestas del agente con puntuación y comentarios.
 - **Web Scraping (Nivel 3)**: `DocumentIngestService` ahora soporta ingestión directa desde URLs usando `cheerio` y `axios`. Endpoint expuesto en `POST /api/jarbees/library/document/url`.
 - **Agente Planificador (Nivel 4)**: Creado motor básico para dividir objetivos en tareas estructuradas (`Task` y `TaskStep`). Expuesto mediante endpoint `POST /api/jarbees/planner`.
