@@ -42,7 +42,10 @@ export class AssistantToolsService {
 
   // ── Router principal ────────────────────────────────────────────────────────
 
-  async resolve(query: string): Promise<string | null> {
+  async resolve(
+    query: string,
+    coordinates?: { latitude?: number; longitude?: number },
+  ): Promise<string | null> {
     const normalized = this.normalize(query);
 
     // Detector de saludo — prioridad máxima para evitar falsos positivos en clima/hora
@@ -59,7 +62,7 @@ export class AssistantToolsService {
 
     if (this.isWeatherQuery(normalized)) {
       this.logger.log(`[tool:weather] "${query}"`);
-      return this.getWeatherAnswer(query);
+      return this.getWeatherAnswer(query, coordinates);
     }
     if (this.isEconomyQuery(normalized)) {
       this.logger.log(`[tool:economy] "${query}"`);
@@ -220,13 +223,31 @@ export class AssistantToolsService {
 
   // ── CLIMA (Open-Meteo + Nominatim) ──────────────────────────────────────────
 
-  private async getWeatherAnswer(query: string): Promise<string | null> {
+  private async getWeatherAnswer(
+    query: string,
+    coordinates?: { latitude?: number; longitude?: number },
+  ): Promise<string | null> {
     try {
-      const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
-      const geocoded = await this.geocodeLocation(location);
-      const weather  = await this.fetchCurrentWeather(geocoded.lat, geocoded.lon);
+      let lat: number;
+      let lon: number;
+      let displayName: string;
+
+      if (coordinates?.latitude != null && coordinates?.longitude != null) {
+        lat = coordinates.latitude;
+        lon = coordinates.longitude;
+        const reverse = await this.reverseGeocodeLocation(lat, lon);
+        displayName = reverse.displayName;
+      } else {
+        const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
+        const geocoded = await this.geocodeLocation(location);
+        lat = geocoded.lat;
+        lon = geocoded.lon;
+        displayName = geocoded.displayName;
+      }
+
+      const weather = await this.fetchCurrentWeather(lat, lon);
       return [
-        `Clima para ${geocoded.displayName}:`,
+        `Clima para ${displayName}:`,
         `Temperatura: ${weather.temperature}°C`,
         `Sensación térmica: ${weather.apparentTemperature}°C`,
         `Viento: ${weather.windSpeed} km/h`,
@@ -253,6 +274,26 @@ export class AssistantToolsService {
       throw new HttpException(`No pude encontrar coordenadas para "${location}".`, HttpStatus.NOT_FOUND);
     }
     return { lat: Number(result.lat), lon: Number(result.lon), displayName: result.display_name || location };
+  }
+
+  private async reverseGeocodeLocation(
+    latitude: number,
+    longitude: number,
+  ): Promise<{ displayName: string }> {
+    const response = await axios.get<NominatimResult>(
+      'https://nominatim.openstreetmap.org/reverse',
+      {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          format: 'jsonv2',
+        },
+        headers: { 'User-Agent': 'productos-crud-bkd/1.0' },
+      },
+    );
+    const result = response.data;
+    const displayName = result.display_name || `Lat ${latitude}, Lon ${longitude}`;
+    return { displayName };
   }
 
   private async fetchCurrentWeather(lat: number, lon: number) {

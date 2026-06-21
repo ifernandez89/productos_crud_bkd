@@ -1,7 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MaxLength,
@@ -18,8 +20,20 @@ export class CreateAichatDto {
   })
   pregunta: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsBoolean()
   @IsOptional()
   agente: boolean;
+
+  @ApiProperty({ required: false, type: 'number', description: 'Latitud del usuario para clima local' })
+  @Type(() => Number)
+  @IsNumber({}, { message: 'latitude debe ser un número' })
+  @IsOptional()
+  latitude?: number;
+
+  @ApiProperty({ required: false, type: 'number', description: 'Longitud del usuario para clima local' })
+  @Type(() => Number)
+  @IsNumber({}, { message: 'longitude debe ser un número' })
+  @IsOptional()
+  longitude?: number;
 }

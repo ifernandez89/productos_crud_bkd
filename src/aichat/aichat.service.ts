@@ -174,7 +174,12 @@ export class AichatService {
   async preguntarOllamaOexternal(
     createAichatDto: CreateAichatDto,
   ): Promise<string> {
-    const { pregunta: texto, agente } = createAichatDto;
+    const {
+      pregunta: texto,
+      agente,
+      latitude,
+      longitude,
+    } = createAichatDto;
     
     // ── Detectar comandos especiales para repetir el último mensaje ─────────────
     if (this.isRepeatCommand(texto)) {
@@ -196,7 +201,10 @@ export class AichatService {
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        const toolAnswer = await this.assistantTools.resolve(texto);
+        const toolAnswer = await this.assistantTools.resolve(texto, {
+          latitude,
+          longitude,
+        });
         if (toolAnswer) {
           const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
           this.lastAssistantMessage = finalToolAnswer;

@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Documentación: `README.md` actualizado, `docs/NGROK_SETUP.md` (guía completa), `CHECKLIST.md` (paso a paso)
 - **Contexto dinámico de fecha/hora para el chatbot IA**: el prompt ahora incluye metadatos JSON con `fecha_actual`, `hora` y `ubicacion`, y una instrucción clara para no inventar la fecha actual.
 - **Validación de tamaño de mensaje de IA**: `pregunta` ahora tiene un límite de 5000 caracteres para evitar que requests demasiado grandes destruyan el contexto del modelo.
+- **Soporte de clima local con geolocalización móvil**: `CreateAichatDto` acepta `latitude` y `longitude` opcionales; cuando el usuario pregunta por el clima y el frontend envía geolocalización, el servicio usa Open-Meteo + Nominatim reverso para calcular la temperatura/clima local.
 
 ### Changed
 - **CORS Configuration Enhanced**: `main.ts` ahora acepta requests desde múltiples orígenes con configuración específica:
