@@ -11,6 +11,7 @@ describe('AichatController', () => {
     preguntarOllamaOexternal: jest.fn(),
     preguntarHRM: jest.fn(),
     obtenerPreguntas: jest.fn(),
+    getLastAssistantMessage: jest.fn(),
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
@@ -53,11 +54,13 @@ describe('AichatController', () => {
     it('should call service with correct params', async () => {
       const dto = { pregunta: 'Test question' };
       service.preguntarOllamaOexternal.mockResolvedValue('Test answer');
+      service.getLastAssistantMessage.mockReturnValue('Last answer');
 
       const result = await controller.preguntar(dto as any);
 
-      expect(result).toEqual({ respuesta: 'Test answer' });
+      expect(result).toEqual({ respuesta: 'Test answer', lastMessage: 'Last answer' });
       expect(service.preguntarOllamaOexternal).toHaveBeenCalled();
+      expect(service.getLastAssistantMessage).toHaveBeenCalled();
     });
   });
 
