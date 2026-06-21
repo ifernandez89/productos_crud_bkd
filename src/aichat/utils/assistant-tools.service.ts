@@ -174,11 +174,39 @@ export class AssistantToolsService {
     for (const pattern of patterns) {
       const match = query.match(pattern);
       if (match?.[1]) {
-        const location = match[1].trim();
-        if (location.length >= 3) return location.replace(/\s+/g, ' ');
+        let location = match[1].trim();
+        if (location.length >= 3) {
+          // Remover palabras temporales y referencias al clima
+          location = this.cleanLocationString(location);
+          if (location.length >= 3) {
+            return location.replace(/\s+/g, ' ');
+          }
+        }
       }
     }
     return null;
+  }
+
+  private cleanLocationString(location: string): string {
+    // Remover referencias temporales y palabras no-ubicación
+    const temporalPatterns = [
+      /\s+(esta|hoy|mañana|pasado mañana|noche|tarde|mañana|tarde|madrugada|amanecer|atardecer)/gi,
+      /\s+(al atardecer|a la noche|en la noche|durante la noche|esta noche)/gi,
+      /\s+(ahora|luego|después|antes|próximamente|pronto)/gi,
+    ];
+    
+    let cleaned = location;
+    for (const pattern of temporalPatterns) {
+      cleaned = cleaned.replace(pattern, '').trim();
+    }
+    
+    // Si quedó vacío o muy corto, retornar original limitado a primera palabra
+    if (cleaned.length < 3) {
+      const firstWord = location.split(/[\s,;]/)[0];
+      return firstWord.length >= 3 ? firstWord : '';
+    }
+    
+    return cleaned;
   }
 
   private extractCountry(query: string): string | null {
