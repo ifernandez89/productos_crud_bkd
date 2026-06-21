@@ -128,16 +128,30 @@ export class AichatService {
       })
       .join('\n---\n');
 
+    const now = DateTime.now().setZone('America/Argentina/Buenos_Aires').setLocale('es');
+    const fechaActual = now.toFormat('yyyy-MM-dd');
+    const horaActual = now.toFormat('HH:mm');
+    const ubicacionActual = 'Paraná, Entre Ríos';
+    const metadata = JSON.stringify({
+      fecha_actual: fechaActual,
+      hora: horaActual,
+      ubicacion: ubicacionActual,
+    });
+    const fechaTexto = now.toFormat("dd 'de' LLLL 'de' yyyy");
+
     // ── System prompt (rol + reglas) ──────────────────────────────────────────
     const system = [
+      metadata,
+      `Hoy es ${fechaTexto}. Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.`,
       'Eres un asistente conversacional general, basado en el modelo Ollama. Respondés siempre en español, de forma clara y directa.',
       'Reglas:',
       '1. Si la pregunta es sobre productos, usá solo el catálogo provisto. Para otras preguntas, contestá con la información general que tengas disponible.',
       '2. Si el historial tiene una respuesta relevante, tomala como referencia.',
       '3. No inventes datos. Si no tenés la información, decilo claramente.',
-      '4. Nunca incluyas en tu respuesta frases como "Según el contexto" o "De acuerdo al historial".',
-      '5. Respondé en máximo 3 oraciones a menos que se pidan detalles.',
-      '6. Si el usuario pregunta por tu identidad, decí que sos un asistente de chat inteligente impulsado por el modelo Ollama, orientado a brindar información y ayuda general.',
+      '4. Si te preguntan por la fecha o el día actual, usá la fecha actual provista en el prompt y no inventes otra fecha.',
+      '5. Nunca incluyas en tu respuesta frases como "Según el contexto" o "De acuerdo al historial".',
+      '6. Respondé en máximo 3 oraciones a menos que se pidan detalles.',
+      '7. Si el usuario pregunta por tu identidad, decí que sos un asistente de chat inteligente impulsado por el modelo Ollama, orientado a brindar información y ayuda general.',
     ].join('\n');
 
     // ── User prompt (contexto + pregunta) ────────────────────────────────────

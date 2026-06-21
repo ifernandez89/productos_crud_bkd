@@ -4,6 +4,8 @@ import { PreguntasRepository } from './repositories/preguntas.repository';
 import { ProductsRepository } from '../products/repositories/products.repository';
 import { OllamaModelService } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
+import { ModelRouterService } from './utils/model-router.service';
+import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
 import { Product, Pregunta } from '@prisma/client';
 
 describe('AichatService', () => {
@@ -72,12 +74,21 @@ describe('AichatService', () => {
           useValue: mockProductsRepository,
         },
         {
-          provide: OllamaModelService,
+          provide: AssistantToolsService,
+          useValue: mockAssistantTools,
+        },
+        ModelRouterService,
+        {
+          provide: LLAMA_MODEL_TOKEN,
           useValue: mockOllamaModel,
         },
         {
-          provide: AssistantToolsService,
-          useValue: mockAssistantTools,
+          provide: QWEN_MODEL_TOKEN,
+          useValue: mockOllamaModel,
+        },
+        {
+          provide: OllamaModelService,
+          useValue: mockOllamaModel,
         },
       ],
     }).compile();
@@ -101,7 +112,17 @@ describe('AichatService', () => {
 
       const result = await service.obtenerPreguntas();
 
-      expect(result).toEqual([mockPregunta]);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: mockPregunta.id,
+        texto: mockPregunta.texto,
+        respuesta: mockPregunta.respuesta,
+        estado: mockPregunta.estado,
+        errorMessage: mockPregunta.errorMessage,
+        errorStatus: mockPregunta.errorStatus,
+      });
+      expect(typeof result[0].createdAt).toBe('string');
+      expect(() => new Date(result[0].createdAt)).not.toThrow();
       expect(preguntasRepository.findAll).toHaveBeenCalled();
     });
   });
@@ -118,6 +139,19 @@ describe('AichatService', () => {
       expect(result.user).toContain('quiero comprar un producto');
       expect(result.user).toContain('Test Product');
       expect(productsRepository.findAll).toHaveBeenCalled();
+    });
+
+    it('should include dynamic metadata and the current date in the system prompt', async () => {
+      productsRepository.findAll.mockResolvedValue([]);
+      mockPreguntasRepository.findRelevant = jest.fn().mockResolvedValue([]);
+
+      const result = await service.promptAgente('hola');
+
+      expect(result.system).toMatch(/^{"fecha_actual"/);
+      expect(result.system).toMatch(/"hora":"\d{2}:\d{2}"/);
+      expect(result.system).toMatch(/"ubicacion":"Paraná, Entre Ríos"/);
+      expect(result.system).toContain('Hoy es');
+      expect(result.system).toContain('Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.');
     });
   });
 
