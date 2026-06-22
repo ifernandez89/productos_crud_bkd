@@ -137,9 +137,22 @@ export class JarvisService {
         return toolAnswer;
       }
 
+      // 1b. Contexto browser cacheado (URL + pedido de resumen/análisis → LLM processing)
+      const browserContext = this.assistantTools.consumeBrowserContext();
+      if (browserContext) {
+        toolsUsed.push('browser');
+      }
+
       // 2. Construir contexto (memoria + RAG + historial)
       const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-        await this.buildJarvisContext(userMessage, sessionId, useMemory, useDocuments, maxHistoryMessages);
+        await this.buildJarvisContext(
+          userMessage,
+          sessionId,
+          useMemory,
+          useDocuments,
+          maxHistoryMessages,
+          browserContext ?? undefined,
+        );
 
       if (usedMemory) toolsUsed.push('memory');
       if (usedDocs) toolsUsed.push('rag');
@@ -207,6 +220,7 @@ export class JarvisService {
     useMemory: boolean,
     useDocuments: boolean,
     maxHistoryMessages: number,
+    browserContext?: string,
   ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
     const profile = await this.userProfileRepo.getOrCreate();
     const identity = this.jarvisIdentity.getIdentity();
@@ -278,6 +292,11 @@ export class JarvisService {
           .join('\n---\n');
         contextParts.push(`### DOCUMENTOS\n${docText}`);
       }
+    }
+
+    // Contexto extraído de la web por el BrowserTool
+    if (browserContext) {
+      contextParts.push(`### CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL\n${browserContext}`);
     }
 
     // Resumen de sesión (si existe, evita enviar 100 mensajes)

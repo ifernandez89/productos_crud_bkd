@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed — Browser Tool v2 (mejoras de extracción y resumen inteligente)
+- **Estrategia de fetch invertida**: ahora Playwright va primero siempre (más confiable para sitios dinámicos), axios+cheerio es el fallback. Se usa el resultado con más palabras si ambos funcionan
+- **Scroll profundo** en `deepScroll()`: 4 pasos progresivos sobre la altura total del DOM con 600ms entre pasos, activa todo el lazy-loading de portales de noticias
+- **Bloqueo de recursos pesados**: Playwright bloquea `*.png, jpg, gif, webp, woff, mp4, mp3` para acelerar el scraping sin perder texto
+- **Espera inteligente de contenido**: después de `domcontentloaded`, espera selector semántico (`article, [class*="news"], main`) antes de scrollear
+- **Extractor de titulares** (`headlines[]`): nuevo campo en `BrowserResult`. Busca en `article h2/h3`, `.news-item h2`, `[class*="nota"] h3`, `h2 a`, `h3 a` (patrón común en portales). Devuelve hasta 30 titulares de la página
+- **Extractor de cuerpo inteligente**: prueba `article → main → [role="main"] → #content → .content → body` en ese orden, prefiriendo contenido semántico sobre el body completo
+- **`buildContext()` mejorado**: titulares aparecen en sección separada "Titulares encontrados" antes del cuerpo, no mezclados. Links internos y anclas filtrados
+- **Resumen vía LLM** (`wantsLLMProcessing()`): cuando el usuario pide "resumí", "analizá", "de qué trata", "puntos clave", etc., el contenido web ya no se devuelve crudo. Se cachea en `_lastBrowserContext` y se retorna `null` para que `JarvisService` lo inyecte como `### CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL` en el prompt del LLM
+- **`consumeBrowserContext()`**: nuevo método público en `AssistantToolsService` para que `JarvisService` consuma el contexto cacheado y lo inyecte en `buildJarvisContext()`
+- **`buildJarvisContext()`**: acepta parámetro `browserContext?: string`, lo inyecta como sección del prompt si está presente. Registra `'browser'` en `toolsUsed`
+- **`--disable-blink-features=AutomationControlled`** agregado a los args de Chromium para reducir bloqueos por bot-detection
+
 ### Added
 - **Playwright integrado (Chromium headless, gratuito)**: `playwright` instalado como dependencia. Chromium descargado localmente. El `BrowserToolService` ahora usa estrategia dual:
   - **Nivel 1 — Estático (axios + cheerio)**: primera tentativa, rápido y liviano

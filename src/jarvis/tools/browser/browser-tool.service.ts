@@ -1,21 +1,22 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { chromium, Browser, BrowserContext, Page } from 'playwright';
+import { chromium, Browser, Page } from 'playwright';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface BrowserResult {
   url: string;
-  finalUrl: string;         // URL final tras redirecciones
+  finalUrl: string;
   title: string;
   description: string;
-  text: string;             // texto limpio completo (hasta MAX_TEXT_CHARS)
-  excerpt: string;          // primeros 2000 chars para contexto rápido
-  links: string[];          // hasta 10 links relevantes
-  images: string[];         // alt-text de imágenes principales
+  text: string;
+  excerpt: string;
+  headlines: string[];         // titulares / h1-h3 extraídos
+  links: string[];
+  images: string[];
   wordCount: number;
-  renderedWithPlaywright: boolean;   // indica si se necesitó JS rendering
+  renderedWithPlaywright: boolean;
   scrapedAt: string;
 }
 
@@ -29,7 +30,7 @@ export interface NavigationResult {
   title: string;
   text: string;
   links: Array<{ text: string; href: string }>;
-  screenshot?: string;   // base64 si se pidió
+  screenshot?: string;
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
@@ -40,47 +41,43 @@ export class BrowserToolService {
 
   private readonly USER_AGENT =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 JarBees/1.0';
+    '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-  private readonly TIMEOUT_MS  = 15_000;
-  private readonly MAX_TEXT_CHARS = 8_000;
-  private readonly EXCERPT_CHARS  = 2_000;
+  private readonly TIMEOUT_MS     = 20_000;
+  private readonly MAX_TEXT_CHARS = 10_000;
+  private readonly EXCERPT_CHARS  = 3_000;
+  private readonly MIN_WORDS      = 300;   // umbral para decidir si vale la pena
 
-  // Playwright es costoso — se crea bajo demanda y se cierra
   private browser: Browser | null = null;
 
   // ── API pública ─────────────────────────────────────────────────────────────
 
   /**
    * Estrategia dual:
-   * 1. Intenta con axios + cheerio (rápido, liviano)
-   * 2. Si el contenido útil es escaso (<200 palabras), usa Playwright para renderizar JS
+   * 1. Playwright con scroll profundo (siempre para páginas de noticias/dinámicas)
+   * 2. Fallback a axios + cheerio si Playwright falla
    */
   async fetch(url: string): Promise<BrowserResult | BrowserError> {
     this.logger.log(`[browser] fetching: ${url}`);
 
-    // Intentar con cheerio primero
+    // Playwright primero para sitios dinámicos
+    const rendered = await this.fetchRendered(url);
+    if (!('error' in rendered) && rendered.wordCount >= this.MIN_WORDS) {
+      return rendered;
+    }
+
+    // Si Playwright da poco contenido, intentar con axios como respaldo
     const staticResult = await this.fetchStatic(url);
     if ('error' in staticResult) {
-      // Si falla, probar con Playwright
-      this.logger.log(`[browser] static failed, trying playwright: ${url}`);
-      return this.fetchRendered(url);
+      // Si ambos fallan, devolver el resultado de Playwright aunque sea pobre
+      return rendered;
     }
 
-    // Si el contenido es escaso → necesita JS rendering
-    if (staticResult.wordCount < 200) {
-      this.logger.log(`[browser] thin content (${staticResult.wordCount} words), rendering with playwright: ${url}`);
-      const renderedResult = await this.fetchRendered(url);
-      if ('error' in renderedResult) return staticResult; // fallback al estático
-      return renderedResult;
-    }
-
-    return staticResult;
+    // Usar el que tenga más contenido
+    if ('error' in rendered) return staticResult;
+    return rendered.wordCount >= staticResult.wordCount ? rendered : staticResult;
   }
 
-  /**
-   * Extrae todas las URLs mencionadas en un mensaje de usuario.
-   */
   extractUrls(message: string): string[] {
     const regex = /https?:\/\/[^\s<>"')\]]+/gi;
     const matches = message.match(regex) ?? [];
@@ -88,7 +85,8 @@ export class BrowserToolService {
   }
 
   /**
-   * Construye el contexto listo para inyectar en el prompt del LLM.
+   * Construye el contexto para el LLM con toda la info extraída.
+   * Incluye titulares separados del cuerpo para mejor contexto.
    */
   async buildContext(message: string): Promise<string | null> {
     const urls = this.extractUrls(message);
@@ -105,23 +103,39 @@ export class BrowserToolService {
         continue;
       }
 
-      const rendered = result.renderedWithPlaywright ? ' _(renderizado con Playwright)_' : '';
-      sections.push(
-        [
-          `### 🌐 ${result.title}${rendered}`,
-          `**URL:** ${result.finalUrl}`,
-          result.description ? `**Descripción:** ${result.description}` : '',
-          `**Palabras:** ${result.wordCount}  |  **Extraído:** ${result.scrapedAt}`,
-          '',
-          '**Contenido:**',
-          result.excerpt,
-          result.links.length > 0
-            ? `\n**Links encontrados:**\n${result.links.slice(0, 5).map((l) => `- ${l}`).join('\n')}`
-            : '',
-        ]
-          .filter(Boolean)
-          .join('\n'),
+      const rendered = result.renderedWithPlaywright ? ' _(JS renderizado)_' : '';
+      const parts: string[] = [
+        `### 🌐 ${result.title}${rendered}`,
+        `**URL:** ${result.finalUrl}`,
+        result.description ? `**Descripción:** ${result.description}` : '',
+        `**Palabras extraídas:** ${result.wordCount}  |  **Extraído:** ${result.scrapedAt}`,
+      ];
+
+      // Titulares de la página (muy útil para portales de noticias)
+      if (result.headlines.length > 0) {
+        parts.push('');
+        parts.push('**Titulares encontrados:**');
+        result.headlines.slice(0, 20).forEach((h) => parts.push(`• ${h}`));
+      }
+
+      // Cuerpo del texto
+      if (result.excerpt.trim().length > 50) {
+        parts.push('');
+        parts.push('**Contenido:**');
+        parts.push(result.excerpt);
+      }
+
+      // Links relevantes (solo los que no son anclas internas)
+      const externalLinks = result.links.filter(
+        (l) => !l.includes('#') && l !== result.finalUrl,
       );
+      if (externalLinks.length > 0) {
+        parts.push('');
+        parts.push('**Links encontrados:**');
+        externalLinks.slice(0, 5).forEach((l) => parts.push(`- ${l}`));
+      }
+
+      sections.push(parts.filter(Boolean).join('\n'));
     }
 
     return sections.join('\n\n---\n\n');
@@ -129,11 +143,10 @@ export class BrowserToolService {
 
   // ── Nivel 2: Navegación autónoma ────────────────────────────────────────────
 
-  /**
-   * Abre una URL con Playwright y devuelve el contenido renderizado + links.
-   * Permite navegación autónoma por el agente.
-   */
-  async navigate(url: string, options?: { screenshot?: boolean; waitFor?: string }): Promise<NavigationResult | BrowserError> {
+  async navigate(
+    url: string,
+    options?: { screenshot?: boolean; waitFor?: string },
+  ): Promise<NavigationResult | BrowserError> {
     let page: Page | null = null;
     try {
       const browser = await this.getBrowser();
@@ -142,46 +155,26 @@ export class BrowserToolService {
 
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.TIMEOUT_MS });
 
-      // Esperar selector específico si se pidió
       if (options?.waitFor) {
         await page.waitForSelector(options.waitFor, { timeout: 5000 }).catch(() => {});
       }
 
-      // Scroll para cargar contenido lazy
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {});
-      await page.waitForTimeout(1000);
+      await this.deepScroll(page);
 
       const title = await page.title();
       const finalUrl = page.url();
 
-      // Extraer texto limpio
-      const text = await page.evaluate(() => {
-        const remove = document.querySelectorAll(
-          'script, style, noscript, nav, footer, header, aside, iframe, form, [aria-hidden="true"]',
-        );
-        remove.forEach((el) => el.remove());
-        return document.body?.innerText ?? '';
-      });
-
-      const cleanText = text
-        .replace(/\t+/g, ' ')
-        .replace(/\n{3,}/g, '\n\n')
-        .replace(/ {2,}/g, ' ')
-        .trim()
-        .slice(0, this.MAX_TEXT_CHARS);
-
-      // Extraer links
-      const links = await page.evaluate(() => {
-        return Array.from(document.querySelectorAll('a[href]'))
+      const text = await this.extractTextFromPage(page);
+      const links = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('a[href]'))
           .slice(0, 20)
           .map((a) => ({
             text: (a as HTMLAnchorElement).innerText?.trim().slice(0, 80) ?? '',
             href: (a as HTMLAnchorElement).href ?? '',
           }))
-          .filter((l) => l.href.startsWith('http') && l.text.length > 2);
-      });
+          .filter((l) => l.href.startsWith('http') && l.text.length > 2),
+      );
 
-      // Screenshot opcional
       let screenshot: string | undefined;
       if (options?.screenshot) {
         const buf = await page.screenshot({ type: 'png', fullPage: false });
@@ -189,8 +182,7 @@ export class BrowserToolService {
       }
 
       await context.close();
-
-      return { url: finalUrl, title, text: cleanText, links, screenshot };
+      return { url: finalUrl, title, text, links, screenshot };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:navigate] error en ${url}: ${msg}`);
@@ -199,14 +191,14 @@ export class BrowserToolService {
     }
   }
 
-  /**
-   * Busca en Google y devuelve los primeros N resultados con título + URL + snippet.
-   */
-  async search(query: string, limit = 5): Promise<Array<{ title: string; url: string; snippet: string }>> {
+  async search(
+    query: string,
+    limit = 5,
+  ): Promise<Array<{ title: string; url: string; snippet: string }>> {
     const encoded = encodeURIComponent(query);
     const searchUrl = `https://www.google.com/search?q=${encoded}&hl=es&num=${limit + 2}`;
-
     let page: Page | null = null;
+
     try {
       const browser = await this.getBrowser();
       const context = await browser.newContext({ userAgent: this.USER_AGENT });
@@ -216,25 +208,18 @@ export class BrowserToolService {
 
       const results = await page.evaluate((maxResults: number) => {
         const items: Array<{ title: string; url: string; snippet: string }> = [];
-
-        // Selectores de resultados orgánicos de Google
-        const containers = document.querySelectorAll('div.g, div[data-sokoban-container]');
-        containers.forEach((container) => {
+        document.querySelectorAll('div.g, div[data-sokoban-container]').forEach((container) => {
           if (items.length >= maxResults) return;
-
           const anchor = container.querySelector('a[href]') as HTMLAnchorElement | null;
           const titleEl = container.querySelector('h3');
           const snippetEl = container.querySelector('.VwiC3b, span[data-ved], .IsZvec');
-
           const url = anchor?.href ?? '';
           const title = titleEl?.innerText?.trim() ?? '';
           const snippet = snippetEl?.textContent?.trim() ?? '';
-
           if (url.startsWith('http') && title) {
             items.push({ title, url, snippet: snippet.slice(0, 200) });
           }
         });
-
         return items;
       }, limit);
 
@@ -249,17 +234,11 @@ export class BrowserToolService {
     }
   }
 
-  /**
-   * Navega a múltiples URLs y las lee en paralelo (para investigación autónoma).
-   */
   async fetchMultiple(urls: string[]): Promise<BrowserResult[]> {
     const results = await Promise.all(urls.map((u) => this.fetch(u)));
     return results.filter((r): r is BrowserResult => !('error' in r));
   }
 
-  /**
-   * Cierra el browser si está abierto (llamar al apagar la app).
-   */
   async close(): Promise<void> {
     if (this.browser) {
       await this.browser.close();
@@ -270,36 +249,34 @@ export class BrowserToolService {
 
   // ── Estrategias de fetch ─────────────────────────────────────────────────────
 
-  private async fetchStatic(url: string): Promise<BrowserResult | BrowserError> {
-    let html: string;
-    try {
-      const response = await axios.get(url, {
-        headers: { 'User-Agent': this.USER_AGENT },
-        timeout: this.TIMEOUT_MS,
-        maxRedirects: 5,
-        validateStatus: (s) => s < 400,
-      });
-      html = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return { url, error: msg };
-    }
-
-    return this.parseHtml(url, url, html, false);
-  }
-
   private async fetchRendered(url: string): Promise<BrowserResult | BrowserError> {
     let page: Page | null = null;
     try {
       const browser = await this.getBrowser();
-      const context = await browser.newContext({ userAgent: this.USER_AGENT });
+      const context = await browser.newContext({
+        userAgent: this.USER_AGENT,
+        // Ignorar cookies/banners de consent bloqueantes
+        extraHTTPHeaders: { 'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8' },
+      });
       page = await context.newPage();
 
-      await page.goto(url, { waitUntil: 'networkidle', timeout: this.TIMEOUT_MS });
+      // Bloquear recursos pesados que no aportan texto
+      await page.route('**/*.{png,jpg,jpeg,gif,svg,webp,woff,woff2,ttf,mp4,mp3,avi}', (route) =>
+        route.abort(),
+      );
 
-      // Scroll para activar lazy-loading
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {});
-      await page.waitForTimeout(800);
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.TIMEOUT_MS });
+
+      // Esperar a que el contenido principal aparezca
+      await Promise.race([
+        page.waitForSelector('article, .article, [class*="news"], [class*="nota"], main', {
+          timeout: 5000,
+        }).catch(() => {}),
+        page.waitForTimeout(3000),
+      ]);
+
+      // Scroll profundo para activar lazy-loading
+      await this.deepScroll(page);
 
       const html = await page.content();
       const finalUrl = page.url();
@@ -314,6 +291,70 @@ export class BrowserToolService {
     }
   }
 
+  private async fetchStatic(url: string): Promise<BrowserResult | BrowserError> {
+    try {
+      const response = await axios.get(url, {
+        headers: { 'User-Agent': this.USER_AGENT, 'Accept-Language': 'es-AR,es;q=0.9' },
+        timeout: this.TIMEOUT_MS,
+        maxRedirects: 5,
+        validateStatus: (s) => s < 400,
+      });
+      const html = typeof response.data === 'string'
+        ? response.data
+        : JSON.stringify(response.data);
+      return this.parseHtml(url, url, html, false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { url, error: msg };
+    }
+  }
+
+  // ── Scroll profundo ──────────────────────────────────────────────────────────
+
+  /**
+   * Realiza scroll progresivo en 4 pasos para activar todo el lazy-loading.
+   */
+  private async deepScroll(page: Page): Promise<void> {
+    try {
+      await page.evaluate(async () => {
+        const totalHeight = document.body.scrollHeight;
+        const steps = 4;
+        for (let i = 1; i <= steps; i++) {
+          window.scrollTo(0, (totalHeight / steps) * i);
+          await new Promise((r) => setTimeout(r, 600));
+        }
+        window.scrollTo(0, 0); // volver arriba al final
+      });
+      await page.waitForTimeout(1000);
+    } catch {
+      // Scroll no crítico — ignorar error
+    }
+  }
+
+  // ── Extractor de texto desde página viva ─────────────────────────────────────
+
+  private async extractTextFromPage(page: Page): Promise<string> {
+    const text = await page.evaluate(() => {
+      const selectors = [
+        'script, style, noscript, nav, footer, header',
+        'aside, iframe, form, [aria-hidden="true"]',
+        '[class*="cookie"], [class*="banner"], [class*="popup"]',
+        '[class*="ads"], [class*="advertisement"], [id*="cookie"]',
+      ];
+      selectors.forEach((sel) => {
+        document.querySelectorAll(sel).forEach((el) => el.remove());
+      });
+      return document.body?.innerText ?? '';
+    });
+
+    return text
+      .replace(/\t+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/ {2,}/g, ' ')
+      .trim()
+      .slice(0, this.MAX_TEXT_CHARS);
+  }
+
   // ── Parseo HTML ──────────────────────────────────────────────────────────────
 
   private parseHtml(
@@ -325,41 +366,79 @@ export class BrowserToolService {
     const $ = cheerio.load(html);
 
     const title =
-      $('meta[property="og:title"]').attr('content') ||
-      $('title').text() ||
+      $('meta[property="og:title"]').attr('content')?.trim() ||
+      $('title').text().trim() ||
       originalUrl;
 
     const description =
-      $('meta[property="og:description"]').attr('content') ||
-      $('meta[name="description"]').attr('content') ||
+      $('meta[property="og:description"]').attr('content')?.trim() ||
+      $('meta[name="description"]').attr('content')?.trim() ||
       '';
 
-    // Limpiar DOM
+    // ── Extraer titulares antes de limpiar el DOM ──────────────────────────────
+    const headlines: string[] = [];
+
+    // Buscar en estructuras semánticas de artículos/noticias primero
+    const newsSelectors = [
+      'article h1, article h2, article h3',
+      '.news-item h2, .news-item h3',
+      '[class*="nota"] h2, [class*="nota"] h3',
+      '[class*="news"] h2, [class*="news"] h3',
+      '[class*="article"] h2, [class*="article"] h3',
+      'h2 a, h3 a',          // links dentro de titulares (muy común en portales)
+      'h2, h3',              // fallback general
+    ];
+
+    for (const selector of newsSelectors) {
+      $(selector).each((_, el) => {
+        const text = $(el).text().trim().replace(/\s+/g, ' ');
+        if (text.length > 10 && text.length < 300 && !headlines.includes(text)) {
+          headlines.push(text);
+        }
+      });
+      if (headlines.length >= 30) break; // suficiente
+    }
+
+    // ── Limpiar DOM para extraer cuerpo ──────────────────────────────────────
     $(
-      'script, style, noscript, nav, footer, header, ' +
-      'aside, .cookie-banner, .ads, .advertisement, ' +
-      '[aria-hidden="true"], iframe, form',
+      'script, style, noscript, nav, footer, header, aside, ' +
+      'iframe, form, [aria-hidden="true"], ' +
+      '[class*="cookie"], [class*="banner"], [class*="popup"], ' +
+      '[class*="ads"], [class*="advertisement"]',
     ).remove();
 
-    const rawText = $('body').text();
-    const cleanText = rawText
+    // Intentar extraer solo el cuerpo principal (article, main, etc.)
+    let bodyText = '';
+    const mainSelectors = ['article', 'main', '[role="main"]', '#content', '.content', 'body'];
+    for (const sel of mainSelectors) {
+      const candidate = $(sel).text();
+      const clean = candidate.replace(/\s+/g, ' ').trim();
+      if (clean.length > bodyText.length) {
+        bodyText = clean;
+        if (sel !== 'body') break; // prefiere semántico sobre body genérico
+      }
+    }
+
+    const cleanText = bodyText
       .replace(/\t+/g, ' ')
       .replace(/\n{3,}/g, '\n\n')
       .replace(/ {2,}/g, ' ')
       .trim()
       .slice(0, this.MAX_TEXT_CHARS);
 
-    // Links
+    // ── Links ────────────────────────────────────────────────────────────────
     const links: string[] = [];
     $('a[href]').each((_, el) => {
       const href = $(el).attr('href') ?? '';
       try {
         const abs = href.startsWith('http') ? href : new URL(href, finalUrl).href;
-        if (!links.includes(abs) && links.length < 10) links.push(abs);
+        if (!links.includes(abs) && !abs.includes('#') && links.length < 15) {
+          links.push(abs);
+        }
       } catch { /* ignorar href inválido */ }
     });
 
-    // Imágenes
+    // ── Imágenes ─────────────────────────────────────────────────────────────
     const images: string[] = [];
     $('img[alt]').each((_, el) => {
       const alt = $(el).attr('alt')?.trim();
@@ -373,10 +452,11 @@ export class BrowserToolService {
     return {
       url: originalUrl,
       finalUrl,
-      title: title.trim().slice(0, 200),
-      description: description.trim().slice(0, 400),
+      title: title.slice(0, 200),
+      description: description.slice(0, 400),
       text: cleanText,
       excerpt: cleanText.slice(0, this.EXCERPT_CHARS),
+      headlines: headlines.slice(0, 30),
       links,
       images,
       wordCount,
@@ -389,7 +469,7 @@ export class BrowserToolService {
 
   private async getBrowser(): Promise<Browser> {
     if (!this.browser || !this.browser.isConnected()) {
-      this.logger.log('[browser] iniciando instancia de Playwright Chromium...');
+      this.logger.log('[browser] iniciando Playwright Chromium...');
       this.browser = await chromium.launch({
         headless: true,
         args: [
@@ -399,6 +479,7 @@ export class BrowserToolService {
           '--disable-gpu',
           '--no-first-run',
           '--no-zygote',
+          '--disable-blink-features=AutomationControlled',
         ],
       });
       this.logger.log('[browser] Playwright Chromium listo');

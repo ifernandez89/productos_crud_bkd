@@ -185,21 +185,37 @@ export class AssistantToolsService {
     return /(busca|buscar|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame|busca en internet|busca en la web|busca en google|que dice internet|que dice la web|que hay sobre|que se sabe de|novedades de|novedades sobre|noticias de|noticias sobre)/i.test(n);
   }
 
-  private async getBrowserAnswer(query: string): Promise<string> {
+  /**
+   * Detecta si el usuario pide procesamiento inteligente (resumen, análisis, comparación).
+   * En ese caso, el contenido debe pasar por el LLM → devolvemos null para que
+   * JarvisService lo inyecte como contexto RAG.
+   */
+  private wantsLLMProcessing(message: string): boolean {
+    return /(resume|resumí|resumir|resumen|analiza|analizá|analizame|analizar|explicame|explicá|que dice|que habla|de que trata|de qué trata|compara|comparame|qué opinas|que opinas|extraé|extrae|lista|listame|listá|puntos clave|puntos principales)/i.test(
+      message,
+    );
+  }
+
+  private async getBrowserAnswer(query: string): Promise<string | null> {
     try {
       const context = await this.browserTool.buildContext(query);
-      if (!context) return null as any;
+      if (!context) return null;
 
-      // Extraer instrucción del usuario (lo que escribió además de la URL)
+      // Si el usuario pide resumen/análisis → dejar que el LLM procese el contenido
+      // Retornamos null para que JarvisService inyecte el contexto en el prompt
+      if (this.wantsLLMProcessing(query)) {
+        this.logger.log(`[browser] contenido listo para LLM processing`);
+        // Guardamos el contexto para que JarvisService lo use (ver método getBrowserContext)
+        this._lastBrowserContext = context;
+        return null;
+      }
+
+      // Sin instrucción de procesamiento → mostrar contenido directo
       const urls = this.browserTool.extractUrls(query);
       const instruction = urls.reduce((msg, url) => msg.replace(url, '').trim(), query).trim();
-
-      const userIntent = instruction.length > 3
-        ? `El usuario pidió: "${instruction}"\n\n`
-        : '';
-
-      const rendered = context.includes('_(renderizado con Playwright)_')
-        ? ' _(páginas con JavaScript renderizadas automáticamente)_'
+      const userIntent = instruction.length > 3 ? `El usuario pidió: "${instruction}"\n\n` : '';
+      const rendered = context.includes('_(JS renderizado)_')
+        ? ' _(páginas con JavaScript renderizadas)_'
         : '';
 
       return (
@@ -210,13 +226,24 @@ export class AssistantToolsService {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser] error en getBrowserAnswer: ${msg}`);
-      return null as any;
+      return null;
     }
+  }
+
+  // Cache liviano del último contexto browser para que JarvisService lo use
+  private _lastBrowserContext: string | null = null;
+
+  /**
+   * Extrae el contexto web cacheado y lo limpia (para que JarvisService lo inyecte en el prompt).
+   */
+  consumeBrowserContext(): string | null {
+    const ctx = this._lastBrowserContext;
+    this._lastBrowserContext = null;
+    return ctx;
   }
 
   private async getWebSearchAnswer(query: string): Promise<string> {
     try {
-      // Extraer el término de búsqueda limpiando la intención
       const cleanQuery = query
         .replace(/^(busca|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame)\s+/i, '')
         .replace(/(en internet|en la web|en google|en línea)/gi, '')
