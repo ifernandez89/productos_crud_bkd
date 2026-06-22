@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Browser Tool: respuesta siempre procesada por LLM cuando hay pregunta
+- **Causa raíz del problema**: `wantsLLMProcessing()` usaba una lista de keywords para decidir si pasar el contenido al LLM. Palabras como "que puedes decirme", "contame", "informame", "qué pasó" no estaban en la lista → el contenido se devolvía crudo al usuario sin pasar por Ollama
+- **Solución**: lógica invertida en `getBrowserAnswer()`. La regla ahora es:
+  - **URL + cualquier texto** (>5 chars) → **siempre al LLM** para procesar la respuesta
+  - **Solo URL sin texto adicional** → muestra el contenido extraído directamente (el usuario solo quiere ver qué hay)
+- `extractInstructionFromMessage()`: nuevo método que extrae el texto del mensaje quitando las URLs y puntuación (`; ,`). Si quedan >5 chars, hay una pregunta
+- `wantsLLMProcessing()` eliminado — ya no necesario con la nueva lógica
+- El log ahora muestra la instrucción detectada: `[browser] pregunta detectada ("que puedes decirme del ultimo partido...") → LLM processing`
+
 ### Changed — Browser Tool v3: velocidad y calidad de respuesta
 - **`waitUntil: 'networkidle'` → `'domcontentloaded'`**: el cambio más crítico. `networkidle` esperaba que toda la red estuviera quieta (ads, analytics, trackers) causando tiempos de 80-90s. Con `domcontentloaded` el HTML principal se procesa apenas está disponible: **estimado 5-15s en lugar de 80-90s**
 - **Bloqueo de analytics/ads en Playwright**: `googletagmanager, doubleclick, facebook, hotjar, intercom` bloqueados además de imágenes/fonts. Reduce requests pendientes que alargaban la espera

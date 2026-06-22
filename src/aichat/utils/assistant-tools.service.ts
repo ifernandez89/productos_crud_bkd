@@ -186,14 +186,16 @@ export class AssistantToolsService {
   }
 
   /**
-   * Detecta si el usuario pide procesamiento inteligente (resumen, análisis, comparación).
-   * En ese caso, el contenido debe pasar por el LLM → devolvemos null para que
-   * JarvisService lo inyecte como contexto RAG.
+   * Extrae el texto del mensaje quitando las URLs.
+   * Si queda texto significativo (>5 chars) → el usuario tiene una pregunta/instrucción.
    */
-  private wantsLLMProcessing(message: string): boolean {
-    return /(resume|resumí|resumir|resumen|analiza|analizá|analizame|analizar|explicame|explicá|que dice|que habla|de que trata|de qué trata|compara|comparame|qué opinas|que opinas|extraé|extrae|lista|listame|listá|puntos clave|puntos principales)/i.test(
-      message,
-    );
+  private extractInstructionFromMessage(message: string): string {
+    const urls = this.browserTool.extractUrls(message);
+    return urls
+      .reduce((msg, url) => msg.replace(url, ''), message)
+      .replace(/[;,]/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   private async getBrowserAnswer(query: string): Promise<string | null> {
@@ -201,25 +203,24 @@ export class AssistantToolsService {
       const context = await this.browserTool.buildContext(query);
       if (!context) return null;
 
-      // Si el usuario pide resumen/análisis → dejar que el LLM procese el contenido
-      // Retornamos null para que JarvisService inyecte el contexto en el prompt
-      if (this.wantsLLMProcessing(query)) {
-        this.logger.log(`[browser] contenido listo para LLM processing`);
-        // Guardamos el contexto para que JarvisService lo use (ver método getBrowserContext)
+      const instruction = this.extractInstructionFromMessage(query);
+      const hasQuestion = instruction.length > 5;
+
+      // Si el usuario escribió algo además de la URL → siempre al LLM
+      // El LLM usa el contenido web como contexto para responder la pregunta específica
+      if (hasQuestion) {
+        this.logger.log(`[browser] pregunta detectada ("${instruction.slice(0, 60)}") → LLM processing`);
         this._lastBrowserContext = context;
-        return null;
+        return null;  // JarvisService lo inyecta en el prompt
       }
 
-      // Sin instrucción de procesamiento → mostrar contenido directo
-      const urls = this.browserTool.extractUrls(query);
-      const instruction = urls.reduce((msg, url) => msg.replace(url, '').trim(), query).trim();
-      const userIntent = instruction.length > 3 ? `El usuario pidió: "${instruction}"\n\n` : '';
+      // Sin pregunta (solo URL) → mostrar contenido crudo
       const rendered = context.includes('_(JS renderizado)_')
         ? ' _(páginas con JavaScript renderizadas)_'
         : '';
 
       return (
-        `${userIntent}📄 **Contenido extraído de la web${rendered}:**\n\n` +
+        `📄 **Contenido extraído de la web${rendered}:**\n\n` +
         context +
         `\n\n---\n_Extraído en tiempo real por JarBees Browser Tool_`
       );
