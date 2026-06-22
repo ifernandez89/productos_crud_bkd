@@ -15,7 +15,7 @@ import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
-import { BrowserToolService, BrowserResult } from './tools/browser/browser-tool.service';
+import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -272,11 +272,13 @@ export class JarvisService {
       `País: ${identity.country || 'Argentina'}.`,
       `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
       'Reglas:',
-      '1. Usar un estilo claro, conciso y natural en español.',
-      '2. Priorizar memoria, contexto y documentos cuando sean relevantes.',
-      '3. No inventar datos. Si no sabés, decilo claramente.',
-      '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-      '5. Usar herramientas o memoria solo cuando ayude a resolver la pregunta.',
+      '1. Responder siempre en español argentino, de forma clara y natural.',
+      '2. Usar el contexto provisto (memoria, documentos, web) para fundamentar la respuesta.',
+      '3. No inventar datos. Si no tenés la info, decilo claramente.',
+      browserContext
+        ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumás todo — enfocate en la pregunta.'
+        : '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+      '5. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
       '',
       `Timezone: ${identity.timezone}`,
       `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
@@ -339,7 +341,11 @@ export class JarvisService {
     }
 
     const userPrompt = contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${
+            browserContext
+              ? '\n\n(Usá el contenido web extraído arriba para responder esta pregunta específica. No hagas un resumen genérico — respondé exactamente lo que se preguntó.)'
+              : ''
+          }`
         : userMessage;
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
   }

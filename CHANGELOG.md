@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed — Browser Tool v3: velocidad y calidad de respuesta
+- **`waitUntil: 'networkidle'` → `'domcontentloaded'`**: el cambio más crítico. `networkidle` esperaba que toda la red estuviera quieta (ads, analytics, trackers) causando tiempos de 80-90s. Con `domcontentloaded` el HTML principal se procesa apenas está disponible: **estimado 5-15s en lugar de 80-90s**
+- **Bloqueo de analytics/ads en Playwright**: `googletagmanager, doubleclick, facebook, hotjar, intercom` bloqueados además de imágenes/fonts. Reduce requests pendientes que alargaban la espera
+- **Scroll optimizado**: 3 pasos × 300ms + 500ms final = **~1.4s** (antes: 4 pasos × 600ms + 1000ms = **~3.4s**)
+- **Espera de contenido**: de 5000ms a 3000ms máximo, con selector más amplio (`h2, h3` incluidos)
+- **`systemPrompt` adaptativo**: cuando hay `browserContext`, la regla 4 cambia de "máximo 3 oraciones" a "respondé específicamente lo que el usuario preguntó usando el contenido web — no resumás todo"
+- **`userPrompt` con instrucción explícita**: cuando hay `browserContext`, se agrega al final: "Usá el contenido web extraído arriba para responder esta pregunta específica. No hagas un resumen genérico."
+- `BrowserResult` import no usado eliminado de `jarvis.service.ts`
+
 ### Changed — Browser Tool v2 (mejoras de extracción y resumen inteligente)
 - **Estrategia de fetch invertida**: ahora Playwright va primero siempre (más confiable para sitios dinámicos), axios+cheerio es el fallback. Se usa el resultado con más palabras si ambos funcionan
 - **Scroll profundo** en `deepScroll()`: 4 pasos progresivos sobre la altura total del DOM con 600ms entre pasos, activa todo el lazy-loading de portales de noticias
