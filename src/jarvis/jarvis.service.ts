@@ -141,6 +141,14 @@ export class JarvisService {
       const browserContext = this.assistantTools.consumeBrowserContext();
       if (browserContext) {
         toolsUsed.push('browser');
+        // Persistir el contexto browser en la sesión para que esté disponible
+        // en requests siguientes ("profundizá en X", "hablame sobre Y")
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'system',
+          content: browserContext,
+          metadata: { source: 'browser_context', capturedAt: new Date().toISOString() },
+        });
       }
 
       // 2. Construir contexto (memoria + RAG + historial)
@@ -197,7 +205,9 @@ export class JarvisService {
 
       return response.content;
     } catch (error) {
-      this.logger.error(`Error en Jarvis query: ${error.message}`);
+      const errMsg: string = error?.message ?? String(error);
+      this.logger.error(`Error en Jarvis query: ${errMsg}`);
+
       await this.agentRunRepo.create({
         sessionId,
         question: userMessage,
@@ -206,8 +216,21 @@ export class JarvisService {
         provider: providerName,
         durationMs: Date.now() - startTime,
         success: false,
-        errorMsg: error.message,
+        errorMsg: errMsg,
       });
+
+      // Si el error ya es un mensaje amigable para el usuario (ej: Ollama no disponible)
+      // lo devolvemos como respuesta en lugar de explotar con 500
+      if (errMsg.startsWith('⚠️')) {
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: errMsg,
+          metadata: { source: 'error' },
+        });
+        return errMsg;
+      }
+
       throw error;
     }
   }
