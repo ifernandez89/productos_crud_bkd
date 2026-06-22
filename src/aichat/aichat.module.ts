@@ -9,6 +9,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ConverterService } from './utils/converter.service';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { ModelRouterService } from './utils/model-router.service';
+import { BrowserToolService } from '../jarvis/tools/browser/browser-tool.service';
 
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
 
@@ -34,6 +35,7 @@ export { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN };
     PreguntasRepository,
     ProductsRepository,
     ConverterService,
+    BrowserToolService,
     AssistantToolsService,
     ModelRouterService,
   ],

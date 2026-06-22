@@ -18,6 +18,7 @@ import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
+import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { TaskRepository } from './repositories/task.repository';
@@ -36,6 +37,7 @@ import { PlannerService } from './planner/planner.service';
     AgentRunRepository,
     SessionSummaryRepository,
     FeedbackRepository,
+    BrowserToolService,
     AssistantToolsService,
     JarvisIdentityService,
     CapabilitiesService,

@@ -7,6 +7,41 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Playwright integrado (Chromium headless, gratuito)**: `playwright` instalado como dependencia. Chromium descargado localmente. El `BrowserToolService` ahora usa estrategia dual:
+  - **Nivel 1 — Estático (axios + cheerio)**: primera tentativa, rápido y liviano
+  - **Nivel 1 — Renderizado (Playwright)**: fallback automático si la página tiene <200 palabras (SPAs, React, Angular, lazy-loading)
+  - `renderedWithPlaywright: boolean` en cada resultado para trazabilidad
+- **Nivel 2 — Navegación autónoma con Playwright**:
+  - `BrowserToolService.navigate(url, { screenshot?, waitFor? })`: abre URL con Playwright, scrollea para lazy-loading, extrae texto limpio, links y screenshot opcional (base64)
+  - `BrowserToolService.search(query, limit)`: busca en Google y devuelve resultados con título, URL y snippet
+  - `BrowserToolService.fetchMultiple(urls[])`: fetching paralelo de múltiples URLs para investigación autónoma
+- **Detector `isWebSearchQuery()`** en `AssistantToolsService.resolve()`: cuando el usuario escribe "buscá X en internet", "googlea Y", "novedades sobre Z", etc., JarBees realiza la búsqueda automáticamente sin LLM y devuelve los top 5 resultados
+- **Endpoints nuevos** en `POST /jarbees/`:
+  - `browser/navigate` — navegación con Playwright + screenshot opcional
+  - `browser/search` — búsqueda web con Google vía Playwright
+- **Tool `browser_search`** registrada en `ToolRegistryService`
+
+### Changed
+- `BrowserToolService` completamente reescrito con estrategia dual estático/renderizado, lifecycle de Playwright (`getBrowser()` lazy + `close()`), y soporte para múltiples URLs simultáneas
+- `getBrowserAnswer()` indica visualmente cuando se usó Playwright para renderizar
+- `getWebSearchAnswer()` nueva: limpia la intención de búsqueda y retorna resultados formateados
+
+### Added
+- **Browser Tool — Detección automática de URLs**: `BrowserToolService` nuevo en `src/jarvis/tools/browser/`. Cuando el usuario incluye una URL en su mensaje, JarBees la detecta, extrae el contenido y construye un resumen estructurado sin guardar nada en BD.
+  - `BrowserToolService.fetch(url)` — descarga y parsea HTML con axios + cheerio, extrae título, descripción, texto limpio, links e imágenes (alt-text)
+  - `BrowserToolService.extractUrls(message)` — extrae todas las URLs del mensaje con regex
+  - `BrowserToolService.buildContext(message)` — construye bloque de contexto listo para inyectar en el prompt del LLM, soporta múltiples URLs simultáneas
+  - Límites: texto máximo 8.000 chars, excerpt 2.000 chars, hasta 10 links, timeout 12 s
+- **Endpoint `POST /jarbees/browser/fetch`**: fetch directo de una URL desde el frontend, retorna `title`, `description`, `text`, `wordCount`, `links`
+- **Detector `hasUrl()` en `AssistantToolsService.resolve()`**: antes de evaluar otros tools, si el mensaje contiene `https?://`, dispara `getBrowserAnswer()` que retorna el contenido como respuesta directa (sin llamar al LLM)
+- **Tool registrada** en `ToolRegistryService` como `browser` (categoría `external_api`)
+
+### Changed
+- `AssistantToolsService` ahora recibe `BrowserToolService` por inyección de constructor
+- `JarvisService` ahora recibe `BrowserToolService` por inyección de constructor, expone `fetchUrl(url)`
+- `JarvisModule` y `AichatModule` registran `BrowserToolService` como provider
+
+### Added
 - **GitHub Pages Integration**: Scripts y documentación completa para conectar frontend en GitHub Pages con backend local usando ngrok o localtunnel.
   - Scripts NPM: `start:ngrok` (automático), `ngrok` (solo túnel), `tunnel` (localtunnel)
   - Scripts de inicio: `start-with-ngrok.bat` (Windows CMD) y `start-with-ngrok.ps1` (PowerShell)

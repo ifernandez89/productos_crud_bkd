@@ -276,7 +276,38 @@ export class JarvisController {
     return { success: true };
   }
 
-  // ── Perfil ──────────────────────────────────────────────────────────────────
+  // ── Browser Tool ────────────────────────────────────────────────────────────
+
+  @Post('browser/fetch')
+  @ApiOperation({ summary: 'Extraer contenido de una URL (axios → Playwright si es SPA)' })
+  async browserFetch(@Body() body: { url: string }) {
+    if (!body.url) throw new BadRequestException('Se requiere una URL');
+    const result = await this.jarvisService.fetchUrl(body.url);
+    return { success: true, ...result };
+  }
+
+  @Post('browser/navigate')
+  @ApiOperation({ summary: 'Navegar a una URL con Playwright (JavaScript renderizado, screenshot opcional)' })
+  async browserNavigate(
+    @Body() body: { url: string; screenshot?: boolean; waitFor?: string },
+  ) {
+    if (!body.url) throw new BadRequestException('Se requiere una URL');
+    const result = await this.jarvisService.navigateUrl(body.url, {
+      screenshot: body.screenshot,
+      waitFor: body.waitFor,
+    });
+    return { success: true, ...result };
+  }
+
+  @Post('browser/search')
+  @ApiOperation({ summary: 'Buscar en Google y devolver resultados con título, URL y snippet' })
+  async browserSearch(
+    @Body() body: { query: string; limit?: number },
+  ) {
+    if (!body.query) throw new BadRequestException('Se requiere una query de búsqueda');
+    const results = await this.jarvisService.webSearch(body.query, body.limit ?? 5);
+    return { success: true, results };
+  }
 
   @Get('profile')
   @ApiOperation({ summary: 'Obtener perfil del usuario' })

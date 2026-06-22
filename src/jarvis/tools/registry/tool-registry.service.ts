@@ -80,6 +80,18 @@ export class ToolRegistryService {
       category: 'domain',
       enabled: true,
     });
+    this.register({
+      name: 'browser',
+      description: 'Navega y extrae contenido de URLs detectadas en el mensaje del usuario',
+      category: 'external_api',
+      enabled: true,
+    });
+    this.register({
+      name: 'browser_search',
+      description: 'Busca en Google y devuelve resultados cuando el usuario pide buscar en internet',
+      category: 'external_api',
+      enabled: true,
+    });
     this.logger.log(`Tool registry inicializado con ${this.tools.length} herramientas.`);
   }
 }

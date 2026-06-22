@@ -15,6 +15,7 @@ import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
+import { BrowserToolService, BrowserResult } from './tools/browser/browser-tool.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -43,6 +44,7 @@ export class JarvisService {
     private readonly skillRegistry: SkillRegistryService,
     private readonly toolRegistry: ToolRegistryService,
     private readonly feedbackRepo: FeedbackRepository,
+    private readonly browserTool: BrowserToolService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
   ) {
@@ -435,5 +437,31 @@ export class JarvisService {
 
   async getRecentFeedback(limit = 50) {
     return this.feedbackRepo.findRecent(limit);
+  }
+
+  // ── Browser Tool ─────────────────────────────────────────────────────────────
+
+  async fetchUrl(url: string): Promise<{ url: string; title?: string; description?: string; text?: string; wordCount?: number; links?: string[]; renderedWithPlaywright?: boolean; error?: string }> {
+    const result = await this.browserTool.fetch(url);
+    if ('error' in result) return { url, error: result.error };
+    return {
+      url: result.finalUrl,
+      title: result.title,
+      description: result.description,
+      text: result.excerpt,
+      wordCount: result.wordCount,
+      links: result.links,
+      renderedWithPlaywright: result.renderedWithPlaywright,
+    };
+  }
+
+  async navigateUrl(url: string, options?: { screenshot?: boolean; waitFor?: string }) {
+    const result = await this.browserTool.navigate(url, options);
+    if ('error' in result) return { url, error: result.error };
+    return result;
+  }
+
+  async webSearch(query: string, limit = 5) {
+    return this.browserTool.search(query, limit);
   }
 }

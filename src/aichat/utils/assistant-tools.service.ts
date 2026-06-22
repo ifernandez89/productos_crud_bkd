@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import * as Astronomy from 'astronomy-engine';
 import { toJewishDate, formatJewishDateInHebrew, toGregorianDate } from 'jewish-date';
 import { create, all } from 'mathjs';
+import { BrowserToolService } from '../../jarvis/tools/browser/browser-tool.service';
 
 const math = create(all);
 
@@ -40,6 +41,8 @@ export class AssistantToolsService {
   private readonly logger = new Logger(AssistantToolsService.name);
   private readonly defaultWeatherLocation = 'Paraná, Entre Rios, Argentina';
 
+  constructor(private readonly browserTool: BrowserToolService) {}
+
   // ── Router principal ────────────────────────────────────────────────────────
 
   async resolve(
@@ -52,6 +55,18 @@ export class AssistantToolsService {
     if (this.isGreetingQuery(normalized)) {
       this.logger.log(`[tool:greeting → ollama] "${query}"`);
       return null;
+    }
+
+    // Detector de URL — si el mensaje contiene una URL, scrapear y resumir
+    if (this.hasUrl(query)) {
+      this.logger.log(`[tool:browser] "${query}"`);
+      return this.getBrowserAnswer(query);
+    }
+
+    // Detector de búsqueda web — si el usuario pide buscar en internet
+    if (this.isWebSearchQuery(normalized)) {
+      this.logger.log(`[tool:browser:search] "${query}"`);
+      return this.getWebSearchAnswer(query);
     }
 
     // Si la pregunta mezcla dominios distintos, Ollama maneja mejor la respuesta completa
@@ -158,6 +173,76 @@ export class AssistantToolsService {
 
   private isMathQuery(n: string): boolean {
     return /(calcula|calculo|cuanto es|cuanto da|resuelve|deriva|integral|simplifica|factoriza|raiz cuadrada|logaritmo|seno|coseno|tangente|matematica|\d+\s*[\+\-\*\/\^]\s*\d)/i.test(n);
+  }
+
+  // ── Detector de URL ─────────────────────────────────────────────────────────
+
+  private hasUrl(message: string): boolean {
+    return /https?:\/\/[^\s]+/.test(message);
+  }
+
+  private isWebSearchQuery(n: string): boolean {
+    return /(busca|buscar|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame|busca en internet|busca en la web|busca en google|que dice internet|que dice la web|que hay sobre|que se sabe de|novedades de|novedades sobre|noticias de|noticias sobre)/i.test(n);
+  }
+
+  private async getBrowserAnswer(query: string): Promise<string> {
+    try {
+      const context = await this.browserTool.buildContext(query);
+      if (!context) return null as any;
+
+      // Extraer instrucción del usuario (lo que escribió además de la URL)
+      const urls = this.browserTool.extractUrls(query);
+      const instruction = urls.reduce((msg, url) => msg.replace(url, '').trim(), query).trim();
+
+      const userIntent = instruction.length > 3
+        ? `El usuario pidió: "${instruction}"\n\n`
+        : '';
+
+      const rendered = context.includes('_(renderizado con Playwright)_')
+        ? ' _(páginas con JavaScript renderizadas automáticamente)_'
+        : '';
+
+      return (
+        `${userIntent}📄 **Contenido extraído de la web${rendered}:**\n\n` +
+        context +
+        `\n\n---\n_Extraído en tiempo real por JarBees Browser Tool_`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[browser] error en getBrowserAnswer: ${msg}`);
+      return null as any;
+    }
+  }
+
+  private async getWebSearchAnswer(query: string): Promise<string> {
+    try {
+      // Extraer el término de búsqueda limpiando la intención
+      const cleanQuery = query
+        .replace(/^(busca|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame)\s+/i, '')
+        .replace(/(en internet|en la web|en google|en línea)/gi, '')
+        .trim();
+
+      this.logger.log(`[browser:search] buscando: "${cleanQuery}"`);
+      const results = await this.browserTool.search(cleanQuery, 5);
+
+      if (results.length === 0) {
+        return `No encontré resultados en internet para: "${cleanQuery}"`;
+      }
+
+      const resultLines = results
+        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || 'Sin descripción disponible.'}`)
+        .join('\n\n');
+
+      return (
+        `🔍 **Resultados de búsqueda para: "${cleanQuery}"**\n\n` +
+        resultLines +
+        `\n\n---\n_Búsqueda realizada en tiempo real por JarBees Browser Tool_`
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[browser:search] error: ${msg}`);
+      return null as any;
+    }
   }
 
   // ── Utilidades comunes ──────────────────────────────────────────────────────
