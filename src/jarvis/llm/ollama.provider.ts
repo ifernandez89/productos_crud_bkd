@@ -43,23 +43,45 @@ export class OllamaProvider implements ILLMProvider {
       }
     });
 
-    const response = await this.model!.invoke(messages);
+    try {
+      const response = await this.model!.invoke(messages);
 
-    const content =
-      typeof response.content === 'string'
-        ? response.content
-        : Array.isArray(response.content)
-          ? response.content.map((p: any) => p.text || '').join(' ')
-          : 'Sin respuesta';
+      const content =
+        typeof response.content === 'string'
+          ? response.content
+          : Array.isArray(response.content)
+            ? response.content.map((p: any) => p.text || '').join(' ')
+            : 'Sin respuesta';
 
-    const latencyMs = Date.now() - startTime;
+      return {
+        content,
+        model: this.getDefaultModel(),
+        provider: this.getProviderName(),
+        latencyMs: Date.now() - startTime,
+      };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
 
-    return {
-      content,
-      model: this.getDefaultModel(),
-      provider: this.getProviderName(),
-      latencyMs,
-    };
+      // Error de conexión — Ollama no está corriendo
+      if (msg.includes('fetch failed') || msg.includes('ECONNREFUSED') || msg.includes('connect')) {
+        this.logger.error(`[ollama] No se puede conectar con Ollama en localhost:11434. ¿Está corriendo?`);
+        throw new Error(
+          '⚠️ No puedo responder en este momento porque el modelo de IA local (Ollama) no está disponible. ' +
+          'Por favor iniciá Ollama ejecutando "ollama serve" en una terminal y volvé a intentar.',
+        );
+      }
+
+      // Modelo no encontrado
+      if (msg.includes('model') && (msg.includes('not found') || msg.includes('404'))) {
+        this.logger.error(`[ollama] Modelo ${this.getDefaultModel()} no encontrado`);
+        throw new Error(
+          `⚠️ El modelo "${this.getDefaultModel()}" no está descargado. ` +
+          `Ejecutá "ollama pull ${this.getDefaultModel()}" para descargarlo.`,
+        );
+      }
+
+      throw err;
+    }
   }
 
   async embed(text: string): Promise<LLMEmbeddingResponse> {
