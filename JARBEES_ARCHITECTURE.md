@@ -27,6 +27,27 @@ Una vez detectada la intención, JarBees recolecta el contexto del mundo real a 
 - **Content Cache:** Evita buscar en la web lo que ya se buscó recientemente, priorizando fuentes confiables.
 - **Google Workspace (Módulo):** Conectores listos para Calendar y Tasks vía OAuth2.
 
+### 🌐 Knowledge Acquisition Layer (Capa de Adquisición de Conocimiento)
+Responsable de nutrir al agente con información del mundo exterior para que no dependa exclusivamente de lo que "aprendió" el LLM durante su entrenamiento. Esta arquitectura acerca a JarBees a sistemas modernos como AnythingLLM, Project Nomad o Mem0.
+- **Búsqueda Web:** Extracción de datos en tiempo real.
+- **RSS & Noticias:** Suscripción a feeds de actualidad.
+- **APIs Externas:** Consumo de datos crudos (clima, deportes, finanzas).
+- **Ingesta de Documentos (PDFs/TXTs):** Procesamiento de archivos locales.
+
+### ⚡ Sistema de Skills (Capacidades Modulares)
+Inspirado en ecosistemas como [skills.sh](https://www.skills.sh/), las *Skills* son paquetes modulares que se cargan dinámicamente en JarBees. No están "hardcodeadas" en el LLM, sino que se activan según la necesidad del usuario:
+- **Astronomía:** Calcular fases lunares o eclipses.
+- **Programación & NestJS / PostgreSQL:** Búsqueda rápida de documentación de tu stack.
+- **Productividad:** Manejo de calendario y agendas.
+- *Incluso capacidades futuras que aún no existen pueden conectarse como un plugin.*
+
+### ⏰ Scheduled Jobs (Tareas Programadas Diarias)
+Un sistema de cron-jobs o "Daily Jobs" permite que JarBees no sea solo un asistente reactivo (que espera tu pregunta), sino proactivo.
+Ejemplos de procesos automáticos ejecutados periódicamente:
+- **Resumen Matutino:** Enviarte un reporte diario a las 8 AM con las noticias, tu agenda y el clima.
+- **Procesamiento Nocturno:** Leer, indexar y generar embeddings de los PDFs pesados mientras dormís.
+- **Monitoreo de Noticias Tecnológicas:** Avisarte solo si detecta una actualización crítica de NestJS o PostgreSQL.
+
 ---
 
 ## 2. Posibilidades Actuales (Qué podemos hacer AHORA)

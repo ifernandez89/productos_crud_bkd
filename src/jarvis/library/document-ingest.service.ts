@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { DocumentRepository } from '../repositories/document.repository';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import { EmbeddingsService } from './embeddings.service';
 const pdfParse = require('pdf-parse');
 
 export interface IngestResult {
@@ -19,7 +20,10 @@ export class DocumentIngestService {
   private readonly CHUNK_SIZE    = 800;
   private readonly CHUNK_OVERLAP = 80;
 
-  constructor(private readonly documentRepo: DocumentRepository) {}
+  constructor(
+    private readonly documentRepo: DocumentRepository,
+    private readonly embeddingsService: EmbeddingsService,
+  ) {}
 
   // ── Ingesta desde texto plano o markdown ────────────────────────────────────
 
@@ -105,9 +109,18 @@ export class DocumentIngestService {
   private async buildAndSaveChunks(documentId: number, content: string): Promise<number> {
     const chunks = this.splitIntoChunks(content);
     for (const [i, chunkContent] of chunks.entries()) {
+      let embeddingStr: string | null = null;
+      try {
+        const vec = await this.embeddingsService.generateEmbedding(chunkContent);
+        embeddingStr = JSON.stringify(vec); // Fallback store as string
+      } catch (err) {
+        this.logger.warn(`No se pudo generar el embedding para chunk ${i}: ${err.message}`);
+      }
+
       await this.documentRepo.createChunk({
         documentId,
         content: chunkContent,
+        embeddingId: embeddingStr,
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
     }

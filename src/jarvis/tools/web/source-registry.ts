@@ -23,14 +23,14 @@ export interface SourceDefinition {
 }
 
 export class SourceRegistry {
-  
+
   private static readonly sources: SourceDefinition[] = [
-    
+
     // ══════════════════════════════════════════════════════════════════════════
     // 📰 NOTICIAS GENERALES — Argentina
     // ══════════════════════════════════════════════════════════════════════════
     // NOTA: Empezamos con 3 fuentes confiables. Agregar más basado en analytics.
-    
+
     {
       name: 'Infobae',
       urlBase: 'https://www.infobae.com',
@@ -44,7 +44,7 @@ export class SourceRegistry {
         date: ['time', '.date', '[datetime]'],
       },
     },
-    
+
     {
       name: 'La Nación',
       urlBase: 'https://www.lanacion.com.ar',
@@ -57,7 +57,7 @@ export class SourceRegistry {
         content: ['article', '.nota'],
       },
     },
-    
+
     {
       name: 'El Once (Paraná)',
       urlBase: 'https://www.elonce.com',
@@ -110,7 +110,7 @@ export class SourceRegistry {
         content: ['main', '.content', 'article'],
       },
     },
-    
+
     // COMENTADO — Agregar si se detecta demanda en analytics:
     // {
     //   name: 'Perfil',
@@ -126,12 +126,12 @@ export class SourceRegistry {
     //   priority: 8,
     //   ttlHours: 1,
     // },
-    
+
     // ══════════════════════════════════════════════════════════════════════════
     // 🌦️ CLIMA
     // ══════════════════════════════════════════════════════════════════════════
     // NOTA: 2 fuentes confiables oficiales. Más no suele ser necesario.
-    
+
     {
       name: 'Meteored Argentina',
       urlBase: 'https://www.meteored.com.ar',
@@ -142,7 +142,7 @@ export class SourceRegistry {
         content: ['.weather-info', '.forecast', '.clima-actual'],
       },
     },
-    
+
     {
       name: 'SMN (Servicio Meteorológico Nacional)',
       urlBase: 'https://www.smn.gob.ar',
@@ -153,7 +153,7 @@ export class SourceRegistry {
         content: ['.pronostico', '.clima'],
       },
     },
-    
+
     // COMENTADO — Agregar si se necesita mayor cobertura:
     // {
     //   name: 'Windy',
@@ -169,12 +169,12 @@ export class SourceRegistry {
     //   priority: 8,
     //   ttlHours: 1,
     // },
-    
+
     // ══════════════════════════════════════════════════════════════════════════
     // ⚽ DEPORTES
     // ══════════════════════════════════════════════════════════════════════════
     // NOTA: Top 3 fuentes deportivas argentinas más confiables.
-    
+
     {
       name: 'TyC Sports',
       urlBase: 'https://www.tycsports.com',
@@ -188,7 +188,7 @@ export class SourceRegistry {
         date: ['time', '.date'],
       },
     },
-    
+
     {
       name: 'ESPN Argentina',
       urlBase: 'https://espndeportes.espn.com',
@@ -200,7 +200,7 @@ export class SourceRegistry {
         content: ['article', '.article-body'],
       },
     },
-    
+
     {
       name: 'Olé',
       urlBase: 'https://www.ole.com.ar',
@@ -213,7 +213,7 @@ export class SourceRegistry {
         content: ['.nota-texto'],
       },
     },
-    
+
     // COMENTADO — Promiedos es útil pero estructura de tabla compleja:
     // {
     //   name: 'Promiedos',
@@ -225,12 +225,12 @@ export class SourceRegistry {
     //     content: ['table', '.partidos', '.resultados'],
     //   },
     // },
-    
+
     // ══════════════════════════════════════════════════════════════════════════
     // 🔬 CIENCIA & TECNOLOGÍA
     // ══════════════════════════════════════════════════════════════════════════
     // NOTA: Top 3 más confiables por categoría.
-    
+
     // Ciencia general
     {
       name: 'Nature News',
@@ -239,7 +239,7 @@ export class SourceRegistry {
       priority: 10,
       ttlHours: 24,
     },
-    
+
     {
       name: 'Science News',
       urlBase: 'https://www.sciencenews.org',
@@ -247,7 +247,7 @@ export class SourceRegistry {
       priority: 10,
       ttlHours: 24,
     },
-    
+
     {
       name: 'CONICET',
       urlBase: 'https://www.conicet.gov.ar',
@@ -255,7 +255,7 @@ export class SourceRegistry {
       priority: 9,
       ttlHours: 24,
     },
-    
+
     // Tecnología & IA
     {
       name: 'TechCrunch',
@@ -264,7 +264,7 @@ export class SourceRegistry {
       priority: 10,
       ttlHours: 6,
     },
-    
+
     {
       name: 'Ars Technica',
       urlBase: 'https://arstechnica.com',
@@ -272,7 +272,7 @@ export class SourceRegistry {
       priority: 10,
       ttlHours: 6,
     },
-    
+
     {
       name: 'Hugging Face Blog',
       urlBase: 'https://huggingface.co/blog',
@@ -280,11 +280,11 @@ export class SourceRegistry {
       priority: 10,
       ttlHours: 6,
     },
-    
+
     // ══════════════════════════════════════════════════════════════════════════
     // 📚 REFERENCIA & ESPECIALIZADOS
     // ══════════════════════════════════════════════════════════════════════════
-    
+
     {
       name: 'Wikipedia ES',
       urlBase: 'https://es.wikipedia.org',
@@ -292,7 +292,7 @@ export class SourceRegistry {
       priority: 9,
       ttlHours: 168, // 7 días
     },
-    
+
     {
       name: 'Plantas Medicinales (Ignacio)',
       urlBase: 'https://ifernandez89.github.io/PlantasMedicinales',
@@ -300,9 +300,9 @@ export class SourceRegistry {
       priority: 8,
       ttlHours: 168,
     },
-    
+
     // COMENTADO — Agregar cuando haya demanda específica:
-    
+
     // Ciencia local Argentina
     // {
     //   name: 'Agencia CyTA-Leloir',
@@ -311,7 +311,7 @@ export class SourceRegistry {
     //   priority: 9,
     //   ttlHours: 24,
     // },
-    
+
     // Física especializada
     // {
     //   name: 'arXiv Physics',
@@ -327,7 +327,7 @@ export class SourceRegistry {
     //   priority: 10,
     //   ttlHours: 24,
     // },
-    
+
     // Matemáticas
     // {
     //   name: 'arXiv Mathematics',
@@ -343,7 +343,7 @@ export class SourceRegistry {
     //   priority: 9,
     //   ttlHours: 168,
     // },
-    
+
     // Innovación
     // {
     //   name: 'MIT Technology Review',
@@ -352,7 +352,7 @@ export class SourceRegistry {
     //   priority: 10,
     //   ttlHours: 12,
     // },
-    
+
     // Más tecnología
     // {
     //   name: 'The Verge',
@@ -368,7 +368,7 @@ export class SourceRegistry {
     //   priority: 10,
     //   ttlHours: 6,
     // },
-    
+
     // Entretenimiento
     // {
     //   name: 'IMDb',
@@ -391,7 +391,7 @@ export class SourceRegistry {
     //   priority: 10,
     //   ttlHours: 12,
     // },
-    
+
     // Otros especializados
     // {
     //   name: 'Mystery Planet',
@@ -415,9 +415,9 @@ export class SourceRegistry {
     //   ttlHours: 24,
     // },
   ];
-  
+
   // ── API pública ─────────────────────────────────────────────────────────────
-  
+
   /**
    * Obtiene todas las fuentes de una categoría, ordenadas por prioridad.
    */
@@ -426,7 +426,7 @@ export class SourceRegistry {
       .filter((s) => s.category === category && s.priority >= 5)
       .sort((a, b) => b.priority - a.priority);
   }
-  
+
   /**
    * Obtiene todas las categorías disponibles.
    */
@@ -434,31 +434,31 @@ export class SourceRegistry {
     const cats = new Set(this.sources.map((s) => s.category));
     return Array.from(cats).sort();
   }
-  
+
   /**
    * Obtiene todas las fuentes, opcionalmente filtradas.
    */
   static getAll(filter?: { category?: string; minPriority?: number }): SourceDefinition[] {
     let result = this.sources;
-    
+
     if (filter?.category) {
       result = result.filter((s) => s.category === filter.category);
     }
-    
+
     if (filter?.minPriority !== undefined) {
       result = result.filter((s) => s.priority >= filter.minPriority);
     }
-    
+
     return result.sort((a, b) => b.priority - a.priority);
   }
-  
+
   /**
    * Busca una fuente por URL base.
    */
   static findByUrl(urlBase: string): SourceDefinition | undefined {
     return this.sources.find((s) => s.urlBase === urlBase);
   }
-  
+
   /**
    * Construye una URL de búsqueda para una fuente específica.
    */

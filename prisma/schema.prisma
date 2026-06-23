@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -62,10 +62,10 @@ model UserCredential {
   id           Int         @id @default(autoincrement())
   userProfileId Int
   provider     String      // "google", "microsoft", etc.
-  accessToken  String      @db.Text
-  refreshToken String?     @db.Text
+  accessToken  String
+  refreshToken String?
   expiryDate   BigInt?     // timestamp de vencimiento
-  scope        String?     @db.Text
+  scope        String?
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   userProfile  UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
@@ -80,7 +80,7 @@ model UserCredential {
 
 model Memory {
   id           Int            @id @default(autoincrement())
-  content      String         @db.Text // "Ignacio trabaja con NestJS", "Prefiere TypeScript"
+  content      String         // "Ignacio trabaja con NestJS", "Prefiere TypeScript"
   category     String         // "preference", "fact", "context", "skill", "experience"
   importance   Int            @default(1) // 1-10, para rankear recuperación
   lastAccessed DateTime?      // tracking de uso para priorización
@@ -99,7 +99,7 @@ model Memory {
 model MemoryChunk {
   id          Int     @id @default(autoincrement())
   memoryId    Int
-  content     String  @db.Text
+  content     String
   embeddingId String? // referencia a vector store o futuro: embedding vector(768)
   memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
@@ -114,7 +114,7 @@ model ConversationMessage {
   id        Int      @id @default(autoincrement())
   sessionId String   // UUID de sesión, permite múltiples conversaciones
   role      String   // "user" | "assistant" | "system" | "tool"
-  content   String   @db.Text
+  content   String
   metadata  Json?    // { model, tokens, latency, toolCalls, etc }
   createdAt DateTime @default(now())
 
@@ -129,7 +129,7 @@ model ConversationMessage {
 model SessionSummary {
   id        Int      @id @default(autoincrement())
   sessionId String   @unique
-  summary   String   @db.Text // "Se habló de pgvector, diseño de Jarvis, NestJS"
+  summary   String   // "Se habló de pgvector, diseño de Jarvis, NestJS"
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
@@ -187,7 +187,7 @@ model Document {
   id          Int                  @id @default(autoincrement())
   sourceId    Int?                 // relación con KnowledgeSource
   title       String
-  content     String               @db.Text
+  content     String
   category    String?              // "tech", "personal", "reference", "api-doc"
   source      String?              // legacy: URL, file path, manual
   timesUsed   Int                  @default(0)  // cuántas veces fue recuperado
@@ -211,7 +211,7 @@ model Document {
 model Chunk {
   id          Int      @id @default(autoincrement())
   documentId  Int
-  content     String   @db.Text
+  content     String
   embeddingId String?  // referencia a vector store externo (si no usamos pgvector)
   metadata    Json?    // { page, section, language, etc }
   document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
@@ -226,9 +226,9 @@ model Chunk {
 model Task {
   id        Int        @id @default(autoincrement())
   sessionId String?    // relacionar con conversación si aplica
-  objective String     @db.Text
+  objective String
   status    String     @default("pending") // "pending" | "in_progress" | "completed" | "failed"
-  result    String?    @db.Text
+  result    String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   steps     TaskStep[]
@@ -244,8 +244,8 @@ model TaskStep {
   id          Int      @id @default(autoincrement())
   taskId      Int
   stepNumber  Int      // orden de ejecución
-  description String   @db.Text // "Buscar documentación de Ollama"
-  result      String?  @db.Text // resultado del paso
+  description String   // "Buscar documentación de Ollama"
+  result      String?  // resultado del paso
   status      String   @default("pending") // "pending" | "in_progress" | "completed" | "failed"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -261,10 +261,10 @@ model TaskStep {
 model Feedback {
   id        Int      @id @default(autoincrement())
   sessionId String?
-  question  String   @db.Text
-  answer    String   @db.Text
+  question  String
+  answer    String
   score     Int      // 1-5 stars, o -1/+1 thumbs
-  comment   String?  @db.Text
+  comment   String?
   createdAt DateTime @default(now())
 
   @@index([score])
@@ -281,7 +281,7 @@ model Feedback {
 model Tool {
   id          Int      @id @default(autoincrement())
   name        String   @unique // "weather", "calendar", "rag", "memory", "search"
-  description String   @db.Text
+  description String
   category    String   // "external_api", "database", "llm", "system"
   enabled     Boolean  @default(true)
   config      Json?    // configuración específica de la tool
@@ -298,15 +298,15 @@ model Tool {
 model AgentRun {
   id         Int      @id @default(autoincrement())
   sessionId  String?
-  question   String   @db.Text
-  answer     String?  @db.Text
+  question   String
+  answer     String?
   toolsUsed  Json?    // ["weather", "rag", "memory"]
   modelUsed  String   // "llama3.2:3b", "qwen3.5:8b"
   provider   String   // "ollama", "openrouter", "openai"
   durationMs Int      // latencia total
   tokensUsed Int?     // tokens consumidos
   success    Boolean  @default(true)
-  errorMsg   String?  @db.Text
+  errorMsg   String?
   createdAt  DateTime @default(now())
 
   @@index([success])
@@ -376,8 +376,8 @@ model ScrapedPage {
 model ScrapedContent {
   id           Int          @id @default(autoincrement())
   pageId       Int          @unique
-  htmlRaw      String?      @db.Text // HTML crudo (opcional, solo para páginas importantes)
-  textExtracted String      @db.Text // Texto limpio extraído
+  htmlRaw      String?      // HTML crudo (opcional, solo para páginas importantes)
+  textExtracted String      // Texto limpio extraído
   jsonExtracted Json?       // Datos estructurados si aplica (ej: goleadores, clima)
   metadata     Json?        // { wordCount, headlines, links, images, etc }
   page         ScrapedPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
@@ -390,7 +390,7 @@ model ScrapedContent {
 
 model Query {
   id            Int      @id @default(autoincrement())
-  question      String   @db.Text
+  question      String
   category      String   // detectada por intent router
   sourcesUsed   Json?    // ["tycsports", "espn"] — fuentes consultadas
   cacheHit      Boolean  @default(false) // si se sirvió desde caché

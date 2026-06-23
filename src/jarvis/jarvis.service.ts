@@ -739,6 +739,11 @@ export class JarvisService {
   private detectCategory(message: string): string | undefined {
     const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
+    // Astrología
+    if (/(astrolog|horoscopo|carta natal|signo zodiacal|signos del zodiaco|ascendente|planeta|luna en|sol en|venus en|marte en|casas astrologicas|transitos planetarios)/i.test(n)) {
+      return 'astrologia';
+    }
+
     // Gobierno local — solo cuando se pregunta EXPLÍCITAMENTE por autoridades/gestión
     if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
       return 'gobierno';

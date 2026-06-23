@@ -23,6 +23,8 @@ import { IntentRouterService } from './tools/intent/intent-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { DocumentIngestService } from './library/document-ingest.service';
+import { RssIngestService } from './library/rss-ingest.service';
+import { EmbeddingsService } from './library/embeddings.service';
 import { DashboardService } from './library/dashboard.service';
 import { TaskRepository } from './repositories/task.repository';
 import { PlannerService } from './planner/planner.service';
@@ -56,11 +58,13 @@ import { GoogleTasksService } from './tools/google/google-tasks.service';
     ToolRegistryService,
     OllamaProvider,
     OpenRouterProvider,
+    EmbeddingsService,
     DocumentIngestService,
+    RssIngestService,
     DashboardService,
     TaskRepository,
     PlannerService,
   ],
-  exports: [JarvisService, FeedbackRepository, ContentCacheService],
+  exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })
 export class JarvisModule {}
