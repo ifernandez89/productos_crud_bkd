@@ -270,8 +270,10 @@ export class JarvisService {
       '- Ciudad capital de Entre Ríos, fundada el 25 de junio de 1813 (cumple 213 años en junio 2026)',
       '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
       '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
+      '- **Intendenta actual (2026): Rosario Romero** (NO inventar nombres desactualizados)',
       '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
       '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar)',
+      '- ⚠️ IMPORTANTE: Para preguntas sobre gobierno/autoridades locales → BUSCAR EN INTERNET (Mi Paraná/El Once), NO usar conocimiento previo desactualizado',
       '',
       'Reglas:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
@@ -512,6 +514,12 @@ export class JarvisService {
       return false;
     }
 
+    // ⚠️ FORZAR búsqueda web para gobierno local (datos cambian frecuentemente)
+    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
+      this.logger.log(`[needsWebSearch] gobierno local detectado → FORZAR WEB`);
+      return true;
+    }
+
     // Todo lo demás → buscar en internet
     return true;
   }
@@ -589,8 +597,13 @@ export class JarvisService {
   private detectCategory(message: string): string | undefined {
     const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
+    // Gobierno local — MÁXIMA PRIORIDAD (datos cambian, necesita info actualizada)
+    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
+      return 'gobierno';
+    }
+
     // Paraná (ciudad) — contexto local prioritario
-    if (/(parana\b|ciudad de parana|municipalidad|intendente|concejo|parque urquiza|costanera|puerto viejo)/i.test(n)) {
+    if (/(parana\b|ciudad de parana|parque urquiza|costanera|puerto viejo)/i.test(n)) {
       // Distinguir: si menciona "rio" es geografía general, sino es gobierno/noticias locales
       if (/(rio|caudal|nivel|afluente)/i.test(n)) {
         return 'noticias'; // río Paraná → noticias generales
