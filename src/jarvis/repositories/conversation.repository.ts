@@ -62,11 +62,13 @@ export class ConversationRepository {
 
     if (terms.length === 0) return [];
 
+    // SQLite doesn't support mode: 'insensitive' for contains
+    // Since we already convert query to lowercase, this provides case-insensitive search
     return this.prisma.conversationMessage.findMany({
       where: {
         role: { in: ['user', 'assistant'] },
         OR: terms.map((term) => ({
-          content: { contains: term, mode: 'insensitive' },
+          content: { contains: term },
         })),
       },
       orderBy: { createdAt: 'desc' },

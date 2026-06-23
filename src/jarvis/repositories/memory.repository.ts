@@ -68,10 +68,12 @@ export class MemoryRepository {
 
     if (terms.length === 0) return this.getTopImportant(limit);
 
+    // SQLite doesn't support mode: 'insensitive' for contains
+    // Since we already convert query to lowercase, this provides case-insensitive search
     return this.prisma.memory.findMany({
       where: {
         OR: terms.map((term) => ({
-          content: { contains: term, mode: 'insensitive' },
+          content: { contains: term },
         })),
       },
       orderBy: [{ importance: 'desc' }, { lastAccessed: 'desc' }],

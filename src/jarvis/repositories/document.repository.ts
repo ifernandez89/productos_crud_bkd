@@ -56,11 +56,13 @@ export class DocumentRepository {
     const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
     if (terms.length === 0) return [];
 
+    // SQLite doesn't support mode: 'insensitive' for contains
+    // Since we already convert query to lowercase, this provides case-insensitive search
     return this.prisma.document.findMany({
       where: {
         OR: terms.flatMap((term) => [
-          { title:   { contains: term, mode: 'insensitive' } },
-          { content: { contains: term, mode: 'insensitive' } },
+          { title:   { contains: term } },
+          { content: { contains: term } },
         ]),
       },
       orderBy: { updatedAt: 'desc' },
@@ -75,7 +77,7 @@ export class DocumentRepository {
     const chunks = await this.prisma.chunk.findMany({
       where: {
         OR: terms.map((term) => ({
-          content: { contains: term, mode: 'insensitive' },
+          content: { contains: term },
         })),
       },
       include: { document: true },

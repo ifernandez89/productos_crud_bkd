@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Prisma SQLite queries: removed unsupported `mode: 'insensitive'` option (2026-06-23)
+
+#### Causa raíz
+El proyecto usa SQLite (definido en `prisma/schema.prisma`), pero varias repositories estaban usando la opción `mode: 'insensitive'` en queries de Prisma. Esta opción solo está disponible para PostgreSQL, no para SQLite, causando el error:
+```
+Unknown argument `mode`. Did you mean `lte`? Available options are marked with ?.
+```
+
+#### Archivos corregidos
+- `src/jarvis/repositories/memory.repository.ts` - método `search()`
+- `src/jarvis/repositories/conversation.repository.ts` - método `searchAcrossSessions()`
+- `src/jarvis/repositories/document.repository.ts` - métodos `searchDocuments()` y `searchChunks()`
+- `src/aichat/repositories/preguntas.repository.ts` - método `findRelevant()`
+
+#### Solución
+Se eliminó el parámetro `mode: 'insensitive'` de todos los queries `contains`. Dado que el código ya convierte las queries a minúsculas con `.toLowerCase()`, la búsqueda sigue siendo insensible a mayúsculas/minúsculas sin necesidad de la opción `mode`.
+
 ### Fixed — Intent Router: falso positivo SPORTS con mensajes largos (historial pegado) (2026-06-23)
 
 #### Causa raíz

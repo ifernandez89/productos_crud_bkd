@@ -107,8 +107,8 @@ export class PreguntasRepository implements IPreguntasRepository {
         estado: 'success',
         respuesta: { not: '' },
         OR: terms.flatMap((term) => [
-          { texto: { contains: term, mode: 'insensitive' as const } },
-          { respuesta: { contains: term, mode: 'insensitive' as const } },
+          { texto: { contains: term } },
+          { respuesta: { contains: term } },
         ]),
       },
       orderBy: { createdAt: 'desc' },
