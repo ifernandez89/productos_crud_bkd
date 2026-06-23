@@ -21,6 +21,8 @@ import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { WebHelper } from './tools/web/web-helper';
 import { randomUUID } from 'crypto';
+import { GoogleCalendarService } from './tools/google/google-calendar.service';
+import { GoogleTasksService } from './tools/google/google-tasks.service';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -54,6 +56,8 @@ export class JarvisService {
     private readonly contentCache: ContentCacheService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
+    private readonly googleCalendar: GoogleCalendarService,
+    private readonly googleTasks: GoogleTasksService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -146,6 +150,42 @@ export class JarvisService {
         // Si la tool falla → continúa al LLM
       }
 
+      // ── GOOGLE CALENDAR ───────────────────────────────────────────────────
+      if (intent.intent === 'CALENDAR') {
+        const calContext = await this.googleCalendar.getUpcomingEvents();
+        if (calContext) {
+          toolsUsed.push('google_calendar');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext);
+        }
+      }
+
+      // ── GOOGLE TASKS ──────────────────────────────────────────────────────
+      if (intent.intent === 'TASKS') {
+        const tasksContext = await this.googleTasks.getPendingTasks();
+        if (tasksContext) {
+          toolsUsed.push('google_tasks');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext);
+        }
+      }
+
+      // ── GOOGLE CALENDAR ───────────────────────────────────────────────────
+      if (intent.intent === 'CALENDAR') {
+        const calContext = await this.googleCalendar.getUpcomingEvents();
+        if (calContext) {
+          toolsUsed.push('google_calendar');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext);
+        }
+      }
+
+      // ── GOOGLE TASKS ──────────────────────────────────────────────────────
+      if (intent.intent === 'TASKS') {
+        const tasksContext = await this.googleTasks.getPendingTasks();
+        if (tasksContext) {
+          toolsUsed.push('google_tasks');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext);
+        }
+      }
+
       // ── URL — scrapear y procesar con LLM ────────────────────────────────
       if (intent.intent === 'URL') {
         await this.assistantTools.resolve(userMessage); // dispara el scraping y cachea
@@ -177,9 +217,9 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
       }
 
-      // ── WEB — cach\u00e9 inteligente → DuckDuckGo → Google ─────────────────────
+      // ── WEB — caché inteligente → DuckDuckGo → Google ─────────────────────
       if (intent.intent === 'WEB') {
-        // Intentar detectar categor\u00eda del query para usar cach\u00e9 optimizado
+        // Intentar detectar categoría del query para usar caché optimizado
         const category = this.detectCategory(userMessage);
         const webCtx = await this.autoWebSearch(userMessage, category);
         if (webCtx) {
@@ -188,26 +228,47 @@ export class JarvisService {
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
 
-        // Sin resultados web — si es una consulta de noticias/actualidad, NO dejar
-        // que el LLM invente: devolver mensaje claro de fallo temporal
+        // Sin resultados web — si es una consulta de noticias/actualidad:
+        // Último intento: scrapear El Once directamente antes de rendirse
         if (category === 'noticias' || category === 'gobierno') {
+          this.logger.log(`[jarvis] noticias sin resultados → último intento directo a El Once`);
+          try {
+            // NO pasamos userMessage para evitar que filter por keywords (ej: "resumen") y borre las noticias reales
+            const directCtx = await WebHelper.scrapeUrl('https://www.elonce.com');
+            if (directCtx && directCtx.length > 200) {
+              toolsUsed.push('direct_elonce');
+              this.logger.log(`[jarvis] El Once directo OK (${directCtx.length} chars)`);
+              return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx);
+            }
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`[jarvis] El Once directo falló: ${msg}`);
+          }
+
+          // Si todo falló → NO dejar que el LLM invente: devolver mensaje claro
+          const now = new Date();
+          const hora = now.toLocaleTimeString('es-AR', {
+            hour: '2-digit', minute: '2-digit',
+            timeZone: 'America/Argentina/Buenos_Aires',
+          });
           const failMsg = [
-            `\u26a0\ufe0f No pude obtener las noticias actuales en este momento (problema temporal de conectividad con las fuentes).`,
+            `⚠️ No pude obtener las noticias actuales en este momento (${hora} hs).`,
             ``,
-            `Pod\u00e9s consultarlas directamente en:`,
-            `- \ud83d\udcf0 **El Once**: https://www.elonce.com`,
-            `- \ud83d\udcf0 **UNO Entre R\u00edos**: https://www.unoentrerios.com.ar`,
-            `- \ud83c\udfd7\ufe0f **Mi Paran\u00e1**: https://mi.parana.gob.ar`,
+            `Intenté conectarme a las fuentes locales pero no respondieron. Podés consultarlas directamente en:`,
+            `- 📰 **El Once**: https://www.elonce.com`,
+            `- 📰 **UNO Entre Ríos**: https://www.unoentrerios.com.ar`,
+            `- 🏗️ **Mi Paraná**: https://mi.parana.gob.ar`,
             ``,
-            `Intent\u00e1 de nuevo en unos segundos, a veces las fuentes tardan en responder.`,
+            `Volvé a preguntarme en un momento, las fuentes suelen recuperarse enseguida.`,
           ].join('\n');
           await this.conversationRepo.create({ sessionId, role: 'assistant', content: failMsg, metadata: { source: 'web_fail_graceful' } });
           await this.agentRunRepo.create({ sessionId, question: userMessage, answer: failMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
           return failMsg;
         }
 
-        // Para otras categor\u00edas sin resultados → LLM con conocimiento propio
+        // Para otras categorías sin resultados → LLM con conocimiento propio
       }
+
 
       // ── LOCAL / RAG — memoria + documentos + historial + LLM ─────────────
       return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
@@ -647,39 +708,30 @@ export class JarvisService {
   private enrichQueryForCategory(query: string, category?: string): string {
     if (!category) return query;
 
-    const now   = new Date();
-    const day   = now.getDate();
-    const month = now.toLocaleDateString('es-AR', { month: 'long' });
-    const year  = now.getFullYear();
-    const today = `${day} de ${month} de ${year}`;
-
-    const newsCategories = ['noticias', 'gobierno', 'deportes'];
-    if (!newsCategories.includes(category)) return query;
-
     // Detectar localidad en la query original
     const n = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const mentionsParana   = /parana|entre rios|litoral/.test(n);
     const mentionsArgentina = /argentin/.test(n);
 
-    // Para noticias: construir query limpia en lugar de la pregunta completa
-    // "resumen de noticias para Paran\u00e1 el d\u00eda de hoy" \u2192 "noticias Paran\u00e1 Entre R\u00edos 23 de junio de 2026"
+    // Para noticias: construir query limpia "noticias Paran\u00e1 Entre R\u00edos hoy"
     if (category === 'noticias') {
       const localidad = mentionsParana   ? 'Paran\u00e1 Entre R\u00edos'
                       : mentionsArgentina ? 'Argentina'
                       : '';
-      return `noticias ${localidad} ${today}`.replace(/\s+/g, ' ').trim();
+      return `noticias ${localidad} hoy`.replace(/\s+/g, ' ').trim();
     }
 
     if (category === 'gobierno') {
       const localidad = mentionsParana ? 'Paran\u00e1 Entre R\u00edos' : 'Argentina';
-      return `noticias gobierno ${localidad} ${today}`.trim();
+      return `noticias gobierno ${localidad} hoy`.trim();
     }
 
-    // Deportes: conservar query original pero reemplazar "hoy" por fecha
+    // Deportes: conservar query original pero agregar fecha actual
+    const now   = new Date();
+    const today = `${now.getDate()} de ${now.toLocaleDateString('es-AR', { month: 'long' })} de ${now.getFullYear()}`;
     if (/\bhoy\b/i.test(query)) return query.replace(/\bhoy\b/gi, today);
     return `${query} ${today}`;
   }
-
   /**
    * Detecta la categoría de una pregunta para optimizar caché.
    * Esto acelera las consultas frecuentes usando fuentes priorizadas.

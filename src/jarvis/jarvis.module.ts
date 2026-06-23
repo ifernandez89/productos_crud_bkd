@@ -26,9 +26,12 @@ import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { TaskRepository } from './repositories/task.repository';
 import { PlannerService } from './planner/planner.service';
+import { GoogleModule } from '../google/google.module';
+import { GoogleCalendarService } from './tools/google/google-calendar.service';
+import { GoogleTasksService } from './tools/google/google-tasks.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, GoogleModule],
   controllers: [JarvisController],
   providers: [
     JarvisService,
@@ -46,6 +49,8 @@ import { PlannerService } from './planner/planner.service';
     ContentCacheService,
     AssistantToolsService,
     JarvisIdentityService,
+    GoogleCalendarService,
+    GoogleTasksService,
     CapabilitiesService,
     SkillRegistryService,
     ToolRegistryService,

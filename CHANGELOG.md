@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Intent Router: falso positivo SPORTS con mensajes largos (historial pegado) (2026-06-23)
+
+#### Causa raíz
+Cuando el usuario pegaba el historial de conversación anterior junto con su nueva pregunta (ej: copiaba el chat completo en el campo de texto), el `IntentRouterService.fastClassify()` evaluaba el **mensaje completo** incluyendo el historial. Si ese historial contenía palabras deportivas ("Argentina vs Austria", "goles"), el router clasificaba la nueva pregunta como `SPORTS (high)` en lugar de `WEB/noticias`.
+
+Ejemplo del log que evidenciaba el bug:
+```
+[intent:fast] SPORTS (high) — "resumen de noticias para Paraná el día de hoy\nJarBees\nHoy ma"
+```
+
+#### Correcciones aplicadas
+
+**`src/jarvis/tools/intent/intent-router.service.ts`:**
+- **Truncado anti-ruido**: en `fastClassify()`, si el mensaje tiene más de 300 chars, se clasifican solo las primeras 200 chars (`classifyText = message.length > 300 ? message.slice(0, 200) : message`). La intención real del usuario siempre está al inicio del mensaje.
+- **LLM classify consistente**: `classify()` también pasa el texto truncado a `llmClassify()` para casos de baja confianza, evitando que el historial pegado contamine la clasificación LLM.
+- **URLs preservadas**: la búsqueda de URLs sigue siendo sobre el mensaje completo, ya que una URL puede aparecer al final del texto.
+
+**`src/jarvis/jarvis.service.ts`:**
+- **Retry directo a El Once**: cuando `autoWebSearch()` falla para categoría `noticias` o `gobierno`, antes de devolver el error se intenta scrapear `elonce.com` directamente (sin DuckDuckGo ni caché). Si retorna >200 chars, se usa ese contenido. Registrado como `toolsUsed: ['direct_elonce']`.
+- **Mensaje de error mejorado**: cuando todo falla, el mensaje ahora incluye la hora real del intento (`12:57 hs`), texto más empático ("Intenté conectarme a las fuentes locales pero no respondieron") y cierre más claro ("Volvé a preguntarme en un momento, las fuentes suelen recuperarse enseguida.").
+
 ### Fixed — Noticias locales: routing, scraping y system prompt (2026-06-23)
 
 #### Causa raíz del problema

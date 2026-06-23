@@ -10,7 +10,9 @@ export type IntentType =
   | 'RAG'        // Buscar en documentos/biblioteca local
   | 'TOOL'       // Tool directa (clima, matemáticas, economía, etc.)
   | 'SPORTS'     // Partido, goles, resultado — va a API deportiva primero
-  | 'REPEAT';    // Repetir última respuesta
+  | 'REPEAT'     // Repetir última respuesta
+  | 'CALENDAR'   // Consultar o agendar en Google Calendar
+  | 'TASKS';     // Consultar o agendar en Google Tasks
 
 export interface IntentResult {
   intent: IntentType;
@@ -33,6 +35,9 @@ export class IntentRouterService {
   // ── API pública ─────────────────────────────────────────────────────────────
 
   async classify(message: string): Promise<IntentResult> {
+    // Para mensajes largos (historial pegado), clasificar solo las primeras 200 chars
+    const classifyText = message.length > 300 ? message.slice(0, 200) : message;
+
     // 1. Reglas determinísticas de alta confianza (instantáneas, sin LLM)
     const fastResult = this.fastClassify(message);
 
@@ -42,9 +47,9 @@ export class IntentRouterService {
       return fastResult;
     }
 
-    // 2. Clasificador LLM solo para casos de baja confianza
+    // 2. Clasificador LLM solo para casos de baja confianza — usa texto truncado
     try {
-      const llmResult = await this.llmClassify(message);
+      const llmResult = await this.llmClassify(classifyText);
       this.logger.log(`[intent:llm] ${llmResult.intent} — "${message.slice(0, 60)}"`);
       return llmResult;
     } catch {
@@ -57,12 +62,31 @@ export class IntentRouterService {
   // ── Clasificación rápida (reglas) ────────────────────────────────────────────
 
   private fastClassify(message: string): IntentResult {
-    const n = this.normalize(message);
-    const urls = this.extractUrls(message);
+    // Si el mensaje es muy largo (ej: el usuario pegó historial de conversación),
+    // clasificar solo por las primeras 200 chars para evitar falsos positivos.
+    // El historial anterior puede contener palabras de deportes, goles, etc. que
+    // confunden el clasificador. La intención real siempre está al inicio.
+    const classifyText = message.length > 300 ? message.slice(0, 200) : message;
+
+    const n = this.normalize(classifyText);
+    const urls = this.extractUrls(message); // URLs: buscar en el mensaje completo
 
     // REPEAT — alta confianza
     if (/\b(repeti|repetí|repetir|repite|dilo de nuevo|decilo de nuevo|voz alta)\b/i.test(n)) {
       return { intent: 'REPEAT', confidence: 'high', reason: 'repeat keyword' };
+    }
+
+    // CALENDAR — alta confianza
+    if (/(calendario|agenda|reunion|citas|que tengo hoy|que tengo mañana|eventos de hoy|eventos proximos|agendar|agendame)/i.test(n)) {
+      // Excluir si pregunta por "calendario maya/hebreo" que es una tool genérica
+      if (!/(maya|tzolkin|haab|hebreo)/i.test(n)) {
+        return { intent: 'CALENDAR', confidence: 'high', reason: 'calendar keyword' };
+      }
+    }
+
+    // TASKS — alta confianza
+    if (/(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes)/i.test(n)) {
+      return { intent: 'TASKS', confidence: 'high', reason: 'tasks keyword' };
     }
 
     // URL — alta confianza
