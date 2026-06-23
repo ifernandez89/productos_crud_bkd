@@ -269,8 +269,20 @@ export class JarvisService {
         // Para otras categorías sin resultados → LLM con conocimiento propio
       }
 
+      // ── LOCAL / RAG — pero antes, si needsWebSearch → enriquecer con web ──
+      // Esto cubre casos donde el IntentRouter dijo LOCAL pero la pregunta
+      // requiere datos actuales (noticias, gobierno, personas, eventos, etc.)
+      if (this.needsWebSearch(userMessage)) {
+        const category = this.detectCategory(userMessage);
+        const webCtx = await this.autoWebSearch(userMessage, category);
+        if (webCtx) {
+          toolsUsed.push('auto_search');
+          if (category) toolsUsed.push(`cache:${category}`);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+        }
+      }
 
-      // ── LOCAL / RAG — memoria + documentos + historial + LLM ─────────────
+      // ── LOCAL puro — memoria + documentos + historial + LLM ───────────────
       return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
 
     } catch (error) {
@@ -806,6 +818,16 @@ export class JarvisService {
     // Música
     if (/(musica|cancion|album|artista|concierto|festival|spotify|billboard)/i.test(n)) {
       return 'musica';
+    }
+
+    // Astrología
+    if (/(horoscopo|astrolog|carta natal|signo zodiacal|tarot|luna en|mercurio|venus|marte|jupiter|saturno|astro)/i.test(n)) {
+      return 'astrologia';
+    }
+
+    // Entretenimiento (MCU, películas)
+    if (/(pelicula|film|cine|actor|actriz|director|oscar|estreno|imdb|marvel|mcu|serie)/i.test(n)) {
+      return 'entretenimiento';
     }
 
     return undefined;

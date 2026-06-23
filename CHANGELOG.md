@@ -130,7 +130,28 @@ o derivaba al usuario a buscar solo. Se identificaron 4 bugs en cadena:
   - **`cleanExpiredCache()`**: limpieza de páginas expiradas (para cron job)
   - **`getCacheStats()`**: métricas de caché (total, válidas, expiradas, top fuentes, top categorías, hit rate)
 
-### Fixed — Intent Router: prioridad de deportes sobre hora
+### Changed — SourceRegistry v2: fuentes verificadas con scraping real
+- **Metodología**: todas las fuentes fueron testeadas con axios+cheerio antes de activarlas. Se descartaron o comentaron las que fallaron con 403, ENOTFOUND, SPA vacío, o 404
+- **Resultado: 30 fuentes activas** distribuidas en 10 categorías, todas con scraping estático confirmado
+
+| Categoría | Fuentes activas | Descartadas | Motivo descarte |
+|-----------|----------------|-------------|-----------------|
+| 📰 Noticias generales | Infobae, La Nación | — | — |
+| 📰 Noticias locales ER | El Once, UNO Entre Ríos, APF Digital, Análisis Digital, El Entre Ríos | — | 5/5 funcionan |
+| 🏛️ Gobierno | Mi Paraná, Parana.gob.ar | entrerios.gov.ar | SPA Angular (9 palabras) |
+| ⚽ Deportes | TyC Sports, Olé, Promiedos, Infobae Deportes | ESPN Deportes | SPA React (0 palabras) |
+| 🔬 Ciencia | CyTA-Leloir, CONICET, Science News | BBC, NatGeo AR, InfoCielo | 404 / ENOTFOUND / 403 |
+| 💻 Tecnología | FayerWayer, Xataka, MuyComputer, TechCrunch, Ars Technica, Hugging Face | OpenAI News | 403 Forbidden |
+| 🔮 Misterio | Mystery Planet | misteriosyverdades, sobrenatural.org, urbania | ENOTFOUND (caídos) |
+| 🎵 Música | Rolling Stone AR, Los 40 AR, La Nación Espectáculos | Infobae/cultura/musica | 404 |
+| 🔮 Astrología | MiAstral, Astro.com, Zodiacal, Lunarium | carta-natal.es | Requiere datos personales |
+| 📚 Referencia | Wikipedia ES, Plantas Medicinales | — | — |
+| 🎬 Entretenimiento | MCU Film | — | — |
+| 🌦️ Clima | *(ninguna)* | meteored, SMN, weather.com, tutiempo | 404/403/timeout — usar Open-Meteo API ya integrada |
+
+- **`getSummary()`**: nuevo método público que retorna el resumen de fuentes por categoría
+- **Clima**: ningún sitio de clima es scrapeble estáticamente. El tool de Open-Meteo (ya integrado en AssistantToolsService) es la vía correcta para clima — sin scraping
+- **ESPN**: SPA React puro, requeriría Playwright. Se puede activar si se habilita el modo headless
 - **Orden de evaluación corregido**: `SPORTS` se evalúa ANTES que `TOOL` para evitar que preguntas como "¿cuándo y a qué hora es el próximo partido?" se clasifiquen incorrectamente como `TOOL(hora)` en lugar de `SPORTS`
 - **Regex deportivo mejorado**: agregado `próximo partido|siguiente partido|cuando juega|cuando es el` para capturar consultas sobre partidos futuros
 - **Contexto deportivo en hora**: `/(que hora|hora actual)/` ahora excluye contexto deportivo (`partido|juego|match`) → "hora del partido Argentina" → `SPORTS`, no `TOOL`

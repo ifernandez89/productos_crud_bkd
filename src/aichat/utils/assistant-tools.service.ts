@@ -140,6 +140,8 @@ export class AssistantToolsService {
   // ── Detectores de intención ─────────────────────────────────────────────────
 
   private isWeatherQuery(n: string): boolean {
+    // Excluir "clima astrológico" / "clima zodiacal" / "clima lunar" → eso es astrología
+    if (/(astro|zodiac|lunar|horoscopo|signo|tarot|astrolog)/i.test(n)) return false;
     return /(clima|temperatura|tiempo|pronostico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio)/i.test(n);
   }
 
@@ -428,12 +430,22 @@ export class AssistantToolsService {
           lat: latitude,
           lon: longitude,
           format: 'jsonv2',
+          zoom: 10,          // zoom 10 = ciudad, no negocio/calle
         },
         headers: { 'User-Agent': 'productos-crud-bkd/1.0' },
       },
     );
     const result = response.data;
-    const displayName = result.display_name || `Lat ${latitude}, Lon ${longitude}`;
+
+    // Construir nombre legible: "Ciudad, Provincia, País" — ignorar calles y negocios
+    const addr = (result as any).address;
+    const city    = addr?.city ?? addr?.town ?? addr?.village ?? addr?.municipality ?? '';
+    const state   = addr?.state ?? '';
+    const country = addr?.country ?? '';
+    const displayName = [city, state, country].filter(Boolean).join(', ')
+      || result.display_name
+      || `Lat ${latitude}, Lon ${longitude}`;
+
     return { displayName };
   }
 

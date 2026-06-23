@@ -111,7 +111,9 @@ export class IntentRouterService {
 
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
-    if (/(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(n)) {
+    // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es WEB/astrología, no meteorología
+    if (/(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(n)
+        && !/(astro|zodiac|lunar|horoscopo|signo|astrolog)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
     }
     if (/(dolar|cotizacion del dolar|riesgo pais|inflacion|blue)/i.test(n)) {
