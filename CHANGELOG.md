@@ -6,6 +6,52 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed — Sports Tool v2: detalles de goles via scraping
+- **Cascada de 3 pasos** para consultas deportivas:
+  1. **TheSportsDB** → resultado, fecha, estadio, estado (`FT`/`NS`) — ~200ms
+  2. **DuckDuckGo** → busca `"goles [equipo A] vs [equipo B] minutos goleadores"` en sitios deportivos priorizados (olé, ESPN, TyC, marca, sofascore, flashscore)
+  3. **Scraping** de las primeras 2 URLs en paralelo → extrae párrafos con keywords de goles (`gol`, `minuto`, `anotó`, `marcó`, `min.`)
+- **`hasGoalDetail: boolean`** en `SportsResult`: indica si el resultado tiene goleadores/minutos o solo score básico. Se registra en `toolsUsed` como `sports_scraping` vs `sports_api`
+- **`buildGoalSearchQuery()`**: construye query de búsqueda específica detectando los equipos del mensaje (`argentina vs austria → "goles argentina vs austria partido hoy minutos goleadores"`)
+- **15 sitios deportivos conocidos** priorizados en DuckDuckGo: olé, ESPN ar/com, infobae, TyC, marca, as, livescore, flashscore, sofascore
+
+### Fixed — Sports Tool: ID de Argentina corregido + anti-hallucination reforzado
+- **ID de Argentina en TheSportsDB corregido**: era `133604` (equipo incorrecto → devolvía Arsenal vs Burnley). Valor correcto: `134509`. Verificado con `searchteams.php?t=Argentina` — retorna Argentina 2-0 Austria del 22/6/2026
+- **Mapa de IDs actualizado**: Brasil `134506`, Uruguay `134511`, Colombia `134510`, Real Madrid `133613`, Manchester United `133616`, Manchester City `133615`, Copa América `4499`
+- **Formateo de evento mejorado**: incluye estado del partido (`FT`/`NS`), hora local, estadio, liga con emojis
+- **Prompt anti-hallucination reforzado** en `respondWithLLM()`: cuando hay `webContext`, la regla 4 del systemPrompt es explícita: "TENÉS datos reales en el contexto. NUNCA digas 'no tengo acceso a información en tiempo real' — eso sería mentira si tenés datos en el contexto". La regla 3 también instruye a usar solo los datos del contexto
+- **`userPrompt` con advertencia ⚠️**: cuando hay browserContext, el userPrompt incluye "⚠️ INSTRUCCIÓN: Respondé usando los datos de CONTENIDO WEB EXTRAÍDO. No digas que no tenés información — los datos ya están en este prompt"
+
+### Fixed — Intent Router y Sports Tool: velocidad y detección
+- **`classify()` no llama más al LLM si confianza es `medium`**: antes solo saltaba el LLM con `high`. Ahora `medium` también es suficiente. Elimina la llamada a Ollama para clasificar "goles/partido" que tardaba ~30s adicionales
+- **Regex de deportes mejorado**: acepta `ganó/perdió/empató/clasificó` con tilde y sin. `"en el partido"` agregado como señal temporal → confianza `high`
+- **`SportsTool.search()` paralelo con timeout**: las llamadas a TheSportsDB (team + league + name) ahora se lanzan en paralelo vía `Promise.allSettled` con timeout global de 5s. Antes eran secuenciales (cada una podía tardar 6s)
+- **`searchDuckDuckGo()` timeout reducido**: de 8s a 6s
+- **Fallback mejorado**: si Ollama no está disponible al clasificar, en lugar de devolver `LOCAL`, devuelve `WEB` — más útil para preguntas factuales
+- Imports `axios` y `cheerioLoad` agregados a `jarvis.service.ts`
+
+### Added — Intent Router + Sports Tool (arquitectura de intención)
+- **`IntentRouterService`** (`src/jarvis/tools/intent/intent-router.service.ts`): clasifica cada mensaje ANTES de ejecutar cualquier herramienta. Tipos: `LOCAL | WEB | URL | RAG | TOOL | SPORTS | REPEAT`
+  - **Fase 1 — Reglas rápidas** (sin LLM, instantáneo): detecta con alta confianza URLs, tools directas, deportes, saludos, comandos de memoria
+  - **Fase 2 — Clasificador LLM** (solo para casos ambiguos): mini-prompt a Ollama con `temperature:0, num_predict:5`. Pregunta "WEB o LOCAL o SPORTS etc." — una sola palabra. Timeout 8s. Si Ollama no responde, usa el resultado de fase 1
+- **`SportsTool`** (`src/jarvis/tools/sports/sports-tool.service.ts`): cascada deportiva sin API key
+  - **TheSportsDB** (gratis, JSON, ~200ms): busca por teamId → leagueId → nombre de equipo. Mapa de equipos/ligas argentinas y europeas pre-cargado
+  - Fallback a DuckDuckGo → Google si la API no tiene datos
+- **`respondWithLLM()`**: método centralizado en `JarvisService` que encapsula buildJarvisContext + generate + persistir + observabilidad. Elimina código duplicado
+- `IntentRouterService` y `SportsTool` registrados en `JarvisModule`
+
+### Changed — Auto-búsqueda: DuckDuckGo + lógica de disparo simplificada
+- **DuckDuckGo HTML como motor primario** (`searchDuckDuckGo()`): parsea `html.duckduckgo.com/html/` con axios + cheerio. Sin API key, sin Playwright, ~1-2s. Selectores: `.result__body`, `.result__title a`, `.result__url`, `.result__snippet`
+- **Google Playwright como fallback** de `autoWebSearch()`: solo se usa si DuckDuckGo no retorna resultados. Evita los 30+ segundos en el caso común
+- **`needsWebSearch()` simplificado**: lógica invertida — busca en internet para todo EXCEPTO: saludos triviales, preguntas sobre el asistente, comandos de memoria (`recorda X`, `mi nombre es`), mensajes <3 palabras. Ya no depende de keywords positivas (que causaban falsos negativos como "de quienes fueron los goles")
+- **Instrucción anti-hallucination en el prompt**: cuando hay `auto_search`, el systemPrompt incluye "Nunca digas 'no tengo acceso a información en tiempo real' si tenés resultados de búsqueda disponibles". El userPrompt dice "Respondé usando EXCLUSIVAMENTE los datos de búsqueda"
+
+### Added — Auto-búsqueda web automática (fallback inteligente)
+- **`needsWebSearch(message)`** en `JarvisService`: detecta si una pregunta requiere información actual/factual cuando no hay contexto local disponible. Excluye: saludos, preguntas de identidad del asistente, mensajes cortos (<3 palabras). Detecta señales positivas: preguntas directas (qué/quién/cuándo/dónde), temas actuales (noticias, partidos, precios, clima), pedidos de info (contame, explicame, sabes)
+- **`autoWebSearch(query)`** en `JarvisService`: hace una búsqueda en Google vía `BrowserToolService.search()` con 4 resultados. Retorna el contexto formateado con título, URL y snippet de cada resultado
+- **Flujo automático en `query()`**: entre el paso 2 (construcción de contexto) y el paso 3 (llamada al LLM), si `!hasContext && needsWebSearch()` → busca en Google → inyecta resultados como `### BÚSQUEDA WEB AUTOMÁTICA` en el userPrompt → registra `'auto_search'` en `toolsUsed`
+- El LLM recibe instrucción explícita de usar los resultados de búsqueda y citar la fuente
+
 ### Fixed — Browser Tool: respuesta siempre procesada por LLM cuando hay pregunta
 - **Causa raíz del problema**: `wantsLLMProcessing()` usaba una lista de keywords para decidir si pasar el contenido al LLM. Palabras como "que puedes decirme", "contame", "informame", "qué pasó" no estaban en la lista → el contenido se devolvía crudo al usuario sin pasar por Ollama
 - **Solución**: lógica invertida en `getBrowserAnswer()`. La regla ahora es:

@@ -16,7 +16,11 @@ import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
+import { IntentRouterService } from './tools/intent/intent-router.service';
+import { SportsTool } from './tools/sports/sports-tool.service';
 import { randomUUID } from 'crypto';
+import axios from 'axios';
+import { load as cheerioLoad } from 'cheerio';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -45,6 +49,8 @@ export class JarvisService {
     private readonly toolRegistry: ToolRegistryService,
     private readonly feedbackRepo: FeedbackRepository,
     private readonly browserTool: BrowserToolService,
+    private readonly intentRouter: IntentRouterService,
+    private readonly sportsTool: SportsTool,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
   ) {
@@ -114,96 +120,75 @@ export class JarvisService {
     await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
 
     try {
-      // 1. Tools pre-LLM
-      const toolAnswer = await this.assistantTools.resolve(userMessage);
-      if (toolAnswer) {
-        toolsUsed.push('direct_tool');
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'assistant',
-          content: toolAnswer,
-          metadata: { source: 'tool' },
-        });
-        await this.agentRunRepo.create({
-          sessionId,
-          question: userMessage,
-          answer: toolAnswer,
-          toolsUsed,
-          modelUsed: 'none',
-          provider: 'tool',
-          durationMs: Date.now() - startTime,
-          success: true,
-        });
-        return toolAnswer;
+      // ── Intent Router — clasifica la intención ANTES de ejecutar nada ──────
+      const intent = await this.intentRouter.classify(userMessage);
+      this.logger.log(`[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`);
+
+      // ── REPEAT ────────────────────────────────────────────────────────────
+      if (intent.intent === 'REPEAT') {
+        const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
+        const answer = lastAnswer?.content ?? 'No encuentro una respuesta anterior. Hacé una pregunta primero.';
+        await this.conversationRepo.create({ sessionId, role: 'assistant', content: answer, metadata: { source: 'repeat' } });
+        await this.agentRunRepo.create({ sessionId, question: userMessage, answer, toolsUsed: ['repeat'], modelUsed: 'none', provider: 'repeat', durationMs: Date.now() - startTime, success: true });
+        return answer;
       }
 
-      // 1b. Contexto browser cacheado (URL + pedido de resumen/análisis → LLM processing)
-      const browserContext = this.assistantTools.consumeBrowserContext();
-      if (browserContext) {
-        toolsUsed.push('browser');
-        // Persistir el contexto browser en la sesión para que esté disponible
-        // en requests siguientes ("profundizá en X", "hablame sobre Y")
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'system',
-          content: browserContext,
-          metadata: { source: 'browser_context', capturedAt: new Date().toISOString() },
-        });
+      // ── TOOL directa (clima, math, economía, calendarios, hora) ───────────
+      if (intent.intent === 'TOOL') {
+        const toolAnswer = await this.assistantTools.resolve(userMessage);
+        if (toolAnswer) {
+          toolsUsed.push('direct_tool');
+          await this.conversationRepo.create({ sessionId, role: 'assistant', content: toolAnswer, metadata: { source: 'tool' } });
+          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: toolAnswer, toolsUsed, modelUsed: 'none', provider: 'tool', durationMs: Date.now() - startTime, success: true });
+          return toolAnswer;
+        }
+        // Si la tool falla → continúa al LLM
       }
 
-      // 2. Construir contexto (memoria + RAG + historial)
-      const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-        await this.buildJarvisContext(
-          userMessage,
-          sessionId,
-          useMemory,
-          useDocuments,
-          maxHistoryMessages,
-          browserContext ?? undefined,
-        );
+      // ── URL — scrapear y procesar con LLM ────────────────────────────────
+      if (intent.intent === 'URL') {
+        await this.assistantTools.resolve(userMessage); // dispara el scraping y cachea
+        const browserCtx = this.assistantTools.consumeBrowserContext();
+        if (browserCtx) {
+          toolsUsed.push('browser');
+          await this.conversationRepo.create({ sessionId, role: 'system', content: browserCtx, metadata: { source: 'browser_context' } });
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, browserCtx);
+        }
+        // Sin contexto (solo URL, sin pregunta) → responder sin browserCtx
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+      }
 
-      if (usedMemory) toolsUsed.push('memory');
-      if (usedDocs) toolsUsed.push('rag');
+      // ── SPORTS — cascada: API deportiva → DuckDuckGo → scraping ────────
+      if (intent.intent === 'SPORTS') {
+        const sportsResult = await this.sportsTool.search(intent.sportsQuery ?? userMessage);
+        if (sportsResult.found) {
+          toolsUsed.push(sportsResult.hasGoalDetail ? 'sports_scraping' : 'sports_api');
+          const webCtx = `**Datos deportivos (${sportsResult.source}):**\n${sportsResult.content}`;
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+        }
+        // Sin datos en ninguna fuente → búsqueda web general
+        this.logger.log(`[intent] sports vacío → fallback WEB`);
+        const webCtx = await this.autoWebSearch(userMessage);
+        if (webCtx) {
+          toolsUsed.push('auto_search');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+        }
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+      }
 
-      // 3. Invocar LLM via provider intercambiable
-      const response = await provider.generate({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-      });
+      // ── WEB — DuckDuckGo → Google ─────────────────────────────────────────
+      if (intent.intent === 'WEB') {
+        const webCtx = await this.autoWebSearch(userMessage);
+        if (webCtx) {
+          toolsUsed.push('auto_search');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+        }
+        // Sin resultados → LLM solo
+      }
 
-      // 4. Persistir respuesta
-      await this.conversationRepo.create({
-        sessionId,
-        role: 'assistant',
-        content: response.content,
-        metadata: {
-          source: 'llm',
-          model: response.model,
-          provider: response.provider,
-          latencyMs: response.latencyMs,
-          tokensUsed: response.tokensUsed,
-        },
-      });
+      // ── LOCAL / RAG — memoria + documentos + historial + LLM ─────────────
+      return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
 
-      // 5. Observabilidad
-      await this.agentRunRepo.create({
-        sessionId,
-        question: userMessage,
-        answer: response.content,
-        toolsUsed,
-        modelUsed: response.model,
-        provider: response.provider,
-        durationMs: Date.now() - startTime,
-        tokensUsed: response.tokensUsed,
-        success: true,
-      });
-
-      // 6. Resumen de sesión progresivo
-      await this.updateSessionSummaryIfNeeded(sessionId);
-
-      return response.content;
     } catch (error) {
       const errMsg: string = error?.message ?? String(error);
       this.logger.error(`Error en Jarvis query: ${errMsg}`);
@@ -343,7 +328,7 @@ export class JarvisService {
     const userPrompt = contextParts.length > 0
         ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${
             browserContext
-              ? '\n\n(Usá el contenido web extraído arriba para responder esta pregunta específica. No hagas un resumen genérico — respondé exactamente lo que se preguntó.)'
+              ? '\n\n⚠️ INSTRUCCIÓN: Respondé usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. No digas que no tenés información — los datos ya están en este prompt.'
               : ''
           }`
         : userMessage;
@@ -360,6 +345,169 @@ export class JarvisService {
 
   async listSkills() {
     return this.skillRegistry.getAllSkills();
+  }
+
+  // ── Respuesta centralizada via LLM ──────────────────────────────────────────
+
+  private async respondWithLLM(
+    userMessage: string,
+    sessionId: string,
+    providerName: string,
+    provider: ILLMProvider,
+    toolsUsed: string[],
+    startTime: number,
+    webContext?: string,
+  ): Promise<string> {
+    const { systemPrompt, userPrompt, usedMemory, usedDocs } =
+      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext);
+
+    if (usedMemory) toolsUsed.push('memory');
+    if (usedDocs)   toolsUsed.push('rag');
+
+    // Cuando hay contexto web, el systemPrompt prohíbe explícitamente
+    // decir "no tengo acceso" — esos datos YA están en el prompt
+    const finalSystemPrompt = webContext
+      ? systemPrompt
+          .replace(
+            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+            '4. TENÉS datos reales en el contexto. Usálos para responder. NUNCA digas "no tengo acceso a información en tiempo real" — eso sería mentira si tenés datos en el contexto.',
+          )
+          .replace(
+            '3. No inventar datos. Si no tenés la info, decilo claramente.',
+            '3. Usá SOLO los datos del contexto. No inventés datos extra. Si los datos del contexto no son suficientes, decí específicamente qué falta.',
+          )
+      : systemPrompt;
+
+    const response = await provider.generate({
+      messages: [
+        { role: 'system', content: finalSystemPrompt },
+        { role: 'user',   content: userPrompt },
+      ],
+    });
+
+    await this.conversationRepo.create({
+      sessionId,
+      role: 'assistant',
+      content: response.content,
+      metadata: { source: 'llm', model: response.model, provider: response.provider, latencyMs: response.latencyMs },
+    });
+
+    await this.agentRunRepo.create({
+      sessionId,
+      question: userMessage,
+      answer: response.content,
+      toolsUsed,
+      modelUsed: response.model,
+      provider: response.provider,
+      durationMs: Date.now() - startTime,
+      tokensUsed: response.tokensUsed,
+      success: true,
+    });
+
+    await this.updateSessionSummaryIfNeeded(sessionId);
+    return response.content;
+  }
+
+  /**
+   * Determina si la pregunta necesita búsqueda web automática.
+   * Regla principal: buscar SIEMPRE a menos que sea conversación trivial.
+   */
+  private needsWebSearch(message: string): boolean {
+    const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+    // Excluir mensajes muy cortos (<3 palabras)
+    if (n.split(/\s+/).filter(Boolean).length < 3) return false;
+
+    // Excluir saludos y conversación trivial
+    if (/^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|como estas|como andas|que tal|que onda|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo)[\s!?.]*$/i.test(n)) {
+      return false;
+    }
+
+    // Excluir preguntas sobre el asistente mismo
+    if (/(quien eres|como te llamas|que eres|que podes hacer|que sabes|cuales son tus capacidades|sos un|eres un)/i.test(n)) {
+      return false;
+    }
+
+    // Excluir comandos de memoria/perfil
+    if (/^(recorda|guardá|guarda|anotá|anota|mi nombre es|me llamo|prefiero|siempre)/i.test(n)) {
+      return false;
+    }
+
+    // Todo lo demás → buscar en internet
+    return true;
+  }
+
+  /**
+   * Búsqueda rápida usando DuckDuckGo Instant Answer API (sin Playwright, sin clave).
+   * Fallback a Google con Playwright si DuckDuckGo no devuelve resultados útiles.
+   */
+  private async autoWebSearch(query: string): Promise<string | null> {
+    // Intento 1: DuckDuckGo HTML scraping (rápido, ~1-2s)
+    const ddgResult = await this.searchDuckDuckGo(query);
+    if (ddgResult) {
+      this.logger.log(`[jarvis:auto_search] DuckDuckGo OK para: "${query.slice(0, 60)}"`);
+      return ddgResult;
+    }
+
+    // Intento 2: Google con Playwright (más lento pero más completo)
+    this.logger.log(`[jarvis:auto_search] DuckDuckGo vacío → Google Playwright para: "${query.slice(0, 60)}"`);
+    try {
+      const results = await this.browserTool.search(query, 4);
+      if (!results.length) return null;
+      return results
+        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`)
+        .join('\n\n');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[jarvis:auto_search] Google también falló: ${msg}`);
+      return null;
+    }
+  }
+
+  /**
+   * Búsqueda en DuckDuckGo via HTML (sin API key, sin Playwright, ~1-2s).
+   */
+  private async searchDuckDuckGo(query: string): Promise<string | null> {
+    try {
+      const encoded = encodeURIComponent(query);
+      const url = `https://html.duckduckgo.com/html/?q=${encoded}&kl=ar-es`;
+
+      const response = await axios.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
+          'Accept-Language': 'es-AR,es;q=0.9',
+        },
+        timeout: 6_000,   // reducido de 8s a 6s
+        validateStatus: (s) => s < 400,
+      });
+
+      const $ = cheerioLoad(response.data as string);
+      const results: Array<{ title: string; url: string; snippet: string }> = [];
+
+      $('.result__body').each((_, el) => {
+        if (results.length >= 4) return;
+        const title   = $(el).find('.result__title a').text().trim();
+        const href    = $(el).find('.result__url').text().trim();
+        const snippet = $(el).find('.result__snippet').text().trim();
+        if (title && href) {
+          results.push({ title, url: href.startsWith('http') ? href : `https://${href}`, snippet });
+        }
+      });
+
+      if (!results.length) {
+        this.logger.warn(`[jarvis:ddg] sin resultados para: "${query.slice(0, 60)}"`);
+        return null;
+      }
+
+      this.logger.log(`[jarvis:ddg] ${results.length} resultados`);
+      return results
+        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet}`)
+        .join('\n\n');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[jarvis:ddg] error: ${msg}`);
+      return null;
+    }
   }
 
   private isRepeatRequest(message: string): boolean {
