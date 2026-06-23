@@ -31,8 +31,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **`cleanExpiredCache()`**: limpieza de páginas expiradas (para cron job)
   - **`getCacheStats()`**: métricas de caché (total, válidas, expiradas, top fuentes, top categorías, hit rate)
 
-### Changed — WebHelper v2: estrategia de fuentes priorizadas
-- **`WebHelper.search(query, category?, scrape=true)`**: nuevo flujo de búsqueda inteligente
+### Fixed — Intent Router: prioridad de deportes sobre hora
+- **Orden de evaluación corregido**: `SPORTS` se evalúa ANTES que `TOOL` para evitar que preguntas como "¿cuándo y a qué hora es el próximo partido?" se clasifiquen incorrectamente como `TOOL(hora)` en lugar de `SPORTS`
+- **Regex deportivo mejorado**: agregado `próximo partido|siguiente partido|cuando juega|cuando es el` para capturar consultas sobre partidos futuros
+- **Contexto deportivo en hora**: `/(que hora|hora actual)/` ahora excluye contexto deportivo (`partido|juego|match`) → "hora del partido Argentina" → `SPORTS`, no `TOOL`
+- **Confianza alta para partidos futuros**: "próximo partido de la selección" → `SPORTS` confianza `high` (antes podía ser `medium` o clasificarse mal)
+
+### Fixed — System Prompt: año actual 2026 + contexto Paraná ciudad
+- **Año actual explícito**: system prompt ahora incluye `Año actual: 2026 (NO 2024, NO 2025)` y fecha/hora dinámica calculada en tiempo real
+- **Contexto local Paraná**: agregado bloque `📍 CONTEXTO LOCAL` con info de la ciudad (fundación 1813, 213 años en 2026, sitios relevantes, fuentes locales)
+- **Anti-confusión río vs ciudad**: instrucción explícita "NO confundir con el río Paraná — el usuario se refiere a la CIUDAD"
+- **Regla de fecha**: "Si mencionan 'hoy', 'actual', 'este año' → usar el año 2026, NO 2024"
+- **Fuentes locales priorizadas**: Mi Paraná (mi.parana.gob.ar) y El Once (elonce.com) agregadas como fuentes confiables con categoría `gobierno` (priority 9, TTL 6h)
+- **Detección de contexto local**: `detectCategory()` identifica preguntas sobre Paraná ciudad vs río Paraná usando keywords (`municipalidad`, `intendente`, `Parque Urquiza` vs `río`, `caudal`, `nivel`)
+
+### Changed — WebHelper: estrategia de fuentes priorizadas por categoría
   1. **Si hay `category`** → busca en fuentes confiables priorizadas PRIMERO (ej: TyC Sports para deportes)
   2. **Scrapea en paralelo** las top 3 fuentes con selectores específicos si están configurados
   3. **Fallback a DuckDuckGo** si las fuentes no dan resultados

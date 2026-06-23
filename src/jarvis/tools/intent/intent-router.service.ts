@@ -70,7 +70,23 @@ export class IntentRouterService {
       return { intent: 'URL', confidence: 'high', reason: 'URL detectada', urls };
     }
 
+    // SPORTS — alta confianza (verificar ANTES que TOOL para evitar conflictos con "hora")
+    const sportsPattern = /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla|posiciones|pr[oó]ximo partido|siguiente partido)/i;
+    const timePattern   = /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido|proximo|siguiente|cuando juega|cuando es el)/i;
+    if (sportsPattern.test(n) || (timePattern.test(n) && /(seleccion|argentina|equipo|futbol)/i.test(n))) {
+      const sportsQuery = this.extractSportsQuery(message);
+      // Si hay señal temporal O menciona equipos → alta confianza
+      // "cuando es el proximo partido de argentina" → SPORTS, no TOOL(hora)
+      return {
+        intent: 'SPORTS',
+        confidence: 'high',
+        reason: 'sports keyword' + (timePattern.test(n) ? ' + time signal' : ''),
+        sportsQuery,
+      };
+    }
+
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
+    // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
     if (/(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
     }
@@ -86,26 +102,12 @@ export class IntentRouterService {
     if (/(feriado|asueto|dia no laborable)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'holiday tool' };
     }
-    if (/(que hora|hora actual|hora en|zona horaria)/i.test(n)) {
+    // Hora: solo si NO es contexto deportivo
+    if (/(que hora|hora actual|hora en|zona horaria)/i.test(n) && !/(partido|juego|match)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'time tool' };
     }
     if (/(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'calendar tool' };
-    }
-
-    // SPORTS — alta confianza
-    const sportsPattern = /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla|posiciones)/i;
-    const timePattern   = /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido)/i;
-    if (sportsPattern.test(n)) {
-      const sportsQuery = this.extractSportsQuery(message);
-      // Si hay señal temporal → alta confianza (necesita datos en tiempo real)
-      // Si no → media confianza (podría ser pregunta histórica)
-      return {
-        intent: 'SPORTS',
-        confidence: timePattern.test(n) ? 'high' : 'medium',
-        reason: 'sports keyword' + (timePattern.test(n) ? ' + time signal' : ''),
-        sportsQuery,
-      };
     }
 
     // RAG — alta confianza (buscar en mis documentos)
