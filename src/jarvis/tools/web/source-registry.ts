@@ -70,6 +70,18 @@ export class SourceRegistry {
       },
     },
     
+    {
+      name: 'Mi Paraná (Municipalidad)',
+      urlBase: 'https://mi.parana.gob.ar',
+      category: 'gobierno',
+      priority: 9,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.page-title'],
+        content: ['main', '.content', 'article'],
+      },
+    },
+    
     // COMENTADO — Agregar si se detecta demanda en analytics:
     // {
     //   name: 'Perfil',

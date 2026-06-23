@@ -260,6 +260,19 @@ export class JarvisService {
       `Idioma principal: ${identity.language || 'es-AR'}.`,
       `País: ${identity.country || 'Argentina'}.`,
       `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
+      '',
+      '⏰ FECHA Y HORA ACTUAL:',
+      `- Año actual: 2026 (NO 2024, NO 2025)`,
+      `- Fecha completa: ${new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
+      `- Hora: ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone || 'America/Argentina/Buenos_Aires' })}`,
+      '',
+      '📍 CONTEXTO LOCAL — Paraná, Entre Ríos, Argentina:',
+      '- Ciudad capital de Entre Ríos, fundada el 25 de junio de 1813 (cumple 213 años en junio 2026)',
+      '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
+      '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
+      '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
+      '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar)',
+      '',
       'Reglas:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
       '2. Usar el contexto provisto (memoria, documentos, web) para fundamentar la respuesta.',
@@ -268,6 +281,7 @@ export class JarvisService {
         ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumás todo — enfocate en la pregunta.'
         : '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
       '5. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
+      '6. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
       '',
       `Timezone: ${identity.timezone}`,
       `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
@@ -574,6 +588,15 @@ export class JarvisService {
    */
   private detectCategory(message: string): string | undefined {
     const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Paraná (ciudad) — contexto local prioritario
+    if (/(parana\b|ciudad de parana|municipalidad|intendente|concejo|parque urquiza|costanera|puerto viejo)/i.test(n)) {
+      // Distinguir: si menciona "rio" es geografía general, sino es gobierno/noticias locales
+      if (/(rio|caudal|nivel|afluente)/i.test(n)) {
+        return 'noticias'; // río Paraná → noticias generales
+      }
+      return 'gobierno'; // ciudad Paraná → Mi Paraná + El Once
+    }
 
     // Deportes
     if (/(futbol|gol|partido|seleccion|equipo|jugador|campeon|copa|liga|torneo|clasifico|gano|perdio|empato)/i.test(n)) {

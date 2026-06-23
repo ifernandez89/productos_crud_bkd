@@ -12,13 +12,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **`ScrapedPage`**: páginas cacheadas con `url` (unique), `contentHash` SHA-256 para detectar cambios, `scrapedAt`, `expiresAt` (TTL automático), `status` (`valid`/`expired`/`failed`), `cacheHits` (tracking de uso), `lastAccessedAt`
   - **`ScrapedContent`**: contenido crudo + procesado con `htmlRaw` (opcional), `textExtracted`, `jsonExtracted` (datos estructurados), `metadata` JSON
   - **`Query`**: analytics de consultas con `question`, `category`, `sourcesUsed`, `cacheHit` (boolean), `responseTimeMs` para optimización basada en uso real
-- **`SourceRegistry`** (`src/jarvis/tools/web/source-registry.ts`): catálogo de **14 fuentes confiables** organizadas por categoría
-  - **📰 Noticias (3)**: Infobae (priority 10), La Nación (9), El Once (8) — TTL 1-2h
+- **`SourceRegistry`** (`src/jarvis/tools/web/source-registry.ts`): catálogo de **15 fuentes confiables** organizadas por categoría
+  - **📰 Noticias (3)**: Infobae (priority 10), La Nación (9), El Once Paraná (8) — TTL 1-2h
   - **🌦️ Clima (2)**: Meteored Argentina (10), SMN (10) — TTL 1h
   - **⚽ Deportes (3)**: TyC Sports (10), ESPN Argentina (10), Olé (9) — TTL 30min
   - **🔬 Ciencia (3)**: Nature News (10), Science News (10), CONICET (9) — TTL 24h
   - **💻 Tecnología & IA (3)**: TechCrunch (10), Ars Technica (10), Hugging Face Blog (10) — TTL 6h
   - **📚 Referencia (2)**: Wikipedia ES (9), Plantas Medicinales/Ignacio (8) — TTL 7 días
+  - **🏛️ Gobierno Local (1)**: Mi Paraná (9) — TTL 6h — datos municipales de la ciudad de Paraná, Entre Ríos
   - **Estrategia de crecimiento**: 45+ fuentes adicionales comentadas para agregar basándose en analytics reales (cache hits, latencia, éxito de scraping). Evitamos: fuentes que bloquean scraping, HTML cambiante, respuestas lentas, categorías sin demanda
   - Cada fuente tiene `priority` (1-10 mayor = más confiable), `ttlHours` optimizado por volatilidad del contenido, selectores CSS específicos cuando aplicable
 - **`ContentCacheService`** (`src/jarvis/tools/web/content-cache.service.ts`): servicio de caché con tres estrategias
@@ -40,15 +41,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **Timeout optimizado**: búsqueda 6s, scraping 7s individual → total máximo ~20-30s con paralelismo
 - **Logs mejorados**: indica si resultado vino de fuente confiable o DuckDuckGo, tiempo total de extracción
 
-### Changed — JarvisService: integración de caché inteligente
+### Changed — JarvisService: integración de caché inteligente + contexto local Paraná
 - **`autoWebSearch(query, category?)`**: nuevo flujo en 3 pasos
   1. **Si hay categoría** → `ContentCacheService.fetchRelevantContent()` primero
   2. **Fallback** → `WebHelper.search(query, category)` con fuentes priorizadas
   3. **Último recurso** → Google Playwright
-- **`detectCategory(message)`**: detecta categoría del mensaje para optimizar caché (deportes, clima, noticias, tecnologia, ciencia, matematicas, fisica, peliculas, musica)
+- **`detectCategory(message)`**: detecta categoría del mensaje para optimizar caché (deportes, clima, noticias, tecnologia, ciencia, gobierno, etc.)
+  - **Contexto local Paraná**: detecta preguntas sobre la ciudad de Paraná (municipalidad, intendente, Parque Urquiza, etc.) → usa fuentes `gobierno` (Mi Paraná + El Once)
+  - Distingue entre "Paraná ciudad" vs "río Paraná" usando keywords (`río`, `caudal`, `nivel`)
+- **System prompt mejorado**: 
+  - **Año actual explícito**: `2026` (NO 2024, NO 2025) — corrige alucinaciones de fecha
+  - **Fecha y hora dinámica**: se calcula en tiempo real con zona horaria del usuario
+  - **Contexto local Paraná**: ciudad capital de Entre Ríos, fundada 25 junio 1813 (213 años en 2026), sitios relevantes, fuentes locales
+  - **Instrucción anti-confusión**: "NO confundir con el río Paraná — el usuario se refiere a la CIUDAD"
 - **Intent router integrado**: pasa categoría detectada a `autoWebSearch()` → consultas como "goles de Argentina hoy" usan caché de deportes primero (30min TTL) → respuesta en milisegundos si está en caché
 - **Tracking de tools**: `toolsUsed` ahora incluye `cache:{category}` cuando se usa caché, ej: `['auto_search', 'cache:deportes']`
-- **Respuestas más rápidas**: consultas frecuentes (clima, deportes, noticias) sirven desde caché sin scraping → latencia <100ms vs 10-30s
+- **Respuestas más rápidas**: consultas frecuentes (clima, deportes, noticias, gobierno local) sirven desde caché sin scraping → latencia <100ms vs 10-30s
 - **Fallback evasivo mejorado**: cuando el LLM responde "no tengo información", ahora detecta categoría y usa caché inteligente antes de scrapear
 
 ### Added — WebHelper: búsqueda web genérica para cualquier pregunta
