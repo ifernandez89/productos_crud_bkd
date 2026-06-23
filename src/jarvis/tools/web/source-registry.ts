@@ -29,12 +29,13 @@ export class SourceRegistry {
     // ══════════════════════════════════════════════════════════════════════════
     // 📰 NOTICIAS GENERALES — Argentina
     // ══════════════════════════════════════════════════════════════════════════
+    // NOTA: Empezamos con 3 fuentes confiables. Agregar más basado en analytics.
     
     {
       name: 'Infobae',
       urlBase: 'https://www.infobae.com',
       category: 'noticias',
-      priority: 9,
+      priority: 10,
       ttlHours: 1,
       searchPattern: '/buscar?q={query}',
       selectors: {
@@ -58,34 +59,10 @@ export class SourceRegistry {
     },
     
     {
-      name: 'Perfil',
-      urlBase: 'https://www.perfil.com',
-      category: 'noticias',
-      priority: 8,
-      ttlHours: 1,
-      selectors: {
-        title: ['h1', '.article-title'],
-        content: ['article', '.article-content'],
-      },
-    },
-    
-    {
-      name: 'Ámbito Financiero',
-      urlBase: 'https://www.ambito.com',
-      category: 'noticias',
-      priority: 8,
-      ttlHours: 1,
-      selectors: {
-        title: ['h1'],
-        content: ['.article-body'],
-      },
-    },
-    
-    {
       name: 'El Once (Paraná)',
       urlBase: 'https://www.elonce.com',
       category: 'noticias',
-      priority: 7,
+      priority: 8,
       ttlHours: 2,
       selectors: {
         title: ['h1', '.titular'],
@@ -93,9 +70,26 @@ export class SourceRegistry {
       },
     },
     
+    // COMENTADO — Agregar si se detecta demanda en analytics:
+    // {
+    //   name: 'Perfil',
+    //   urlBase: 'https://www.perfil.com',
+    //   category: 'noticias',
+    //   priority: 8,
+    //   ttlHours: 1,
+    // },
+    // {
+    //   name: 'Ámbito Financiero',
+    //   urlBase: 'https://www.ambito.com',
+    //   category: 'noticias',
+    //   priority: 8,
+    //   ttlHours: 1,
+    // },
+    
     // ══════════════════════════════════════════════════════════════════════════
     // 🌦️ CLIMA
     // ══════════════════════════════════════════════════════════════════════════
+    // NOTA: 2 fuentes confiables oficiales. Más no suele ser necesario.
     
     {
       name: 'Meteored Argentina',
@@ -119,25 +113,26 @@ export class SourceRegistry {
       },
     },
     
-    {
-      name: 'Windy',
-      urlBase: 'https://www.windy.com',
-      category: 'clima',
-      priority: 9,
-      ttlHours: 1,
-    },
-    
-    {
-      name: 'Ventusky',
-      urlBase: 'https://www.ventusky.com',
-      category: 'clima',
-      priority: 8,
-      ttlHours: 1,
-    },
+    // COMENTADO — Agregar si se necesita mayor cobertura:
+    // {
+    //   name: 'Windy',
+    //   urlBase: 'https://www.windy.com',
+    //   category: 'clima',
+    //   priority: 9,
+    //   ttlHours: 1,
+    // },
+    // {
+    //   name: 'Ventusky',
+    //   urlBase: 'https://www.ventusky.com',
+    //   category: 'clima',
+    //   priority: 8,
+    //   ttlHours: 1,
+    // },
     
     // ══════════════════════════════════════════════════════════════════════════
     // ⚽ DEPORTES
     // ══════════════════════════════════════════════════════════════════════════
+    // NOTA: Top 3 fuentes deportivas argentinas más confiables.
     
     {
       name: 'TyC Sports',
@@ -178,41 +173,24 @@ export class SourceRegistry {
       },
     },
     
-    {
-      name: 'Promiedos',
-      urlBase: 'https://www.promiedos.com.ar',
-      category: 'deportes',
-      priority: 9,
-      ttlHours: 0.5,
-      selectors: {
-        content: ['table', '.partidos', '.resultados'],
-      },
-    },
+    // COMENTADO — Promiedos es útil pero estructura de tabla compleja:
+    // {
+    //   name: 'Promiedos',
+    //   urlBase: 'https://www.promiedos.com.ar',
+    //   category: 'deportes',
+    //   priority: 9,
+    //   ttlHours: 0.5,
+    //   selectors: {
+    //     content: ['table', '.partidos', '.resultados'],
+    //   },
+    // },
     
     // ══════════════════════════════════════════════════════════════════════════
-    // 🔬 CIENCIA
+    // 🔬 CIENCIA & TECNOLOGÍA
     // ══════════════════════════════════════════════════════════════════════════
+    // NOTA: Top 3 más confiables por categoría.
     
-    {
-      name: 'Agencia CyTA-Leloir',
-      urlBase: 'https://www.agenciacyta.org.ar',
-      category: 'ciencia',
-      priority: 9,
-      ttlHours: 24,
-      selectors: {
-        title: ['h1'],
-        content: ['article', '.nota'],
-      },
-    },
-    
-    {
-      name: 'CONICET',
-      urlBase: 'https://www.conicet.gov.ar',
-      category: 'ciencia',
-      priority: 9,
-      ttlHours: 24,
-    },
-    
+    // Ciencia general
     {
       name: 'Nature News',
       urlBase: 'https://www.nature.com/news',
@@ -229,118 +207,15 @@ export class SourceRegistry {
       ttlHours: 24,
     },
     
-    // ══════════════════════════════════════════════════════════════════════════
-    // 🌌 FÍSICA
-    // ══════════════════════════════════════════════════════════════════════════
-    
     {
-      name: 'arXiv Physics',
-      urlBase: 'https://arxiv.org/list/physics/recent',
-      category: 'fisica',
-      priority: 10,
-      ttlHours: 24,
-    },
-    
-    {
-      name: 'CERN',
-      urlBase: 'https://home.cern',
-      category: 'fisica',
-      priority: 10,
-      ttlHours: 24,
-    },
-    
-    {
-      name: 'Physics World',
-      urlBase: 'https://physicsworld.com',
-      category: 'fisica',
+      name: 'CONICET',
+      urlBase: 'https://www.conicet.gov.ar',
+      category: 'ciencia',
       priority: 9,
       ttlHours: 24,
     },
     
-    {
-      name: 'APS Physics',
-      urlBase: 'https://physics.aps.org',
-      category: 'fisica',
-      priority: 9,
-      ttlHours: 24,
-    },
-    
-    // ══════════════════════════════════════════════════════════════════════════
-    // 🔢 MATEMÁTICAS
-    // ══════════════════════════════════════════════════════════════════════════
-    
-    {
-      name: 'arXiv Mathematics',
-      urlBase: 'https://arxiv.org/list/math/recent',
-      category: 'matematicas',
-      priority: 10,
-      ttlHours: 168, // 7 días
-    },
-    
-    {
-      name: 'Math StackExchange',
-      urlBase: 'https://math.stackexchange.com',
-      category: 'matematicas',
-      priority: 9,
-      ttlHours: 168,
-    },
-    
-    {
-      name: 'Quanta Magazine Mathematics',
-      urlBase: 'https://www.quantamagazine.org/mathematics',
-      category: 'matematicas',
-      priority: 9,
-      ttlHours: 168,
-    },
-    
-    {
-      name: 'American Mathematical Society',
-      urlBase: 'https://www.ams.org',
-      category: 'matematicas',
-      priority: 10,
-      ttlHours: 168,
-    },
-    
-    // ══════════════════════════════════════════════════════════════════════════
-    // 🚀 INNOVACIÓN
-    // ══════════════════════════════════════════════════════════════════════════
-    
-    {
-      name: 'MIT Technology Review',
-      urlBase: 'https://www.technologyreview.com',
-      category: 'innovacion',
-      priority: 10,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'Fast Company',
-      urlBase: 'https://www.fastcompany.com',
-      category: 'innovacion',
-      priority: 9,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'World Economic Forum Technology',
-      urlBase: 'https://www.weforum.org/agenda/technology',
-      category: 'innovacion',
-      priority: 9,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'Singularity Hub',
-      urlBase: 'https://singularityhub.com',
-      category: 'innovacion',
-      priority: 8,
-      ttlHours: 12,
-    },
-    
-    // ══════════════════════════════════════════════════════════════════════════
-    // 💻 TECNOLOGÍA & IA
-    // ══════════════════════════════════════════════════════════════════════════
-    
+    // Tecnología & IA
     {
       name: 'TechCrunch',
       urlBase: 'https://techcrunch.com',
@@ -358,14 +233,6 @@ export class SourceRegistry {
     },
     
     {
-      name: 'The Verge',
-      urlBase: 'https://www.theverge.com',
-      category: 'tecnologia',
-      priority: 9,
-      ttlHours: 6,
-    },
-    
-    {
       name: 'Hugging Face Blog',
       urlBase: 'https://huggingface.co/blog',
       category: 'tecnologia',
@@ -373,95 +240,15 @@ export class SourceRegistry {
       ttlHours: 6,
     },
     
-    {
-      name: 'OpenAI News',
-      urlBase: 'https://openai.com/news',
-      category: 'tecnologia',
-      priority: 10,
-      ttlHours: 6,
-    },
-    
     // ══════════════════════════════════════════════════════════════════════════
-    // 🎬 PELÍCULAS & SERIES
-    // ══════════════════════════════════════════════════════════════════════════
-    
-    {
-      name: 'IMDb',
-      urlBase: 'https://www.imdb.com',
-      category: 'peliculas',
-      priority: 10,
-      ttlHours: 24,
-    },
-    
-    {
-      name: 'Rotten Tomatoes',
-      urlBase: 'https://www.rottentomatoes.com',
-      category: 'peliculas',
-      priority: 10,
-      ttlHours: 24,
-    },
-    
-    {
-      name: 'FilmAffinity Argentina',
-      urlBase: 'https://www.filmaffinity.com/ar',
-      category: 'peliculas',
-      priority: 9,
-      ttlHours: 24,
-    },
-    
-    {
-      name: 'Letterboxd',
-      urlBase: 'https://letterboxd.com',
-      category: 'peliculas',
-      priority: 9,
-      ttlHours: 24,
-    },
-    
-    // ══════════════════════════════════════════════════════════════════════════
-    // 🎵 MÚSICA
-    // ══════════════════════════════════════════════════════════════════════════
-    
-    {
-      name: 'Rolling Stone Argentina',
-      urlBase: 'https://www.rollingstone.com.ar',
-      category: 'musica',
-      priority: 9,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'Billboard Argentina',
-      urlBase: 'https://www.billboard.com/argentina',
-      category: 'musica',
-      priority: 10,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'Pitchfork',
-      urlBase: 'https://pitchfork.com',
-      category: 'musica',
-      priority: 9,
-      ttlHours: 12,
-    },
-    
-    {
-      name: 'AllMusic',
-      urlBase: 'https://www.allmusic.com',
-      category: 'musica',
-      priority: 9,
-      ttlHours: 24,
-    },
-    
-    // ══════════════════════════════════════════════════════════════════════════
-    // 📚 REFERENCIA & EDUCACIÓN
+    // 📚 REFERENCIA & ESPECIALIZADOS
     // ══════════════════════════════════════════════════════════════════════════
     
     {
       name: 'Wikipedia ES',
       urlBase: 'https://es.wikipedia.org',
       category: 'referencia',
-      priority: 8,
+      priority: 9,
       ttlHours: 168, // 7 días
     },
     
@@ -469,53 +256,123 @@ export class SourceRegistry {
       name: 'Plantas Medicinales (Ignacio)',
       urlBase: 'https://ifernandez89.github.io/PlantasMedicinales',
       category: 'referencia',
-      priority: 7,
+      priority: 8,
       ttlHours: 168,
     },
     
-    // ══════════════════════════════════════════════════════════════════════════
-    // 🔮 OTROS ESPECIALIZADOS
-    // ══════════════════════════════════════════════════════════════════════════
+    // COMENTADO — Agregar cuando haya demanda específica:
     
-    {
-      name: 'Mystery Planet',
-      urlBase: 'https://mysteryplanet.com.ar/site',
-      category: 'misterios',
-      priority: 6,
-      ttlHours: 48,
-    },
+    // Ciencia local Argentina
+    // {
+    //   name: 'Agencia CyTA-Leloir',
+    //   urlBase: 'https://www.agenciacyta.org.ar',
+    //   category: 'ciencia',
+    //   priority: 9,
+    //   ttlHours: 24,
+    // },
     
-    {
-      name: 'Carta Natal',
-      urlBase: 'https://carta-natal.es/carta.php',
-      category: 'astrologia',
-      priority: 5,
-      ttlHours: 720, // 30 días
-    },
+    // Física especializada
+    // {
+    //   name: 'arXiv Physics',
+    //   urlBase: 'https://arxiv.org/list/physics/recent',
+    //   category: 'fisica',
+    //   priority: 10,
+    //   ttlHours: 24,
+    // },
+    // {
+    //   name: 'CERN',
+    //   urlBase: 'https://home.cern',
+    //   category: 'fisica',
+    //   priority: 10,
+    //   ttlHours: 24,
+    // },
     
-    {
-      name: 'When is the next MCU film',
-      urlBase: 'https://whenisthenextmcufilm.com',
-      category: 'entretenimiento',
-      priority: 7,
-      ttlHours: 24,
-    },
+    // Matemáticas
+    // {
+    //   name: 'arXiv Mathematics',
+    //   urlBase: 'https://arxiv.org/list/math/recent',
+    //   category: 'matematicas',
+    //   priority: 10,
+    //   ttlHours: 168,
+    // },
+    // {
+    //   name: 'Math StackExchange',
+    //   urlBase: 'https://math.stackexchange.com',
+    //   category: 'matematicas',
+    //   priority: 9,
+    //   ttlHours: 168,
+    // },
     
-    {
-      name: 'JSONPlaceholder',
-      urlBase: 'https://jsonplaceholder.typicode.com',
-      category: 'desarrollo',
-      priority: 10,
-      ttlHours: 720, // 30 días (API estática)
-    },
+    // Innovación
+    // {
+    //   name: 'MIT Technology Review',
+    //   urlBase: 'https://www.technologyreview.com',
+    //   category: 'innovacion',
+    //   priority: 10,
+    //   ttlHours: 12,
+    // },
     
-    {
-      name: 'Mi Paraná (Municipalidad)',
-      urlBase: 'https://mi.parana.gob.ar',
-      category: 'gobierno',
-      priority: 7,
-      ttlHours: 24,
-    },
+    // Más tecnología
+    // {
+    //   name: 'The Verge',
+    //   urlBase: 'https://www.theverge.com',
+    //   category: 'tecnologia',
+    //   priority: 9,
+    //   ttlHours: 6,
+    // },
+    // {
+    //   name: 'OpenAI News',
+    //   urlBase: 'https://openai.com/news',
+    //   category: 'tecnologia',
+    //   priority: 10,
+    //   ttlHours: 6,
+    // },
+    
+    // Entretenimiento
+    // {
+    //   name: 'IMDb',
+    //   urlBase: 'https://www.imdb.com',
+    //   category: 'peliculas',
+    //   priority: 10,
+    //   ttlHours: 24,
+    // },
+    // {
+    //   name: 'Rotten Tomatoes',
+    //   urlBase: 'https://www.rottentomatoes.com',
+    //   category: 'peliculas',
+    //   priority: 10,
+    //   ttlHours: 24,
+    // },
+    // {
+    //   name: 'Billboard Argentina',
+    //   urlBase: 'https://www.billboard.com/argentina',
+    //   category: 'musica',
+    //   priority: 10,
+    //   ttlHours: 12,
+    // },
+    
+    // Otros especializados
+    // {
+    //   name: 'Mystery Planet',
+    //   urlBase: 'https://mysteryplanet.com.ar/site',
+    //   category: 'misterios',
+    //   priority: 6,
+    //   ttlHours: 48,
+    // },
+    // {
+    //   name: 'When is the next MCU film',
+    //   urlBase: 'https://whenisthenextmcufilm.com',
+    //   category: 'entretenimiento',
+    //   priority: 7,
+    //   ttlHours: 24,
+    // },
+    // {
+    //   name: 'Mi Paraná (Municipalidad)',
+    //   urlBase: 'https://mi.parana.gob.ar',
+    //   category: 'gobierno',
+    //   priority: 7,
+    //   ttlHours: 24,
+    // },
   ];
   
   // ── API pública ─────────────────────────────────────────────────────────────

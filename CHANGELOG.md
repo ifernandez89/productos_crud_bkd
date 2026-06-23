@@ -12,20 +12,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **`ScrapedPage`**: páginas cacheadas con `url` (unique), `contentHash` SHA-256 para detectar cambios, `scrapedAt`, `expiresAt` (TTL automático), `status` (`valid`/`expired`/`failed`), `cacheHits` (tracking de uso), `lastAccessedAt`
   - **`ScrapedContent`**: contenido crudo + procesado con `htmlRaw` (opcional), `textExtracted`, `jsonExtracted` (datos estructurados), `metadata` JSON
   - **`Query`**: analytics de consultas con `question`, `category`, `sourcesUsed`, `cacheHit` (boolean), `responseTimeMs` para optimización basada en uso real
-- **`SourceRegistry`** (`src/jarvis/tools/web/source-registry.ts`): catálogo de **60+ fuentes confiables** organizadas por categoría
-  - **📰 Noticias**: Infobae, La Nación, Perfil, Ámbito, El Once (TTL 1-2h)
-  - **🌦️ Clima**: Meteored, SMN, Windy, Ventusky (TTL 1h)
-  - **⚽ Deportes**: TyC Sports, ESPN, Olé, Promiedos (TTL 30min)
-  - **🔬 Ciencia**: CyTA-Leloir, CONICET, Nature, Science News (TTL 24h)
-  - **🌌 Física**: arXiv Physics, CERN, Physics World, APS (TTL 24h)
-  - **🔢 Matemáticas**: arXiv Math, Math StackExchange, Quanta, AMS (TTL 7 días)
-  - **🚀 Innovación**: MIT Tech Review, Fast Company, WEF Tech, Singularity Hub (TTL 12h)
-  - **💻 Tecnología & IA**: TechCrunch, Ars Technica, The Verge, Hugging Face, OpenAI (TTL 6h)
-  - **🎬 Películas**: IMDb, Rotten Tomatoes, FilmAffinity, Letterboxd (TTL 24h)
-  - **🎵 Música**: Rolling Stone, Billboard, Pitchfork, AllMusic (TTL 12h)
-  - **📚 Referencia**: Wikipedia ES, Plantas Medicinales (Ignacio) (TTL 7 días)
-  - **🔮 Especializados**: Mystery Planet, Carta Natal, MCU Film, JSONPlaceholder, Mi Paraná (TTL 24h-30 días)
-  - Cada fuente tiene `priority` (1-10 mayor = más confiable), `ttlHours` optimizado por tipo de contenido, selectores CSS específicos para extracción
+- **`SourceRegistry`** (`src/jarvis/tools/web/source-registry.ts`): catálogo de **14 fuentes confiables** organizadas por categoría
+  - **📰 Noticias (3)**: Infobae (priority 10), La Nación (9), El Once (8) — TTL 1-2h
+  - **🌦️ Clima (2)**: Meteored Argentina (10), SMN (10) — TTL 1h
+  - **⚽ Deportes (3)**: TyC Sports (10), ESPN Argentina (10), Olé (9) — TTL 30min
+  - **🔬 Ciencia (3)**: Nature News (10), Science News (10), CONICET (9) — TTL 24h
+  - **💻 Tecnología & IA (3)**: TechCrunch (10), Ars Technica (10), Hugging Face Blog (10) — TTL 6h
+  - **📚 Referencia (2)**: Wikipedia ES (9), Plantas Medicinales/Ignacio (8) — TTL 7 días
+  - **Estrategia de crecimiento**: 45+ fuentes adicionales comentadas para agregar basándose en analytics reales (cache hits, latencia, éxito de scraping). Evitamos: fuentes que bloquean scraping, HTML cambiante, respuestas lentas, categorías sin demanda
+  - Cada fuente tiene `priority` (1-10 mayor = más confiable), `ttlHours` optimizado por volatilidad del contenido, selectores CSS específicos cuando aplicable
 - **`ContentCacheService`** (`src/jarvis/tools/web/content-cache.service.ts`): servicio de caché con tres estrategias
   - **Cache HIT** → servir desde BD en milisegundos (sin scraping)
   - **Cache MISS** → scrapear fuentes confiables → guardar con TTL automático
