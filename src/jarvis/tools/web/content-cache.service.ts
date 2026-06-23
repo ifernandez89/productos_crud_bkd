@@ -117,9 +117,10 @@ export class ContentCacheService {
         };
       }
 
-      // 3. Cache MISS → scrapear
+      // 3. Cache MISS → scrapear usando selectores espec\u00edficos de la fuente
       this.logger.log(`[cache:MISS] scrapeando ${source.name}`);
-      const scraped = await WebHelper.scrapeUrl(targetUrl, query);
+      const scraped = await (WebHelper as any).scrapeUrlWithSelectors(targetUrl, query, source)
+        ?? await WebHelper.scrapeUrl(targetUrl, query);
 
       if (!scraped || scraped.length < 100) {
         this.logger.warn(`[cache] scraping falló o contenido insuficiente de ${source.name}`);

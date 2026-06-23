@@ -62,14 +62,43 @@ export class SourceRegistry {
       name: 'El Once (Paraná)',
       urlBase: 'https://www.elonce.com',
       category: 'noticias',
-      priority: 8,
-      ttlHours: 2,
+      priority: 9, // sube de 8 a 9 — fuente local principal
+      ttlHours: 1,  // baja de 2h a 1h — noticias cambian rápido
+      searchPattern: '/noticias?s={query}',
       selectors: {
-        title: ['h1', '.titular'],
-        content: ['.nota-cuerpo', 'article'],
+        title: ['h1', '.titular', '.article-title', '.title'],
+        content: ['.nota-cuerpo', '.article-body', '.contenido', 'article', 'main'],
+        date: ['time', '.fecha', '.date', '[datetime]'],
       },
     },
-    
+
+    {
+      name: 'UNO Entre Ríos',
+      urlBase: 'https://www.unoentrerios.com.ar',
+      category: 'noticias',
+      priority: 8,
+      ttlHours: 1,
+      searchPattern: '/search?q={query}',
+      selectors: {
+        title: ['h1', '.article-title', '.nota-titulo'],
+        content: ['article', '.article-body', '.nota-cuerpo', 'main'],
+        date: ['time', '.date', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'El Entre Ríos',
+      urlBase: 'https://www.elentrerios.com',
+      category: 'noticias',
+      priority: 7,
+      ttlHours: 1,
+      searchPattern: '/buscar?q={query}',
+      selectors: {
+        title: ['h1', '.title', '.nota-titulo'],
+        content: ['article', '.nota', '.article-body', 'main'],
+      },
+    },
+
     {
       name: 'Mi Paraná (Municipalidad)',
       urlBase: 'https://mi.parana.gob.ar',

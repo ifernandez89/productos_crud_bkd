@@ -177,9 +177,9 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
       }
 
-      // ── WEB — caché inteligente → DuckDuckGo → Google ─────────────────────
+      // ── WEB — cach\u00e9 inteligente → DuckDuckGo → Google ─────────────────────
       if (intent.intent === 'WEB') {
-        // Intentar detectar categoría del query para usar caché optimizado
+        // Intentar detectar categor\u00eda del query para usar cach\u00e9 optimizado
         const category = this.detectCategory(userMessage);
         const webCtx = await this.autoWebSearch(userMessage, category);
         if (webCtx) {
@@ -187,7 +187,26 @@ export class JarvisService {
           if (category) toolsUsed.push(`cache:${category}`);
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
-        // Sin resultados → LLM solo
+
+        // Sin resultados web — si es una consulta de noticias/actualidad, NO dejar
+        // que el LLM invente: devolver mensaje claro de fallo temporal
+        if (category === 'noticias' || category === 'gobierno') {
+          const failMsg = [
+            `\u26a0\ufe0f No pude obtener las noticias actuales en este momento (problema temporal de conectividad con las fuentes).`,
+            ``,
+            `Pod\u00e9s consultarlas directamente en:`,
+            `- \ud83d\udcf0 **El Once**: https://www.elonce.com`,
+            `- \ud83d\udcf0 **UNO Entre R\u00edos**: https://www.unoentrerios.com.ar`,
+            `- \ud83c\udfd7\ufe0f **Mi Paran\u00e1**: https://mi.parana.gob.ar`,
+            ``,
+            `Intent\u00e1 de nuevo en unos segundos, a veces las fuentes tardan en responder.`,
+          ].join('\n');
+          await this.conversationRepo.create({ sessionId, role: 'assistant', content: failMsg, metadata: { source: 'web_fail_graceful' } });
+          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: failMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+          return failMsg;
+        }
+
+        // Para otras categor\u00edas sin resultados → LLM con conocimiento propio
       }
 
       // ── LOCAL / RAG — memoria + documentos + historial + LLM ─────────────
@@ -267,20 +286,32 @@ export class JarvisService {
       `- Hora: ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone || 'America/Argentina/Buenos_Aires' })}`,
       '',
       '📍 CONTEXTO LOCAL — Paraná, Entre Ríos, Argentina:',
-      '- Ciudad capital de Entre Ríos, fundada el 25 de junio de 1813 (cumple 213 años en junio 2026)',
+      '- Ciudad capital de Entre Ríos, fundada el 25 de junio de 1813',
       '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
       '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
-      '- **Intendenta actual (2026): Rosario Romero** (NO inventar nombres desactualizados)',
       '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
-      '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar)',
-      '- ⚠️ IMPORTANTE: Para preguntas sobre gobierno/autoridades locales → BUSCAR EN INTERNET (Mi Paraná/El Once), NO usar conocimiento previo desactualizado',
+      '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar), UNO Entre Ríos (unoentrerios.com.ar)',
+      '- ⚠️ AUTORIDADES LOCALES: NO usar conocimiento interno sobre intendentes, gobernadores u otros funcionarios.',
+      '    El cargo de intendente dura 4 años y puede cambiar. SIEMPRE consultar en El Once o Mi Paraná.',
+      '    Si no tenés datos web en este prompt sobre autoridades → debés decir que no podés confirmarlo sin fuente actual.',
       '',
-      'Reglas:',
+      '🚨 REGLAS CRÍTICAS — NOTICIAS Y DATOS ACTUALES:',
+      browserContext
+        ? '- Tenés contenido web real en este prompt. Usálo. Hacé el resumen con los datos reales disponibles.'
+        : '- NO tenés noticias del día en este prompt. Si el usuario pide noticias actuales/de hoy, respondé EXACTAMENTE:',
+      browserContext
+        ? ''
+        : '  "No pude obtener las noticias en este momento. Por favor intentá de nuevo en unos segundos o consultá elonce.com directamente."',
+      browserContext
+        ? ''
+        : '- NUNCA inventes titulares, eventos, ni menciones funcionarios locales sin datos web en el prompt.',
+      '',
+      'Reglas generales:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
       '2. Usar el contexto provisto (memoria, documentos, web) para fundamentar la respuesta.',
-      '3. No inventar datos. Si no tenés la info, decilo claramente.',
+      '3. No inventar datos. Si no tenés la info, decílo claramente.',
       browserContext
-        ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumás todo — enfocate en la pregunta.'
+        ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
         : '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
       '5. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
       '6. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
@@ -448,14 +479,30 @@ export class JarvisService {
   private looksEvasive(text: string): boolean {
     const n = text.toLowerCase();
     return (
+      // Patrones clásicos de "no tengo acceso"
       n.includes('no tengo acceso') ||
       n.includes('no tengo información') ||
       n.includes('no puedo acceder') ||
       n.includes('información en tiempo real') ||
-      n.includes('te recomiendo buscar') ||
-      n.includes('te sugiero consultar') ||
       n.includes('no dispongo de') ||
       n.includes('mis datos no incluyen') ||
+      // Patrones de "te recomiendo ir a otra parte"
+      n.includes('te recomiendo buscar') ||
+      n.includes('te recomiendo consultar') ||
+      n.includes('te sugiero consultar') ||
+      n.includes('consultá fuentes') ||
+      n.includes('visitá el sitio') ||
+      n.includes('podés buscar en') ||
+      // Patrones de "no hay info disponible" (respuesta actual del modelo)
+      n.includes('no hay información disponible') ||
+      n.includes('no tengo datos específicos') ||
+      n.includes('no cuento con información') ||
+      // Patrones de respuestas genéricas que evitan el tema
+      n.includes('puedo ofrecerte algunos datos generales') ||
+      n.includes('puedo decirte que en general') ||
+      n.includes('datos generales y eventos relevantes que podrían') ||
+      n.includes('no dispongo de noticias') ||
+      // Pattern combinado
       (n.includes('lo siento') && n.includes('no'))
     );
   }
@@ -537,14 +584,17 @@ export class JarvisService {
    * @param category Categoría detectada (opcional)
    */
   private async autoWebSearch(query: string, category?: string): Promise<string | null> {
+    // Para noticias, enriquecer la query con la fecha actual para obtener resultados frescos
+    const enrichedQuery = this.enrichQueryForCategory(query, category);
+
     this.logger.log(
-      `[jarvis:auto_search] buscando: "${query.slice(0, 60)}" ${category ? `[${category}]` : ''}`,
+      `[jarvis:auto_search] buscando: "${enrichedQuery.slice(0, 80)}" ${category ? `[${category}]` : ''}`,
     );
 
     // 1. Si hay categoría, usar caché inteligente
     if (category) {
       try {
-        const cached = await this.contentCache.fetchRelevantContent(query, category, 3);
+        const cached = await this.contentCache.fetchRelevantContent(enrichedQuery, category, 3);
 
         if (cached.length > 0) {
           const fromCacheCount = cached.filter((r) => r.fromCache).length;
@@ -557,7 +607,7 @@ export class JarvisService {
             .map((r, i) => {
               const source = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
               const title = r.title ? `**${i + 1}. ${r.title}**` : `**${i + 1}. Resultado**`;
-              return `${title} ${source}\n🔗 ${r.url}\n\n${r.content.slice(0, 1500)}`;
+              return `${title} ${source}\n🔗 ${r.url}\n\n${r.content.slice(0, 2000)}`;
             })
             .join('\n\n---\n\n');
         }
@@ -570,17 +620,17 @@ export class JarvisService {
     }
 
     // 2. Fallback: WebHelper con fuentes priorizadas por categoría
-    const result = await WebHelper.search(query, category, true);
+    const result = await WebHelper.search(enrichedQuery, category, true);
 
     if (result) {
       this.logger.log(`[jarvis:auto_search] OK WebHelper (${result.length} chars)`);
       return result;
     }
 
-    // 3. Último fallback: Google Playwright
+    // 3. Último fallback: Playwright con query enriquecida
     this.logger.log(`[jarvis:auto_search] WebHelper vacío → Google Playwright`);
     try {
-      const hits = await this.browserTool.search(query, 4);
+      const hits = await this.browserTool.search(enrichedQuery, 4);
       if (!hits.length) return null;
       return hits
         .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`)
@@ -591,24 +641,69 @@ export class JarvisService {
   }
 
   /**
+   * Enriquece la query con fecha/localidad para categorías que necesitan datos actuales.
+   * Esto mejora significativamente los resultados de DuckDuckGo para noticias.
+   */
+  private enrichQueryForCategory(query: string, category?: string): string {
+    if (!category) return query;
+
+    const now   = new Date();
+    const day   = now.getDate();
+    const month = now.toLocaleDateString('es-AR', { month: 'long' });
+    const year  = now.getFullYear();
+    const today = `${day} de ${month} de ${year}`;
+
+    const newsCategories = ['noticias', 'gobierno', 'deportes'];
+    if (!newsCategories.includes(category)) return query;
+
+    // Detectar localidad en la query original
+    const n = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const mentionsParana   = /parana|entre rios|litoral/.test(n);
+    const mentionsArgentina = /argentin/.test(n);
+
+    // Para noticias: construir query limpia en lugar de la pregunta completa
+    // "resumen de noticias para Paran\u00e1 el d\u00eda de hoy" \u2192 "noticias Paran\u00e1 Entre R\u00edos 23 de junio de 2026"
+    if (category === 'noticias') {
+      const localidad = mentionsParana   ? 'Paran\u00e1 Entre R\u00edos'
+                      : mentionsArgentina ? 'Argentina'
+                      : '';
+      return `noticias ${localidad} ${today}`.replace(/\s+/g, ' ').trim();
+    }
+
+    if (category === 'gobierno') {
+      const localidad = mentionsParana ? 'Paran\u00e1 Entre R\u00edos' : 'Argentina';
+      return `noticias gobierno ${localidad} ${today}`.trim();
+    }
+
+    // Deportes: conservar query original pero reemplazar "hoy" por fecha
+    if (/\bhoy\b/i.test(query)) return query.replace(/\bhoy\b/gi, today);
+    return `${query} ${today}`;
+  }
+
+  /**
    * Detecta la categoría de una pregunta para optimizar caché.
    * Esto acelera las consultas frecuentes usando fuentes priorizadas.
    */
   private detectCategory(message: string): string | undefined {
     const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    // Gobierno local — MÁXIMA PRIORIDAD (datos cambian, necesita info actualizada)
+    // Gobierno local — solo cuando se pregunta EXPLÍCITAMENTE por autoridades/gestión
     if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
       return 'gobierno';
     }
 
-    // Paraná (ciudad) — contexto local prioritario
+    // ── NOTICIAS — va ANTES que Paraná para evitar el falso match gobierno ──
+    // "noticias de Paraná hoy" → noticias (NO gobierno)
+    if (/(noticia|novedades|actualidad|resumen|breaking|informa|titulo|tapa|diario|periodico|prensa)/i.test(n) && n.length > 10) {
+      return 'noticias';
+    }
+
+    // Paraná (ciudad) — contexto local cuando NO es noticias ni gobierno
     if (/(parana\b|ciudad de parana|parque urquiza|costanera|puerto viejo)/i.test(n)) {
-      // Distinguir: si menciona "rio" es geografía general, sino es gobierno/noticias locales
-      if (/(rio|caudal|nivel|afluente)/i.test(n)) {
-        return 'noticias'; // río Paraná → noticias generales
-      }
-      return 'gobierno'; // ciudad Paraná → Mi Paraná + El Once
+      // Si menciona río → geografía/noticias generales
+      if (/(rio|caudal|nivel|afluente)/i.test(n)) return 'noticias';
+      // Cualquier otra consulta sobre la ciudad → El Once + Mi Paraná
+      return 'noticias';
     }
 
     // Deportes
@@ -621,8 +716,8 @@ export class JarvisService {
       return 'clima';
     }
 
-    // Noticias
-    if (/(noticia|ultimo|ultima|actualidad|hoy|reciente|breaking|informa)/i.test(n) && n.length > 15) {
+    // Noticias (segunda guarda — queries cortos con "hoy", "reciente", etc.)
+    if (/(ultimo|ultima|hoy|reciente)/i.test(n) && n.length > 15) {
       return 'noticias';
     }
 

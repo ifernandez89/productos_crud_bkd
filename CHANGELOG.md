@@ -6,7 +6,68 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Added — Knowledge Acquisition Layer: Caché inteligente con fuentes priorizadas
+### Fixed — Noticias locales: routing, scraping y system prompt (2026-06-23)
+
+#### Causa raíz del problema
+Cuando el usuario pedía "noticias de Paraná hoy", JarBees respondía con datos inventados
+o derivaba al usuario a buscar solo. Se identificaron 4 bugs en cadena:
+
+1. **`detectCategory` devolvía `'gobierno'` en vez de `'noticias'`** para cualquier consulta
+   que mencionara "Paraná" — incluyendo "noticias de Paraná". Esto causaba que el scraper
+   accediera a `mi.parana.gob.ar` (sitio municipal) en vez de `elonce.com`.
+2. **`El Once` sin `searchPattern`** → solo se scrapeaba la homepage, nunca resultados de búsqueda.
+3. **DuckDuckGo extraía URL de display text** (`.result__url` text) en vez del `href` real
+   del enlace. Esto causaba URLs mal formadas y scraping fallido en todos los resultados DDG.
+4. **`enrichQueryForCategory` enviaba la pregunta completa** ("resumen de noticias para Paraná
+   el día de hoy") a DuckDuckGo en vez de términos limpios ("noticias Paraná Entre Ríos
+   23 de junio de 2026"). DDG da resultados mucho peores con preguntas en lenguaje natural.
+
+#### Correcciones aplicadas
+
+**`src/jarvis/jarvis.service.ts`:**
+- **`detectCategory`**: noticias/novedades/actualidad/resumen se evalúan ANTES que el bloque
+  de Paraná → "noticias de Paraná" → `'noticias'` (no `'gobierno'`)
+- **`detectCategory`**: Paraná ciudad sin keywords de noticias → también devuelve `'noticias'`
+  (fuente El Once, no Mi Paraná municipalidad)
+- **`enrichQueryForCategory`** reescrito: construye query limpia para DuckDuckGo
+  (`noticias Paraná Entre Ríos 23 de junio de 2026`) en vez de pasar la pregunta completa
+- **Graceful failure para noticias**: cuando `autoWebSearch` falla con categoría `'noticias'`
+  o `'gobierno'`, en vez de llamar al LLM sin contexto (que inventaba datos), devuelve mensaje
+  honesto con links directos a El Once, UNO Entre Ríos y Mi Paraná
+- **`looksEvasive` ampliado**: detecta ahora "no hay información disponible", "te recomiendo
+  consultar", "puedo ofrecerte algunos datos generales", "datos generales y eventos relevantes
+  que podrían" — exactamente los patrones del modelo evasivo
+- **System prompt — eliminado dato hardcodeado**: removido `"Intendenta actual (2026): Rosario
+  Romero"`. Los funcionarios electivos duran 4 años y pueden cambiar por fallecimiento u otras
+  causas — NUNCA deben estar en código fuente. Reemplazado por instrucción de buscar en web
+- **System prompt — regla crítica noticias**: cuando no hay `browserContext`, el LLM recibe
+  instrucción explícita de NO inventar noticias ni autoridades. Respuesta correcta: "No pude
+  obtener las noticias en este momento. Intentá de nuevo."
+- **System prompt — bloque de autoridades locales**: instrucción clara de no usar conocimiento
+  interno sobre intendentes/gobernadores. SIEMPRE consultar fuente web actual
+
+**`src/jarvis/tools/web/source-registry.ts`:**
+- **El Once**: agregado `searchPattern: '/noticias?s={query}'`, priority 8→9, TTL 2h→1h,
+  selectores mejorados (`.nota-cuerpo`, `.article-body`, `.contenido`, `article`, `main`)
+- **UNO Entre Ríos** (nuevo): fuente local de noticias de Entre Ríos (priority 8, TTL 1h)
+- **El Entre Ríos** (nuevo): fuente complementaria (priority 7, TTL 1h)
+
+**`src/jarvis/tools/web/web-helper.ts`:**
+- **Fix crítico DuckDuckGo**: `$(el).find('.result__url').text()` devuelve texto display,
+  NO el href real. Corregido a `$(el).find('.result__title a').attr('href')` + decodificación
+  del redirect interno de DDG (`?uddg=<encoded-url>`)
+- **Múltiples resultados para noticias**: en vez de tomar solo el primer artículo útil, ahora
+  acumula hasta 3 artículos scrapeados y los concatena → resúmenes más completos
+- **`scrapeUrlWithSelectors` → público**: para que `ContentCacheService` pueda usarlo con
+  los selectores CSS específicos de cada fuente (antes usaba `scrapeUrl` genérico)
+- **`MAX_TEXT_CHARS`**: 3000 → 4000 chars por artículo
+- **`MAX_URLS`**: 3 → 4 URLs a scrapear en paralelo
+
+**`src/jarvis/tools/web/content-cache.service.ts`:**
+- **Cache MISS**: usa `scrapeUrlWithSelectors` con la fuente y sus selectores antes de
+  caer a `scrapeUrl` genérico → mejor extracción de contenido en El Once y similares
+
+
 - **`Source`, `ScrapedPage`, `ScrapedContent`, `Query` (BD)**: arquitectura de 4 tablas para caché inteligente con TTL por categoría. Migración `20260623134338_web_scraping_cache_layer`
   - **`Source`**: catálogo de fuentes confiables con `name`, `urlBase`, `category`, `priority` (1-10), `ttlHours`, `active`, `successRate`, `avgResponseTimeMs`, configuración JSON de scraping
   - **`ScrapedPage`**: páginas cacheadas con `url` (unique), `contentHash` SHA-256 para detectar cambios, `scrapedAt`, `expiresAt` (TTL automático), `status` (`valid`/`expired`/`failed`), `cacheHits` (tracking de uso), `lastAccessedAt`

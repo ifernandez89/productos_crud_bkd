@@ -29,9 +29,9 @@ export class WebHelper {
     '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
   private static readonly SEARCH_TIMEOUT  = 6_000;
-  private static readonly SCRAPE_TIMEOUT  = 7_000;
-  private static readonly MAX_TEXT_CHARS  = 3_000;
-  private static readonly MAX_URLS        = 3;
+  private static readonly SCRAPE_TIMEOUT  = 8_000;
+  private static readonly MAX_TEXT_CHARS  = 4_000;  // aumentado de 3000 para noticias
+  private static readonly MAX_URLS        = 4;       // aumentado de 3
 
   // ── API pública ─────────────────────────────────────────────────────────────
 
@@ -111,13 +111,20 @@ export class WebHelper {
       urls.map((u) => WebHelper.scrapeUrl(u, query)),
     );
 
-    // Tomar el primer resultado útil
+    // Recolectar TODOS los resultados útiles (no solo el primero)
+    const usefulScraped: string[] = [];
     for (const r of scrapeResults) {
       if (r.status === 'fulfilled' && r.value && r.value.length > 150) {
-        const elapsed = Date.now() - startTime;
-        WebHelper.logger.log(`[WebHelper] resultado final en ${elapsed}ms`);
-        return `${snippetBlock}\n\n---\n**Contenido extraído:**\n${r.value}`;
+        usefulScraped.push(r.value);
+        if (usefulScraped.length >= 3) break; // máximo 3 artículos
       }
+    }
+
+    const elapsed = Date.now() - startTime;
+    WebHelper.logger.log(`[WebHelper] resultado final en ${elapsed}ms (${usefulScraped.length} artículos)`);
+
+    if (usefulScraped.length > 0) {
+      return `${snippetBlock}\n\n---\n**Contenido extraído:**\n${usefulScraped.join('\n\n---\n')}`;
     }
 
     // Si el scraping no dio nada útil, devolver solo los snippets
@@ -133,9 +140,10 @@ export class WebHelper {
   }
 
   /**
-   * Scrapea una URL específica con selectores optimizados si se proporciona la fuente.
+   * Scrapea una URL espec\u00edfica con selectores optimizados si se proporciona la fuente.
+   * P\u00fablico para que ContentCacheService pueda usarlo con los selectores correctos.
    */
-  private static async scrapeUrlWithSelectors(
+  static async scrapeUrlWithSelectors(
     url: string,
     contextQuery: string,
     source?: SourceDefinition,
@@ -306,10 +314,21 @@ export class WebHelper {
       $('.result__body').each((_, el) => {
         if (results.length >= 5) return;
         const title   = $(el).find('.result__title a').text().trim();
-        const href    = $(el).find('.result__url').text().trim();
+        // ✅ FIX: leer el href real del enlace, no el display text de .result__url
+        const rawHref = $(el).find('.result__title a').attr('href') ?? '';
         const snippet = $(el).find('.result__snippet').text().trim();
-        if (!title || !href) return;
-        const url = href.startsWith('http') ? href : `https://${href}`;
+        if (!title || !rawHref) return;
+
+        // DuckDuckGo usa redirects internos: //duckduckgo.com/l/?uddg=<encoded-url>
+        let url: string;
+        try {
+          const parsed = new URL(rawHref.startsWith('//') ? `https:${rawHref}` : rawHref);
+          const uddg   = parsed.searchParams.get('uddg');
+          url = uddg ? decodeURIComponent(uddg) : rawHref;
+        } catch {
+          url = rawHref.startsWith('http') ? rawHref : `https://${rawHref}`;
+        }
+
         results.push({ title, url, snippet });
       });
 
