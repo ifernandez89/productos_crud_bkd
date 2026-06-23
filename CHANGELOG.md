@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — WebHelper: búsqueda web genérica para cualquier pregunta
+- **`WebHelper` genérico** (`src/jarvis/tools/web/web-helper.ts`): helper estático sin dependencias de NestJS DI para búsqueda web + scraping universal. Reemplaza la lógica específica de deportes con capacidad de responder cualquier pregunta factual
+  - **`WebHelper.search(query, scrape=true)`**: busca en DuckDuckGo → scrapea las primeras 3 URLs en paralelo → retorna texto relevante hasta 3000 chars con snippets + contenido extraído
+  - **`WebHelper.quickSearch(query)`**: solo snippets de DuckDuckGo sin scraping (~1-2s)
+  - **`WebHelper.scrapeUrl(url, contextQuery?)`**: scrapea una URL específica con extracción inteligente de contenido relevante basado en keywords del query
+  - **Extracción inteligente de contenido**: prioriza selectores semánticos (`article`, `main`, `.article-body`, `.content`) → fallback a body completo → filtrado por relevancia usando keywords del query
+  - **Scraping robusto**: User-Agent real, timeouts configurables (6s búsqueda, 7s scraping), manejo silencioso de errores 404/403/ENOTFOUND
+  - **Sin dependencias externas pesadas**: usa solo `axios` + `cheerio` (ya instalados), sin Playwright, sin API keys
+- **Integración en `JarvisService`**: `autoWebSearch()` y `searchDuckDuckGo()` ahora delegan a `WebHelper`. El flujo `respondWithLLM()` usa `WebHelper.search()` como fallback automático cuando detecta respuestas pobres del LLM (negativas tipo "no tengo acceso", "no sé", respuestas <50 chars)
+- **Detección de respuestas insuficientes**: `isInsufficientAnswer()` en `jarvis.service.ts` analiza la respuesta del LLM buscando patrones de negativa o falta de datos concretos → si detecta una respuesta pobre, relanza automáticamente con contexto web sin preguntar al usuario
+- **`SportsScraperHelper` deprecado**: la funcionalidad específica de deportes ahora vive en `WebHelper` como caso particular. `SportsScraperHelper` sigue existiendo por compatibilidad pero ya no se usa en el flujo principal
+
 ### Changed — Sports Tool v2: detalles de goles via scraping
 - **Cascada de 3 pasos** para consultas deportivas:
   1. **TheSportsDB** → resultado, fecha, estadio, estado (`FT`/`NS`) — ~200ms

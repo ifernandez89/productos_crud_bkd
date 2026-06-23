@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import { load as cheerioLoad } from 'cheerio';
+import { SportsScraperHelper } from './sports-scraper.helper';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -8,16 +8,15 @@ export interface SportsResult {
   found: boolean;
   source: string;
   content: string;
-  hasGoalDetail: boolean;   // true si tiene goleadores/minutos
+  hasGoalDetail: boolean;
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
 
 /**
- * Cascada de fuentes deportivas sin API key:
- * 1. TheSportsDB — resultado básico (score, fecha, estadio)
- * 2. Si no tiene goles detallados → DuckDuckGo para encontrar URL relevante
- * 3. Scrapear la primera URL con cheerio para obtener goleadores + minutos
+ * Cascada:
+ * 1. TheSportsDB  → score, fecha, estadio (~200ms, sin key)
+ * 2. Si no tiene goleadores → SportsScraperHelper → scrapea sitios deportivos directamente
  */
 @Injectable()
 export class SportsTool {
@@ -55,33 +54,31 @@ export class SportsTool {
     'bundesliga':       '4331',
   };
 
-  // Sitios de deportes que tienen buenos detalles de goles en HTML
-  private readonly SPORTS_SITES = [
-    'ole.com.ar',
-    'espn.com.ar',
-    'espn.com',
-    'infobae.com',
-    'tycsports.com',
-    'marca.com',
-    'as.com',
-    'livescore.com',
-    'flashscore.com',
-    'sofascore.com',
-  ];
-
   // ── API pública ─────────────────────────────────────────────────────────────
 
   async search(query: string): Promise<SportsResult> {
     const n = query.toLowerCase();
 
-    // Paso 1: TheSportsDB — datos básicos del partido
+    // 1. Obtener datos básicos de TheSportsDB (score, fecha, equipos)
     const basicResult = await this.getFromTheSportsDB(n);
 
-    // Paso 2: Siempre buscar detalles de goles via scraping
-    // (TheSportsDB free no tiene goleadores, solo score)
-    const detailResult = await this.getGoalDetails(query, basicResult);
+    // 2. Extraer equipos para el scraper
+    const { home, away, date } = this.extractMatchInfo(basicResult, n);
 
-    if (detailResult.found) return detailResult;
+    // 3. Buscar goleadores/minutos via scraper (en paralelo con paso 1)
+    const scrapeText = await SportsScraperHelper.fetchGoalDetails(home, away, date);
+
+    if (scrapeText) {
+      const baseInfo  = basicResult.found ? `${basicResult.content}\n\n` : '';
+      return {
+        found: true,
+        source: 'TheSportsDB + Web',
+        content: `${baseInfo}**Detalle de goles:**\n${scrapeText}`,
+        hasGoalDetail: true,
+      };
+    }
+
+    // 4. Sin detalle de scraper → devolver solo lo básico
     if (basicResult.found) return basicResult;
 
     return { found: false, source: 'none', content: '', hasGoalDetail: false };
@@ -109,8 +106,7 @@ export class SportsTool {
         ),
       ]);
       return result;
-    } catch (e) {
-      this.logger.warn(`[sports:api] ${e instanceof Error ? e.message : e}`);
+    } catch {
       return { found: false, source: 'none', content: '', hasGoalDetail: false };
     }
   }
@@ -132,6 +128,8 @@ export class SportsTool {
       const events: any[] = resp.data?.results ?? [];
       if (!events.length) return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
 
+      // Guardar metadata del evento en el contenido para que el scraper lo use
+      this._lastEvents = events.slice(0, 3);
       const lines = events.slice(0, 3).map((e) => this.formatEvent(e));
       return {
         found: true,
@@ -153,11 +151,12 @@ export class SportsTool {
       const events: any[] = resp.data?.events ?? [];
       if (!events.length) return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
 
+      this._lastEvents = events.slice(0, 5);
       const lines = events.slice(0, 5).map((e) => this.formatEvent(e));
       return {
         found: true,
         source: 'TheSportsDB',
-        content: `**Últimos resultados de la liga:**\n${lines.join('\n\n')}`,
+        content: `**Últimos resultados:**\n${lines.join('\n\n')}`,
         hasGoalDetail: false,
       };
     } catch {
@@ -179,156 +178,41 @@ export class SportsTool {
     }
   }
 
-  // ── Detalles de goles via scraping ───────────────────────────────────────────
+  // Cache liviano del último evento para extraer equipos/fecha
+  private _lastEvents: any[] = [];
 
-  /**
-   * Busca en DuckDuckGo "goles argentina austria minutos goleadores"
-   * Luego scrapea la primera URL de un sitio deportivo conocido
-   */
-  private async getGoalDetails(query: string, basic: SportsResult): Promise<SportsResult> {
-    // Construir query de búsqueda específica para goles
-    const searchQuery = this.buildGoalSearchQuery(query);
-    this.logger.log(`[sports:goals] buscando detalles: "${searchQuery}"`);
+  // ── Extracción de info del partido ───────────────────────────────────────────
 
-    // Buscar en DuckDuckGo
-    const searchUrls = await this.searchDDG(searchQuery);
-    if (!searchUrls.length) {
-      this.logger.warn('[sports:goals] DuckDuckGo no devolvió URLs');
-      return { found: false, source: 'none', content: '', hasGoalDetail: false };
+  private extractMatchInfo(
+    basic: SportsResult,
+    query: string,
+  ): { home: string; away: string; date?: string } {
+    // Si tenemos datos de TheSportsDB, usar el evento más reciente
+    if (basic.found && this._lastEvents.length > 0) {
+      const e = this._lastEvents[0];
+      return {
+        home: e.strHomeTeam ?? '',
+        away: e.strAwayTeam ?? '',
+        date: e.dateEvent,
+      };
     }
 
-    // Scrapear las primeras 2 URLs en paralelo, tomar la que más contenido dé
-    const scrapePromises = searchUrls.slice(0, 2).map((url) => this.scrapeGoals(url));
-    const scrapeResults = await Promise.allSettled(scrapePromises);
-
-    for (const r of scrapeResults) {
-      if (r.status === 'fulfilled' && r.value) {
-        // Combinar con datos básicos si los tenemos
-        const combinedContent = basic.found
-          ? `${basic.content}\n\n**Detalle de goles (web):**\n${r.value}`
-          : `**Detalle de goles:**\n${r.value}`;
-
-        return {
-          found: true,
-          source: 'Web scraping',
-          content: combinedContent,
-          hasGoalDetail: true,
-        };
-      }
-    }
-
-    return { found: false, source: 'none', content: '', hasGoalDetail: false };
-  }
-
-  /** Busca en DuckDuckGo y devuelve las URLs de resultados */
-  private async searchDDG(query: string): Promise<string[]> {
-    try {
-      const encoded = encodeURIComponent(query);
-      const resp = await axios.get(
-        `https://html.duckduckgo.com/html/?q=${encoded}&kl=ar-es`,
-        {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36',
-            'Accept-Language': 'es-AR,es;q=0.9',
-          },
-          timeout: 6_000,
-        },
-      );
-
-      const $ = cheerioLoad(resp.data as string);
-      const urls: string[] = [];
-
-      $('.result__body').each((_, el) => {
-        if (urls.length >= 4) return;
-        const href = $(el).find('.result__url').text().trim();
-        if (!href) return;
-        const fullUrl = href.startsWith('http') ? href : `https://${href}`;
-        // Priorizar sitios deportivos conocidos
-        const isSportsSite = this.SPORTS_SITES.some((s) => fullUrl.includes(s));
-        if (isSportsSite) urls.unshift(fullUrl); // prioridad al frente
-        else urls.push(fullUrl);
-      });
-
-      return urls;
-    } catch (err: unknown) {
-      this.logger.warn(`[sports:ddg] ${err instanceof Error ? err.message : err}`);
-      return [];
-    }
-  }
-
-  /** Scrapea una URL y extrae texto relevante sobre goles */
-  private async scrapeGoals(url: string): Promise<string | null> {
-    try {
-      const resp = await axios.get(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0 Safari/537.36',
-          'Accept-Language': 'es-AR,es;q=0.9',
-        },
-        timeout: 6_000,
-        validateStatus: (s) => s < 400,
-      });
-
-      const $ = cheerioLoad(resp.data as string);
-
-      // Remover basura
-      $('script, style, nav, footer, header, aside, iframe, .ads, [aria-hidden="true"]').remove();
-
-      // Buscar párrafos/secciones con info de goles
-      const goalKeywords = ['gol', 'minuto', 'messi', 'goleador', 'score', 'tanto', 'anotó', 'marcó', 'min.', "'"];
-      const relevantTexts: string[] = [];
-
-      // Buscar en párrafos que mencionen goles
-      $('p, li, td, .goal, [class*="goal"], [class*="scorer"], [class*="gol"]').each((_, el) => {
-        const text = $(el).text().trim().replace(/\s+/g, ' ');
-        if (text.length < 10 || text.length > 500) return;
-        const hasGoalInfo = goalKeywords.some((kw) => text.toLowerCase().includes(kw));
-        if (hasGoalInfo && !relevantTexts.includes(text)) {
-          relevantTexts.push(text);
-        }
-      });
-
-      if (!relevantTexts.length) {
-        // Fallback: tomar el primer bloque de texto del artículo
-        const body = $('article, main, .article, .content').first().text()
-          .replace(/\s+/g, ' ').trim().slice(0, 1500);
-        if (body.length > 100) return `${body}\n_(Fuente: ${url})_`;
-        return null;
-      }
-
-      return relevantTexts.slice(0, 8).join('\n') + `\n_(Fuente: ${url})_`;
-    } catch (err: unknown) {
-      this.logger.warn(`[sports:scrape] ${url}: ${err instanceof Error ? err.message : err}`);
-      return null;
-    }
-  }
-
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-
-  private buildGoalSearchQuery(query: string): string {
-    // Extraer equipos del query para hacer búsqueda específica
+    // Fallback: extraer del texto del query
     const teams = this.extractTeamsFromQuery(query);
-    const base  = teams.length >= 2
-      ? `goles ${teams.join(' vs ')} partido hoy minutos goleadores`
-      : `${query} goles minutos goleadores`;
-    return base;
+    return {
+      home: teams[0] ?? '',
+      away: teams[1] ?? '',
+    };
   }
 
   private extractTeamsFromQuery(query: string): string[] {
     const n = query.toLowerCase();
-    const teams: string[] = [];
-    const knownTeams = ['argentina', 'austria', 'brasil', 'uruguay', 'colombia', 'boca', 'river', 'barcelona', 'real madrid'];
-    for (const t of knownTeams) {
-      if (n.includes(t)) teams.push(t);
-    }
-    return teams;
+    const known = ['argentina', 'austria', 'brasil', 'brazil', 'uruguay', 'colombia',
+                   'boca', 'river', 'barcelona', 'real madrid', 'manchester'];
+    return known.filter((t) => n.includes(t));
   }
 
-  private buildGoalSearchQueryFromEvent(event: any): string {
-    const home = event.strHomeTeam ?? '';
-    const away = event.strAwayTeam ?? '';
-    const date = event.dateEvent   ?? '';
-    return `goles ${home} vs ${away} ${date} minutos goleadores`;
-  }
+  // ── Formateo ─────────────────────────────────────────────────────────────────
 
   private formatEvent(e: any): string {
     const home    = e.strHomeTeam  ?? '?';
@@ -343,11 +227,13 @@ export class SportsTool {
 
     const statusLabel = status === 'FT' ? '✅ Finalizado' : status === 'NS' ? '⏳ No iniciado' : status || '';
     let line = `• **${home} ${scoreH} - ${scoreA} ${away}** ${statusLabel}`;
-    if (date) line += `\n  📅 ${date}${time ? ' ' + time : ''}`;
+    if (date)   line += `\n  📅 ${date}${time ? ' ' + time : ''}`;
     if (league) line += `  🏆 ${league}`;
     if (venue)  line += `\n  📍 ${venue}`;
     return line;
   }
+
+  // ── Detección ─────────────────────────────────────────────────────────────────
 
   private detectTeamId(n: string): string | null {
     for (const [name, id] of Object.entries(this.TEAM_IDS)) {
@@ -365,11 +251,10 @@ export class SportsTool {
 
   private extractTeamName(n: string): string | null {
     if (n.includes('argentina') || n.includes('seleccion')) return 'Argentina';
-    if (n.includes('boca'))  return 'Boca Juniors';
-    if (n.includes('river')) return 'River Plate';
+    if (n.includes('boca'))   return 'Boca Juniors';
+    if (n.includes('river'))  return 'River Plate';
     if (n.includes('brasil') || n.includes('brazil')) return 'Brazil';
-
-    const m = n.match(/(?:de|del|sobre|partido de)\s+([\w\s]{3,30?)(?:\s+hoy|\s+ayer|\s+el partido|$)/i);
+    const m = n.match(/(?:de|del|sobre|partido de)\s+([\w\s]{3,30})(?:\s+hoy|\s+ayer|\s+el partido|$)/i);
     return m?.[1]?.trim() ?? null;
   }
 }

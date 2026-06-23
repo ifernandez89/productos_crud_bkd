@@ -18,9 +18,8 @@ import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
+import { WebHelper } from './tools/web/web-helper';
 import { randomUUID } from 'crypto';
-import axios from 'axios';
-import { load as cheerioLoad } from 'cheerio';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -364,8 +363,6 @@ export class JarvisService {
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs)   toolsUsed.push('rag');
 
-    // Cuando hay contexto web, el systemPrompt prohíbe explícitamente
-    // decir "no tengo acceso" — esos datos YA están en el prompt
     const finalSystemPrompt = webContext
       ? systemPrompt
           .replace(
@@ -385,17 +382,80 @@ export class JarvisService {
       ],
     });
 
+    // ── Fallback automático: si la respuesta parece una negativa y no teníamos
+    //    contexto web, buscar en internet y reintentar UNA vez ─────────────────
+    const isEvasiveResponse = !webContext && this.looksEvasive(response.content);
+    if (isEvasiveResponse) {
+      this.logger.log(`[jarvis] respuesta evasiva detectada → buscando en internet`);
+      const webCtx = await WebHelper.search(userMessage, true);
+      if (webCtx) {
+        toolsUsed.push('web_fallback');
+        // Reintentar con el contexto web
+        const { systemPrompt: sp2, userPrompt: up2 } =
+          await this.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx);
+        const sp2Final = sp2
+          .replace(
+            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+            '4. TENÉS datos reales de internet en el contexto. Respondé con esos datos. NO digas que no tenés información.',
+          )
+          .replace(
+            '3. No inventar datos. Si no tenés la info, decilo claramente.',
+            '3. Usá SOLO los datos del contexto web. No inventés nada.',
+          );
+        const response2 = await provider.generate({
+          messages: [
+            { role: 'system', content: sp2Final },
+            { role: 'user',   content: up2 },
+          ],
+        });
+        // Persistir la segunda respuesta (mejorada)
+        await this.saveAndObserve(sessionId, userMessage, response2.content, toolsUsed, response2, startTime);
+        return response2.content;
+      }
+    }
+
+    await this.saveAndObserve(sessionId, userMessage, response.content, toolsUsed, response, startTime);
+    return response.content;
+  }
+
+  /**
+   * Detecta si una respuesta del LLM es evasiva/negativa.
+   * Ej: "no tengo acceso", "no puedo", "te recomiendo buscar en..."
+   */
+  private looksEvasive(text: string): boolean {
+    const n = text.toLowerCase();
+    return (
+      n.includes('no tengo acceso') ||
+      n.includes('no tengo información') ||
+      n.includes('no puedo acceder') ||
+      n.includes('información en tiempo real') ||
+      n.includes('te recomiendo buscar') ||
+      n.includes('te sugiero consultar') ||
+      n.includes('no dispongo de') ||
+      n.includes('mis datos no incluyen') ||
+      (n.includes('lo siento') && n.includes('no'))
+    );
+  }
+
+  /** Persiste la respuesta y registra en observabilidad */
+  private async saveAndObserve(
+    sessionId: string,
+    question: string,
+    answer: string,
+    toolsUsed: string[],
+    response: any,
+    startTime: number,
+  ): Promise<void> {
     await this.conversationRepo.create({
       sessionId,
       role: 'assistant',
-      content: response.content,
+      content: answer,
       metadata: { source: 'llm', model: response.model, provider: response.provider, latencyMs: response.latencyMs },
     });
-
     await this.agentRunRepo.create({
       sessionId,
-      question: userMessage,
-      answer: response.content,
+      question,
+      answer,
       toolsUsed,
       modelUsed: response.model,
       provider: response.provider,
@@ -403,9 +463,7 @@ export class JarvisService {
       tokensUsed: response.tokensUsed,
       success: true,
     });
-
     await this.updateSessionSummaryIfNeeded(sessionId);
-    return response.content;
   }
 
   /**
@@ -438,76 +496,26 @@ export class JarvisService {
   }
 
   /**
-   * Búsqueda rápida usando DuckDuckGo Instant Answer API (sin Playwright, sin clave).
-   * Fallback a Google con Playwright si DuckDuckGo no devuelve resultados útiles.
+   * Búsqueda web automática — delega al WebHelper genérico.
+   * DuckDuckGo primero (~1-2s), scrapea la mejor URL para contexto detallado.
    */
   private async autoWebSearch(query: string): Promise<string | null> {
-    // Intento 1: DuckDuckGo HTML scraping (rápido, ~1-2s)
-    const ddgResult = await this.searchDuckDuckGo(query);
-    if (ddgResult) {
-      this.logger.log(`[jarvis:auto_search] DuckDuckGo OK para: "${query.slice(0, 60)}"`);
-      return ddgResult;
-    }
-
-    // Intento 2: Google con Playwright (más lento pero más completo)
-    this.logger.log(`[jarvis:auto_search] DuckDuckGo vacío → Google Playwright para: "${query.slice(0, 60)}"`);
-    try {
-      const results = await this.browserTool.search(query, 4);
-      if (!results.length) return null;
-      return results
-        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`)
-        .join('\n\n');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[jarvis:auto_search] Google también falló: ${msg}`);
-      return null;
-    }
-  }
-
-  /**
-   * Búsqueda en DuckDuckGo via HTML (sin API key, sin Playwright, ~1-2s).
-   */
-  private async searchDuckDuckGo(query: string): Promise<string | null> {
-    try {
-      const encoded = encodeURIComponent(query);
-      const url = `https://html.duckduckgo.com/html/?q=${encoded}&kl=ar-es`;
-
-      const response = await axios.get(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
-          'Accept-Language': 'es-AR,es;q=0.9',
-        },
-        timeout: 6_000,   // reducido de 8s a 6s
-        validateStatus: (s) => s < 400,
-      });
-
-      const $ = cheerioLoad(response.data as string);
-      const results: Array<{ title: string; url: string; snippet: string }> = [];
-
-      $('.result__body').each((_, el) => {
-        if (results.length >= 4) return;
-        const title   = $(el).find('.result__title a').text().trim();
-        const href    = $(el).find('.result__url').text().trim();
-        const snippet = $(el).find('.result__snippet').text().trim();
-        if (title && href) {
-          results.push({ title, url: href.startsWith('http') ? href : `https://${href}`, snippet });
-        }
-      });
-
-      if (!results.length) {
-        this.logger.warn(`[jarvis:ddg] sin resultados para: "${query.slice(0, 60)}"`);
+    this.logger.log(`[jarvis:auto_search] buscando: "${query.slice(0, 60)}"`);
+    const result = await WebHelper.search(query, true);
+    if (result) {
+      this.logger.log(`[jarvis:auto_search] OK (${result.length} chars)`);
+    } else {
+      // Fallback: Playwright Google
+      this.logger.log(`[jarvis:auto_search] WebHelper vacío → Google Playwright`);
+      try {
+        const hits = await this.browserTool.search(query, 4);
+        if (!hits.length) return null;
+        return hits.map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`).join('\n\n');
+      } catch {
         return null;
       }
-
-      this.logger.log(`[jarvis:ddg] ${results.length} resultados`);
-      return results
-        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet}`)
-        .join('\n\n');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[jarvis:ddg] error: ${msg}`);
-      return null;
     }
+    return result;
   }
 
   private isRepeatRequest(message: string): boolean {
