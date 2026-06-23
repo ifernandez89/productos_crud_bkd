@@ -28,10 +28,10 @@ export class WebHelper {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
     '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-  private static readonly SEARCH_TIMEOUT  = 6_000;
-  private static readonly SCRAPE_TIMEOUT  = 8_000;
+  private static readonly SEARCH_TIMEOUT  = 5_000;  // DuckDuckGo
+  private static readonly SCRAPE_TIMEOUT  = 6_000;  // por URL individual
   private static readonly MAX_TEXT_CHARS  = 4_000;  // aumentado de 3000 para noticias
-  private static readonly MAX_URLS        = 4;       // aumentado de 3
+  private static readonly MAX_URLS        = 3;
 
   // ── API pública ─────────────────────────────────────────────────────────────
 

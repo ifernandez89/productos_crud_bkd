@@ -667,7 +667,12 @@ export class JarvisService {
     // 1. Si hay categoría, usar caché inteligente
     if (category) {
       try {
-        const cached = await this.contentCache.fetchRelevantContent(enrichedQuery, category, 3);
+        // Timeout total de 15s para el caché — si no responde, pasar a WebHelper
+        const cachePromise = this.contentCache.fetchRelevantContent(enrichedQuery, category, 2);
+        const cacheTimeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('cache timeout 15s')), 15_000),
+        );
+        const cached = await Promise.race([cachePromise, cacheTimeout]);
 
         if (cached.length > 0) {
           const fromCacheCount = cached.filter((r) => r.fromCache).length;
@@ -693,24 +698,19 @@ export class JarvisService {
     }
 
     // 2. Fallback: WebHelper con fuentes priorizadas por categoría
-    const result = await WebHelper.search(enrichedQuery, category, true);
+    // ⏱️ Timeout de 25s total — si tarda más, es mejor dar una respuesta parcial
+    const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
+    const webHelperResult  = WebHelper.search(enrichedQuery, category, true);
+    const result = await Promise.race([webHelperResult, webHelperTimeout]);
 
     if (result) {
       this.logger.log(`[jarvis:auto_search] OK WebHelper (${result.length} chars)`);
       return result;
     }
 
-    // 3. Último fallback: Playwright con query enriquecida
-    this.logger.log(`[jarvis:auto_search] WebHelper vacío → Google Playwright`);
-    try {
-      const hits = await this.browserTool.search(enrichedQuery, 4);
-      if (!hits.length) return null;
-      return hits
-        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`)
-        .join('\n\n');
-    } catch {
-      return null;
-    }
+    // 3. Sin resultados — omitir Playwright (demasiado lento, target <60s total)
+    this.logger.log(`[jarvis:auto_search] WebHelper vacío → sin resultados`);
+    return null;
   }
 
   /**

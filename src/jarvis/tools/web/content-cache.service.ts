@@ -42,7 +42,7 @@ export class ContentCacheService {
   async fetchRelevantContent(
     query: string,
     category: string,
-    limit = 3,
+    limit = 2,                  // reducido de 3 a 2: menos fuentes = más rápido
   ): Promise<CacheResult[]> {
     const startTime = Date.now();
     const sources = SourceRegistry.getByCategory(category).slice(0, limit);
@@ -117,13 +117,19 @@ export class ContentCacheService {
         };
       }
 
-      // 3. Cache MISS → scrapear usando selectores espec\u00edficos de la fuente
+      // 3. Cache MISS → scrapear con timeout individual de 8s por fuente
       this.logger.log(`[cache:MISS] scrapeando ${source.name}`);
-      const scraped = await (WebHelper as any).scrapeUrlWithSelectors(targetUrl, query, source)
-        ?? await WebHelper.scrapeUrl(targetUrl, query);
+
+      const scrapeWithTimeout = Promise.race([
+        WebHelper.scrapeUrlWithSelectors(targetUrl, query, source)
+          .catch(() => WebHelper.scrapeUrl(targetUrl, query)),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
+      ]);
+
+      const scraped = await scrapeWithTimeout;
 
       if (!scraped || scraped.length < 100) {
-        this.logger.warn(`[cache] scraping falló o contenido insuficiente de ${source.name}`);
+        this.logger.warn(`[cache] scraping falló o timeout en ${source.name}`);
         return null;
       }
 
