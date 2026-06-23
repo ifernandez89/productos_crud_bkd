@@ -325,6 +325,7 @@ export class JarvisService {
     useDocuments: boolean,
     maxHistoryMessages: number,
     browserContext?: string,
+    hasWebContext?: boolean,   // true cuando viene de búsqueda automática (no browser)
   ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
     const profile = await this.userProfileRepo.getOrCreate();
     const identity = this.jarvisIdentity.getIdentity();
@@ -449,12 +450,12 @@ export class JarvisService {
       }
     }
 
+    const webInstruction = (browserContext || hasWebContext)
+      ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
+      : '';
+
     const userPrompt = contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${
-            browserContext
-              ? '\n\n⚠️ INSTRUCCIÓN: Respondé usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. No digas que no tenés información — los datos ya están en este prompt.'
-              : ''
-          }`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
         : userMessage;
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
   }
@@ -483,7 +484,7 @@ export class JarvisService {
     webContext?: string,
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext);
+      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext);
 
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs)   toolsUsed.push('rag');
@@ -492,11 +493,11 @@ export class JarvisService {
       ? systemPrompt
           .replace(
             '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-            '4. TENÉS datos reales en el contexto. Usálos para responder. NUNCA digas "no tengo acceso a información en tiempo real" — eso sería mentira si tenés datos en el contexto.',
+            '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
           )
           .replace(
             '3. No inventar datos. Si no tenés la info, decilo claramente.',
-            '3. Usá SOLO los datos del contexto. No inventés datos extra. Si los datos del contexto no son suficientes, decí específicamente qué falta.',
+            '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
           )
       : systemPrompt;
 
@@ -519,7 +520,7 @@ export class JarvisService {
         if (category) toolsUsed.push(`cache:${category}`);
         // Reintentar con el contexto web
         const { systemPrompt: sp2, userPrompt: up2 } =
-          await this.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx);
+          await this.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx, true);
         const sp2Final = sp2
           .replace(
             '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',

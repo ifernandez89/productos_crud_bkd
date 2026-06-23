@@ -425,56 +425,61 @@ export class SourceRegistry {
 
     // ══════════════════════════════════════════════════════════════════════════
     // 🔮 ASTROLOGÍA
-    // ✅ Verificado previamente: MiAstral 2746 palabras, Astro.com 2438, Zodiacal 641
+    // ✅ Re-verificado 23/06/2026: astro.com y lunarium son las mejores fuentes
+    // ❌ miastral.com/horoscopo requiere JS (dinámico) — usar solo raíz
     // ══════════════════════════════════════════════════════════════════════════
 
-    {
-      name: 'MiAstral',
-      urlBase: 'https://www.miastral.com',
-      category: 'astrologia',
-      priority: 10,
-      ttlHours: 12,
-      searchPattern: '/horoscopo',
-      selectors: {
-        title: ['h1', 'h2', '.titulo'],
-        content: ['article', '.contenido', 'main', '.horoscopo', '.entry-content', 'p'],
-      },
-    },
-
+    // ✅ MEJOR FUENTE: horóscopo diario con eventos planetarios reales
     {
       name: 'Astro.com Horoscope',
       urlBase: 'https://www.astro.com',
       category: 'astrologia',
-      priority: 9,
+      priority: 10,
       ttlHours: 12,
       searchPattern: '/horoscope',
       selectors: {
         title: ['h1', 'h2'],
-        content: ['article', 'main', '.forecast', '.horoscope-text', 'p'],
+        content: ['main', 'article', '.forecast', '.horoscope-text', 'p'],
       },
     },
 
-    {
-      name: 'Zodiacal',
-      urlBase: 'https://www.zodiacal.com',
-      category: 'astrologia',
-      priority: 8,
-      ttlHours: 12,
-      selectors: {
-        title: ['h1', 'h2'],
-        content: ['article', 'main', '.content', 'p'],
-      },
-    },
-
+    // ✅ Fases lunares y descripción astrológica detallada
     {
       name: 'Lunarium',
       urlBase: 'https://www.lunarium.co.uk',
       category: 'astrologia',
-      priority: 8,
+      priority: 10,
       ttlHours: 12,
       selectors: {
         title: ['h1', 'h2'],
-        content: ['main', 'article', '.content', 'p'],
+        content: ['p', 'main', 'article', '.content'],
+      },
+    },
+
+    // ✅ Raíz funciona (contenido astral general), /horoscopo es JS dinámico
+    {
+      name: 'MiAstral',
+      urlBase: 'https://www.miastral.com',
+      category: 'astrologia',
+      priority: 8,
+      ttlHours: 12,
+      // Sin searchPattern — /horoscopo requiere JS, usar raíz
+      selectors: {
+        title: ['h1', 'h2', '.titulo'],
+        content: ['main', 'article', '.contenido', '.entry-content', 'p'],
+      },
+    },
+
+    // ✅ Carta astral (menos útil para horóscopo diario pero scrapeble)
+    {
+      name: 'Zodiacal',
+      urlBase: 'https://www.zodiacal.com',
+      category: 'astrologia',
+      priority: 7,
+      ttlHours: 12,
+      selectors: {
+        title: ['h1', 'h2'],
+        content: ['article', 'main', '.content', 'p'],
       },
     },
 
