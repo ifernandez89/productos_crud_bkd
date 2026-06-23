@@ -294,3 +294,90 @@ model AgentRun {
   @@index([provider])
   @@index([createdAt])
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WEB SCRAPING & KNOWLEDGE ACQUISITION LAYER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── 10) FUENTES CONFIABLES ────────────────────────────────────────────────────
+// Catálogo de fuentes priorizadas por categoría con TTL
+
+model Source {
+  id                Int            @id @default(autoincrement())
+  name              String         // "TyC Sports", "ESPN Argentina", "Meteored"
+  urlBase           String         // "https://www.tycsports.com"
+  category          String         // "deportes", "clima", "noticias", "tecnologia", "ciencia"
+  priority          Int            @default(5) // 1-10, mayor = más prioritario
+  ttlHours          Int            @default(6) // TTL en horas para contenido de esta fuente
+  active            Boolean        @default(true)
+  lastScraped       DateTime?      // última vez que se scrapeó algo de esta fuente
+  successRate       Float          @default(1.0) // % de scraping exitoso (0.0-1.0)
+  avgResponseTimeMs Int?           // tiempo promedio de respuesta
+  scrapingConfig    Json?          // configuración específica de scraping
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  pages             ScrapedPage[]
+
+  @@unique([urlBase])
+  @@index([category])
+  @@index([active])
+  @@index([priority])
+}
+
+// ── 11) PÁGINAS SCRAPEADAS ───────────────────────────────────────────────────
+// Cache inteligente de contenido web
+
+model ScrapedPage {
+  id              Int              @id @default(autoincrement())
+  sourceId        Int
+  url             String           // URL completa
+  title           String?
+  contentHash     String           // hash SHA-256 del contenido para detectar cambios
+  scrapedAt       DateTime         @default(now())
+  publishedAt     DateTime?        // fecha de publicación del contenido
+  expiresAt       DateTime         // scrapedAt + source.ttlHours
+  status          String           @default("valid") // "valid" | "expired" | "failed"
+  cacheHits       Int              @default(0) // cuántas veces se usó desde caché
+  lastAccessedAt  DateTime?        // última vez que se sirvió desde caché
+  source          Source           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  content         ScrapedContent?
+
+  @@unique([url])
+  @@index([sourceId])
+  @@index([expiresAt])
+  @@index([status])
+  @@index([scrapedAt])
+  @@index([cacheHits])
+}
+
+// ── 12) CONTENIDO CRUDO ───────────────────────────────────────────────────────
+// Almacenamiento del contenido crudo + procesado
+
+model ScrapedContent {
+  id           Int          @id @default(autoincrement())
+  pageId       Int          @unique
+  htmlRaw      String?      @db.Text // HTML crudo (opcional, solo para páginas importantes)
+  textExtracted String      @db.Text // Texto limpio extraído
+  jsonExtracted Json?       // Datos estructurados si aplica (ej: goleadores, clima)
+  metadata     Json?        // { wordCount, headlines, links, images, etc }
+  page         ScrapedPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
+}
+
+// ── 13) CONSULTAS (ANALYTICS) ─────────────────────────────────────────────────
+// Tracking de patrones de uso para optimización
+
+model Query {
+  id            Int      @id @default(autoincrement())
+  question      String   @db.Text
+  category      String   // detectada por intent router
+  sourcesUsed   Json?    // ["tycsports", "espn"] — fuentes consultadas
+  cacheHit      Boolean  @default(false) // si se sirvió desde caché
+  responseTimeMs Int     // latencia total
+  createdAt     DateTime @default(now())
+
+  @@index([category])
+  @@index([cacheHit])
+  @@index([createdAt])
+}

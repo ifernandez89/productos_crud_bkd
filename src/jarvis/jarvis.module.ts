@@ -21,6 +21,7 @@ import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
+import { ContentCacheService } from './tools/web/content-cache.service';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { TaskRepository } from './repositories/task.repository';
@@ -42,6 +43,7 @@ import { PlannerService } from './planner/planner.service';
     BrowserToolService,
     IntentRouterService,
     SportsTool,
+    ContentCacheService,
     AssistantToolsService,
     JarvisIdentityService,
     CapabilitiesService,
@@ -54,6 +56,6 @@ import { PlannerService } from './planner/planner.service';
     TaskRepository,
     PlannerService,
   ],
-  exports: [JarvisService, FeedbackRepository],
+  exports: [JarvisService, FeedbackRepository, ContentCacheService],
 })
 export class JarvisModule {}

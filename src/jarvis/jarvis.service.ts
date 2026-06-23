@@ -18,6 +18,7 @@ import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
+import { ContentCacheService } from './tools/web/content-cache.service';
 import { WebHelper } from './tools/web/web-helper';
 import { randomUUID } from 'crypto';
 
@@ -50,6 +51,7 @@ export class JarvisService {
     private readonly browserTool: BrowserToolService,
     private readonly intentRouter: IntentRouterService,
     private readonly sportsTool: SportsTool,
+    private readonly contentCache: ContentCacheService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
   ) {
@@ -165,9 +167,9 @@ export class JarvisService {
           const webCtx = `**Datos deportivos (${sportsResult.source}):**\n${sportsResult.content}`;
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
-        // Sin datos en ninguna fuente → búsqueda web general
-        this.logger.log(`[intent] sports vacío → fallback WEB`);
-        const webCtx = await this.autoWebSearch(userMessage);
+        // Sin datos en ninguna fuente → búsqueda web general con caché
+        this.logger.log(`[intent] sports vacío → fallback WEB con caché`);
+        const webCtx = await this.autoWebSearch(userMessage, 'deportes');
         if (webCtx) {
           toolsUsed.push('auto_search');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
@@ -175,11 +177,14 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
       }
 
-      // ── WEB — DuckDuckGo → Google ─────────────────────────────────────────
+      // ── WEB — caché inteligente → DuckDuckGo → Google ─────────────────────
       if (intent.intent === 'WEB') {
-        const webCtx = await this.autoWebSearch(userMessage);
+        // Intentar detectar categoría del query para usar caché optimizado
+        const category = this.detectCategory(userMessage);
+        const webCtx = await this.autoWebSearch(userMessage, category);
         if (webCtx) {
           toolsUsed.push('auto_search');
+          if (category) toolsUsed.push(`cache:${category}`);
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
         // Sin resultados → LLM solo
@@ -387,9 +392,11 @@ export class JarvisService {
     const isEvasiveResponse = !webContext && this.looksEvasive(response.content);
     if (isEvasiveResponse) {
       this.logger.log(`[jarvis] respuesta evasiva detectada → buscando en internet`);
-      const webCtx = await WebHelper.search(userMessage, true);
+      const category = this.detectCategory(userMessage);
+      const webCtx = await this.autoWebSearch(userMessage, category);
       if (webCtx) {
         toolsUsed.push('web_fallback');
+        if (category) toolsUsed.push(`cache:${category}`);
         // Reintentar con el contexto web
         const { systemPrompt: sp2, userPrompt: up2 } =
           await this.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx);
@@ -496,26 +503,124 @@ export class JarvisService {
   }
 
   /**
-   * Búsqueda web automática — delega al WebHelper genérico.
-   * DuckDuckGo primero (~1-2s), scrapea la mejor URL para contexto detallado.
+   * Búsqueda web automática con estrategia de caché inteligente.
+   * 
+   * FLUJO:
+   * 1. Si hay categoría conocida → buscar en caché primero
+   * 2. Cache HIT → servir en milisegundos
+   * 3. Cache MISS → scrapear fuentes confiables → guardar
+   * 4. Fallback → DuckDuckGo genérico → Google Playwright
+   * 
+   * @param query    La pregunta del usuario
+   * @param category Categoría detectada (opcional)
    */
-  private async autoWebSearch(query: string): Promise<string | null> {
-    this.logger.log(`[jarvis:auto_search] buscando: "${query.slice(0, 60)}"`);
-    const result = await WebHelper.search(query, true);
-    if (result) {
-      this.logger.log(`[jarvis:auto_search] OK (${result.length} chars)`);
-    } else {
-      // Fallback: Playwright Google
-      this.logger.log(`[jarvis:auto_search] WebHelper vacío → Google Playwright`);
+  private async autoWebSearch(query: string, category?: string): Promise<string | null> {
+    this.logger.log(
+      `[jarvis:auto_search] buscando: "${query.slice(0, 60)}" ${category ? `[${category}]` : ''}`,
+    );
+
+    // 1. Si hay categoría, usar caché inteligente
+    if (category) {
       try {
-        const hits = await this.browserTool.search(query, 4);
-        if (!hits.length) return null;
-        return hits.map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`).join('\n\n');
-      } catch {
-        return null;
+        const cached = await this.contentCache.fetchRelevantContent(query, category, 3);
+
+        if (cached.length > 0) {
+          const fromCacheCount = cached.filter((r) => r.fromCache).length;
+          this.logger.log(
+            `[jarvis:auto_search] ${cached.length} resultados (${fromCacheCount} desde caché)`,
+          );
+
+          // Formatear resultados
+          return cached
+            .map((r, i) => {
+              const source = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
+              const title = r.title ? `**${i + 1}. ${r.title}**` : `**${i + 1}. Resultado**`;
+              return `${title} ${source}\n🔗 ${r.url}\n\n${r.content.slice(0, 1500)}`;
+            })
+            .join('\n\n---\n\n');
+        }
+
+        this.logger.log(`[jarvis:auto_search] caché vacío para "${category}" → WebHelper`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`[jarvis:auto_search] error en caché: ${msg} → fallback`);
       }
     }
-    return result;
+
+    // 2. Fallback: WebHelper con fuentes priorizadas por categoría
+    const result = await WebHelper.search(query, category, true);
+
+    if (result) {
+      this.logger.log(`[jarvis:auto_search] OK WebHelper (${result.length} chars)`);
+      return result;
+    }
+
+    // 3. Último fallback: Google Playwright
+    this.logger.log(`[jarvis:auto_search] WebHelper vacío → Google Playwright`);
+    try {
+      const hits = await this.browserTool.search(query, 4);
+      if (!hits.length) return null;
+      return hits
+        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || ''}`)
+        .join('\n\n');
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Detecta la categoría de una pregunta para optimizar caché.
+   * Esto acelera las consultas frecuentes usando fuentes priorizadas.
+   */
+  private detectCategory(message: string): string | undefined {
+    const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Deportes
+    if (/(futbol|gol|partido|seleccion|equipo|jugador|campeon|copa|liga|torneo|clasifico|gano|perdio|empato)/i.test(n)) {
+      return 'deportes';
+    }
+
+    // Clima
+    if (/(clima|temperatura|lluvia|calor|frio|pronostico|meteorolog|tiempo \(clima\)|despejado|nublado)/i.test(n)) {
+      return 'clima';
+    }
+
+    // Noticias
+    if (/(noticia|ultimo|ultima|actualidad|hoy|reciente|breaking|informa)/i.test(n) && n.length > 15) {
+      return 'noticias';
+    }
+
+    // Tecnología & IA
+    if (/(ia\b|inteligencia artificial|openai|chatgpt|llm|modelo|hugging|ollama|tecnologia|software|app\b)/i.test(n)) {
+      return 'tecnologia';
+    }
+
+    // Ciencia
+    if (/(ciencia|investigacion|estudio|descubr|scientist|paper|journal|nature|conicet)/i.test(n)) {
+      return 'ciencia';
+    }
+
+    // Matemáticas
+    if (/(matematica|ecuacion|teorema|demostrac|calculo|algebra|geometria|topologia)/i.test(n)) {
+      return 'matematicas';
+    }
+
+    // Física
+    if (/(fisica|cuantic|particula|cern|relatividad|energia|cosmos|astrofisica)/i.test(n)) {
+      return 'fisica';
+    }
+
+    // Películas
+    if (/(pelicula|film|cine|actor|actriz|director|oscar|estreno|imdb|marvel|mcu)/i.test(n)) {
+      return 'peliculas';
+    }
+
+    // Música
+    if (/(musica|cancion|album|artista|concierto|festival|spotify|billboard)/i.test(n)) {
+      return 'musica';
+    }
+
+    return undefined;
   }
 
   private isRepeatRequest(message: string): boolean {

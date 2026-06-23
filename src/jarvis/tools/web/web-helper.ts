@@ -1,17 +1,25 @@
 import { Logger } from '@nestjs/common';
 import axios from 'axios';
 import { load as cheerioLoad } from 'cheerio';
+import { SourceRegistry, SourceDefinition } from './source-registry';
 
 /**
- * WebHelper — helper estático genérico.
- * Dado cualquier query, busca en DuckDuckGo y scrapea
- * las mejores URLs para obtener texto relevante.
- * Sin API key, sin Playwright, sin NestJS DI.
- *
+ * WebHelper — helper estático genérico con estrategia de fuentes priorizadas.
+ * 
+ * ESTRATEGIA DE BÚSQUEDA:
+ * 1. Si detecta una categoría conocida (deportes, clima, noticias...)
+ *    → busca en fuentes confiables priorizadas primero
+ * 2. Si no encuentra o es categoría genérica → DuckDuckGo + scraping
+ * 
+ * OPTIMIZACIÓN DE VELOCIDAD:
+ * - Timeout global: 60s máximo total
+ * - Scraping paralelo de top 3 fuentes
+ * - Fallback a DuckDuckGo si fuentes fallan
+ * 
  * Uso:
- *   const text = await WebHelper.search("goles argentina austria 2026");
- *   const text = await WebHelper.search("precio dólar blue hoy");
- *   const text = await WebHelper.search("últimas noticias tecnología");
+ *   const text = await WebHelper.search("goles argentina austria", "deportes");
+ *   const text = await WebHelper.search("clima hoy paraná", "clima");
+ *   const text = await WebHelper.search("últimas noticias", "noticias");
  */
 export class WebHelper {
   private static readonly logger = new Logger('WebHelper');
@@ -28,13 +36,59 @@ export class WebHelper {
   // ── API pública ─────────────────────────────────────────────────────────────
 
   /**
-   * Busca en DuckDuckGo y scrapea el contenido de las mejores URLs.
-   * Retorna texto crudo listo para enviar al LLM como contexto.
-   * @param query    Pregunta o término de búsqueda
-   * @param scrape   Si true (default), scrapea la primera URL con contenido útil
+   * Busca contenido relevante con estrategia priorizada por categoría.
+   * 
+   * FLUJO:
+   * 1. Si hay categoría → buscar en fuentes confiables primero
+   * 2. Si no hay resultados → fallback a DuckDuckGo
+   * 3. Scrapear las mejores URLs en paralelo
+   * 
+   * @param query     Pregunta o término de búsqueda
+   * @param category  Categoría opcional (deportes, clima, noticias, tecnologia...)
+   * @param scrape    Si true (default), scrapea contenido completo
    */
-  static async search(query: string, scrape = true): Promise<string | null> {
-    // 1. Buscar en DuckDuckGo
+  static async search(
+    query: string,
+    category?: string,
+    scrape = true,
+  ): Promise<string | null> {
+    const startTime = Date.now();
+
+    // 1. Si hay categoría, buscar en fuentes priorizadas PRIMERO
+    if (category) {
+      const sources = SourceRegistry.getByCategory(category).slice(0, 3);
+
+      if (sources.length > 0) {
+        WebHelper.logger.log(
+          `[WebHelper] buscando en ${sources.length} fuentes de "${category}" para: "${query.slice(0, 60)}"`,
+        );
+
+        const sourceResults = await Promise.allSettled(
+          sources.map((src) => {
+            const searchUrl = SourceRegistry.buildSearchUrl(src, query);
+            const targetUrl = searchUrl || src.urlBase;
+            return WebHelper.scrapeUrlWithSelectors(targetUrl, query, src);
+          }),
+        );
+
+        // Tomar el primer resultado útil de fuentes confiables
+        for (const r of sourceResults) {
+          if (r.status === 'fulfilled' && r.value && r.value.length > 150) {
+            const elapsed = Date.now() - startTime;
+            WebHelper.logger.log(
+              `[WebHelper] resultado de fuente confiable en ${elapsed}ms (${r.value.length} chars)`,
+            );
+            return r.value;
+          }
+        }
+
+        WebHelper.logger.warn(
+          `[WebHelper] fuentes de "${category}" no dieron resultados útiles → fallback a DuckDuckGo`,
+        );
+      }
+    }
+
+    // 2. Fallback: búsqueda en DuckDuckGo (flujo original)
     const searchResults = await WebHelper.ddgSearch(query);
 
     if (!searchResults.length) {
@@ -49,9 +103,9 @@ export class WebHelper {
 
     if (!scrape) return snippetBlock;
 
-    // 2. Scrapear las primeras URLs en paralelo
+    // 3. Scrapear las primeras URLs en paralelo
     const urls = searchResults.map((r) => r.url).slice(0, WebHelper.MAX_URLS);
-    WebHelper.logger.log(`[WebHelper] scrapeando ${urls.length} URLs para: "${query.slice(0, 60)}"`);
+    WebHelper.logger.log(`[WebHelper] scrapeando ${urls.length} URLs de DuckDuckGo`);
 
     const scrapeResults = await Promise.allSettled(
       urls.map((u) => WebHelper.scrapeUrl(u, query)),
@@ -60,6 +114,8 @@ export class WebHelper {
     // Tomar el primer resultado útil
     for (const r of scrapeResults) {
       if (r.status === 'fulfilled' && r.value && r.value.length > 150) {
+        const elapsed = Date.now() - startTime;
+        WebHelper.logger.log(`[WebHelper] resultado final en ${elapsed}ms`);
         return `${snippetBlock}\n\n---\n**Contenido extraído:**\n${r.value}`;
       }
     }
@@ -72,8 +128,91 @@ export class WebHelper {
    * Solo busca en DuckDuckGo, sin scrapear.
    * Más rápido (~1-2s), útil para preguntas donde los snippets son suficientes.
    */
-  static async quickSearch(query: string): Promise<string | null> {
-    return WebHelper.search(query, false);
+  static async quickSearch(query: string, category?: string): Promise<string | null> {
+    return WebHelper.search(query, category, false);
+  }
+
+  /**
+   * Scrapea una URL específica con selectores optimizados si se proporciona la fuente.
+   */
+  private static async scrapeUrlWithSelectors(
+    url: string,
+    contextQuery: string,
+    source?: SourceDefinition,
+  ): Promise<string | null> {
+    try {
+      const resp = await axios.get(url, {
+        headers: {
+          'User-Agent': WebHelper.USER_AGENT,
+          'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8',
+          'Accept': 'text/html,application/xhtml+xml',
+        },
+        timeout: WebHelper.SCRAPE_TIMEOUT,
+        validateStatus: (s) => s < 400,
+      });
+
+      const $ = cheerioLoad(resp.data as string);
+
+      // Remover ruido
+      $('script, style, nav, footer, header, aside, iframe, form, ' +
+        '.ads, .advertisement, [aria-hidden="true"], .cookie, .popup, ' +
+        '.social-share, .related-articles, .sidebar').remove();
+
+      let text = '';
+
+      // Si tenemos selectores específicos de la fuente, usarlos primero
+      if (source?.selectors?.content) {
+        for (const sel of source.selectors.content) {
+          const candidate = $(sel).first().text().replace(/\s+/g, ' ').trim();
+          if (candidate.length > text.length) {
+            text = candidate;
+            if (candidate.length > 500) break; // Ya tenemos suficiente
+          }
+        }
+      }
+
+      // Fallback a selectores genéricos
+      if (text.length < 200) {
+        const mainSelectors = [
+          'article', 'main', '[role="main"]', '.article-body',
+          '.article-content', '.post-content', '.entry-content',
+          '.content', '#content', '.nota-body', '.cuerpo',
+        ];
+
+        for (const sel of mainSelectors) {
+          const candidate = $(sel).first().text().replace(/\s+/g, ' ').trim();
+          if (candidate.length > text.length) {
+            text = candidate;
+            if (sel !== '.content' && sel !== '#content') break;
+          }
+        }
+      }
+
+      // Fallback final al body
+      if (text.length < 200) {
+        text = $('body').text().replace(/\s+/g, ' ').trim();
+      }
+
+      if (text.length < 100) return null;
+
+      // Extraer texto relevante usando keywords del query
+      if (contextQuery) {
+        text = WebHelper.extractRelevantText(text, contextQuery);
+      }
+
+      const truncated = text.slice(0, WebHelper.MAX_TEXT_CHARS);
+      const hostname  = (() => { try { return new URL(url).hostname; } catch { return url; } })();
+
+      WebHelper.logger.log(`[WebHelper] scraped ${truncated.length} chars de ${hostname}`);
+      return `${truncated}\n\n_(Fuente: ${hostname})_`;
+
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!msg.includes('404') && !msg.includes('403') && !msg.includes('ENOTFOUND')) {
+        WebHelper.logger.warn(`[WebHelper] scrape ${url}: ${msg}`);
+      }
+      return null;
+    }
   }
 
   /**

@@ -6,6 +6,56 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Knowledge Acquisition Layer: Caché inteligente con fuentes priorizadas
+- **`Source`, `ScrapedPage`, `ScrapedContent`, `Query` (BD)**: arquitectura de 4 tablas para caché inteligente con TTL por categoría. Migración `20260623134338_web_scraping_cache_layer`
+  - **`Source`**: catálogo de fuentes confiables con `name`, `urlBase`, `category`, `priority` (1-10), `ttlHours`, `active`, `successRate`, `avgResponseTimeMs`, configuración JSON de scraping
+  - **`ScrapedPage`**: páginas cacheadas con `url` (unique), `contentHash` SHA-256 para detectar cambios, `scrapedAt`, `expiresAt` (TTL automático), `status` (`valid`/`expired`/`failed`), `cacheHits` (tracking de uso), `lastAccessedAt`
+  - **`ScrapedContent`**: contenido crudo + procesado con `htmlRaw` (opcional), `textExtracted`, `jsonExtracted` (datos estructurados), `metadata` JSON
+  - **`Query`**: analytics de consultas con `question`, `category`, `sourcesUsed`, `cacheHit` (boolean), `responseTimeMs` para optimización basada en uso real
+- **`SourceRegistry`** (`src/jarvis/tools/web/source-registry.ts`): catálogo de **60+ fuentes confiables** organizadas por categoría
+  - **📰 Noticias**: Infobae, La Nación, Perfil, Ámbito, El Once (TTL 1-2h)
+  - **🌦️ Clima**: Meteored, SMN, Windy, Ventusky (TTL 1h)
+  - **⚽ Deportes**: TyC Sports, ESPN, Olé, Promiedos (TTL 30min)
+  - **🔬 Ciencia**: CyTA-Leloir, CONICET, Nature, Science News (TTL 24h)
+  - **🌌 Física**: arXiv Physics, CERN, Physics World, APS (TTL 24h)
+  - **🔢 Matemáticas**: arXiv Math, Math StackExchange, Quanta, AMS (TTL 7 días)
+  - **🚀 Innovación**: MIT Tech Review, Fast Company, WEF Tech, Singularity Hub (TTL 12h)
+  - **💻 Tecnología & IA**: TechCrunch, Ars Technica, The Verge, Hugging Face, OpenAI (TTL 6h)
+  - **🎬 Películas**: IMDb, Rotten Tomatoes, FilmAffinity, Letterboxd (TTL 24h)
+  - **🎵 Música**: Rolling Stone, Billboard, Pitchfork, AllMusic (TTL 12h)
+  - **📚 Referencia**: Wikipedia ES, Plantas Medicinales (Ignacio) (TTL 7 días)
+  - **🔮 Especializados**: Mystery Planet, Carta Natal, MCU Film, JSONPlaceholder, Mi Paraná (TTL 24h-30 días)
+  - Cada fuente tiene `priority` (1-10 mayor = más confiable), `ttlHours` optimizado por tipo de contenido, selectores CSS específicos para extracción
+- **`ContentCacheService`** (`src/jarvis/tools/web/content-cache.service.ts`): servicio de caché con tres estrategias
+  - **Cache HIT** → servir desde BD en milisegundos (sin scraping)
+  - **Cache MISS** → scrapear fuentes confiables → guardar con TTL automático
+  - **Cache EXPIRED** → re-scrapear solo cuando TTL vence
+  - **Analytics automático**: tracking de cache hits, fuentes usadas, latencia por consulta
+  - **`fetchRelevantContent(query, category, limit=3)`**: busca en top 3 fuentes de la categoría, retorna `CacheResult[]` con `fromCache`, `scrapedAt`, `expiresAt`
+  - **`cleanExpiredCache()`**: limpieza de páginas expiradas (para cron job)
+  - **`getCacheStats()`**: métricas de caché (total, válidas, expiradas, top fuentes, top categorías, hit rate)
+
+### Changed — WebHelper v2: estrategia de fuentes priorizadas
+- **`WebHelper.search(query, category?, scrape=true)`**: nuevo flujo de búsqueda inteligente
+  1. **Si hay `category`** → busca en fuentes confiables priorizadas PRIMERO (ej: TyC Sports para deportes)
+  2. **Scrapea en paralelo** las top 3 fuentes con selectores específicos si están configurados
+  3. **Fallback a DuckDuckGo** si las fuentes no dan resultados
+  4. **Scraping final** en paralelo de URLs de DuckDuckGo
+- **`scrapeUrlWithSelectors(url, contextQuery, source?)`**: nuevo método privado que usa selectores específicos de la fuente para extracción más precisa
+- **Timeout optimizado**: búsqueda 6s, scraping 7s individual → total máximo ~20-30s con paralelismo
+- **Logs mejorados**: indica si resultado vino de fuente confiable o DuckDuckGo, tiempo total de extracción
+
+### Changed — JarvisService: integración de caché inteligente
+- **`autoWebSearch(query, category?)`**: nuevo flujo en 3 pasos
+  1. **Si hay categoría** → `ContentCacheService.fetchRelevantContent()` primero
+  2. **Fallback** → `WebHelper.search(query, category)` con fuentes priorizadas
+  3. **Último recurso** → Google Playwright
+- **`detectCategory(message)`**: detecta categoría del mensaje para optimizar caché (deportes, clima, noticias, tecnologia, ciencia, matematicas, fisica, peliculas, musica)
+- **Intent router integrado**: pasa categoría detectada a `autoWebSearch()` → consultas como "goles de Argentina hoy" usan caché de deportes primero (30min TTL) → respuesta en milisegundos si está en caché
+- **Tracking de tools**: `toolsUsed` ahora incluye `cache:{category}` cuando se usa caché, ej: `['auto_search', 'cache:deportes']`
+- **Respuestas más rápidas**: consultas frecuentes (clima, deportes, noticias) sirven desde caché sin scraping → latencia <100ms vs 10-30s
+- **Fallback evasivo mejorado**: cuando el LLM responde "no tengo información", ahora detecta categoría y usa caché inteligente antes de scrapear
+
 ### Added — WebHelper: búsqueda web genérica para cualquier pregunta
 - **`WebHelper` genérico** (`src/jarvis/tools/web/web-helper.ts`): helper estático sin dependencias de NestJS DI para búsqueda web + scraping universal. Reemplaza la lógica específica de deportes con capacidad de responder cualquier pregunta factual
   - **`WebHelper.search(query, scrape=true)`**: busca en DuckDuckGo → scrapea las primeras 3 URLs en paralelo → retorna texto relevante hasta 3000 chars con snippets + contenido extraído
