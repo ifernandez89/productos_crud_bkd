@@ -23,6 +23,7 @@ import { WebHelper } from './tools/web/web-helper';
 import { randomUUID } from 'crypto';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
+import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -58,6 +59,7 @@ export class JarvisService {
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
     private readonly googleTasks: GoogleTasksService,
+    private readonly astrologyTool: AstrologyTool,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -184,6 +186,21 @@ export class JarvisService {
           toolsUsed.push('google_tasks');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext);
         }
+      }
+
+      // ── ASTROLOGY — cálculos instantáneos sin scraping ────────────────────
+      if (intent.intent === 'ASTROLOGY') {
+        // Detectar si pide posiciones completas o solo clima del día
+        const wantsFullChart = /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(userMessage);
+        
+        const astroData = wantsFullChart
+          ? this.astrologyTool.getPlanetaryPositions()
+          : this.astrologyTool.getTodaySkyData();
+
+        toolsUsed.push('astrology_calculated');
+        await this.conversationRepo.create({ sessionId, role: 'assistant', content: astroData, metadata: { source: 'astrology_tool' } });
+        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: astroData, toolsUsed, modelUsed: 'none', provider: 'astrology', durationMs: Date.now() - startTime, success: true });
+        return astroData;
       }
 
       // ── URL — scrapear y procesar con LLM ────────────────────────────────
@@ -752,10 +769,8 @@ export class JarvisService {
   private detectCategory(message: string): string | undefined {
     const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    // Astrología
-    if (/(astrolog|horoscopo|carta natal|signo zodiacal|signos del zodiaco|ascendente|planeta|luna en|sol en|venus en|marte en|casas astrologicas|transitos planetarios)/i.test(n)) {
-      return 'astrologia';
-    }
+    // ⚠️ ASTROLOGÍA YA NO ES CATEGORÍA WEB — se maneja con AstrologyTool (intent ASTROLOGY)
+    // Las consultas astrológicas son detectadas por IntentRouter y enviadas al tool de cálculo
 
     // Gobierno local — solo cuando se pregunta EXPLÍCITAMENTE por autoridades/gestión
     if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
@@ -811,22 +826,12 @@ export class JarvisService {
       return 'fisica';
     }
 
-    // Películas
-    if (/(pelicula|film|cine|actor|actriz|director|oscar|estreno|imdb|marvel|mcu)/i.test(n)) {
-      return 'peliculas';
-    }
-
     // Música
     if (/(musica|cancion|album|artista|concierto|festival|spotify|billboard)/i.test(n)) {
       return 'musica';
     }
 
-    // Astrología
-    if (/(horoscopo|astrolog|carta natal|signo zodiacal|tarot|luna en|mercurio|venus|marte|jupiter|saturno|astro)/i.test(n)) {
-      return 'astrologia';
-    }
-
-    // Entretenimiento (MCU, películas)
+    // Entretenimiento (películas, series, MCU)
     if (/(pelicula|film|cine|actor|actriz|director|oscar|estreno|imdb|marvel|mcu|serie)/i.test(n)) {
       return 'entretenimiento';
     }

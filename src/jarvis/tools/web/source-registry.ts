@@ -425,63 +425,63 @@ export class SourceRegistry {
 
     // ══════════════════════════════════════════════════════════════════════════
     // 🔮 ASTROLOGÍA
-    // ✅ Re-verificado 23/06/2026: astro.com y lunarium son las mejores fuentes
-    // ❌ miastral.com/horoscopo requiere JS (dinámico) — usar solo raíz
+    // ⚠️ DEPRECADO (2026-06-23): Ya NO se scrapean sitios astrológicos.
+    // Ahora se usa AstrologyTool con astronomy-engine para cálculos instantáneos.
+    // Estas fuentes quedan comentadas para referencia histórica.
     // ══════════════════════════════════════════════════════════════════════════
 
-    // ✅ MEJOR FUENTE: horóscopo diario con eventos planetarios reales
-    {
-      name: 'Astro.com Horoscope',
-      urlBase: 'https://www.astro.com',
-      category: 'astrologia',
-      priority: 10,
-      ttlHours: 12,
-      searchPattern: '/horoscope',
-      selectors: {
-        title: ['h1', 'h2'],
-        content: ['main', 'article', '.forecast', '.horoscope-text', 'p'],
-      },
-    },
+    // ❌ DEPRECADO: scraping reemplazado por AstrologyTool
+    // {
+    //   name: 'Astro.com Horoscope',
+    //   urlBase: 'https://www.astro.com',
+    //   category: 'astrologia',
+    //   priority: 10,
+    //   ttlHours: 12,
+    //   searchPattern: '/horoscope',
+    //   selectors: {
+    //     title: ['h1', 'h2'],
+    //     content: ['main', 'article', '.forecast', '.horoscope-text', 'p'],
+    //   },
+    // },
 
-    // ✅ Fases lunares y descripción astrológica detallada
-    {
-      name: 'Lunarium',
-      urlBase: 'https://www.lunarium.co.uk',
-      category: 'astrologia',
-      priority: 10,
-      ttlHours: 12,
-      selectors: {
-        title: ['h1', 'h2'],
-        content: ['p', 'main', 'article', '.content'],
-      },
-    },
+    // ❌ DEPRECADO: scraping reemplazado por AstrologyTool
+    // {
+    //   name: 'Lunarium',
+    //   urlBase: 'https://www.lunarium.co.uk',
+    //   category: 'astrologia',
+    //   priority: 10,
+    //   ttlHours: 12,
+    //   selectors: {
+    //     title: ['h1', 'h2'],
+    //     content: ['p', 'main', 'article', '.content'],
+    //   },
+    // },
 
-    // ✅ Raíz funciona (contenido astral general), /horoscopo es JS dinámico
-    {
-      name: 'MiAstral',
-      urlBase: 'https://www.miastral.com',
-      category: 'astrologia',
-      priority: 8,
-      ttlHours: 12,
-      // Sin searchPattern — /horoscopo requiere JS, usar raíz
-      selectors: {
-        title: ['h1', 'h2', '.titulo'],
-        content: ['main', 'article', '.contenido', '.entry-content', 'p'],
-      },
-    },
+    // ❌ DEPRECADO: scraping reemplazado por AstrologyTool
+    // {
+    //   name: 'MiAstral',
+    //   urlBase: 'https://www.miastral.com',
+    //   category: 'astrologia',
+    //   priority: 8,
+    //   ttlHours: 12,
+    //   selectors: {
+    //     title: ['h1', 'h2', '.titulo'],
+    //     content: ['main', 'article', '.contenido', '.entry-content', 'p'],
+    //   },
+    // },
 
-    // ✅ Carta astral (menos útil para horóscopo diario pero scrapeble)
-    {
-      name: 'Zodiacal',
-      urlBase: 'https://www.zodiacal.com',
-      category: 'astrologia',
-      priority: 7,
-      ttlHours: 12,
-      selectors: {
-        title: ['h1', 'h2'],
-        content: ['article', 'main', '.content', 'p'],
-      },
-    },
+    // ❌ DEPRECADO: scraping reemplazado por AstrologyTool
+    // {
+    //   name: 'Zodiacal',
+    //   urlBase: 'https://www.zodiacal.com',
+    //   category: 'astrologia',
+    //   priority: 7,
+    //   ttlHours: 12,
+    //   selectors: {
+    //     title: ['h1', 'h2'],
+    //     content: ['article', 'main', '.content', 'p'],
+    //   },
+    // },
 
     // ══════════════════════════════════════════════════════════════════════════
     // 📚 REFERENCIA

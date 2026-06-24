@@ -10,6 +10,7 @@ export type IntentType =
   | 'RAG'        // Buscar en documentos/biblioteca local
   | 'TOOL'       // Tool directa (clima, matemáticas, economía, etc.)
   | 'SPORTS'     // Partido, goles, resultado — va a API deportiva primero
+  | 'ASTROLOGY'  // Clima astrológico, posiciones planetarias — calculado en tiempo real
   | 'REPEAT'     // Repetir última respuesta
   | 'CALENDAR'   // Consultar o agendar en Google Calendar
   | 'TASKS';     // Consultar o agendar en Google Tasks
@@ -111,7 +112,7 @@ export class IntentRouterService {
 
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
-    // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es WEB/astrología, no meteorología
+    // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología
     if (/(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(n)
         && !/(astro|zodiac|lunar|horoscopo|signo|astrolog)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
@@ -134,6 +135,17 @@ export class IntentRouterService {
     }
     if (/(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'calendar tool' };
+    }
+
+    // ASTROLOGY — alta confianza (clima astrológico, posiciones planetarias, carta astral)
+    // ⚠️ Estos patrones van DESPUÉS de TOOL para que astrología no se confunda con clima meteorológico
+    if (/(clima astro|horoscopo|carta astral|signo del zodiaco|luna en |sol en |posicion|planetas|retrogrado|aspectos astrologicos|transitos|revolucion solar)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology calculation' };
+    }
+    // Variantes más sutiles de preguntas astrológicas
+    if (/(que signo|donde esta la luna|donde esta el sol|fase lunar|luna llena|luna nueva|luna creciente|luna menguante)/i.test(n)
+        && !/(clima|temperatura|lluvia)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology moon/sun query' };
     }
 
     // RAG — alta confianza (buscar en mis documentos)

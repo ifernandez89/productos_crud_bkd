@@ -31,6 +31,7 @@ import { PlannerService } from './planner/planner.service';
 import { GoogleModule } from '../google/google.module';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
+import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -53,6 +54,7 @@ import { GoogleTasksService } from './tools/google/google-tasks.service';
     JarvisIdentityService,
     GoogleCalendarService,
     GoogleTasksService,
+    AstrologyTool,
     CapabilitiesService,
     SkillRegistryService,
     ToolRegistryService,

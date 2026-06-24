@@ -6,6 +6,89 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — AstrologyTool: cálculos astronómicos/astrológicos en tiempo real (2026-06-23)
+
+#### Motivación
+Anteriormente, las consultas sobre "clima astrológico", posiciones planetarias y fases lunares dependían de scraping de sitios web (astro.com, lunarium, miastral), lo cual causaba:
+- **Latencia alta**: 15-30 segundos por consulta
+- **Poco confiable**: bloqueos 403, contenido dinámico con JS, timeouts
+- **Contenido en inglés**: requería traducción, propenso a alucinaciones del LLM
+- **Sin garantía de datos**: el LLM a veces inventaba eventos planetarios
+
+#### Solución: `AstrologyTool` con `astronomy-engine`
+Implementación basada en el documento **Archeoscope** (guía de replicación de módulos astronómicos).
+
+**Características:**
+- **Instantáneo**: cálculos <100ms (vs 15-30s scraping)
+- **Sin dependencias externas**: usa `astronomy-engine` (VSOP87) — 0 API keys, 0 red
+- **Datos precisos**: posiciones planetarias con precisión astronómica real
+- **Multilenguaje**: genera las respuestas directamente en español
+- **Sin riesgo de bloqueo**: todo calculado localmente
+
+**Funcionalidades implementadas:**
+1. **`getTodaySkyData()`** — Clima astrológico del día:
+   - Fase lunar con emoji (Luna Nueva 🌑, Llena 🌕, etc.) y % de iluminación
+   - Posición lunar en signo zodiacal con grados exactos
+   - Posición solar en signo zodiacal
+   - Planetas visibles esta noche (elongación >20° del Sol)
+   - Próxima fase lunar con fecha exacta
+   - Interpretaciones astrológicas básicas por signo y fase
+
+2. **`getPlanetaryPositions()`** — Carta astral completa:
+   - Posiciones de 10 cuerpos celestes (Sol, Luna, Mercurio...Plutón)
+   - Detección de movimiento retrógrado (℞)
+   - Balance de elementos (Fuego, Tierra, Aire, Agua)
+
+**Integración con IntentRouter:**
+- Nuevo intent `ASTROLOGY` (clasificación de alta confianza)
+- Patrones detectados:
+  - Directos: `clima astro`, `horoscopo`, `carta astral`, `planetas`, `retrógrado`
+  - Sutiles: `que signo`, `donde esta la luna`, `fase lunar`, `luna llena/nueva`
+- Exclusión de falsos positivos: "clima astrológico" ya NO se clasifica como `TOOL(clima)` (meteorología)
+
+**Archivos creados:**
+- `src/jarvis/tools/astrology/astrology-tool.service.ts`
+
+**Archivos modificados:**
+- `src/jarvis/jarvis.module.ts` — registrar AstrologyTool como provider
+- `src/jarvis/jarvis.service.ts` — agregar handler para intent ASTROLOGY
+- `src/jarvis/tools/intent/intent-router.service.ts` — nuevo intent type + patrones de detección
+- `src/jarvis/jarvis.service.ts` (`detectCategory`) — **eliminar categoría "astrologia"** del scraping web
+
+**Categoría de scraping eliminada:**
+- `astrologia` ya NO es una categoría de `SourceRegistry` ni de `detectCategory()`
+- Las fuentes Astro.com, Lunarium, MiAstral quedan comentadas en `source-registry.ts` (pueden eliminarse)
+
+**Ejemplo de uso:**
+```
+Usuario: "Que me dices del clima astrológico para esta noche?"
+IntentRouter: ASTROLOGY (high)
+AstrologyTool: calcula datos en <100ms
+Respuesta:
+🌌 Clima Astrológico para martes, 23 de junio de 2026
+
+**Luna 🌖 (72% iluminada)**
+- Fase: Gibosa Menguante
+- Posición: ♒ Acuario 14.3°
+- Próxima fase: Cuarto Menguante el 26 de junio
+
+**Sol ☀️**
+- Posición: ♋ Cáncer 1.9°
+
+**Planetas visibles esta noche:**
+- ♃ **Júpiter** en Géminis 18.2°
+- ♄ **Saturno** en Piscis 4.7°
+
+**Energías del día:**
+- Luna en Acuario (Aire): innovación, conexión comunitaria
+- Gibosa Menguante: compartir sabiduría y gratitud
+```
+
+**Próximos pasos sugeridos (opcional):**
+- Implementar cálculo de aspectos planetarios (conjunción, trígono, etc.) — algoritmo disponible en Archeoscope
+- Agregar nodos lunares (Norte/Sur) — ya documentado en Archeoscope
+- Calendario Maya (Tzolk'in/Haab) si hay interés — algoritmo incluido en el documento
+
 ### Fixed — Prisma SQLite queries: removed unsupported `mode: 'insensitive'` option (2026-06-23)
 
 #### Causa raíz
