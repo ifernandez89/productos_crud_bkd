@@ -357,6 +357,177 @@ export class SourceRegistry {
     // ❌ OpenAI News → 403 Forbidden
 
     // ══════════════════════════════════════════════════════════════════════════
+    // 🤖 INTELIGENCIA ARTIFICIAL — subcategoría especializada de tecnología
+    // Fuentes enfocadas en AI/ML: noticias, modelos, research, papers
+    // TTL = 6h (mueve rápido el ecosistema IA)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    {
+      name: 'Hugging Face Blog (IA)',
+      urlBase: 'https://huggingface.co/blog',
+      category: 'ia',
+      priority: 10,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1'],
+        content: ['article', 'main', '.prose'],
+      },
+    },
+
+    {
+      name: 'MIT Technology Review',
+      urlBase: 'https://www.technologyreview.com/topic/artificial-intelligence',
+      category: 'ia',
+      priority: 10,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.headline'],
+        content: ['article', '.articleBody', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'The Verge AI',
+      urlBase: 'https://www.theverge.com/ai-artificial-intelligence',
+      category: 'ia',
+      priority: 9,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1'],
+        content: ['article', '.duet--article--article-body-component', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'VentureBeat AI',
+      urlBase: 'https://venturebeat.com/category/ai',
+      category: 'ia',
+      priority: 9,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.article-title'],
+        content: ['article', '.article-content', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'Xataka IA',
+      urlBase: 'https://www.xataka.com/tag/inteligencia-artificial',
+      category: 'ia',
+      priority: 9,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.article-title'],
+        content: ['article', '.article-body', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'Ars Technica AI',
+      urlBase: 'https://arstechnica.com/ai',
+      category: 'ia',
+      priority: 8,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1'],
+        content: ['article', '.article-content', 'main'],
+      },
+    },
+
+    // ❌ OpenAI News → 403 Forbidden (verificado, bloqueado)
+    // ❌ Google AI Blog → necesita JS para renderizar
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 💻 DESARROLLO — subcategoría para preguntas de software/frameworks/libs
+    // "novedades en NestJS", "nueva versión de React", "qué hay en npm"
+    // TTL = 12h (las noticias de dev no son tan efímeras como IA)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    {
+      name: 'dev.to',
+      urlBase: 'https://dev.to',
+      category: 'desarrollo',
+      priority: 10,
+      ttlHours: 12,
+      searchPattern: '/search?q={query}',
+      selectors: {
+        title: ['h1', '.article-header__title'],
+        content: ['article', '#article-body', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'GitHub Blog',
+      urlBase: 'https://github.blog',
+      category: 'desarrollo',
+      priority: 10,
+      ttlHours: 12,
+      selectors: {
+        title: ['h1', '.post-title'],
+        content: ['article', '.post-content', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'The Pragmatic Engineer',
+      urlBase: 'https://newsletter.pragmaticengineer.com',
+      category: 'desarrollo',
+      priority: 9,
+      ttlHours: 12,
+      selectors: {
+        title: ['h1'],
+        content: ['article', '.post-content', 'main'],
+      },
+    },
+
+    {
+      name: 'npm Blog',
+      urlBase: 'https://blog.npmjs.org',
+      category: 'desarrollo',
+      priority: 8,
+      ttlHours: 24,
+      selectors: {
+        title: ['h1'],
+        content: ['article', 'main', '.post-content'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    {
+      name: 'NestJS Official',
+      urlBase: 'https://nestjs.com/blog',
+      category: 'desarrollo',
+      priority: 10,
+      ttlHours: 24,
+      selectors: {
+        title: ['h1'],
+        content: ['article', 'main', '.content'],
+      },
+    },
+
+    {
+      name: 'Ars Technica Software',
+      urlBase: 'https://arstechnica.com/gadgets/2025',
+      category: 'desarrollo',
+      priority: 7,
+      ttlHours: 12,
+      selectors: {
+        title: ['h1'],
+        content: ['article', '.article-content', 'main'],
+      },
+    },
+
+    // ❌ Medium.com → requiere cuenta o bloquea scraping (403 en listas de artículos)
+
+
+
+    // ══════════════════════════════════════════════════════════════════════════
     // 🔮 MISTERIO
     // ✅ Mystery Planet funciona | ❌ los 3 alternativos tienen ENOTFOUND
     // ══════════════════════════════════════════════════════════════════════════

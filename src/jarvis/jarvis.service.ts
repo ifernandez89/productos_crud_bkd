@@ -863,8 +863,20 @@ export class JarvisService {
       return 'noticias';
     }
 
-    // Tecnología & IA
-    if (/(ia\b|inteligencia artificial|openai|chatgpt|llm|modelo|hugging|ollama|tecnologia|software|app\b)/i.test(n)) {
+    // ── IA — ANTES que tecnología genérica para capturar queries de ML/LLM/AI ──
+    // "qué pasó hoy en inteligencia artificial", "nuevo modelo de OpenAI", "ChatGPT update"
+    if (/(\bia\b|inteligencia artificial|machine learning|deep learning|llm\b|openai|chatgpt|gemini\b|claude\b|llama\b|gpt-|gpt4|gpt3|copilot|midjourney|stable diffusion|diffusion model|modelo de lenguaje|red neuronal|transformer\b|hugging face|huggingface)/i.test(n)) {
+      return 'ia';
+    }
+
+    // ── DESARROLLO — preguntas sobre frameworks, librerías, lenguajes, GitHub ──
+    // "novedades en NestJS", "nueva versión de React", "qué hay en npm esta semana"
+    if (/(nestjs|nodejs|node\.js|typescript|javascript|react\b|next\.js|nextjs|vue\b|angular\b|svelte|python\b|rust\b|golang|deno\b|bun\b|npm\b|yarn\b|pnpm|webpack|vite\b|rollup|esbuild|prisma\b|docker\b|kubernetes|k8s|github\b|gitlab|git\b|api rest|graphql|websocket|backend|frontend|framework|libreria|biblioteca|sdk\b|cli\b|dev\.to|medium\.com)/i.test(n)) {
+      return 'desarrollo';
+    }
+
+    // Tecnología & gadgets — lo que queda (hardware, electrónica, empresa tech)
+    if (/(tecnologia|software|hardware|gadget|smartphone|celular|tablet|laptop|procesador|chip\b|apple\b|google\b|microsoft\b|meta\b|amazon\b|app\b|aplicacion)/i.test(n)) {
       return 'tecnologia';
     }
 

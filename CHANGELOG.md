@@ -258,6 +258,20 @@ o derivaba al usuario a buscar solo. Se identificaron 4 bugs en cadena:
 - **Logs mejorados**: indica si resultado vino de fuente confiable o DuckDuckGo, tiempo total de extracción
 
 ### Changed — JarvisService: integración de caché inteligente + contexto local Paraná
+
+### Added — Jarvis 2026: arquitectura de memoria, RAG y endpoints REST (2026-06-23)
+
+#### Qué se incorporó
+- Nuevo módulo de Jarvis con controlador, servicio, módulo y repositorios para memoria, historial, documentos y perfil de usuario.
+- Modelos de Prisma añadidos para `UserProfile`, `Memory`, `ConversationMessage`, `Document`, `Chunk`, `Task` y `Feedback`.
+- Endpoints REST para consulta principal, memoria persistente, ingestión de documentos, búsqueda RAG y perfil de usuario.
+- Construcción de prompts con perfil adaptativo, historial de sesión, memoria y contexto documental antes de invocar al LLM.
+- Configuración optimizada para Ollama con contexto mayor y respuestas más deterministas.
+
+#### Impacto
+- El asistente evoluciona de chatbot transaccional a asistente personal con memoria entre sesiones.
+- Se habilita mejor contexto local para Argentina y apoyo a búsquedas de información actualizada y documental.
+
 - **`autoWebSearch(query, category?)`**: nuevo flujo en 3 pasos
   1. **Si hay categoría** → `ContentCacheService.fetchRelevantContent()` primero
   2. **Fallback** → `WebHelper.search(query, category)` con fuentes priorizadas
