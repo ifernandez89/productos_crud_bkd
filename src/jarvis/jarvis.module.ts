@@ -28,6 +28,7 @@ import { EmbeddingsService } from './library/embeddings.service';
 import { DashboardService } from './library/dashboard.service';
 import { TaskRepository } from './repositories/task.repository';
 import { PlannerService } from './planner/planner.service';
+import { InvestigationService } from './tools/web/investigation.service';
 import { GoogleModule } from '../google/google.module';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
@@ -66,6 +67,7 @@ import { AstrologyTool } from './tools/astrology/astrology-tool.service';
     DashboardService,
     TaskRepository,
     PlannerService,
+    InvestigationService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

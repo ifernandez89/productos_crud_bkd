@@ -21,6 +21,7 @@ import { DocumentRepository } from './repositories/document.repository';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { PlannerService } from './planner/planner.service';
+import { InvestigationService } from './tools/web/investigation.service';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -32,6 +33,7 @@ export class JarvisController {
     private readonly ingestService: DocumentIngestService,
     private readonly dashboardService: DashboardService,
     private readonly plannerService: PlannerService,
+    private readonly investigationService: InvestigationService,
   ) {}
 
   // ── Query principal ─────────────────────────────────────────────────────────
@@ -307,6 +309,14 @@ export class JarvisController {
     if (!body.query) throw new BadRequestException('Se requiere una query de búsqueda');
     const results = await this.jarvisService.webSearch(body.query, body.limit ?? 5);
     return { success: true, results };
+  }
+
+  @Post('investigate')
+  @ApiOperation({ summary: 'Investigar una URL y convertirla en conocimiento consultable' })
+  async investigateUrl(@Body() body: { url: string; sessionId?: string }) {
+    if (!body.url) throw new BadRequestException('Se requiere una URL');
+    const result = await this.investigationService.investigateUrl(body.url, body.sessionId);
+    return { success: true, ...result };
   }
 
   @Get('profile')

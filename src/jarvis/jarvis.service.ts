@@ -25,6 +25,7 @@ import { randomUUID } from 'crypto';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
 import { AstrologyTool } from './tools/astrology/astrology-tool.service';
+import { InvestigationService } from './tools/web/investigation.service';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -61,6 +62,7 @@ export class JarvisService {
     private readonly googleCalendar: GoogleCalendarService,
     private readonly googleTasks: GoogleTasksService,
     private readonly astrologyTool: AstrologyTool,
+    private readonly investigationService: InvestigationService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -126,6 +128,14 @@ export class JarvisService {
     }
 
     await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+
+    const investigationUrl = this.investigationService.extractUrl(userMessage);
+    if (investigationUrl) {
+      const result = await this.investigationService.investigateUrl(investigationUrl, sessionId);
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: JSON.stringify(result), metadata: { source: 'investigation' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: JSON.stringify(result), toolsUsed: ['investigation'], modelUsed: 'none', provider: 'investigation', durationMs: Date.now() - startTime, success: true });
+      return JSON.stringify(result, null, 2);
+    }
 
     try {
       // ── Intent Router — clasifica la intención ANTES de ejecutar nada ──────
