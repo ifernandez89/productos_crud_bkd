@@ -5,6 +5,16 @@ import { chromium, Browser, Page } from 'playwright';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
+export interface DetectedApi {
+  url: string;
+  method: string;
+  status: number;
+  requestHeaders?: Record<string, string>;
+  responseHeaders?: Record<string, string>;
+  requestPayload?: string;
+  responsePayload?: string;
+}
+
 export interface BrowserResult {
   url: string;
   finalUrl: string;
@@ -18,6 +28,7 @@ export interface BrowserResult {
   wordCount: number;
   renderedWithPlaywright: boolean;
   scrapedAt: string;
+  apis?: DetectedApi[];
 }
 
 export interface BrowserError {
@@ -31,6 +42,7 @@ export interface NavigationResult {
   text: string;
   links: Array<{ text: string; href: string }>;
   screenshot?: string;
+  apis?: DetectedApi[];
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
@@ -130,6 +142,21 @@ export class BrowserToolService {
         parts.push(result.excerpt);
       }
 
+      // APIs detectadas
+      if (result.apis && result.apis.length > 0) {
+        parts.push('');
+        parts.push('**APIs / Endpoints Detectados:**');
+        result.apis.slice(0, 15).forEach((api) => {
+          parts.push(`• **${api.method}** \`${api.url}\` (Status: ${api.status})`);
+          if (api.requestPayload) {
+            parts.push(`  - *Payload:* \`${api.requestPayload.trim().slice(0, 200)}\``);
+          }
+          if (api.responsePayload) {
+            parts.push(`  - *Respuesta:* \`${api.responsePayload.trim().slice(0, 500)}\``);
+          }
+        });
+      }
+
       // Links relevantes (solo los que no son anclas internas)
       const externalLinks = result.links.filter(
         (l) => !l.includes('#') && l !== result.finalUrl,
@@ -157,6 +184,44 @@ export class BrowserToolService {
       const browser = await this.getBrowser();
       const context = await browser.newContext({ userAgent: this.USER_AGENT });
       page = await context.newPage();
+
+      const apis: DetectedApi[] = [];
+      const pendingResponses: Promise<void>[] = [];
+
+      page.on('response', (response) => {
+        const p = (async () => {
+          try {
+            const req = response.request();
+            const responseUrl = response.url();
+            const method = req.method();
+            const contentType = response.headers()['content-type'] || '';
+            
+            const isJson = contentType.includes('application/json');
+            const isApiPattern = /\/(api|v\d+|graphql|json)/i.test(responseUrl) || responseUrl.includes('/graphql') || responseUrl.includes('/api/') || responseUrl.endsWith('.json');
+            
+            if (isJson || isApiPattern) {
+              const status = response.status();
+              if (status >= 200 && status < 300) {
+                const text = await response.text();
+                if (text && text.length > 0 && text.length < 50000) {
+                  apis.push({
+                    url: responseUrl,
+                    method,
+                    status,
+                    requestHeaders: req.headers(),
+                    responseHeaders: response.headers(),
+                    requestPayload: req.postData() || undefined,
+                    responsePayload: text,
+                  });
+                }
+              }
+            }
+          } catch {
+            // Ignorar errores al leer cuerpo/headers
+          }
+        })();
+        pendingResponses.push(p);
+      });
 
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.TIMEOUT_MS });
 
@@ -186,8 +251,9 @@ export class BrowserToolService {
         screenshot = buf.toString('base64');
       }
 
+      await Promise.all(pendingResponses).catch(() => {});
       await context.close();
-      return { url: finalUrl, title, text, links, screenshot };
+      return { url: finalUrl, title, text, links, screenshot, apis };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:navigate] error en ${url}: ${msg}`);
@@ -264,6 +330,44 @@ export class BrowserToolService {
       });
       page = await context.newPage();
 
+      const apis: DetectedApi[] = [];
+      const pendingResponses: Promise<void>[] = [];
+
+      page.on('response', (response) => {
+        const p = (async () => {
+          try {
+            const req = response.request();
+            const responseUrl = response.url();
+            const method = req.method();
+            const contentType = response.headers()['content-type'] || '';
+            
+            const isJson = contentType.includes('application/json');
+            const isApiPattern = /\/(api|v\d+|graphql|json)/i.test(responseUrl) || responseUrl.includes('/graphql') || responseUrl.includes('/api/') || responseUrl.endsWith('.json');
+            
+            if (isJson || isApiPattern) {
+              const status = response.status();
+              if (status >= 200 && status < 300) {
+                const text = await response.text();
+                if (text && text.length > 0 && text.length < 50000) {
+                  apis.push({
+                    url: responseUrl,
+                    method,
+                    status,
+                    requestHeaders: req.headers(),
+                    responseHeaders: response.headers(),
+                    requestPayload: req.postData() || undefined,
+                    responsePayload: text,
+                  });
+                }
+              }
+            }
+          } catch {
+            // Ignorar errores al leer cuerpo/headers
+          }
+        })();
+        pendingResponses.push(p);
+      });
+
       // Bloquear recursos pesados que no aportan texto
       await page.route('**/*.{png,jpg,jpeg,gif,svg,webp,woff,woff2,ttf,mp4,mp3,avi}', (route) =>
         route.abort(),
@@ -291,9 +395,10 @@ export class BrowserToolService {
 
       const html = await page.content();
       const finalUrl = page.url();
+      await Promise.all(pendingResponses).catch(() => {});
       await context.close();
 
-      return this.parseHtml(url, finalUrl, html, true);
+      return this.parseHtml(url, finalUrl, html, true, apis);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:playwright] error en ${url}: ${msg}`);
@@ -374,6 +479,7 @@ export class BrowserToolService {
     finalUrl: string,
     html: string,
     renderedWithPlaywright: boolean,
+    apis?: DetectedApi[],
   ): BrowserResult {
     const $ = cheerio.load(html);
 
@@ -474,6 +580,7 @@ export class BrowserToolService {
       wordCount,
       renderedWithPlaywright,
       scrapedAt: new Date().toISOString(),
+      apis,
     };
   }
 

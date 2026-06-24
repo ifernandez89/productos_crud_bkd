@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Web Intelligence Layer: captura nativa de APIs y GraphQL en Playwright (2026-06-24)
+
+#### Motivación
+Se necesitaba inspeccionar tráfico de red real durante la navegación web sin depender de procesos MCP externos, especialmente para detectar endpoints JSON, GraphQL y payloads ocultos en páginas dinámicas.
+
+#### Implementación
+- Captura pasiva de respuestas con `page.on('response')` en los flujos de navegación y renderizado de Playwright.
+- Detección de peticiones API/GraphQL con método, URL, estado HTTP, payload de request y respuesta.
+- Integración de las APIs detectadas al contexto que se entrega al LLM en formato markdown legible.
+- Script de verificación end-to-end en `scratch/test-api-interception.ts` para validar la captura real de llamadas JSON.
+- Informe de seguimiento documentado en `walkthrough.md`.
+
+#### Resultado
+La capa de Web Intelligence ahora puede exponer endpoints relevantes extraídos de la navegación real, mejorando la comprensión contextual de sitios dinámicos y la calidad del análisis del agente.
+
 ### Added — AstrologyTool: cálculos astronómicos/astrológicos en tiempo real (2026-06-23)
 
 #### Motivación
