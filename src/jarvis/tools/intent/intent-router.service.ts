@@ -42,6 +42,16 @@ export class IntentRouterService {
     // 1. Reglas determinísticas de alta confianza (instantáneas, sin LLM)
     const fastResult = this.fastClassify(message);
 
+    // Logging de diagnóstico — visible en logs para detectar bugs de routing
+    this.logger.log(
+      JSON.stringify({
+        query: message.slice(0, 80),
+        detectedIntent: fastResult.intent,
+        confidence: fastResult.confidence,
+        reason: fastResult.reason,
+      }),
+    );
+
     // Si la confianza es high O medium → no gastar tiempo en el LLM
     if (fastResult.confidence === 'high' || fastResult.confidence === 'medium') {
       this.logger.log(`[intent:fast] ${fastResult.intent} (${fastResult.confidence}) — "${message.slice(0, 60)}"`);
@@ -123,8 +133,14 @@ export class IntentRouterService {
     if (/(\d+\s*[\+\-\*\/\^]\s*\d|raiz cuadrada|logaritmo|calcula |integral |derivada )/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'math tool' };
     }
-    if (/(luna|fase lunar|eclipse|solsticio|amanecer|atardecer)/i.test(n)) {
+    // ⚠️ NOTA: luna/fase lunar ya NO van a TOOL — van a ASTROLOGY (ver bloque debajo)
+    if (/(solsticio|amanecer|atardecer)/i.test(n)
+        && !/(astro|zodiac|lunar|astrolog|signo)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'astronomy tool' };
+    }
+    if (/(eclipse solar|eclipse lunar)/i.test(n)
+        && !/(carta|astrolog|horoscopo)/i.test(n)) {
+      return { intent: 'TOOL', confidence: 'high', reason: 'eclipse tool' };
     }
     if (/(feriado|asueto|dia no laborable)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'holiday tool' };
@@ -137,15 +153,40 @@ export class IntentRouterService {
       return { intent: 'TOOL', confidence: 'high', reason: 'calendar tool' };
     }
 
-    // ASTROLOGY — alta confianza (clima astrológico, posiciones planetarias, carta astral)
-    // ⚠️ Estos patrones van DESPUÉS de TOOL para que astrología no se confunda con clima meteorológico
-    if (/(clima astro|horoscopo|carta astral|signo del zodiaco|luna en |sol en |posicion|planetas|retrogrado|aspectos astrologicos|transitos|revolucion solar)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology calculation' };
+    // ── ASTROLOGY — DEBE ir ANTES del bloque WEB para que "hoy"/"esta noche" no sean capturados ──
+    // ⚠️ CRÍTICO: el bloque WEB tiene "hoy", "ayer", "esta semana" → capturaría queries astrológicos
+    //             si ASTROLOGY no va primero.
+
+    // Palabras clave explícitas de astrología — alta confianza
+    if (/(astrolog|horoscopo|carta astral|signo del zodiaco|retrogrado|aspectos astrologicos|transitos|revolucion solar)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'explicit astrology keyword' };
     }
-    // Variantes más sutiles de preguntas astrológicas
-    if (/(que signo|donde esta la luna|donde esta el sol|fase lunar|luna llena|luna nueva|luna creciente|luna menguante)/i.test(n)
-        && !/(clima|temperatura|lluvia)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology moon/sun query' };
+
+    // Posiciones planetarias — alta confianza
+    if (/(luna en |sol en |mercurio en |venus en |marte en |jupiter en |saturno en |posicion(es)? planet)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'planetary position query' };
+    }
+
+    // Energías y clima astrológico — alta confianza
+    if (/(energia (del dia|lunar|astral|cosmica|de hoy|de esta noche|de esta semana)|clima astral|clima zodiac|energia espiritual)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology energy query' };
+    }
+
+    // "qué dicen los astros", "qué hay en el cielo", "astrología para esta noche"
+    if (/(que dicen los astros|que hay en el cielo|astros (de|para|esta)|astrologia para|que pasa (en el cielo|con los astros|con los planetas))/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology sky query' };
+    }
+
+    // Luna y fases — ASTROLOGY (NO meteorología)
+    // ⚠️ Movido desde TOOL: luna/fase lunar son consultas astrológicas, no meteorológicas
+    if (/(luna|fase lunar|luna llena|luna nueva|luna creciente|luna menguante|donde esta la luna|como esta la luna|que signo|que signo es|signo lunar)/i.test(n)
+        && !/(clima|temperatura|lluvia|meteorolog|precipitacion)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'moon/astrology query' };
+    }
+
+    // Planetas en contexto astrológico (sin "clima" ni "meteorología")
+    if (/(mercurio retrogrado|venus retrograda|marte retrogrado|planetas visibles|que planetas hay|signo del mes)/i.test(n)) {
+      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology planet retrograde' };
     }
 
     // RAG — alta confianza (buscar en mis documentos)
@@ -183,6 +224,7 @@ export class IntentRouterService {
 - SPORTS: es sobre un partido, resultado, goles o evento deportivo reciente
 - RAG: el usuario quiere buscar en sus propios documentos/archivos/PDFs
 - TOOL: requiere una herramienta específica (clima, calculadora, hora, economía)
+- ASTROLOGY: es sobre astrología, horóscopo, posiciones planetarias, la luna, energías astrológicas
 
 Respondé SOLO con la palabra de la categoría. Sin explicaciones.
 
@@ -203,7 +245,8 @@ Categoría:`;
     const raw: string = (response.data?.response ?? '').trim().toUpperCase();
 
     // Mapear respuesta del LLM a IntentType
-    const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL'];
+    // ⚠️ ASTROLOGY agregado — sin esto el LLM nunca podía enrutar a astrología
+    const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL', 'ASTROLOGY'];
     const matched = validIntents.find((i) => raw.startsWith(i));
 
     return {

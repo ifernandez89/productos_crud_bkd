@@ -170,24 +170,6 @@ export class JarvisService {
         }
       }
 
-      // ── GOOGLE CALENDAR ───────────────────────────────────────────────────
-      if (intent.intent === 'CALENDAR') {
-        const calContext = await this.googleCalendar.getUpcomingEvents();
-        if (calContext) {
-          toolsUsed.push('google_calendar');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext);
-        }
-      }
-
-      // ── GOOGLE TASKS ──────────────────────────────────────────────────────
-      if (intent.intent === 'TASKS') {
-        const tasksContext = await this.googleTasks.getPendingTasks();
-        if (tasksContext) {
-          toolsUsed.push('google_tasks');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext);
-        }
-      }
-
       // ── ASTROLOGY — cálculos instantáneos sin scraping ────────────────────
       if (intent.intent === 'ASTROLOGY') {
         // Detectar si pide posiciones completas o solo clima del día
@@ -198,9 +180,9 @@ export class JarvisService {
           : this.astrologyTool.getTodaySkyData();
 
         toolsUsed.push('astrology_calculated');
-        await this.conversationRepo.create({ sessionId, role: 'assistant', content: astroData, metadata: { source: 'astrology_tool' } });
-        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: astroData, toolsUsed, modelUsed: 'none', provider: 'astrology', durationMs: Date.now() - startTime, success: true });
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
+        // ⚠️ NO guardar aquí — respondWithAstrologyPrompt llama saveAndObserve internamente
+        // (antes había doble-guardado: conversationRepo.create + agentRunRepo.create + respondWithLLM)
+        return await this.respondWithAstrologyPrompt(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
       }
 
       // ── URL — scrapear y procesar con LLM ────────────────────────────────
@@ -564,6 +546,74 @@ export class JarvisService {
   }
 
   /**
+   * Respuesta especializada para ASTROLOGY.
+   * Usa un system prompt enfocado en datos astronómicos calculados localmente.
+   * NO usa el prompt genérico de noticias — evita que el LLM diga "no tengo info".
+   *
+   * Flujo: astronomy-engine → datos locales → prompt especializado → LLM → respuesta
+   * Sin scraping. Sin DuckDuckGo. Sin Playwright. Sin internet.
+   */
+  private async respondWithAstrologyPrompt(
+    userMessage: string,
+    sessionId: string,
+    providerName: string,
+    provider: ILLMProvider,
+    toolsUsed: string[],
+    startTime: number,
+    astroData: string,
+  ): Promise<string> {
+    const profile   = await this.userProfileRepo.getOrCreate();
+    const identity  = this.jarvisIdentity.getIdentity();
+    const now       = new Date();
+    const dateStr   = now.toLocaleDateString('es-AR', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    });
+    const timeStr   = now.toLocaleTimeString('es-AR', {
+      hour: '2-digit', minute: '2-digit',
+      timeZone: profile.timezone || 'America/Argentina/Buenos_Aires',
+    });
+
+    const systemPrompt = [
+      `Tu nombre es ${identity.name}. Eres un asistente especializado en astrología.`,
+      ``,
+      `📅 Fecha y hora actual: ${dateStr}, ${timeStr} hs.`,
+      ``,
+      `🌌 INSTRUCCIONES PARA RESPUESTA ASTROLÓGICA:`,
+      `1. Utiliza EXCLUSIVAMENTE los datos astronómicos calculados que se te proveen.`,
+      `2. NO necesitas internet. Los datos ya fueron calculados en tiempo real con astronomía precisa.`,
+      `3. NUNCA digas "no tengo acceso", "no dispongo de información" ni nada similar.`,
+      `   Los datos ESTÁN en el contexto. Úsalos directamente.`,
+      `4. Estructura tu respuesta en 3 partes:`,
+      `   🔭 Resumen astronómico (qué hay en el cielo ahora)`,
+      `   🌠 Interpretación astrológica (qué energía trae)`,
+      `   💡 Consejo o reflexión para el día/noche`,
+      `5. Máximo 300 palabras. Tono cálido y cercano. Español argentino.`,
+      `6. Si el usuario pregunta algo específico (ej: "¿Mercurio está retrógrado?"), `,
+      `   respondé esa pregunta específicamente además de la estructura general.`,
+    ].join('\n');
+
+    const userPrompt = [
+      `### DATOS ASTRONÓMICOS CALCULADOS EN TIEMPO REAL`,
+      `(Fuente: astronomy-engine — cálculos locales de alta precisión VSOP87)`,
+      ``,
+      astroData,
+      ``,
+      `### PREGUNTA DEL USUARIO`,
+      userMessage,
+    ].join('\n');
+
+    const response = await provider.generate({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt },
+      ],
+    });
+
+    await this.saveAndObserve(sessionId, userMessage, response.content, toolsUsed, response, startTime);
+    return response.content;
+  }
+
+  /**
    * Detecta si una respuesta del LLM es evasiva/negativa.
    * Ej: "no tengo acceso", "no puedo", "te recomiendo buscar en..."
    */
@@ -648,7 +698,14 @@ export class JarvisService {
     }
 
     // Excluir comandos de memoria/perfil
-    if (/^(recorda|guardá|guarda|anotá|anota|mi nombre es|me llamo|prefiero|siempre)/i.test(n)) {
+    if (/^(recorda|guarda|guarda|anota|anota|mi nombre es|me llamo|prefiero|siempre)/i.test(n)) {
+      return false;
+    }
+
+    // ⚠️ Excluir astrología — tiene su propio router y NO necesita web
+    // Si una query astrológica cayó en LOCAL (bug de routing), no intentar web
+    if (/(astrolog|horoscopo|carta astral|luna llena|luna nueva|luna creciente|luna menguante|mercurio retrogrado|venus retrograda|energia lunar|energia astral|que dicen los astros|planetas visibles)/i.test(n)) {
+      this.logger.warn(`[needsWebSearch] query astrológico detectado en LOCAL — NO buscar web (debería haber ido por ASTROLOGY)`);
       return false;
     }
 
