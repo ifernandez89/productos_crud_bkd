@@ -228,6 +228,30 @@ export class WebHelper {
    * Útil cuando ya sabés la URL que querés leer.
    */
   static async scrapeUrl(url: string, contextQuery?: string): Promise<string | null> {
+    // 1. Intentar buscar si esta URL coincide con una fuente en nuestro registro para usar sus selectores
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+      const source = SourceRegistry.getAll().find((s) => {
+        try {
+          const sHost = new URL(s.urlBase).hostname.toLowerCase();
+          return hostname === sHost || hostname.endsWith('.' + sHost) || sHost.endsWith('.' + hostname);
+        } catch {
+          return false;
+        }
+      });
+
+      if (source) {
+        WebHelper.logger.log(`[WebHelper] URL de fuente conocida detectada: ${source.name}. Usando selectores optimizados.`);
+        const content = await WebHelper.scrapeUrlWithSelectors(url, contextQuery ?? '', source);
+        if (content && content.length > 200) {
+          return content;
+        }
+      }
+    } catch {
+      // Ignorar error al parsear URL o buscar la fuente
+    }
+
+    // 2. Fallback al flujo de scraping genérico
     try {
       const resp = await axios.get(url, {
         headers: {

@@ -20,6 +20,7 @@ import { IntentRouterService } from './tools/intent/intent-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { WebHelper } from './tools/web/web-helper';
+import { SourceRegistry } from './tools/web/source-registry';
 import { randomUUID } from 'crypto';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
@@ -196,6 +197,22 @@ export class JarvisService {
         }
         // Sin contexto (solo URL, sin pregunta) → responder sin browserCtx
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+      }
+
+      // ── SITE_SEARCH — buscar en un sitio específico ────────────────────────
+      if (intent.intent === 'SITE_SEARCH' && intent.siteSearch) {
+        const { site, query } = intent.siteSearch;
+        this.logger.log(`[jarvis] SITE_SEARCH intent detected for site: ${site}, query: ${query}`);
+        
+        const siteSearchCtx = await this.executeSiteSearch(site, query);
+        if (siteSearchCtx) {
+          toolsUsed.push('site_search');
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx);
+        }
+        
+        // Fallback a web general si falla
+        this.logger.log(`[jarvis] SITE_SEARCH vacío → fallback WEB`);
+        intent.intent = 'WEB';
       }
 
       // ── SPORTS — cascada: API deportiva → DuckDuckGo → scraping ────────
@@ -800,17 +817,29 @@ export class JarvisService {
     const mentionsParana   = /parana|entre rios|litoral/.test(n);
     const mentionsArgentina = /argentin/.test(n);
 
-    // Para noticias: construir query limpia "noticias Paran\u00e1 Entre R\u00edos hoy"
+    // Para noticias: construir query limpia si es genérica o enriquecerla si es específica
     if (category === 'noticias') {
-      const localidad = mentionsParana   ? 'Paran\u00e1 Entre R\u00edos'
-                      : mentionsArgentina ? 'Argentina'
-                      : '';
-      return `noticias ${localidad} hoy`.replace(/\s+/g, ' ').trim();
+      const isGeneric = /^(noticias?|novedades?|actualidad|que paso|que hay de nuevo|noticias de hoy|ultimas noticias)[\s?¿!¡.]*$/i.test(n.trim());
+      if (isGeneric) {
+        const localidad = mentionsParana   ? 'Paraná Entre Ríos'
+                        : mentionsArgentina ? 'Argentina'
+                        : '';
+        return `noticias ${localidad} hoy`.replace(/\s+/g, ' ').trim();
+      }
+      // No es genérico, mantener el término de búsqueda y agregar 'noticias' / 'hoy' si no están
+      let enriched = query;
+      if (!/noticia/i.test(n)) enriched = `noticias ${enriched}`;
+      if (!/hoy|actual|reciente/i.test(n)) enriched = `${enriched} hoy`;
+      return enriched;
     }
 
     if (category === 'gobierno') {
-      const localidad = mentionsParana ? 'Paran\u00e1 Entre R\u00edos' : 'Argentina';
-      return `noticias gobierno ${localidad} hoy`.trim();
+      const isGeneric = /^(gobierno|autoridades|quien gobierna|gestion municipal)[\s?¿!¡.]*$/i.test(n.trim());
+      if (isGeneric) {
+        const localidad = mentionsParana ? 'Paraná Entre Ríos' : 'Argentina';
+        return `noticias gobierno ${localidad} hoy`.trim();
+      }
+      return query;
     }
 
     // Deportes: conservar query original pero agregar fecha actual
@@ -906,6 +935,56 @@ export class JarvisService {
     }
 
     return undefined;
+  }
+
+  /**
+   * Ejecuta una búsqueda dirigida a un sitio específico.
+   */
+  private async executeSiteSearch(site: string, query: string): Promise<string | null> {
+    const siteQuery = `site:${site} ${query}`;
+    this.logger.log(`[jarvis:site_search] Buscando en sitio específico: "${siteQuery}"`);
+
+    // 1. Intentar buscar en el caché primero para evitar DDG throttling y mejorar velocidad
+    try {
+      const source = SourceRegistry.getAll().find(s => s.urlBase.includes(site));
+      const category = source?.category ?? 'noticias';
+
+      const cachePromise = this.contentCache.fetchRelevantContent(siteQuery, category, 2);
+      const cacheTimeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('cache timeout 15s')), 15_000),
+      );
+      const cached = await Promise.race([cachePromise, cacheTimeout]);
+
+      if (cached && cached.length > 0) {
+        const fromCacheCount = cached.filter((r) => r.fromCache).length;
+        this.logger.log(
+          `[jarvis:site_search] ${cached.length} resultados desde caché (${fromCacheCount} cache hit)`,
+        );
+
+        return cached
+          .map((r, i) => {
+            const sourceLabel = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
+            const title = r.title ? `**${i + 1}. ${r.title}**` : `**${i + 1}. Resultado**`;
+            return `${title} ${sourceLabel}\n🔗 ${r.url}\n\n${r.content.slice(0, 2000)}`;
+          })
+          .join('\n\n---\n\n');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[jarvis:site_search] error en caché: ${msg} → fallback a WebHelper`);
+    }
+
+    // 2. Fallback: WebHelper con timeout de 25s
+    const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
+    const webHelperResult = WebHelper.search(siteQuery, undefined, true);
+    const result = await Promise.race([webHelperResult, webHelperTimeout]);
+
+    if (result) {
+      this.logger.log(`[jarvis:site_search] OK WebHelper (${result.length} chars)`);
+      return result;
+    }
+
+    return null;
   }
 
   private isRepeatRequest(message: string): boolean {

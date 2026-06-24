@@ -13,7 +13,8 @@ export type IntentType =
   | 'ASTROLOGY'  // Clima astrológico, posiciones planetarias — calculado en tiempo real
   | 'REPEAT'     // Repetir última respuesta
   | 'CALENDAR'   // Consultar o agendar en Google Calendar
-  | 'TASKS';     // Consultar o agendar en Google Tasks
+  | 'TASKS'      // Consultar o agendar en Google Tasks
+  | 'SITE_SEARCH'; // Búsqueda dirigida en un sitio específico (elonce, wikipedia, etc.)
 
 export interface IntentResult {
   intent: IntentType;
@@ -21,6 +22,10 @@ export interface IntentResult {
   reason: string;       // para logging
   urls?: string[];      // si intent === 'URL'
   sportsQuery?: string; // si intent === 'SPORTS', la query limpia
+  siteSearch?: {
+    site: string;       // dominio, ej. "elonce.com"
+    query: string;      // búsqueda de texto
+  };
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
@@ -81,6 +86,17 @@ export class IntentRouterService {
 
     const n = this.normalize(classifyText);
     const urls = this.extractUrls(message); // URLs: buscar en el mensaje completo
+
+    // SITE_SEARCH — alta confianza
+    const siteSearch = this.extractSiteSearchFromText(classifyText);
+    if (siteSearch) {
+      return {
+        intent: 'SITE_SEARCH',
+        confidence: 'high',
+        reason: `site search detected for: ${siteSearch.site}`,
+        siteSearch,
+      };
+    }
 
     // REPEAT — alta confianza
     if (/\b(repeti|repetí|repetir|repite|dilo de nuevo|decilo de nuevo|voz alta)\b/i.test(n)) {
@@ -225,6 +241,7 @@ export class IntentRouterService {
 - RAG: el usuario quiere buscar en sus propios documentos/archivos/PDFs
 - TOOL: requiere una herramienta específica (clima, calculadora, hora, economía)
 - ASTROLOGY: es sobre astrología, horóscopo, posiciones planetarias, la luna, energías astrológicas
+- SITE_SEARCH: es una búsqueda dirigida dentro de un sitio específico (ej. "buscar X en Y", "noticias de X en Y")
 
 Respondé SOLO con la palabra de la categoría. Sin explicaciones.
 
@@ -245,9 +262,25 @@ Categoría:`;
     const raw: string = (response.data?.response ?? '').trim().toUpperCase();
 
     // Mapear respuesta del LLM a IntentType
-    // ⚠️ ASTROLOGY agregado — sin esto el LLM nunca podía enrutar a astrología
-    const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL', 'ASTROLOGY'];
+    const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL', 'ASTROLOGY', 'SITE_SEARCH'];
     const matched = validIntents.find((i) => raw.startsWith(i));
+
+    if (matched === 'SITE_SEARCH') {
+      const extracted = this.extractSiteSearchFromText(message);
+      if (extracted) {
+        return {
+          intent: 'SITE_SEARCH',
+          confidence: 'high',
+          reason: `LLM classified as SITE_SEARCH & extracted: ${extracted.site}`,
+          siteSearch: extracted,
+        };
+      }
+      return {
+        intent: 'WEB',
+        confidence: 'medium',
+        reason: 'LLM classified as SITE_SEARCH but could not extract details → WEB fallback',
+      };
+    }
 
     return {
       intent: matched ?? 'WEB', // si el LLM alucina, WEB es el fallback más útil
@@ -270,6 +303,145 @@ Categoría:`;
       .replace(/[?¿!¡]/g, '')
       .replace(/\s+/g, ' ')
       .trim();
+  }
+
+  /**
+   * Extrae los parámetros de búsqueda en un sitio específico si la query coincide.
+   */
+  private extractSiteSearchFromText(message: string): { site: string; query: string } | null {
+    const n = this.normalize(message);
+    const cleanN = n.replace(/[?¿!¡.]/g, '').trim();
+
+    // 1. buscar/noticias de/sobre X en Y
+    const pattern1 = /(?:noticias?|novedades?|info|informacion|que paso|buscar?|busca|encontrar?|encontra)\s+(?:de|sobre|con)?\s*(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
+    
+    // 2. que dice Y sobre X
+    const pattern2 = /(?:que dice|que dicen|segun|buscar en)\s+([a-z0-9\s.-]+)\s+sobre\s+(.+)$/i;
+
+    // 3. buscar en Y: X o buscar en Y X
+    const pattern3 = /(?:buscar en|busca en)\s+([a-z0-9\s.-]+)(?::|\s+)\s*(.+)$/i;
+
+    // 4. X en Y (cuando Y es un dominio conocido o alias conocido)
+    const pattern4 = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
+
+    let siteCandidate = '';
+    let queryCandidate = '';
+    let match = pattern1.exec(cleanN);
+
+    if (match) {
+      queryCandidate = match[1].trim();
+      siteCandidate = match[2].trim();
+    } else {
+      match = pattern2.exec(cleanN);
+      if (match) {
+        siteCandidate = match[1].trim();
+        queryCandidate = match[2].trim();
+      } else {
+        match = pattern3.exec(cleanN);
+        if (match) {
+          siteCandidate = match[1].trim();
+          queryCandidate = match[2].trim();
+        } else {
+          match = pattern4.exec(cleanN);
+          if (match) {
+            queryCandidate = match[1].trim();
+            siteCandidate = match[2].trim();
+          }
+        }
+      }
+    }
+
+    if (!siteCandidate || !queryCandidate) return null;
+
+    const cleanSite = siteCandidate.trim();
+    const cleanQuery = queryCandidate.trim();
+
+    // Evitar falsos positivos con preposiciones comunes o consultas de lugar/tiempo no web
+    if (['argentina', 'parana', 'entre rios', 'el mundo', 'cancha', 'vivo', 'directo', 'ingles', 'español', 'casa', 'internet'].includes(cleanSite)) {
+      return null;
+    }
+
+    const siteAliasMap: Record<string, string> = {
+      'elonce': 'elonce.com',
+      'el once': 'elonce.com',
+      'once digital': 'elonce.com',
+      'elonce digital': 'elonce.com',
+      'infobae': 'infobae.com',
+      'la nacion': 'lanacion.com.ar',
+      'uno': 'unoentrerios.com.ar',
+      'uno entre rios': 'unoentrerios.com.ar',
+      'apf': 'apfdigital.com.ar',
+      'apf digital': 'apfdigital.com.ar',
+      'analisis': 'analisisdigital.com.ar',
+      'analisis digital': 'analisisdigital.com.ar',
+      'el entre rios': 'elentrerios.com',
+      'entre rios': 'elentrerios.com',
+      'mi parana': 'mi.parana.gob.ar',
+      'parana gob': 'parana.gob.ar',
+      'tyc': 'tycsports.com',
+      'tyc sports': 'tycsports.com',
+      'tycsports': 'tycsports.com',
+      'ole': 'ole.com.ar',
+      'promiedos': 'promiedos.com.ar',
+      'conicet': 'conicet.gov.ar',
+      'fayerwayer': 'fayerwayer.com',
+      'xataka': 'xataka.com',
+      'muycomputer': 'muycomputer.com',
+      'techcrunch': 'techcrunch.com',
+      'ars technica': 'arstechnica.com',
+      'huggingface': 'huggingface.co',
+      'hugging face': 'huggingface.co',
+      'devto': 'dev.to',
+      'dev.to': 'dev.to',
+      'github': 'github.com',
+      'npm': 'npmjs.org',
+      'nestjs': 'nestjs.com',
+      'mystery planet': 'mysteryplanet.com.ar',
+      'rolling stone': 'rollingstone.com.ar',
+      'los 40': 'los40.com.ar',
+      'los40': 'los40.com.ar',
+      'wikipedia': 'es.wikipedia.org',
+      'youtube': 'youtube.com',
+      'espn': 'espndeportes.espn.com',
+      'clarin': 'clarin.com',
+      'perfil': 'perfil.com',
+      'cronica': 'cronica.com.ar',
+      'pagina12': 'pagina12.com.ar',
+      'pagina 12': 'pagina12.com.ar'
+    };
+
+    let domain: string | undefined = undefined;
+    const isDomain = /^[a-z0-9-]+\.[a-z.]{2,}$/i.test(cleanSite);
+
+    if (siteAliasMap[cleanSite]) {
+      domain = siteAliasMap[cleanSite];
+    } else {
+      // Búsqueda por subcadena
+      const matchedKey = Object.keys(siteAliasMap).find(
+        (key) => cleanSite.includes(key) || key.includes(cleanSite)
+      );
+      if (matchedKey) {
+        domain = siteAliasMap[matchedKey];
+      }
+    }
+
+    if (!domain && isDomain) {
+      domain = cleanSite;
+    }
+
+    if (!domain) return null;
+
+    // Recuperar la query con mayúsculas/minúsculas originales
+    const queryIndex = cleanN.indexOf(queryCandidate);
+    let originalQuery = cleanQuery;
+    if (queryIndex !== -1) {
+      originalQuery = message.slice(queryIndex, queryIndex + queryCandidate.length).trim();
+    }
+
+    return {
+      site: domain,
+      query: originalQuery
+    };
   }
 
   private normalize(input: string): string {
