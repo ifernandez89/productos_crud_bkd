@@ -192,7 +192,7 @@ export class JarvisService {
       if (intent.intent === 'ASTROLOGY') {
         // Detectar si pide posiciones completas o solo clima del día
         const wantsFullChart = /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(userMessage);
-        
+
         const astroData = wantsFullChart
           ? this.astrologyTool.getPlanetaryPositions()
           : this.astrologyTool.getTodaySkyData();
@@ -200,7 +200,7 @@ export class JarvisService {
         toolsUsed.push('astrology_calculated');
         await this.conversationRepo.create({ sessionId, role: 'assistant', content: astroData, metadata: { source: 'astrology_tool' } });
         await this.agentRunRepo.create({ sessionId, question: userMessage, answer: astroData, toolsUsed, modelUsed: 'none', provider: 'astrology', durationMs: Date.now() - startTime, success: true });
-        return astroData;
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
       }
 
       // ── URL — scrapear y procesar con LLM ────────────────────────────────
