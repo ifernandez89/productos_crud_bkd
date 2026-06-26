@@ -22,6 +22,8 @@ import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { PlannerService } from './planner/planner.service';
 import { InvestigationService } from './tools/web/investigation.service';
+import { ConversationRepository } from './repositories/conversation.repository';
+import { randomUUID } from 'crypto';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -34,7 +36,43 @@ export class JarvisController {
     private readonly dashboardService: DashboardService,
     private readonly plannerService: PlannerService,
     private readonly investigationService: InvestigationService,
+    private readonly conversationRepo: ConversationRepository,
   ) {}
+
+  // ── Sesión persistente ──────────────────────────────────────────────────────
+
+  @Get('session')
+  @ApiOperation({
+    summary: 'Obtener o crear sessionId persistente',
+    description:
+      'El frontend llama esto UNA VEZ al arrancar y guarda el sessionId en localStorage. ' +
+      'De esta forma el historial de conversación persiste entre recargas.',
+  })
+  getOrCreateSession(@Query('sessionId') sessionId?: string) {
+    // Si el frontend ya tiene uno guardado, se lo devolvemos validado
+    // Si no tiene, generamos uno nuevo (UUID)
+    const id = sessionId && sessionId.length === 36 ? sessionId : randomUUID();
+    return { sessionId: id };
+  }
+
+  // ── Historial de conversación ───────────────────────────────────────────────
+
+  @Get('history')
+  @ApiOperation({
+    summary: 'Historial de mensajes de una sesión',
+    description: 'Devuelve los últimos N mensajes de la sesión. El frontend puede usarlo para reconstruir el chat al recargar.',
+  })
+  async getHistory(
+    @Query('sessionId') sessionId: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!sessionId) throw new BadRequestException('Se requiere sessionId');
+    const messages = await this.conversationRepo.getRecentMessages(
+      sessionId,
+      limit ? parseInt(limit, 10) : 50,
+    );
+    return { sessionId, messages };
+  }
 
   // ── Query principal ─────────────────────────────────────────────────────────
 

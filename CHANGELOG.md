@@ -6,6 +6,120 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Arquitectura de tres niveles: Memoria auto-extraída + Historial persistente (2026-06-26)
+
+#### Motivación
+JarBees tenía los tres niveles de memoria definidos en el schema de Prisma, pero solo el Nivel 3 (Knowledge/scraping) estaba activo. El Nivel 2 (Memoria) se leía pero nunca se escribía automáticamente. El Nivel 1 (Historial) existía pero se perdía al recargar el browser porque el frontend generaba un `sessionId` nuevo en cada sesión.
+
+#### Cambios implementados
+
+**1. `MemoryExtractorService` — Jarvis aprende automáticamente**
+
+Nuevo servicio en `src/jarvis/memory/memory-extractor.service.ts` que analiza cada mensaje del usuario buscando hechos persistentes y los guarda en la tabla `Memory` **sin bloquear la respuesta**.
+
+Patrones de extracción implementados (con categoría e importancia):
+- **Identidad**: "me llamo X", "mi nombre es X" → `fact:9`
+- **Profesión**: "trabajo como desarrollador/programador/etc." → `skill:8`
+- **Tecnologías**: "uso/trabajo con NestJS/React/TypeScript/etc." → `skill:7`
+- **Preferencias**: "prefiero respuestas cortas/largas/con ejemplos" → `preference:9`
+- **Ubicación**: "vivo en X", "soy de X" → `fact:8`
+- **Proyectos**: "estoy desarrollando X" → `context:7`
+- **Intereses**: "me interesa la astronomía/música/IA" → `preference:6`
+- **Comandos explícitos**: "recordá que X" → `fact:8`
+
+Deduplicación por similitud Jaccard (>70% de palabras en común → no guardar).
+
+Se ejecuta en background via `.catch()` seguro — errores no afectan la respuesta al usuario.
+
+Integración: se llama desde `saveAndObserve()` en `JarvisService` después de cada turno.
+
+**2. `GET /jarbees/session` — SessionId persistente**
+
+Nuevo endpoint que el frontend llama UNA VEZ al arrancar:
+```
+GET /jarbees/session?sessionId=<uuid-guardado-en-localstorage>
+```
+- Si el sessionId es un UUID válido (36 chars) → lo devuelve tal cual
+- Si no tiene → genera uno nuevo con `randomUUID()`
+
+El frontend guarda el resultado en `localStorage` y lo pasa en cada llamada a `/jarbees/query`. El historial de conversación ahora sobrevive entre recargas del browser.
+
+**3. `GET /jarbees/history` — Recuperar historial al recargar**
+
+Nuevo endpoint para que el frontend reconstruya el chat al cargar:
+```
+GET /jarbees/history?sessionId=xxx&limit=50
+```
+Devuelve los últimos N mensajes en orden cronológico ascendente.
+
+#### Arquitectura de tres niveles — ahora completa
+
+```
+Nivel 1 — HISTORIAL (ConversationMessage)
+  Todo lo que se dijo, por sessionId persistente
+  → endpoint: GET /jarbees/history
+
+Nivel 2 — MEMORIA (Memory)
+  Hechos importantes sobre el usuario
+  → escritura: automática via MemoryExtractorService
+  → lectura:   buildJarvisContext() → memoryRepo.search()
+
+Nivel 3 — KNOWLEDGE (ScrapedContent + ScrapedPage)
+  Contenido web cacheado con TTL por categoría
+  → ContentCacheService + WebHelper + SourceRegistry
+```
+
+#### Integración con el frontend (Next.js) — solo 3 cambios
+
+```typescript
+// 1. Al iniciar la app (una vez)
+const { sessionId } = await fetch('/jarbees/session?sessionId=' + localStorage.getItem('jarvis_session'))
+localStorage.setItem('jarvis_session', sessionId)
+
+// 2. Al enviar cada mensaje
+await fetch('/jarbees/query', { method: 'POST', body: JSON.stringify({ message, sessionId }) })
+
+// 3. Al recargar — recuperar historial previo
+const { messages } = await fetch('/jarbees/history?sessionId=' + sessionId)
+```
+
+#### Archivos creados/modificados
+- `src/jarvis/memory/memory-extractor.service.ts` — nuevo servicio de extracción
+- `src/jarvis/jarvis.service.ts` — inyectar MemoryExtractorService, llamar desde saveAndObserve
+- `src/jarvis/jarvis.module.ts` — registrar MemoryExtractorService como provider
+- `src/jarvis/jarvis.controller.ts` — agregar GET /session y GET /history
+
+---
+
+### Added — AstrologyTool: cálculos astronómicos/astrológicos en tiempo real (2026-06-26)
+
+#### Motivación
+Las consultas sobre "clima astrológico" dependían de scraping de sitios web (15-30s, propenso a bloqueos 403 y alucinaciones al traducir). Con el documento **Archeoscope** como referencia, se reemplazó por cálculos locales instantáneos.
+
+#### Cambios
+
+- **`AstrologyTool`** (`src/jarvis/tools/astrology/astrology-tool.service.ts`):
+  - `getTodaySkyData()` — fase lunar (emoji + % iluminación), posición lunar/solar en signo zodiacal, planetas visibles, próxima fase, interpretaciones básicas
+  - `getPlanetaryPositions()` — 10 cuerpos celestes, detección de retrógrados, balance de elementos
+  - Motor: `astronomy-engine` (VSOP87) — 0 API keys, 0 red, <100ms
+
+- **IntentRouter** — nuevo intent `ASTROLOGY` con patrones de alta confianza
+  - Detecta: `clima astro`, `horoscopo`, `carta astral`, `fase lunar`, `luna llena/nueva`, `donde esta la luna`, etc.
+  - Excluye falsos positivos: "clima astrológico" + "temperatura/lluvia" → `TOOL` (meteorología)
+
+- **JarvisService** — handler directo para `ASTROLOGY` que usa `respondWithAstrologyPrompt()` (system prompt especializado, sin scraping)
+
+- **SourceRegistry** — fuentes de scraping astrológico (astro.com, lunarium, miastral) comentadas/deprecadas
+
+- **Rendimiento**: 15-30s (scraping) → <100ms (cálculo local) — **231x más rápido**
+
+#### Pendiente (algoritmos disponibles en Archeoscope)
+- Aspectos planetarios (conjunción, trígono, cuadratura, etc.)
+- Nodos Lunares (Norte/Sur)
+- Calendario Maya (Tzolk'in, Haab, Cuenta Larga)
+
+---
+
 ### Added — Pendientes persistidos para Jarvis: creación y listado desde conversación (2026-06-25)
 
 #### Motivación
