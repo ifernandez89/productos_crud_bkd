@@ -7,12 +7,16 @@ describe('TaskReminderService', () => {
   let taskRepo: {
     createTask: jest.Mock;
     findPendingTasks: jest.Mock;
+    deleteTask: jest.Mock;
+    clearPendingTasks: jest.Mock;
   };
 
   beforeEach(async () => {
     taskRepo = {
       createTask: jest.fn(),
       findPendingTasks: jest.fn(),
+      deleteTask: jest.fn(),
+      clearPendingTasks: jest.fn(),
     };
 
     const module = await Test.createTestingModule({
@@ -78,5 +82,26 @@ describe('TaskReminderService', () => {
 
     expect(taskRepo.findPendingTasks).toHaveBeenCalledWith('session-1');
     expect(reply).toContain('Pagar factura');
+  });
+
+  it('deletes a specific pending task', async () => {
+    taskRepo.findPendingTasks.mockResolvedValue([
+      { id: 7, objective: 'Comprar pan', status: 'pending' },
+    ]);
+    taskRepo.deleteTask.mockResolvedValue({ id: 7 });
+
+    const reply = await service.handleTaskCommand('elimina el pendiente comprar pan', 'session-1');
+
+    expect(taskRepo.deleteTask).toHaveBeenCalledWith(7);
+    expect(reply).toContain('Se eliminó');
+  });
+
+  it('clears the entire pending list', async () => {
+    taskRepo.clearPendingTasks.mockResolvedValue({ count: 2 });
+
+    const reply = await service.handleTaskCommand('limpia toda la lista de pendientes', 'session-1');
+
+    expect(taskRepo.clearPendingTasks).toHaveBeenCalledWith('session-1');
+    expect(reply).toContain('Se limpió');
   });
 });

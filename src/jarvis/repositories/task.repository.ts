@@ -43,6 +43,19 @@ export class TaskRepository {
     });
   }
 
+  async deleteTask(taskId: number) {
+    return this.prisma.task.delete({ where: { id: taskId } });
+  }
+
+  async clearPendingTasks(sessionId?: string) {
+    return this.prisma.task.deleteMany({
+      where: {
+        status: 'pending',
+        ...(sessionId ? { sessionId } : {}),
+      },
+    });
+  }
+
   async findPendingTasks(sessionId?: string) {
     return this.prisma.task.findMany({
       where: {

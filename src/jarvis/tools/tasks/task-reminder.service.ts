@@ -31,13 +31,36 @@ export class TaskReminderService {
       }
     }
 
+    if (/\b(eliminar|elimina|borrar|quitar|sacar|tachar|limpiar|limpia)\b/i.test(normalized) && /\b(pendiente|pendientes|tarea|tareas|lista)\b/i.test(normalized)) {
+      const target = this.extractObjective(original);
+      if (target && /\b(toda|todas|completa|toda la|todas las|limpia|limpiar)\b/i.test(target)) {
+        await this.taskRepo.clearPendingTasks(sessionId);
+        return '🧹 Se limpió la lista de pendientes.';
+      }
+
+      const cleanedTarget = target
+        .replace(/^(?:el|la|los|las|mi|mis|tu|tus)\s+/i, '')
+        .replace(/^(?:pendiente|pendientes|tarea|tareas|recordatorio|recordatorios)\s+/i, '')
+        .trim();
+
+      const tasks = await this.taskRepo.findPendingTasks(sessionId);
+      const match = tasks.find((task) => task.objective.toLowerCase().includes(cleanedTarget.toLowerCase()));
+      if (match) {
+        await this.taskRepo.deleteTask(match.id);
+        return `🗑️ Se eliminó el pendiente: ${match.objective}`;
+      }
+
+      return 'No encontré ese pendiente para eliminar.';
+    }
+
     if (listContext && /\b(pendientes|tareas|recordatorios|lista\s+completa)\b/i.test(normalized)) {
       const tasks = await this.taskRepo.findPendingTasks(sessionId);
-      if (!tasks.length) {
+      const pendingItems = Array.isArray(tasks) ? tasks : [];
+      if (!pendingItems.length) {
         return 'No tenés pendientes guardados.';
       }
 
-      const formatted = tasks.map((task, index) => `${index + 1}. ${task.objective}`).join('\n');
+      const formatted = pendingItems.map((task, index) => `${index + 1}. ${task.objective}`).join('\n');
       return `📋 Tus pendientes:\n${formatted}`;
     }
 
@@ -70,7 +93,7 @@ export class TaskReminderService {
 
     const prefixes = [
       /^(?:podr(?:í|i)as|podrias|quiero|quisiera|me\spodr(?:í|i)as|me\spodrias)\s+/i,
-      /^(?:agrega|agregar|añade|anade|anotar|anota|apunta|apuntar|guardar|guarda|incluir|incluye|poner|pon|agregue|agregué|agregá|agendar|agenda)\s+/i,
+      /^(?:agrega|agregar|añade|anade|anotar|anota|apunta|apuntar|guardar|guarda|incluir|incluye|poner|pon|agregue|agregué|agregá|agendar|agenda|elimina|eliminar|borrar|quitar|sacar|tachar|limpia|limpiar)\s+/i,
       /^(?:a\s+la\s+lista(?:\s+de\s+pendientes)?|en\s+mi\s+lista(?:\s+de\s+pendientes)?|en\s+la\s+lista(?:\s+de\s+pendientes)?|a\s+mi\s+lista(?:\s+de\s+pendientes)?|en\s+mi\s+lista\s+de\s+pendientes|a\s+la\s+lista\s+de\s+pendientes|en\s+la\s+lista\s+de\s+pendientes)\s+/i,
       /^(?:un\s+pendiente|una\s+tarea|un\s+recordatorio|la\s+lista\s+de\s+pendientes|mi\s+lista\s+de\s+pendientes)\s+/i,
       /^crea\s+/i,
@@ -82,6 +105,7 @@ export class TaskReminderService {
     }
 
     result = result.replace(/^[:\-\s]+/, '').trim();
+    result = result.replace(/^(?:un|una|el|la|los|las)\s+(?:pendiente|pendientes|tarea|tareas|recordatorio|recordatorios)\s*[:\-]?\s*/i, '').trim();
     result = result.replace(/^(?:un|una)\s+(?:pendiente|tarea|recordatorio)\s*[:\-]?\s*/i, '').trim();
     result = result.replace(/^[\(\[]+|[\)\]]+$/g, '').trim();
 
