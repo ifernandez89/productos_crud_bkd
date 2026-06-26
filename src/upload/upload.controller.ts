@@ -8,12 +8,14 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('upload')
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
+  @Public()
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')

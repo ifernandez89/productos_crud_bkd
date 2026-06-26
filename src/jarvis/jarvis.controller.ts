@@ -24,6 +24,7 @@ import { PlannerService } from './planner/planner.service';
 import { InvestigationService } from './tools/web/investigation.service';
 import { ConversationRepository } from './repositories/conversation.repository';
 import { randomUUID } from 'crypto';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -41,6 +42,7 @@ export class JarvisController {
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
 
+  @Public()
   @Get('session')
   @ApiOperation({
     summary: 'Obtener o crear sessionId persistente',
@@ -57,6 +59,7 @@ export class JarvisController {
 
   // ── Historial de conversación ───────────────────────────────────────────────
 
+  @Public()
   @Get('history')
   @ApiOperation({
     summary: 'Historial de mensajes de una sesión',
@@ -76,6 +79,7 @@ export class JarvisController {
 
   // ── Query principal ─────────────────────────────────────────────────────────
 
+  @Public()
   @Post('query')
   @ApiOperation({ summary: 'Consultar a Jarvis' })
   async query(
@@ -95,6 +99,7 @@ export class JarvisController {
 
   // ── Feedback ────────────────────────────────────────────────────────────────
 
+  @Public()
   @Post('feedback')
   @ApiOperation({ summary: 'Registrar feedback de una respuesta de Jarvis' })
   async saveFeedback(@Body() body: FeedbackDto) {
@@ -104,6 +109,7 @@ export class JarvisController {
 
   // ── Planner ─────────────────────────────────────────────────────────────────
 
+  @Public()
   @Post('planner')
   @ApiOperation({ summary: 'Crear un plan de tareas a partir de un objetivo' })
   async createPlan(
@@ -116,6 +122,7 @@ export class JarvisController {
 
   // ── Dashboard ───────────────────────────────────────────────────────────────
 
+  @Public()
   @Get('dashboard')
   @ApiOperation({ summary: 'Estadísticas del sistema: memorias, documentos, colecciones, conversaciones' })
   async getDashboard() {
@@ -124,6 +131,7 @@ export class JarvisController {
 
   // ── Memoria ─────────────────────────────────────────────────────────────────
 
+  @Public()
   @Post('memory')
   @ApiOperation({ summary: 'Guardar un hecho en la memoria permanente' })
   async saveMemory(
@@ -137,6 +145,7 @@ export class JarvisController {
     return { success: true, memory };
   }
 
+  @Public()
   @Get('memory/:id')
   @ApiOperation({ summary: 'Recuperar una memoria por ID' })
   async getMemory(@Param('id', ParseIntPipe) id: number) {
@@ -144,6 +153,7 @@ export class JarvisController {
     return { memory };
   }
 
+  @Public()
   @Get('memory')
   @ApiOperation({ summary: 'Listar todas las memorias' })
   async listMemories() {
@@ -153,6 +163,7 @@ export class JarvisController {
 
   // ── Biblioteca — Documentos ─────────────────────────────────────────────────
 
+  @Public()
   @Post('library/document')
   @ApiOperation({ summary: 'Ingerir un documento de texto o markdown' })
   async ingestDocument(
@@ -168,6 +179,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Post('library/document/pdf')
   @ApiOperation({ summary: 'Subir e ingerir un PDF a la biblioteca' })
   @ApiConsumes('multipart/form-data')
@@ -201,6 +213,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Post('library/document/url')
   @ApiOperation({ summary: 'Ingerir contenido desde una URL (Scraping simple)' })
   async ingestUrl(
@@ -211,6 +224,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Get('library/document')
   @ApiOperation({ summary: 'Listar documentos de la biblioteca' })
   async listDocuments(@Query('category') category?: string) {
@@ -218,6 +232,7 @@ export class JarvisController {
     return { documents };
   }
 
+  @Public()
   @Get('library/document/search')
   @ApiOperation({ summary: 'Buscar en documentos' })
   async searchDocuments(@Query('q') query: string) {
@@ -225,6 +240,7 @@ export class JarvisController {
     return { documents };
   }
 
+  @Public()
   @Get('library/document/recent')
   @ApiOperation({ summary: 'Documentos más recientes' })
   async recentDocuments(@Query('limit') limit?: string) {
@@ -234,6 +250,7 @@ export class JarvisController {
     return { documents };
   }
 
+  @Public()
   @Get('library/document/:id')
   @ApiOperation({ summary: 'Obtener documento con sus chunks' })
   async getDocument(@Param('id', ParseIntPipe) id: number) {
@@ -241,6 +258,7 @@ export class JarvisController {
     return { document };
   }
 
+  @Public()
   @Delete('library/document/:id')
   @ApiOperation({ summary: 'Eliminar un documento' })
   async deleteDocument(@Param('id', ParseIntPipe) id: number) {
@@ -248,6 +266,7 @@ export class JarvisController {
     return { success: true };
   }
 
+  @Public()
   @Get('library/stats')
   @ApiOperation({ summary: 'Estadísticas de la biblioteca (docs, chunks, categorías, top usados)' })
   async libraryStats() {
@@ -256,6 +275,7 @@ export class JarvisController {
 
   // ── Biblioteca — Colecciones ────────────────────────────────────────────────
 
+  @Public()
   @Post('library/collection')
   @ApiOperation({ summary: 'Crear una colección temática' })
   async createCollection(
@@ -265,6 +285,7 @@ export class JarvisController {
     return { success: true, collection };
   }
 
+  @Public()
   @Get('library/collection')
   @ApiOperation({ summary: 'Listar todas las colecciones con conteo de documentos' })
   async listCollections() {
@@ -272,6 +293,7 @@ export class JarvisController {
     return { collections };
   }
 
+  @Public()
   @Get('library/collection/:id')
   @ApiOperation({ summary: 'Ver colección con sus documentos' })
   async getCollection(@Param('id', ParseIntPipe) id: number) {
@@ -279,6 +301,7 @@ export class JarvisController {
     return { collection };
   }
 
+  @Public()
   @Patch('library/collection/:id')
   @ApiOperation({ summary: 'Actualizar una colección' })
   async updateCollection(
@@ -289,6 +312,7 @@ export class JarvisController {
     return { success: true, collection };
   }
 
+  @Public()
   @Delete('library/collection/:id')
   @ApiOperation({ summary: 'Eliminar una colección' })
   async deleteCollection(@Param('id', ParseIntPipe) id: number) {
@@ -296,6 +320,7 @@ export class JarvisController {
     return { success: true };
   }
 
+  @Public()
   @Post('library/collection/:id/document/:docId')
   @ApiOperation({ summary: 'Agregar documento a una colección' })
   async addDocumentToCollection(
@@ -306,6 +331,7 @@ export class JarvisController {
     return { success: true, entry };
   }
 
+  @Public()
   @Delete('library/collection/:id/document/:docId')
   @ApiOperation({ summary: 'Quitar documento de una colección' })
   async removeDocumentFromCollection(
@@ -318,6 +344,7 @@ export class JarvisController {
 
   // ── Browser Tool ────────────────────────────────────────────────────────────
 
+  @Public()
   @Post('browser/fetch')
   @ApiOperation({ summary: 'Extraer contenido de una URL (axios → Playwright si es SPA)' })
   async browserFetch(@Body() body: { url: string }) {
@@ -326,6 +353,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Post('browser/navigate')
   @ApiOperation({ summary: 'Navegar a una URL con Playwright (JavaScript renderizado, screenshot opcional)' })
   async browserNavigate(
@@ -339,6 +367,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Post('browser/search')
   @ApiOperation({ summary: 'Buscar en Google y devolver resultados con título, URL y snippet' })
   async browserSearch(
@@ -349,6 +378,7 @@ export class JarvisController {
     return { success: true, results };
   }
 
+  @Public()
   @Post('investigate')
   @ApiOperation({ summary: 'Investigar una URL y convertirla en conocimiento consultable' })
   async investigateUrl(@Body() body: { url: string; sessionId?: string }) {
@@ -357,6 +387,7 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
+  @Public()
   @Get('profile')
   @ApiOperation({ summary: 'Obtener perfil del usuario' })
   async getProfile() {
@@ -364,7 +395,9 @@ export class JarvisController {
     return { profile };
   }
 
+  @Public()
   @Patch('profile')
+  @Public()
   @ApiOperation({ summary: 'Actualizar perfil del usuario' })
   async updateProfile(
     @Body()
@@ -382,12 +415,14 @@ export class JarvisController {
 
   // ── Observabilidad ──────────────────────────────────────────────────────────
 
+  @Public()
   @Get('observability/stats')
   @ApiOperation({ summary: 'Estadísticas de uso (herramientas, latencia, éxitos)' })
   async getStats() {
     return this.jarvisService.getObservabilityStats();
   }
 
+  @Public()
   @Get('observability/runs')
   @ApiOperation({ summary: 'Runs recientes del agente' })
   async getRecentRuns(@Query('limit') limit?: string) {
@@ -399,30 +434,35 @@ export class JarvisController {
 
   // ── Jarvis config y registro ──────────────────────────────────────────────
 
+  @Public()
   @Get('identity')
   @ApiOperation({ summary: 'Obtener identidad de Jarvis' })
   async getIdentity() {
     return { identity: await this.jarvisService.getIdentity() };
   }
 
+  @Public()
   @Get('capabilities')
   @ApiOperation({ summary: 'Obtener capacidades activas de Jarvis' })
   async getCapabilities() {
     return { capabilities: await this.jarvisService.getCapabilities() };
   }
 
+  @Public()
   @Get('skills')
   @ApiOperation({ summary: 'Listar todas las skills cargadas' })
   async listSkills() {
     return { skills: await this.jarvisService.listSkills() };
   }
 
+  @Public()
   @Get('skills/relevant')
   @ApiOperation({ summary: 'Buscar skills relevantes para una consulta' })
   async findRelevantSkills(@Query('q') query: string) {
     return { skills: await this.jarvisService.findRelevantSkills(query) };
   }
 
+  @Public()
   @Get('tools')
   @ApiOperation({ summary: 'Listar herramientas habilitadas' })
   async listTools() {

@@ -15,6 +15,7 @@ import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { CreateAichatDto } from './dto/create-aichat.dto';
 import { ConverterService } from './utils/converter.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('aichat')
 @Controller('aichat')
@@ -24,6 +25,7 @@ export class AichatController {
     private readonly converter: ConverterService,
   ) {}
 
+  @Public()
   @Post('preguntar')
   @ApiOperation({ summary: 'Ask a question to the AI' })
   async preguntar(@Body() createAichatDto: CreateAichatDto) {
@@ -46,34 +48,25 @@ export class AichatController {
     }
   }
 
+  @Public()
   @Get('listar')
   async listar() {
     return this.aichatService.obtenerPreguntas();
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.aichatService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.aichatService.findOne(id);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateAichatDto: UpdateAichatDto,
-  ) {
-    return this.aichatService.update(id, updateAichatDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.aichatService.remove(id);
-  }
-
+  @Public()
   @Get('session/ultimo-mensaje')
   @ApiOperation({ summary: 'Get the last assistant message' })
   getLastAssistantMessage() {

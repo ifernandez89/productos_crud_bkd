@@ -1,6 +1,7 @@
 import { Controller, Get, Query, Res, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { GoogleAuthService } from './google-auth.service';
+import { Public } from '../auth/public.decorator';
 
 @Controller('api/jarbees/google')
 export class GoogleAuthController {
@@ -8,6 +9,7 @@ export class GoogleAuthController {
 
   constructor(private readonly googleAuthService: GoogleAuthService) {}
 
+  @Public()
   @Get('login')
   login(@Res() res: Response) {
     const url = this.googleAuthService.getAuthUrl();
@@ -15,6 +17,7 @@ export class GoogleAuthController {
     return res.redirect(url);
   }
 
+  @Public()
   @Get('callback')
   async callback(@Query('code') code: string, @Res() res: Response) {
     if (!code) {
