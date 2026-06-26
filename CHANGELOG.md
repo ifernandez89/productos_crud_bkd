@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed — Login sin credenciales (2026-06-26)
+
+- `POST /auth/login` ya no requiere body ni `MASTER_PASSWORD`. Emite JWT directamente.
+- Eliminado `LoginDto` y validaciones de contraseña en controller y service.
+
+---
+
 ### Added — Sistema de autenticación JWT + Rate Limiting (2026-06-26)
 
 #### Motivación

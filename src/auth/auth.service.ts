@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
@@ -10,20 +10,10 @@ export class AuthService {
   ) {}
 
   /**
-   * Valida la contraseña maestra y emite un JWT.
-   * La contraseña vive SOLO en .env (MASTER_PASSWORD).
+   * Emite un JWT sin validar credenciales.
+   * Acceso simple para uso personal — el token protege las rutas.
    */
-  login(password: string): { access_token: string; expires_in: string } {
-    const master = this.cfg.get<string>('MASTER_PASSWORD');
-
-    if (!master) {
-      throw new Error('MASTER_PASSWORD no está configurada en .env');
-    }
-
-    if (password !== master) {
-      throw new UnauthorizedException('Contraseña incorrecta');
-    }
-
+  login(): { access_token: string; expires_in: string } {
     const payload = { sub: 'jarbees-owner', role: 'owner' };
     const token = this.jwt.sign(payload);
     const expiresIn = this.cfg.get<string>('JWT_EXPIRES_IN') ?? '30d';
