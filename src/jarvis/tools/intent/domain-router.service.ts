@@ -17,24 +17,29 @@ import { Injectable, Logger } from '@nestjs/common';
  */
 
 export type Domain =
-  | 'SPORTS'           // fútbol, resultados, fichajes, fixture
-  | 'LOCAL_NEWS'       // noticias Paraná / Entre Ríos
-  | 'NATIONAL_NEWS'    // noticias Argentina
-  | 'POLITICS'         // política nacional/provincial
-  | 'AI'               // IA, LLMs, modelos de lenguaje
-  | 'PROGRAMMING'      // código, frameworks, lenguajes
-  | 'SCIENCE'          // ciencia, investigación, salud
-  | 'TECHNOLOGY'       // tech general (gadgets, empresas tech)
-  | 'ASTROLOGY'        // astrología, horóscopo, planetas
-  | 'MUSIC'            // música, bandas, canciones
-  | 'MOVIES_TV'        // cine, series, entretenimiento, MCU
-  | 'MYSTERY'          // paranormal, misterios, OVNIS
-  | 'ECONOMY'          // economía, finanzas, inflación
-  | 'GOVERNMENT_LOCAL' // municipalidad Paraná, gobierno ER
-  | 'REFERENCE'        // definiciones, historia, Wikipedia
-  | 'PLANTS'           // plantas medicinales, herboristería
-  | 'DEVELOPMENT'      // novedades de software, dev.to, GitHub
-  | 'UNKNOWN';         // no se pudo clasificar
+  | 'SPORTS'            // fútbol, resultados, fichajes, fixture
+  | 'LOCAL_NEWS'        // noticias Paraná / Entre Ríos
+  | 'NATIONAL_NEWS'     // noticias Argentina
+  | 'POLITICS'          // política nacional/provincial
+  | 'AI'                // IA, LLMs, modelos de lenguaje
+  | 'AI_PAPERS'         // papers académicos de IA — arXiv, HuggingFace
+  | 'PROGRAMMING'       // código, frameworks, lenguajes
+  | 'SCIENCE'           // ciencia general, investigación, salud
+  | 'TECHNOLOGY'        // tech general (gadgets, empresas tech)
+  | 'ASTROLOGY'         // astrología, horóscopo, planetas
+  | 'MUSIC'             // música, bandas, canciones
+  | 'MOVIES_TV'         // cine, series, entretenimiento, MCU
+  | 'MYSTERY'           // paranormal, misterios, OVNIS
+  | 'ECONOMY'           // economía, finanzas, inflación
+  | 'GOVERNMENT_LOCAL'  // municipalidad Paraná, gobierno ER
+  | 'REFERENCE'         // definiciones, historia, Wikipedia
+  | 'PLANTS'            // plantas medicinales, herboristería
+  | 'DEVELOPMENT'       // novedades de software, dev.to, GitHub
+  | 'MATH'              // matemática — MathWorld, Encyclopedia of Math
+  | 'PHYSICS'           // física — HyperPhysics, Physics World
+  | 'ASTRONOMY'         // astronomía — NASA, ESA
+  | 'WEB_DOCS'          // documentación web — MDN, PostgreSQL docs
+  | 'UNKNOWN';          // no se pudo clasificar
 
 export interface DomainResult {
   domain: Domain;
@@ -356,7 +361,7 @@ export class DomainRouterService {
     // ── PLANTAS MEDICINALES ───────────────────────────────────────────────────
     {
       domain: 'PLANTS',
-      priority: 85,  // alta prioridad porque es muy específico
+      priority: 85,
       patterns: [
         /\bplanta[s]?\s+(medicinal|curativa|terapeutica|herbal)\b/i,
         /\bhierba[s]?\s+(medicinal|curativa|natural)\b/i,
@@ -364,7 +369,7 @@ export class DomainRouterService {
         /\binfusi[oó]n\s+de\b|\bt[eé]\s+de\s+\w+\b/i,
         /\bherboristeria\b|\bfitoterapia\b|\bfarmacognosia\b/i,
         /\bpropiedades\s+(curativas|medicinales)\s+(de|del|de\s+la)\b/i,
-        /\baloe\s+vera\b|\bburro[s]?\s+de\s+agua\b|\bmanzanilla\b|\boreg[aá]no\b/i,
+        /\baloe\s+vera\b|\bburritos?\s+de\s+agua\b|\bmanzanilla\b|\boreg[aá]no\b/i,
         /\balbahaca\b|\bromero\b|\btomillo\b|\bm[eé]nta\b|\bjengibre\b/i,
         /para\s+qu[eé]\s+sirve\s+(?:la|el|las|los)?\s*\w+.*plant/i,
       ],
@@ -395,10 +400,9 @@ export class DomainRouterService {
     },
 
     // ── MCU / MARVEL (especialización de MOVIES_TV) ───────────────────────────
-    // Alta prioridad porque whenisthenextmcufilm.com es la fuente más precisa
     {
       domain: 'MOVIES_TV',
-      priority: 88,  // subido para que supere al MOVIES_TV genérico
+      priority: 88,
       patterns: [
         /\bmarvel\b|\bmcu\b|\bavengers\b|\bspider.?man\b/i,
         /\biron\s+man\b|\bcapitan\s+america\b|\bthor\b|\bhulk\b/i,
@@ -410,6 +414,127 @@ export class DomainRouterService {
         'https://whenisthenextmcufilm.com',
         'https://www.infobae.com',
         'https://www.lanacion.com.ar',
+      ],
+    },
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🎓 DOMINIOS ACADÉMICOS — Knowledge on Demand
+    //
+    // Solo se consultan cuando el usuario pregunta algo específico.
+    // NO se scrapean periódicamente — TTL largo en SourceRegistry (7-30 días).
+    // La definición de derivada no cambia todos los días.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── 📐 MATEMÁTICA ─────────────────────────────────────────────────────────
+    {
+      domain: 'MATH',
+      priority: 92, // alta para ganar a referencias genéricas
+      patterns: [
+        /\bteorema\s+(de\s+)?\w+\b/i,
+        /\b(algebra|c[aá]lculo|geometr[ií]a|topolog[ií]a|estad[ií]stica|probabilidad)\b/i,
+        /\b(integral|derivada|l[ií]mite|gradiente|divergencia)\b/i,
+        /\b(matriz|vector|tensor|espacio\s+(vectorial|de\s+hilbert|m[eé]trico))\b/i,
+        /\b(n[uú]mero\s+(primo|complejo|irracional)|serie\s+de\s+fourier)\b/i,
+        /\b(ecuaci[oó]n\s+diferencial|transformada|wavelets?)\b/i,
+        /\b(bayesian[ao]?|teorema\s+de\s+bayes|distribuci[oó]n\s+(normal|gaussiana))\b/i,
+        /\bcombinatori[ca]?\b|\bpermutacion(es)?\b|\bbinomio\s+de\s+newton\b/i,
+        /qu[eé]\s+es\s+(un\s+)?(fractal|grupo\s+abeliano|espacio\s+de\s+hilbert|anillo\s+algebraico)/i,
+      ],
+      sources: [
+        'https://mathworld.wolfram.com',
+        'https://encyclopediaofmath.org',
+        'https://es.wikipedia.org',
+      ],
+    },
+
+    // ── ⚛️ FÍSICA ─────────────────────────────────────────────────────────────
+    {
+      domain: 'PHYSICS',
+      priority: 91,
+      patterns: [
+        /\bf[ií]sica\s+(cu[aá]ntica|cl[aá]sica|nuclear|te[oó]rica|experimental)\b/i,
+        /\brelativi(dad|ty)\s+(especial|general)?\b/i,
+        /\bmec[aá]nica\s+(cl[aá]sica|cu[aá]ntica|de\s+fluidos|newtoniana)\b/i,
+        /\btermodin[aá]mica\b|\belectromagnetismo\b|\b[oó]ptica\s+f[ií]sica\b/i,
+        /\bpart[ií]cula[s]?\s+(subat[oó]mica[s]?|elementales?|de\s+higgs)\b/i,
+        /\bqu[aá]rks?\b|\bboson(es)?\s+de\s+higgs\b|\blepton(es)?\b|\bfot[oó]n\b/i,
+        /\bmodelo\s+est[aá]ndar\b|\bteor[ií]a\s+de\s+cuerdas\b/i,
+        /\bsuperconductividad\b|\bpl[aá]sma\s+f[ií]sico\b|\bacelerador\s+de\s+part/i,
+        /qu[eé]\s+es\s+(el|la|un[ao]?)?\s*(gravitaci[oó]n|entrop[ií]a|energ[ií]a\s+oscura|materia\s+oscura)/i,
+      ],
+      sources: [
+        'http://hyperphysics.phy-astr.gsu.edu/hbase/hph.html',
+        'https://physicsworld.com',
+        'https://es.wikipedia.org',
+      ],
+    },
+
+    // ── 🌌 ASTRONOMÍA ─────────────────────────────────────────────────────────
+    {
+      domain: 'ASTRONOMY',
+      priority: 90,
+      negations: [
+        // NO confundir con astrología
+        /\bhoroscopo\b|\bsigno\s+zodiacal\b|\bcarta\s+astral\b/i,
+      ],
+      patterns: [
+        /\bnasa\b|\besa\b|\bagencia\s+espacial\b/i,
+        /\bmisi[oó]n\s+(espacial|lunar|marciana|artemis|james\s+webb)\b/i,
+        /\btelesc[oó]pio\s+(james\s+webb|hubble|espacial)\b/i,
+        /\bexoplaneta[s]?\b|\bexoplnet\b|\bplaneta\s+extrasolar\b/i,
+        /\bagujero\s+negro\b|\bestrella\s+de\s+neutrones\b|\bp[uú]lsar\b/i,
+        /\bexpansi[oó]n\s+del\s+universo\b|\bbig\s+bang\b|\bcosmolog[ií]a\b/i,
+        /\bastrof[ií]sica\b|\bgalaxia[s]?\s+(cercana[s]?|espiral)\b/i,
+        /\borb[ií]ta\s+(lunar|marciana|terrestre)\b|\bsat[eé]lite\s+(artificial)?\b/i,
+        /\ballunizaje\b|\bexplorac[ií]on\s+de\s+marte\b/i,
+      ],
+      sources: [
+        'https://science.nasa.gov',
+        'https://www.esa.int/Science_Exploration',
+        'https://es.wikipedia.org',
+      ],
+    },
+
+    // ── 💻 DOCUMENTACIÓN WEB ─────────────────────────────────────────────────
+    {
+      domain: 'WEB_DOCS',
+      priority: 89,
+      patterns: [
+        /\bcss\s+(grid|flexbox|variables|animacion|selector)\b/i,
+        /\bjavascript\s+(fetch|promise|async|dom|event)\b/i,
+        /\bhtml\s+(semantico|accesible|form|elemento)\b/i,
+        /\bweb\s+(api|components?|workers?|sockets?)\b/i,
+        /\bmdn\b|\bdeveloper\.mozilla\b/i,
+        /\bpostgresql\s+(query|index[es]?|join|transaction)\b/i,
+        /\bsql\s+(join|index|explain|query|postgres)\b/i,
+        /\bpostgres\s+(doc|command|syntax|function)\b/i,
+        /c[oó]mo\s+(usar|funciona)\s+(flex|grid|promise|fetch)\b/i,
+      ],
+      sources: [
+        'https://developer.mozilla.org/es/docs/Web',
+        'https://www.postgresql.org/docs/current',
+        'https://es.wikipedia.org',
+      ],
+    },
+
+    // ── 🤖 PAPERS DE IA ───────────────────────────────────────────────────────
+    {
+      domain: 'AI_PAPERS',
+      priority: 87,
+      patterns: [
+        /\bpaper[s]?\s+(de|sobre|en)\s+(ia|inteligencia|machine\s+learning|llm)\b/i,
+        /\barxiv\b|\bpreprint\b/i,
+        /\b(nuevo|reciente)\s+(paper|estudio|investigaci[oó]n)\s+(de|sobre|en)\s+(ia|ml|llm)\b/i,
+        /\bpublicaci[oó]n\s+cient[ií]fica\s+(de|sobre)\s+(ia|transformers?|llm)\b/i,
+        /\btransformers?\s+(architecture|paper|attention)\b/i,
+        /\battention\s+is\s+all\s+you\s+need\b/i,
+        /\bstate\s+of\s+the\s+art\s+(en|de)\s+(ia|nlp|llm)\b/i,
+        /\bhugging\s*face\s+papers?\b/i,
+      ],
+      sources: [
+        'https://arxiv.org/list/cs.AI/recent',
+        'https://huggingface.co/papers',
+        'https://arxiv.org/list/cs.LG/recent',
       ],
     },
   ];

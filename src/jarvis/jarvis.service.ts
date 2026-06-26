@@ -855,6 +855,7 @@ export class JarvisService {
       NATIONAL_NEWS:    'noticias',
       POLITICS:         'noticias',
       AI:               'ia',
+      AI_PAPERS:        'academic_ai',
       PROGRAMMING:      'tecnologia',
       DEVELOPMENT:      'desarrollo',
       SCIENCE:          'ciencia',
@@ -866,6 +867,10 @@ export class JarvisService {
       GOVERNMENT_LOCAL: 'gobierno',
       REFERENCE:        'referencia',
       PLANTS:           'referencia',
+      MATH:             'academic_math',
+      PHYSICS:          'academic_physics',
+      ASTRONOMY:        'academic_astronomy',
+      WEB_DOCS:         'academic_dev',
     };
     return map[domain];
   }

@@ -6,6 +6,94 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — ACADEMIC_REFERENCE: biblioteca de fuentes académicas canónicas (2026-06-26)
+
+#### Filosofía de diseño
+Knowledge on Demand — no scraping periódico masivo.
+Solo se consulta cuando el usuario pregunta algo específico.
+TTL largo (7-30 días) para contenido que no cambia: la definición de derivada no es una noticia.
+
+#### Verificación de fuentes (2026-06-26)
+Todas testeadas con `axios+cheerio`:
+
+| Fuente | Palabras | Estado |
+|---|---|---|
+| Encyclopedia of Mathematics | 5845 | ✅ Excelente |
+| arXiv AI (lista reciente) | 2159 | ✅ Excelente |
+| HyperPhysics | 1864 | ✅ Excelente |
+| Physics World | 1454 | ✅ |
+| NASA Science | 1351 | ✅ |
+| Nature News | 1280 | ✅ |
+| Science News | 978 | ✅ |
+| MDN Web Docs | 793 | ✅ |
+| PostgreSQL Docs | 523 | ✅ |
+| HuggingFace Papers | 400 | ✅ |
+| MathWorld (URL directa) | 150 | ⚠️ útil con searchPattern |
+| ChemLibreTexts | 74 | ❌ muy poco |
+| ESA Science | 111 | ⚠️ poco contenido en raíz |
+| PubChem | 31 | ❌ SPA React |
+| NestJS Docs | 0 | ❌ SPA puro |
+
+#### Nuevas categorías en SourceRegistry
+
+| Categoría | Fuentes | TTL |
+|---|---|---|
+| `academic_math` | MathWorld (searchPattern), Encyclopedia of Math | 30 días |
+| `academic_physics` | HyperPhysics, Physics World | 7 días |
+| `academic_astronomy` | NASA Science, ESA Science | 7 días |
+| `academic_science` | Nature News, Science News | 7 días |
+| `academic_dev` | MDN Web Docs (searchPattern), PostgreSQL Docs | 14 días |
+| `academic_ai` | HuggingFace Papers, arXiv AI, arXiv ML | 1 día |
+| `ia` | HuggingFace Blog, MIT Tech Review, The Verge AI, VentureBeat AI, Xataka IA, Ars Technica AI | 6h |
+| `desarrollo` | dev.to, GitHub Blog, Pragmatic Engineer, npm Blog, NestJS Blog | 12-24h |
+
+#### Nuevos dominios en DomainRouterService
+
+**`MATH`** (prioridad 92) — Matemática pura y aplicada
+- Patterns: teoremas, álgebra, cálculo, geometría, probabilidad, estadística, integrales, matrices, tensores, series de Fourier, espacio de Hilbert
+- Fuentes: MathWorld, Encyclopedia of Math, Wikipedia ES
+
+**`PHYSICS`** (prioridad 91) — Física teórica y experimental
+- Patterns: física cuántica/clásica/nuclear, relatividad, mecánica, termodinámica, electromagnetismo, quarks, bosón de Higgs, modelo estándar
+- Fuentes: HyperPhysics, Physics World, Wikipedia ES
+
+**`ASTRONOMY`** (prioridad 90, con negaciones anti-astrología) — Astrofísica y exploración espacial
+- Patterns: NASA, ESA, misiones espaciales, telescopio James Webb/Hubble, exoplanetas, agujeros negros, big bang, cosmología
+- Negaciones: horóscopo, signo zodiacal, carta astral (→ va a ASTROLOGY, no ASTRONOMY)
+- Fuentes: NASA Science, ESA Science, Wikipedia ES
+
+**`WEB_DOCS`** (prioridad 89) — Documentación técnica web
+- Patterns: CSS grid/flexbox, JavaScript DOM/fetch/async, HTML semántico, Web APIs, PostgreSQL queries/joins/indexes, MDN
+- Fuentes: MDN Web Docs, PostgreSQL Docs, Wikipedia ES
+
+**`AI_PAPERS`** (prioridad 87) — Papers académicos de IA
+- Patterns: arXiv, preprint, papers de IA/ML/LLM, transformers architecture, attention is all you need, HuggingFace papers
+- Fuentes: arXiv AI, HuggingFace Papers, arXiv ML
+
+#### Cambios en `domainToCategory()`:
+```
+MATH        → 'academic_math'
+PHYSICS     → 'academic_physics'
+ASTRONOMY   → 'academic_astronomy'
+WEB_DOCS    → 'academic_dev'
+AI_PAPERS   → 'academic_ai'
+AI          → 'ia'
+DEVELOPMENT → 'desarrollo'
+```
+
+#### Ejemplos de routing ahora:
+
+| Query | Dominio | Fuentes consultadas |
+|---|---|---|
+| "qué es un espacio de Hilbert" | `MATH (0.89)` | MathWorld → Encyclopedia of Math |
+| "cómo funciona el bosón de Higgs" | `PHYSICS (0.88)` | HyperPhysics → Physics World |
+| "últimas misiones de la NASA" | `ASTRONOMY (0.91)` | NASA Science → ESA |
+| "paper sobre transformers attention" | `AI_PAPERS (0.87)` | arXiv AI → HuggingFace Papers |
+| "cómo usar CSS flexbox" | `WEB_DOCS (0.89)` | MDN Web Docs → PostgreSQL Docs |
+| "para qué sirve el romero" | `PLANTS (0.85)` | ifernandez89.github.io → Wikipedia |
+
+---
+
 ### Added — DomainRouterService: nuevos dominios + fuentes verificadas (2026-06-26)
 
 #### URLs analizadas por el usuario, clasificadas y categorizadas:

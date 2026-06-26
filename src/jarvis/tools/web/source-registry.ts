@@ -759,6 +759,216 @@ export class SourceRegistry {
     // ❌ jsonplaceholder.typicode.com → API de testing fake, sin valor informativo real
     // ❌ skills.sh → solo arte ASCII en terminal (87 words, todo caracteres de bloque)
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🎓 ACADEMIC_REFERENCE — Fuentes académicas canónicas
+    //
+    // FILOSOFÍA: Knowledge on Demand (no scraping periódico)
+    // Solo se scrapea cuando alguien pregunta algo específico.
+    // TTL largo (7-30 días) porque álgebra, física clásica y química no cambian.
+    //
+    // Verificadas 2026-06-26 con axios+cheerio:
+    // ✅ = >200 words útiles | ⚠️ = funciona con URL directa | ❌ = SPA/bloqueado
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // ── 📐 MATEMÁTICA ─────────────────────────────────────────────────────────
+
+    // ⚠️ MathWorld funciona mejor con URL directa (ej: /BayesTheorem.html)
+    // La raíz solo muestra un índice (48 words). Usar con searchPattern.
+    {
+      name: 'Wolfram MathWorld',
+      urlBase: 'https://mathworld.wolfram.com',
+      category: 'academic_math',
+      priority: 10,
+      ttlHours: 720, // 30 días — las definiciones matemáticas no cambian
+      searchPattern: '/search/?query={query}',
+      selectors: {
+        title: ['h1', '#content h1', '.theoremtitle'],
+        content: ['#content', '.entry-content', 'table.theorem', 'p', 'main'],
+        date: [],
+      },
+    },
+
+    // ✅ 5845 words — enorme enciclopedia matemática en inglés, más académica que Wikipedia
+    {
+      name: 'Encyclopedia of Mathematics',
+      urlBase: 'https://encyclopediaofmath.org',
+      category: 'academic_math',
+      priority: 9,
+      ttlHours: 720,
+      searchPattern: '/wiki/{query}',
+      selectors: {
+        title: ['h1', '#firstHeading'],
+        content: ['#mw-content-text', '.mw-parser-output', 'main'],
+      },
+    },
+
+    // ── ⚛️ FÍSICA ─────────────────────────────────────────────────────────────
+
+    // ✅ 1864 words — muy estructurado por temas: mecánica, electromagnetismo, relatividad
+    {
+      name: 'HyperPhysics',
+      urlBase: 'http://hyperphysics.phy-astr.gsu.edu/hbase/hph.html',
+      category: 'academic_physics',
+      priority: 10,
+      ttlHours: 720,
+      selectors: {
+        title: ['title', 'h1', 'h2'],
+        content: ['body', 'table', 'p'],
+      },
+    },
+
+    // ✅ 1454 words — noticias y divulgación de física moderna
+    {
+      name: 'Physics World',
+      urlBase: 'https://physicsworld.com',
+      category: 'academic_physics',
+      priority: 9,
+      ttlHours: 168, // 7 días — noticias de física
+      selectors: {
+        title: ['h1', '.article-title'],
+        content: ['article', '.article-body', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    // ── 🌌 ASTRONOMÍA ─────────────────────────────────────────────────────────
+
+    // ✅ 1351 words — fuente oficial NASA para ciencia espacial
+    {
+      name: 'NASA Science',
+      urlBase: 'https://science.nasa.gov',
+      category: 'academic_astronomy',
+      priority: 10,
+      ttlHours: 168,
+      selectors: {
+        title: ['h1', '.article-title', '.headline'],
+        content: ['article', 'main', '.content', '.article-body'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    // ⚠️ 111 words en raíz — funciona mejor con URLs específicas de misiones
+    {
+      name: 'ESA Science',
+      urlBase: 'https://www.esa.int/Science_Exploration',
+      category: 'academic_astronomy',
+      priority: 8,
+      ttlHours: 168,
+      selectors: {
+        title: ['h1', '.title'],
+        content: ['article', 'main', '.text', 'p'],
+        date: ['time', '.date'],
+      },
+    },
+
+    // ── 🔬 CIENCIA GENERAL ────────────────────────────────────────────────────
+
+    // ✅ 1280 words — fuente científica de primer nivel, noticias de investigación
+    {
+      name: 'Nature News',
+      urlBase: 'https://www.nature.com/news',
+      category: 'academic_science',
+      priority: 10,
+      ttlHours: 168,
+      selectors: {
+        title: ['h1', '.article__title'],
+        content: ['article', '.article__body', 'main', 'p'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    // ✅ 978 words — divulgación científica accesible, descubrimientos recientes
+    {
+      name: 'Science News',
+      urlBase: 'https://www.sciencenews.org',
+      category: 'academic_science',
+      priority: 9,
+      ttlHours: 168,
+      selectors: {
+        title: ['h1'],
+        content: ['article', '.entry-content', 'main'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    // ── 🧬 QUÍMICA ────────────────────────────────────────────────────────────
+
+    // ❌ PubChem → SPA React (31 words). Necesita Playwright. Pendiente.
+    // ❌ ChemLibreTexts → 74 words en raíz (muy poco). Funciona con URL directa.
+
+    // ── 💻 DOCS WEB & FRONTEND ────────────────────────────────────────────────
+
+    // ✅ 793 words — documentación web oficial para frontend (HTML, CSS, JS, APIs)
+    {
+      name: 'MDN Web Docs',
+      urlBase: 'https://developer.mozilla.org/es/docs/Web',
+      category: 'academic_dev',
+      priority: 10,
+      ttlHours: 336, // 14 días — docs estables
+      searchPattern: '/es/search?q={query}',
+      selectors: {
+        title: ['h1', '.page-title'],
+        content: ['article', '#content', 'main', '.article-content'],
+      },
+    },
+
+    // ✅ 523 words — documentación oficial PostgreSQL con novedades de versiones
+    {
+      name: 'PostgreSQL Docs',
+      urlBase: 'https://www.postgresql.org/docs/current',
+      category: 'academic_dev',
+      priority: 9,
+      ttlHours: 336,
+      selectors: {
+        title: ['h1', '.titlepage'],
+        content: ['div.sect1', 'div.chapter', 'main', '.documentation'],
+      },
+    },
+
+    // ❌ NestJS Docs → SPA puro (0 words). Necesita Playwright.
+
+    // ── 🤖 IA — PAPERS Y MODELOS ──────────────────────────────────────────────
+
+    // ✅ 400 words — papers en tendencia de HuggingFace
+    {
+      name: 'Hugging Face Papers',
+      urlBase: 'https://huggingface.co/papers',
+      category: 'academic_ai',
+      priority: 10,
+      ttlHours: 24, // papers nuevos todos los días
+      selectors: {
+        title: ['h1', '.paper-title'],
+        content: ['main', 'article', '.papers-list', 'p'],
+        date: ['time', '[datetime]'],
+      },
+    },
+
+    // ✅ 2159 words — lista de papers recientes de IA en arXiv
+    {
+      name: 'arXiv AI',
+      urlBase: 'https://arxiv.org/list/cs.AI/recent',
+      category: 'academic_ai',
+      priority: 10,
+      ttlHours: 24,
+      selectors: {
+        title: ['h1', '#content h1'],
+        content: ['#content', '.arxiv-result', 'dl', 'dt', 'dd', 'p'],
+      },
+    },
+
+    // También agregamos arXiv Machine Learning para papers de ML/LLMs
+    {
+      name: 'arXiv Machine Learning',
+      urlBase: 'https://arxiv.org/list/cs.LG/recent',
+      category: 'academic_ai',
+      priority: 9,
+      ttlHours: 24,
+      selectors: {
+        title: ['h1', '#content h1'],
+        content: ['#content', 'dl', 'dt', 'dd', 'p'],
+      },
+    },
+
   ];
 
   // ── API pública ─────────────────────────────────────────────────────────────
