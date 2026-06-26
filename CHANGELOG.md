@@ -6,6 +6,82 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Sistema de autenticación JWT + Rate Limiting (2026-06-26)
+
+#### Motivación
+Para un asistente personal como JarBees que se expone a Internet, se necesitaba proteger los recursos de IA (Ollama, OpenRouter, scraping) contra bots externos y acceso no autorizado, manteniendo la simplicidad de un sistema de usuario único.
+
+#### Implementación: Password única + JWT + Rate Limiting
+
+**Arquitectura elegida:**
+- **Contraseña maestra única** (`MASTER_PASSWORD` en .env) — sin gestión de usuarios, OAuth ni sesiones complejas
+- **JWT simple** — endpoint POST /auth/login devuelve token de 30 días
+- **Rate Limiting global** — 100 req/min por defecto, evita abuso de recursos
+
+**Componentes creados:**
+
+1. **AuthModule** (`src/auth/auth.module.ts`)
+   - Configuración JWT con variables de entorno
+   - Integración con Passport.js para estrategia JWT
+
+2. **AuthService** (`src/auth/auth.service.ts`)
+   - `login(password)` — valida contra `MASTER_PASSWORD`, emite JWT con payload `{ sub: 'jarbees-owner', role: 'owner' }`
+   - `verifyPayload()` — usado por JwtStrategy para validar tokens
+
+3. **AuthController** (`src/auth/auth.controller.ts`)
+   - `POST /auth/login` — endpoint público que recibe `{ password }` y devuelve `{ access_token, expires_in }`
+   - Validación con class-validator (mínimo 4 caracteres)
+   - Documentado con Swagger
+
+4. **JwtStrategy** (`src/auth/jwt.strategy.ts`)
+   - Estrategia Passport que extrae token del header `Authorization: Bearer <token>`
+   - Valida firma con `JWT_SECRET` y verifica expiración
+
+5. **JwtAuthGuard** (`src/auth/jwt.guard.ts`)
+   - Guard global que protege TODOS los endpoints por defecto
+   - Soporta decorador `@Public()` para marcar endpoints sin autenticación
+   - Usa Reflector para leer metadata de `@Public()`
+
+6. **@Public() decorator** (`src/auth/public.decorator.ts`)
+   - Decorador simple para marcar endpoints públicos
+   - Ejemplo: `@Public()` en `/auth/login`, `/health`, etc.
+
+**Integración en AppModule:**
+- `AuthModule` importado
+- `ThrottlerModule` configurado con 2 niveles:
+  - `default`: 100 req/minuto
+  - `strict`: 10 req/minuto (para endpoints sensibles, uso opcional con decorador)
+- 2 Guards globales vía `APP_GUARD`:
+  - `JwtAuthGuard` — protección JWT en todos los endpoints
+  - `ThrottlerGuard` — rate limiting en todos los endpoints
+
+**Variables de entorno agregadas:**
+```env
+MASTER_PASSWORD="tu-contraseña-segura-aqui-cambiar"
+JWT_SECRET="tu-jwt-secret-aleatorio-cambiar-por-uno-seguro"
+JWT_EXPIRES_IN="30d"
+```
+
+**Paquetes instalados:**
+- `@nestjs/jwt@11.0.2`
+- `@nestjs/throttler@latest`
+- `passport-jwt@4.0.1`
+- `@types/passport-jwt@4.0.1`
+- `@nestjs/passport@11.0.1` (ya estaba)
+- `passport@0.7.0` (ya estaba)
+
+**Relación seguridad/esfuerzo:**
+✅ Simple — sin OAuth, sin base de usuarios, sin sesiones  
+✅ Seguro — JWT firmado + expiración + rate limit  
+✅ Escalable — agregar usuarios/Google Login después es trivial (arquitectura preparada)  
+
+**Pendiente:**
+- Marcar otros endpoints públicos con `@Public()` según se necesite (ej: `/health`, webhooks, etc.)
+- Considerar ThrottlerGuard con `@SkipThrottle()` o límites custom en endpoints específicos
+- Documentar en README el flujo de autenticación para desarrolladores
+
+---
+
 ### Added — ACADEMIC_REFERENCE: biblioteca de fuentes académicas canónicas (2026-06-26)
 
 #### Filosofía de diseño

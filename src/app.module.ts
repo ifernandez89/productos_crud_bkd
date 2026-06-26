@@ -9,6 +9,10 @@ import { LoggerModule } from './logger/logger.module';
 import { JarvisModule } from './jarvis/jarvis.module';
 import { GoogleModule } from './google/google.module';
 import { JobsModule } from './jobs/jobs.module';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt.guard';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -22,6 +26,26 @@ import { JobsModule } from './jobs/jobs.module';
     JarvisModule,
     GoogleModule,
     JobsModule,
+    AuthModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000, // 60 segundos
+        limit: 100, // 100 requests por minuto
+      },
+      {
+        name: 'strict',
+        ttl: 60000,
+        limit: 10, // para endpoints específicos (opcional)
+      },
+    ]),
+  ],
+  providers: [
+    // Guard global JWT — todos los endpoints requieren autenticación
+    // excepto los marcados con @Public()
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Rate limiting global — 100 req/min default
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule {}
