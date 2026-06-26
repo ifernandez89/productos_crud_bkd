@@ -33,6 +33,7 @@ import { GoogleModule } from '../google/google.module';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
 import { AstrologyTool } from './tools/astrology/astrology-tool.service';
+import { TaskReminderService } from './tools/tasks/task-reminder.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -68,6 +69,7 @@ import { AstrologyTool } from './tools/astrology/astrology-tool.service';
     TaskRepository,
     PlannerService,
     InvestigationService,
+    TaskReminderService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

@@ -6,6 +6,48 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Pendientes persistidos para Jarvis: creación y listado desde conversación (2026-06-25)
+
+#### Motivación
+Se quería que Jarvis pudiera registrar pendientes de forma simple durante una conversación y luego recuperarlos más tarde para recordar al usuario su lista de tareas pendientes.
+
+#### Implementación
+- Nuevo servicio de tareas pendientes que detecta comandos del tipo “crea un pendiente” o “lista mis pendientes”.
+- Integración con el flujo principal de Jarvis para que responda directamente a esos mensajes antes de seguir con el resto del pipeline.
+- Persistencia en la base de datos mediante el repositorio de tareas existente, reutilizando el modelo Task/TaskStep ya presente.
+- Prueba de regresión para cubrir creación y listado de pendientes.
+
+#### Resultado
+El asistente ya puede crear pendientes desde una conversación y consultarlos después, lo que habilita un flujo base para recordatorios y seguimiento de tareas.
+
+### Added — Tareas con prioridad, categoría y proyecto en Jarvis (2026-06-25)
+
+#### Motivación
+Para que los pendientes resulten más útiles, era necesario que Jarvis no solo guardara un texto, sino que también clasificara la tarea por contexto útil: prioridad, categoría y proyecto.
+
+#### Implementación
+- Se ampliaron los campos del modelo Task con prioridad, categoría y proyecto.
+- El servicio de tareas ahora infiere prioridad y categoría según palabras clave del mensaje.
+- Se agregó detección básica de proyectos como JarBees cuando la conversación menciona temas técnicos del producto.
+- Se actualizó la prueba de regresión para cubrir este comportamiento.
+
+#### Resultado
+Las tareas guardadas ahora aportan más contexto para listarlas, priorizarlas y agruparlas en el futuro.
+
+### Added — Web Intelligence Layer: captura nativa de APIs y GraphQL en Playwright (2026-06-24)
+
+#### Motivación
+Se quería que Jarvis pudiera registrar pendientes de forma simple durante una conversación y luego recuperarlos más tarde para recordar al usuario su lista de tareas pendientes.
+
+#### Implementación
+- Nuevo servicio de tareas pendientes que detecta comandos del tipo “crea un pendiente” o “lista mis pendientes”.
+- Integración con el flujo principal de Jarvis para que responda directamente a esos mensajes antes de seguir con el resto del pipeline.
+- Persistencia en la base de datos mediante el repositorio de tareas existente, reutilizando el modelo Task/TaskStep ya presente.
+- Prueba de regresión para cubrir creación y listado de pendientes.
+
+#### Resultado
+El asistente ya puede crear pendientes desde una conversación y consultarlos después, lo que habilita un flujo base para recordatorios y seguimiento de tareas.
+
 ### Added — Web Intelligence Layer: captura nativa de APIs y GraphQL en Playwright (2026-06-24)
 
 #### Motivación

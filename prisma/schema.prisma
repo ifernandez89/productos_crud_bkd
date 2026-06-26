@@ -228,6 +228,9 @@ model Task {
   sessionId String?    // relacionar con conversación si aplica
   objective String
   status    String     @default("pending") // "pending" | "in_progress" | "completed" | "failed"
+  priority  String?    @default("normal") // "low" | "normal" | "high" | "critical"
+  category  String?    // "compras" | "trabajo" | "personal" | "tecnologia" | etc.
+  project   String?    // "JarBees" | "Casa" | "Trabajo" | etc.
   result    String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -235,6 +238,9 @@ model Task {
 
   @@index([status])
   @@index([sessionId])
+  @@index([priority])
+  @@index([category])
+  @@index([project])
 }
 
 // ── 6.1) PASOS DE EJECUCIÓN ──────────────────────────────────────────────────

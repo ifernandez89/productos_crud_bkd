@@ -26,6 +26,7 @@ import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
 import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 import { InvestigationService } from './tools/web/investigation.service';
+import { TaskReminderService } from './tools/tasks/task-reminder.service';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -63,6 +64,7 @@ export class JarvisService {
     private readonly googleTasks: GoogleTasksService,
     private readonly astrologyTool: AstrologyTool,
     private readonly investigationService: InvestigationService,
+    private readonly taskReminderService: TaskReminderService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -74,6 +76,7 @@ export class JarvisService {
 
   async query(userMessage: string, options: JarvisQueryOptions = {}): Promise<string> {
     const sessionId = options.sessionId || randomUUID();
+    const taskSessionId = options.sessionId;
     const hasSessionId = Boolean(options.sessionId);
     const useMemory = options.useMemory !== false;
     const useDocuments = options.useDocuments !== false;
@@ -138,6 +141,13 @@ export class JarvisService {
     }
 
     try {
+      const taskReminderReply = await this.taskReminderService.handleTaskCommand(userMessage, taskSessionId);
+      if (taskReminderReply) {
+        await this.conversationRepo.create({ sessionId, role: 'assistant', content: taskReminderReply, metadata: { source: 'task_reminder' } });
+        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: taskReminderReply, toolsUsed: ['task_reminder'], modelUsed: 'none', provider: 'task_reminder', durationMs: Date.now() - startTime, success: true });
+        return taskReminderReply;
+      }
+
       // ── Intent Router — clasifica la intención ANTES de ejecutar nada ──────
       const intent = await this.intentRouter.classify(userMessage);
       this.logger.log(`[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`);

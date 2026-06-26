@@ -5,12 +5,15 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class TaskRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createTask(data: { sessionId?: string; objective: string }) {
+  async createTask(data: { sessionId?: string; objective: string; status?: string; priority?: string; category?: string; project?: string }) {
     return this.prisma.task.create({
       data: {
         sessionId: data.sessionId,
         objective: data.objective,
-        status: 'in_progress',
+        status: data.status ?? 'in_progress',
+        priority: data.priority ?? 'normal',
+        category: data.category,
+        project: data.project,
       },
     });
   }
@@ -37,6 +40,16 @@ export class TaskRepository {
     return this.prisma.task.update({
       where: { id: taskId },
       data: { status, result },
+    });
+  }
+
+  async findPendingTasks(sessionId?: string) {
+    return this.prisma.task.findMany({
+      where: {
+        status: 'pending',
+        ...(sessionId ? { sessionId } : {}),
+      },
+      orderBy: { createdAt: 'asc' },
     });
   }
 
