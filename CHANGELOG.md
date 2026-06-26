@@ -6,6 +6,65 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — DomainRouterService: fuentes dirigidas por dominio semántico (2026-06-26)
+
+#### Problema que resolvía
+El `IntentRouter` clasificaba correctamente el *tipo* de consulta (WEB, SPORTS, LOCAL) pero no el *dominio*. Resultado: se consultaban 30 fuentes genéricas y se obtenía una respuesta pobre.
+
+Ejemplos reales del problema:
+- "noticias sobre Jesica Cirio en Elonce" → `WEB` → scraping genérico → respuesta vacía
+- "astrología para esta noche" → `WEB` → scraping genérico → 91s → respuesta inventada
+
+#### Solución: `DomainRouterService`
+
+Nuevo servicio en `src/jarvis/tools/intent/domain-router.service.ts` que opera **sin IA**, solo reglas determinísticas.
+
+**Dominios reconocidos (16):**
+`SPORTS` · `LOCAL_NEWS` · `NATIONAL_NEWS` · `POLITICS` · `AI` · `PROGRAMMING` · `SCIENCE` · `TECHNOLOGY` · `ASTROLOGY` · `MUSIC` · `MOVIES_TV` · `MYSTERY` · `ECONOMY` · `GOVERNMENT_LOCAL` · `REFERENCE` · `UNKNOWN`
+
+**Para cada dominio devuelve:**
+- `domain` — el dominio clasificado
+- `confidence` — 0.0 a 1.0 basado en patrones que matchean
+- `suggestedSources` — 2-4 URLs de SourceRegistry específicas para ese dominio
+- `enrichedQuery` — query mejorada con contexto (ej: añade "Paraná Entre Ríos" si es LOCAL_NEWS)
+
+**Flujo nuevo del intent WEB:**
+```
+WEB intent detectado
+  ↓
+DomainRouter.classify(query)
+  → domain: LOCAL_NEWS (0.92)
+  → sources: [elonce.com, apfdigital.com.ar, analisisdigital.com.ar]
+  → enrichedQuery: "Jesica Cirio Paraná Entre Ríos"
+  ↓
+autoWebSearchWithSources(enrichedQuery, 'noticias', sources)
+  → scrapea SOLO las 3 fuentes sugeridas en paralelo
+  → si fallan → fallback a autoWebSearch genérico
+```
+
+**Antes:** 30 fuentes → resultados genéricos
+**Ahora:** 3 fuentes relevantes → resultados precisos
+
+**Ejemplos de clasificación:**
+| Query | Dominio | Fuentes usadas |
+|---|---|---|
+| "noticias sobre Jesica Cirio en Elonce" | `LOCAL_NEWS` | elonce.com, apfdigital.com.ar |
+| "Messi gol Copa América" | `SPORTS` | tycsports.com, ole.com.ar |
+| "nuevo modelo de Qwen" | `AI` | techcrunch.com, huggingface.co |
+| "quien gobierna Paraná" | `GOVERNMENT_LOCAL` | mi.parana.gob.ar, parana.gob.ar |
+| "NestJS prisma migracion" | `PROGRAMMING` | techcrunch.com, arstechnica.com |
+
+**Archivos creados/modificados:**
+- `src/jarvis/tools/intent/domain-router.service.ts` — nuevo servicio (16 dominios, ~50 reglas)
+- `src/jarvis/jarvis.module.ts` — registrar DomainRouterService como provider
+- `src/jarvis/jarvis.service.ts`:
+  - inyectar `DomainRouterService`
+  - reemplazar bloque WEB: ahora usa `domainRouter.classify()` + `autoWebSearchWithSources()`
+  - nuevo método `domainToCategory()` — mapea Domain a categoría de SourceRegistry
+  - nuevo método `autoWebSearchWithSources()` — scrapea fuentes dirigidas antes del fallback genérico
+
+---
+
 ### Added — Arquitectura de tres niveles: Memoria auto-extraída + Historial persistente (2026-06-26)
 
 #### Motivación

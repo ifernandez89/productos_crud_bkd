@@ -17,6 +17,7 @@ import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
+import { DomainRouterService } from './tools/intent/domain-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { WebHelper } from './tools/web/web-helper';
@@ -57,6 +58,7 @@ export class JarvisService {
     private readonly feedbackRepo: FeedbackRepository,
     private readonly browserTool: BrowserToolService,
     private readonly intentRouter: IntentRouterService,
+    private readonly domainRouter: DomainRouterService,
     private readonly sportsTool: SportsTool,
     private readonly contentCache: ContentCacheService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
@@ -255,27 +257,37 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
       }
 
-      // ── WEB — caché inteligente → DuckDuckGo → Google ─────────────────────
+      // ── WEB — DomainRouter → caché inteligente → DuckDuckGo ──────────────────
       if (intent.intent === 'WEB') {
-        // Intentar detectar categoría del query para usar caché optimizado
-        const category = this.detectCategory(userMessage);
-        const webCtx = await this.autoWebSearch(userMessage, category);
+        // DomainRouter clasifica el dominio y sugiere las 3 fuentes más relevantes
+        const domain = this.domainRouter.classify(userMessage);
+        this.logger.log(`[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`);
+
+        // Mapear dominio a categoría de SourceRegistry
+        const category = this.domainToCategory(domain.domain) ?? this.detectCategory(userMessage);
+
+        // Usar la query enriquecida si el DomainRouter la mejoró
+        const searchQuery = domain.enrichedQuery ?? userMessage;
+
+        const webCtx = await this.autoWebSearchWithSources(
+          searchQuery,
+          category,
+          domain.suggestedSources,
+        );
+
         if (webCtx) {
           toolsUsed.push('auto_search');
-          if (category) toolsUsed.push(`cache:${category}`);
+          if (domain.domain !== 'UNKNOWN') toolsUsed.push(`domain:${domain.domain}`);
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
 
-        // Sin resultados web — si es una consulta de noticias/actualidad:
-        // Último intento: scrapear El Once directamente antes de rendirse
-        if (category === 'noticias' || category === 'gobierno') {
+        // Sin resultados web — si es una consulta de noticias locales:
+        if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
           this.logger.log(`[jarvis] noticias sin resultados → último intento directo a El Once`);
           try {
-            // NO pasamos userMessage para evitar que filter por keywords (ej: "resumen") y borre las noticias reales
             const directCtx = await WebHelper.scrapeUrl('https://www.elonce.com');
             if (directCtx && directCtx.length > 200) {
               toolsUsed.push('direct_elonce');
-              this.logger.log(`[jarvis] El Once directo OK (${directCtx.length} chars)`);
               return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx);
             }
           } catch (err: unknown) {
@@ -283,7 +295,6 @@ export class JarvisService {
             this.logger.warn(`[jarvis] El Once directo falló: ${msg}`);
           }
 
-          // Si todo falló → NO dejar que el LLM invente: devolver mensaje claro
           const now = new Date();
           const hora = now.toLocaleTimeString('es-AR', {
             hour: '2-digit', minute: '2-digit',
@@ -832,6 +843,77 @@ export class JarvisService {
     // 3. Sin resultados — omitir Playwright (demasiado lento, target <60s total)
     this.logger.log(`[jarvis:auto_search] WebHelper vacío → sin resultados`);
     return null;
+  }
+
+  /**
+   * Mapea un Domain del DomainRouter a una categoría de SourceRegistry.
+   */
+  private domainToCategory(domain: string): string | undefined {
+    const map: Record<string, string> = {
+      SPORTS:           'deportes',
+      LOCAL_NEWS:       'noticias',
+      NATIONAL_NEWS:    'noticias',
+      POLITICS:         'noticias',
+      AI:               'tecnologia',
+      PROGRAMMING:      'tecnologia',
+      SCIENCE:          'ciencia',
+      TECHNOLOGY:       'tecnologia',
+      MUSIC:            'musica',
+      MOVIES_TV:        'entretenimiento',
+      MYSTERY:          'misterios',
+      ECONOMY:          'noticias',
+      GOVERNMENT_LOCAL: 'gobierno',
+      REFERENCE:        'referencia',
+    };
+    return map[domain];
+  }
+
+  /**
+   * Versión mejorada de autoWebSearch que acepta fuentes sugeridas por el DomainRouter.
+   * Las fuentes del DomainRouter tienen prioridad sobre el caché genérico.
+   */
+  private async autoWebSearchWithSources(
+    query: string,
+    category?: string,
+    suggestedSources?: string[],
+  ): Promise<string | null> {
+    // Si hay fuentes específicas del DomainRouter, scrapear directamente
+    if (suggestedSources && suggestedSources.length > 0) {
+      this.logger.log(
+        `[domain_search] usando ${suggestedSources.length} fuentes dirigidas para "${query.slice(0, 60)}"`,
+      );
+
+      const sourceDefs = suggestedSources
+        .map((urlBase) => SourceRegistry.findByUrl(urlBase))
+        .filter(Boolean);
+
+      if (sourceDefs.length > 0) {
+        const scrapeResults = await Promise.allSettled(
+          sourceDefs.slice(0, 3).map((src) => {
+            const searchUrl = SourceRegistry.buildSearchUrl(src!, query);
+            const targetUrl = searchUrl || src!.urlBase;
+            return WebHelper.scrapeUrlWithSelectors(targetUrl, query, src!);
+          }),
+        );
+
+        const useful: string[] = [];
+        for (const r of scrapeResults) {
+          if (r.status === 'fulfilled' && r.value && r.value.length > 150) {
+            useful.push(r.value);
+            if (useful.length >= 2) break;
+          }
+        }
+
+        if (useful.length > 0) {
+          this.logger.log(`[domain_search] ${useful.length} resultados de fuentes dirigidas`);
+          return useful.join('\n\n---\n\n');
+        }
+        this.logger.log(`[domain_search] fuentes dirigidas vacías → fallback autoWebSearch`);
+      }
+    }
+
+    // Fallback al flujo original con caché
+    return this.autoWebSearch(query, category);
   }
 
   /**

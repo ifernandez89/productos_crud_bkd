@@ -20,6 +20,7 @@ import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
+import { DomainRouterService } from './tools/intent/domain-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { DocumentIngestService } from './library/document-ingest.service';
@@ -51,6 +52,7 @@ import { TaskReminderService } from './tools/tasks/task-reminder.service';
     FeedbackRepository,
     BrowserToolService,
     IntentRouterService,
+    DomainRouterService,
     SportsTool,
     ContentCacheService,
     AssistantToolsService,
