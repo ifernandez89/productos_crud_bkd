@@ -6,6 +6,58 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — DomainRouterService: nuevos dominios + fuentes verificadas (2026-06-26)
+
+#### URLs analizadas por el usuario, clasificadas y categorizadas:
+
+| URL | Palabras | Veredicto | Acción |
+|---|---|---|---|
+| `es.wikipedia.org` | 1073 | ✅ Excelente | Priority subida a 10, categoría `referencia` |
+| `mysteryplanet.com.ar/site` | 1758 | ✅ Excelente | Ya existía, confirmada |
+| `mi.parana.gob.ar` | 1156 | ✅ Excelente | Selectores mejorados con `section` |
+| `ifernandez89.github.io/PlantasMedicinales` | 192 | ✅ Funciona | Selector `body` agregado como fallback |
+| `whenisthenextmcufilm.com` | 17 | ✅ Preciso (poco texto pero exacto) | Priority subida a 9, selectores `h1,p` |
+| `carta-natal.es/carta.php` | 625 | ⚠️ Texto estático (carta necesita JS) | Agregada como `astrologia_ref` (referencia interpretativa) |
+| `jsonplaceholder.typicode.com` | — | ❌ API fake de testing | No agregada |
+| `skills.sh` | 87 | ❌ Solo arte ASCII | No agregada |
+| `www.elonce.com` | 94 | ⚠️ Ya existe (funciona vía selectores) | Sin cambios |
+
+#### Nuevos dominios en DomainRouterService:
+
+**`REFERENCE`** — Definiciones, historia, enciclopedia
+- Patterns: `qué es`, `definición de`, `historia de`, `biografía de`, `cuándo nació`, `dónde queda`
+- Fuentes: `es.wikipedia.org`, `infobae.com`
+
+**`PLANTS`** (prioridad 85) — Plantas medicinales y herboristería
+- Patterns: `planta medicinal`, `hierba curativa`, `remedio natural`, `infusión de`, `propiedades medicinales`, nombres de plantas (aloe vera, manzanilla, romero, jengibre...)
+- Fuentes: `ifernandez89.github.io/PlantasMedicinales`, `es.wikipedia.org`
+
+**`DEVELOPMENT`** (prioridad 84) — Novedades de software y open source
+- Patterns: `dev.to`, `GitHub release`, `nueva versión de npm/react/nestjs`, `changelog`, `open source proyecto`
+- Fuentes: `dev.to`, `github.blog`, `arstechnica.com`
+
+**`MOVIES_TV` (MCU override, prioridad 88)** — Películas Marvel específicamente
+- Patterns: `marvel`, `mcu`, `spider-man`, `avengers`, `próxima película de Marvel`
+- Fuentes: `whenisthenextmcufilm.com` (primera), `infobae.com`, `lanacion.com.ar`
+- La URL especializada ahora es la primera fuente consultada para todo lo relacionado con Marvel
+
+#### Nuevas categorías en SourceRegistry:
+
+**`ia`** — Inteligencia Artificial (separada de `tecnologia` genérica)
+- Fuentes: Hugging Face Blog, MIT Technology Review, The Verge AI, VentureBeat AI, Xataka IA, Ars Technica AI
+
+**`desarrollo`** — Noticias de software y herramientas dev
+- Fuentes: dev.to (con `searchPattern`), GitHub Blog, The Pragmatic Engineer, npm Blog, NestJS Official Blog
+
+**`astrologia_ref`** — Referencia astro (carta-natal.es para interpretación, no cálculo)
+
+#### Cambios en `domainToCategory()`:
+- `AI` → `'ia'` (categoría propia, antes apuntaba a `'tecnologia'`)
+- `DEVELOPMENT` → `'desarrollo'` (nueva categoría)
+- `PLANTS` → `'referencia'` (comparte con Wikipedia)
+
+---
+
 ### Added — DomainRouterService: fuentes dirigidas por dominio semántico (2026-06-26)
 
 #### Problema que resolvía

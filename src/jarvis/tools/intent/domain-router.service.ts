@@ -27,11 +27,13 @@ export type Domain =
   | 'TECHNOLOGY'       // tech general (gadgets, empresas tech)
   | 'ASTROLOGY'        // astrología, horóscopo, planetas
   | 'MUSIC'            // música, bandas, canciones
-  | 'MOVIES_TV'        // cine, series, entretenimiento
+  | 'MOVIES_TV'        // cine, series, entretenimiento, MCU
   | 'MYSTERY'          // paranormal, misterios, OVNIS
   | 'ECONOMY'          // economía, finanzas, inflación
   | 'GOVERNMENT_LOCAL' // municipalidad Paraná, gobierno ER
   | 'REFERENCE'        // definiciones, historia, Wikipedia
+  | 'PLANTS'           // plantas medicinales, herboristería
+  | 'DEVELOPMENT'      // novedades de software, dev.to, GitHub
   | 'UNKNOWN';         // no se pudo clasificar
 
 export interface DomainResult {
@@ -325,6 +327,87 @@ export class DomainRouterService {
         /\bque\s+pas[oó]\s+(en\s+argentina|hoy)\b/i,
       ],
       sources: [
+        'https://www.infobae.com',
+        'https://www.lanacion.com.ar',
+      ],
+    },
+
+    // ── REFERENCIA — Wikipedia y conocimiento enciclopédico ──────────────────
+    {
+      domain: 'REFERENCE',
+      priority: 75,
+      patterns: [
+        /\bwikipedia\b/i,
+        /\bqu[eé]\s+es\s+(?!un\s+bot|el\s+asistente)/i,
+        /\bdefinici[oó]n\s+de\b/i,
+        /\bhistoria\s+(de|del|de\s+la)\b/i,
+        /\benciclopedia\b|\bconcepto\s+de\b/i,
+        /\bcu[aá]ndo\s+(naci[oó]|fue\s+fundad|se\s+cre[oó])\b/i,
+        /\bdonde\s+(queda|est[aá]|se\s+ubica)\b/i,
+        /\bbiograf[ií]a\s+de\b/i,
+        /\bpor\s+qu[eé]\s+se\s+llama\b/i,
+      ],
+      sources: [
+        'https://es.wikipedia.org',
+        'https://www.infobae.com',
+      ],
+    },
+
+    // ── PLANTAS MEDICINALES ───────────────────────────────────────────────────
+    {
+      domain: 'PLANTS',
+      priority: 85,  // alta prioridad porque es muy específico
+      patterns: [
+        /\bplanta[s]?\s+(medicinal|curativa|terapeutica|herbal)\b/i,
+        /\bhierba[s]?\s+(medicinal|curativa|natural)\b/i,
+        /\bremedio\s+(natural|herbal|casero)\b/i,
+        /\binfusi[oó]n\s+de\b|\bt[eé]\s+de\s+\w+\b/i,
+        /\bherboristeria\b|\bfitoterapia\b|\bfarmacognosia\b/i,
+        /\bpropiedades\s+(curativas|medicinales)\s+(de|del|de\s+la)\b/i,
+        /\baloe\s+vera\b|\bburro[s]?\s+de\s+agua\b|\bmanzanilla\b|\boreg[aá]no\b/i,
+        /\balbahaca\b|\bromero\b|\btomillo\b|\bm[eé]nta\b|\bjengibre\b/i,
+        /para\s+qu[eé]\s+sirve\s+(?:la|el|las|los)?\s*\w+.*plant/i,
+      ],
+      sources: [
+        'https://ifernandez89.github.io/PlantasMedicinales',
+        'https://es.wikipedia.org',
+      ],
+    },
+
+    // ── DESARROLLO DE SOFTWARE ────────────────────────────────────────────────
+    {
+      domain: 'DEVELOPMENT',
+      priority: 84,
+      patterns: [
+        /\bdev\.?to\b|\bgithub\s+(blog|release[s]?|changelog)\b/i,
+        /\bnueva\s+(version|release)\s+(de|del)\s+\w+/i,
+        /\bcambios\s+en\s+(npm|yarn|nestjs|react|node|prisma)\b/i,
+        /\brelease\s+notes?\b|\bchangelog\b/i,
+        /\bopen\s*source\b.*\b(proyecto|herramienta|libreria|paquete)\b/i,
+        /\bpull\s+request\b|\bmerge\b.*\bgithub\b/i,
+        /\bnpm\s+(package|paquete)\b|\bnuevo\s+paquete\s+de\b/i,
+      ],
+      sources: [
+        'https://dev.to',
+        'https://github.blog',
+        'https://arstechnica.com',
+      ],
+    },
+
+    // ── MCU / MARVEL (especialización de MOVIES_TV) ───────────────────────────
+    // Alta prioridad porque whenisthenextmcufilm.com es la fuente más precisa
+    {
+      domain: 'MOVIES_TV',
+      priority: 88,  // subido para que supere al MOVIES_TV genérico
+      patterns: [
+        /\bmarvel\b|\bmcu\b|\bavengers\b|\bspider.?man\b/i,
+        /\biron\s+man\b|\bcapitan\s+america\b|\bthor\b|\bhulk\b/i,
+        /\bblack\s+panther\b|\bdoctor\s+strange\b|\bwanda\b/i,
+        /\b(proxim[ao]|siguiente|cuando\s+es)\s+.*(pelicula|film)\s+de\s+marvel\b/i,
+        /\bcuando\s+(sale|estrena|llega)\s+.*marvel\b/i,
+      ],
+      sources: [
+        'https://whenisthenextmcufilm.com',
         'https://www.infobae.com',
         'https://www.lanacion.com.ar',
       ],

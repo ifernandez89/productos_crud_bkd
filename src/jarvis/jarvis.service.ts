@@ -854,8 +854,9 @@ export class JarvisService {
       LOCAL_NEWS:       'noticias',
       NATIONAL_NEWS:    'noticias',
       POLITICS:         'noticias',
-      AI:               'tecnologia',
+      AI:               'ia',
       PROGRAMMING:      'tecnologia',
+      DEVELOPMENT:      'desarrollo',
       SCIENCE:          'ciencia',
       TECHNOLOGY:       'tecnologia',
       MUSIC:            'musica',
@@ -864,6 +865,7 @@ export class JarvisService {
       ECONOMY:          'noticias',
       GOVERNMENT_LOCAL: 'gobierno',
       REFERENCE:        'referencia',
+      PLANTS:           'referencia',
     };
     return map[domain];
   }

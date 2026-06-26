@@ -656,14 +656,16 @@ export class SourceRegistry {
 
     // ══════════════════════════════════════════════════════════════════════════
     // 📚 REFERENCIA
+    // ✅ Wikipedia ES: 1073 words — excelente para definiciones e historia
+    // ✅ Plantas Medicinales: 192 words — funciona, herbario emocional de Ignacio
     // ══════════════════════════════════════════════════════════════════════════
 
     {
       name: 'Wikipedia ES',
       urlBase: 'https://es.wikipedia.org',
       category: 'referencia',
-      priority: 9,
-      ttlHours: 168,
+      priority: 10,
+      ttlHours: 168, // 7 días — contenido muy estable
       searchPattern: '/wiki/{query}',
       selectors: {
         title: ['h1', '#firstHeading'],
@@ -679,24 +681,83 @@ export class SourceRegistry {
       ttlHours: 168,
       selectors: {
         title: ['h1', 'h2'],
-        content: ['main', 'article', '.content'],
+        content: ['main', 'article', '.content', 'body'],
       },
     },
 
     // ══════════════════════════════════════════════════════════════════════════
-    // 🎬 ENTRETENIMIENTO
+    // 🏛️ GOBIERNO LOCAL — Paraná
+    // ✅ mi.parana.gob.ar: 1156 words — EXCELENTE fuente municipal
+    // ✅ parana.gob.ar: funciona con selectores específicos
+    // ❌ entrerios.gov.ar → SPA Angular (9 palabras, necesita Playwright)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    {
+      name: 'Mi Paraná (Municipalidad)',
+      urlBase: 'https://mi.parana.gob.ar',
+      category: 'gobierno',
+      priority: 10,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.page-title', 'h2'],
+        content: ['main', '.content', 'article', '.entry-content', 'section'],
+      },
+    },
+
+    {
+      name: 'Parana.gob.ar',
+      urlBase: 'https://www.parana.gob.ar',
+      category: 'gobierno',
+      priority: 9,
+      ttlHours: 6,
+      selectors: {
+        title: ['h1', '.page-title'],
+        content: ['main', '.content', 'article', '.entry-content'],
+      },
+    },
+
+    // ❌ entrerios.gov.ar → SPA Angular: 200 OK pero solo 9 palabras de contenido
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🎬 ENTRETENIMIENTO / MCU
+    // ✅ whenisthenextmcufilm.com: 17 words — contenido mínimo pero preciso
+    //    Devuelve: nombre de la película, fecha de estreno, días restantes
+    //    Ideal para responder "¿cuándo es la próxima película de Marvel?"
     // ══════════════════════════════════════════════════════════════════════════
 
     {
       name: 'When is the next MCU film',
       urlBase: 'https://whenisthenextmcufilm.com',
       category: 'entretenimiento',
-      priority: 8,
+      priority: 9, // subido a 9 — es la fuente más precisa para MCU
       ttlHours: 24,
       selectors: {
-        content: ['main', 'body', '.container'],
+        // El contenido útil está en el body completo (muy pequeño)
+        content: ['body', 'main', '.container', 'h1', 'p'],
       },
     },
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // 🔮 ASTROLOGÍA — referencia de carta natal
+    // ✅ carta-natal.es: 625 words — funciona, pero la carta en sí requiere JS
+    //    Útil como referencia de interpretación de signos y planetas
+    //    NO usar para carta natal personalizada (necesita input del usuario + JS)
+    // ══════════════════════════════════════════════════════════════════════════
+
+    {
+      name: 'Carta Natal ES',
+      urlBase: 'https://carta-natal.es/carta.php',
+      category: 'astrologia_ref',   // categoría separada: referencia astro, no cálculo
+      priority: 7,
+      ttlHours: 168, // 7 días — contenido interpretativo estático
+      selectors: {
+        title: ['h1', 'h2'],
+        content: ['main', 'article', '.content', 'p', '.nonscript'],
+      },
+    },
+
+    // ❌ jsonplaceholder.typicode.com → API de testing fake, sin valor informativo real
+    // ❌ skills.sh → solo arte ASCII en terminal (87 words, todo caracteres de bloque)
 
   ];
 
