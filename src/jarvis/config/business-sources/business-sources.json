@@ -1,0 +1,1669 @@
+{
+  "version": "2.0",
+  "generatedAt": "2026-06-27",
+  "description": "JarBees Business Sources - Catálogo de fuentes con keywords semánticas",
+  "sources": [
+    {
+      "name": "Farmacity",
+      "domain": "COMERCIOS",
+      "category": "farmacia",
+      "urlBase": "https://www.farmacity.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.farmacity.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "medicamentos",
+        "recetas",
+        "salud",
+        "farmacia",
+        "paracetamol",
+        "ibuprofeno",
+        "medicina"
+      ],
+      "priority": 10,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.98,
+      "avgResponseTimeMs": 150,
+      "cacheHits": 0
+    },
+    {
+      "name": "Farmacias Villegas",
+      "domain": "COMERCIOS",
+      "category": "farmacia",
+      "urlBase": "https://www.farmaciasvillegas.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.farmaciasvillegas.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "medicamentos",
+        "recetas",
+        "salud",
+        "farmacia",
+        "paracetamol",
+        "ibuprofeno"
+      ],
+      "priority": 8,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Farmacia Cuyo",
+      "domain": "COMERCIOS",
+      "category": "farmacia",
+      "urlBase": "https://www.farmaciacuyo.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.farmaciacuyo.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "medicamentos",
+        "recetas",
+        "salud",
+        "farmacia"
+      ],
+      "priority": 7,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    },
+    {
+      "name": "Magna Farmacia",
+      "domain": "COMERCIOS",
+      "category": "farmacia",
+      "urlBase": "https://www.magnafarmacia.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.magnafarmacia.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "medicamentos",
+        "recetas",
+        "salud",
+        "farmacia"
+      ],
+      "priority": 7,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.9,
+      "avgResponseTimeMs": 220,
+      "cacheHits": 0
+    },
+    {
+      "name": "Sanatorio La Entrerriana",
+      "domain": "SALUD",
+      "category": "clinica_medica",
+      "urlBase": "https://www.laentrerriana.com.ar",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.laentrerriana.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "salud",
+        "consultorios",
+        "especialidades",
+        "medicina",
+        "pacientes",
+        "turnos"
+      ],
+      "priority": 10,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.96,
+      "avgResponseTimeMs": 160,
+      "cacheHits": 0
+    },
+    {
+      "name": "Mederi",
+      "domain": "SALUD",
+      "category": "clinica_medica",
+      "urlBase": "https://www.mederi.com.ar",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.mederi.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "salud",
+        "consultorios",
+        "especialidades",
+        "medicina"
+      ],
+      "priority": 9,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.94,
+      "avgResponseTimeMs": 170,
+      "cacheHits": 0
+    },
+    {
+      "name": "Sanatorio Rawson",
+      "domain": "SALUD",
+      "category": "clinica_medica",
+      "urlBase": "https://www.sanatoriorawson.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.sanatoriorawson.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "salud",
+        "consultorios",
+        "especialidades",
+        "medicina"
+      ],
+      "priority": 8,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.93,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Hospital San Martín",
+      "domain": "SALUD",
+      "category": "hospital",
+      "urlBase": "https://www.entrerios.gov.ar/msalud/",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.entrerios.gov.ar/msalud//sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "emergencias",
+        "salud",
+        "guardia",
+        "hospital",
+        "médicos",
+        "enfermería"
+      ],
+      "priority": 10,
+      "ttlHours": 12,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.97,
+      "avgResponseTimeMs": 140,
+      "cacheHits": 0
+    },
+    {
+      "name": "Hospital de la Baxada",
+      "domain": "SALUD",
+      "category": "hospital",
+      "urlBase": "https://www.hospitaldelabaxada.com.ar",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.hospitaldelabaxada.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "emergencias",
+        "salud",
+        "guardia",
+        "hospital"
+      ],
+      "priority": 8,
+      "ttlHours": 12,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "Hospital Escuela de Salud Mental",
+      "domain": "SALUD",
+      "category": "hospital",
+      "urlBase": "https://www.escuelasaludmental.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.escuelasaludmental.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "emergencias",
+        "salud",
+        "guardia",
+        "hospital",
+        "psicología",
+        "psiquiatría"
+      ],
+      "priority": 7,
+      "ttlHours": 12,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.89,
+      "avgResponseTimeMs": 210,
+      "cacheHits": 0
+    },
+    {
+      "name": "IOSFA",
+      "domain": "SALUD",
+      "category": "hospital",
+      "urlBase": "https://www.iosfa.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "healthcare",
+      "cms": null,
+      "sitemap": "https://www.iosfa.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "emergencias",
+        "salud",
+        "guardia",
+        "hospital"
+      ],
+      "priority": 7,
+      "ttlHours": 12,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.88,
+      "avgResponseTimeMs": 220,
+      "cacheHits": 0
+    },
+    {
+      "name": "El Fogón Entrerriano",
+      "domain": "COMERCIOS",
+      "category": "restaurante",
+      "urlBase": "https://www.tripadvisor.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "corporate",
+      "cms": null,
+      "sitemap": "https://www.tripadvisor.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "comida",
+        "gastronomia",
+        "delivery",
+        "restaurant",
+        "comer",
+        "menú"
+      ],
+      "priority": 9,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 170,
+      "cacheHits": 0
+    },
+    {
+      "name": "Justo Restaurant",
+      "domain": "COMERCIOS",
+      "category": "restaurante",
+      "urlBase": "https://justorestaurant.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "corporate",
+      "cms": null,
+      "sitemap": "https://justorestaurant.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "comida",
+        "gastronomia",
+        "delivery",
+        "restaurant"
+      ],
+      "priority": 8,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "FuDo",
+      "domain": "COMERCIOS",
+      "category": "restaurante",
+      "urlBase": "https://www.fudo.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "corporate",
+      "cms": null,
+      "sitemap": "https://www.fudo.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "comida",
+        "gastronomia",
+        "delivery",
+        "restaurant"
+      ],
+      "priority": 8,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    },
+    {
+      "name": "Restaurant Guru",
+      "domain": "COMERCIOS",
+      "category": "restaurante",
+      "urlBase": "https://www.restaurantguru.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "corporate",
+      "cms": null,
+      "sitemap": "https://www.restaurantguru.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "comida",
+        "gastronomia",
+        "delivery",
+        "restaurant"
+      ],
+      "priority": 7,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.9,
+      "avgResponseTimeMs": 210,
+      "cacheHits": 0
+    },
+    {
+      "name": "Me Pasas La Carta",
+      "domain": "COMERCIOS",
+      "category": "restaurante",
+      "urlBase": "https://www.mepasalacarta.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "corporate",
+      "cms": null,
+      "sitemap": "https://www.mepasalacarta.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "comida",
+        "gastronomia",
+        "delivery",
+        "restaurant"
+      ],
+      "priority": 7,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.89,
+      "avgResponseTimeMs": 220,
+      "cacheHits": 0
+    },
+    {
+      "name": "La Anónima",
+      "domain": "COMERCIOS",
+      "category": "supermercado",
+      "urlBase": "https://www.laanonimaonline.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.laanonimaonline.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "alimentos",
+        "compras",
+        "ofertas",
+        "supermercado",
+        "groceries",
+        "mercado"
+      ],
+      "priority": 10,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.98,
+      "avgResponseTimeMs": 130,
+      "cacheHits": 0
+    },
+    {
+      "name": "Carrefour",
+      "domain": "COMERCIOS",
+      "category": "supermercado",
+      "urlBase": "https://www.carrefour.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.carrefour.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "alimentos",
+        "compras",
+        "ofertas",
+        "supermercado"
+      ],
+      "priority": 10,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.97,
+      "avgResponseTimeMs": 140,
+      "cacheHits": 0
+    },
+    {
+      "name": "DIA",
+      "domain": "COMERCIOS",
+      "category": "supermercado",
+      "urlBase": "https://www.dia.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.dia.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "alimentos",
+        "compras",
+        "ofertas",
+        "supermercado"
+      ],
+      "priority": 9,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 150,
+      "cacheHits": 0
+    },
+    {
+      "name": "VEA",
+      "domain": "COMERCIOS",
+      "category": "supermercado",
+      "urlBase": "https://www.vea.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.vea.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "alimentos",
+        "compras",
+        "ofertas",
+        "supermercado"
+      ],
+      "priority": 9,
+      "ttlHours": 24,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.94,
+      "avgResponseTimeMs": 160,
+      "cacheHits": 0
+    },
+    {
+      "name": "Panadería Las Delicias",
+      "domain": "COMERCIOS",
+      "category": "panaderia",
+      "urlBase": "https://www.google.com/maps",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.google.com/maps/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "panificados",
+        "facturas",
+        "pasteleria",
+        "pan",
+        "pasteles",
+        "confiteria"
+      ],
+      "priority": 8,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.93,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Confiteria Sabores",
+      "domain": "COMERCIOS",
+      "category": "panaderia",
+      "urlBase": "http://www.panaderia-confieteriasabores.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "http://www.panaderia-confieteriasabores.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "panificados",
+        "facturas",
+        "pasteleria",
+        "pan",
+        "pasteles"
+      ],
+      "priority": 7,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "Molinos San Jose",
+      "domain": "COMERCIOS",
+      "category": "panaderia",
+      "urlBase": "https://www.molinosanjose.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.molinosanjose.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "panificados",
+        "facturas",
+        "pasteleria",
+        "pan"
+      ],
+      "priority": 7,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.9,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    },
+    {
+      "name": "Electrocomponentes Paraná",
+      "domain": "TECNOLOGÍA",
+      "category": "electronica",
+      "urlBase": "https://www.electrocomponentes.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.electrocomponentes.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "componentes",
+        "arduino",
+        "electronica",
+        "electrónica",
+        "circuitos",
+        "microcontroladores"
+      ],
+      "priority": 9,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 160,
+      "cacheHits": 0
+    },
+    {
+      "name": "Mundo Electronico",
+      "domain": "TECNOLOGÍA",
+      "category": "electronica",
+      "urlBase": "https://www.mundoelectronicoparana.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.mundoelectronicoparana.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "componentes",
+        "arduino",
+        "electronica",
+        "electrónica"
+      ],
+      "priority": 8,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Lega Electronica",
+      "domain": "TECNOLOGÍA",
+      "category": "electronica",
+      "urlBase": "https://www.legaelectronica.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.legaelectronica.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "componentes",
+        "arduino",
+        "electronica"
+      ],
+      "priority": 8,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "Neon Electronica",
+      "domain": "TECNOLOGÍA",
+      "category": "electronica",
+      "urlBase": "https://www.neonelectronica.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.neonelectronica.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "componentes",
+        "arduino",
+        "electronica"
+      ],
+      "priority": 7,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.9,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    },
+    {
+      "name": "Maximus Gaming",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.maximus.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.maximus.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks",
+        "gaming",
+        "componentes",
+        "tech"
+      ],
+      "priority": 10,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.97,
+      "avgResponseTimeMs": 140,
+      "cacheHits": 0
+    },
+    {
+      "name": "PC Tech",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.pctech.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.pctech.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks",
+        "tech"
+      ],
+      "priority": 9,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 160,
+      "cacheHits": 0
+    },
+    {
+      "name": "Bearzi",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.bearzi.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.bearzi.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks"
+      ],
+      "priority": 9,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.94,
+      "avgResponseTimeMs": 170,
+      "cacheHits": 0
+    },
+    {
+      "name": "Altport",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.altport.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.altport.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks"
+      ],
+      "priority": 8,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.93,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Altavista",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.altavista.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.altavista.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks"
+      ],
+      "priority": 8,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "InfinityStore",
+      "domain": "TECNOLOGÍA",
+      "category": "computacion",
+      "urlBase": "https://www.infinitystore.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.infinitystore.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "hardware",
+        "software",
+        "pc",
+        "notebooks"
+      ],
+      "priority": 7,
+      "ttlHours": 48,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    },
+    {
+      "name": "UTN Paraná",
+      "domain": "EDUCACIÓN",
+      "category": "institucion_educativa",
+      "urlBase": "https://www.frp.utn.edu.ar",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "education",
+      "cms": null,
+      "sitemap": "https://www.frp.utn.edu.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "educacion",
+        "escuela",
+        "universidad",
+        "educación",
+        "estudiantes",
+        "carreras"
+      ],
+      "priority": 10,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.98,
+      "avgResponseTimeMs": 130,
+      "cacheHits": 0
+    },
+    {
+      "name": "Instituto Edu Pro",
+      "domain": "EDUCACIÓN",
+      "category": "institucion_educativa",
+      "urlBase": "https://institutoedu-pro.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "education",
+      "cms": null,
+      "sitemap": "https://institutoedu-pro.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "educacion",
+        "escuela",
+        "universidad",
+        "educación"
+      ],
+      "priority": 8,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.94,
+      "avgResponseTimeMs": 170,
+      "cacheHits": 0
+    },
+    {
+      "name": "Colegio Plaza Mayor",
+      "domain": "EDUCACIÓN",
+      "category": "institucion_educativa",
+      "urlBase": "https://www.colegioplamamayor.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "education",
+      "cms": null,
+      "sitemap": "https://www.colegioplamamayor.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "educacion",
+        "escuela",
+        "universidad",
+        "educación"
+      ],
+      "priority": 8,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.93,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "UNER",
+      "domain": "EDUCACIÓN",
+      "category": "institucion_educativa",
+      "urlBase": "https://www.uner.edu.ar",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "education",
+      "cms": null,
+      "sitemap": "https://www.uner.edu.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "educacion",
+        "escuela",
+        "universidad",
+        "educación"
+      ],
+      "priority": 9,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.96,
+      "avgResponseTimeMs": 150,
+      "cacheHits": 0
+    },
+    {
+      "name": "Escuela Cristo Redentor",
+      "domain": "EDUCACIÓN",
+      "category": "institucion_educativa",
+      "urlBase": "https://www.cristoredentor.com",
+      "sourceType": "official",
+      "trustScore": 95,
+      "scrapingStrategy": "education",
+      "cms": null,
+      "sitemap": "https://www.cristoredentor.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "educacion",
+        "escuela",
+        "universidad",
+        "educación"
+      ],
+      "priority": 7,
+      "ttlHours": 168,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "Easy Argentina",
+      "domain": "COMERCIOS",
+      "category": "ferreteria",
+      "urlBase": "https://www.easy.com.ar",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.easy.com.ar/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "herramientas",
+        "materiales",
+        "construccion",
+        "ferreteria",
+        "ferretería",
+        "obra",
+        "mampostería"
+      ],
+      "priority": 10,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.97,
+      "avgResponseTimeMs": 140,
+      "cacheHits": 0
+    },
+    {
+      "name": "Familia Bercomat",
+      "domain": "COMERCIOS",
+      "category": "ferreteria",
+      "urlBase": "https://www.familiabercomat.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.familiabercomat.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "herramientas",
+        "materiales",
+        "construccion",
+        "ferreteria",
+        "corralon"
+      ],
+      "priority": 9,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.95,
+      "avgResponseTimeMs": 160,
+      "cacheHits": 0
+    },
+    {
+      "name": "GTM Ferreteria",
+      "domain": "COMERCIOS",
+      "category": "ferreteria",
+      "urlBase": "https://www.gtmferreteria.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.gtmferreteria.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "herramientas",
+        "materiales",
+        "construccion",
+        "ferreteria"
+      ],
+      "priority": 8,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.93,
+      "avgResponseTimeMs": 180,
+      "cacheHits": 0
+    },
+    {
+      "name": "Ferreteria Universal",
+      "domain": "COMERCIOS",
+      "category": "ferreteria",
+      "urlBase": "https://www.ferreteriauniversal.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.ferreteriauniversal.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "herramientas",
+        "materiales",
+        "construccion",
+        "ferreteria"
+      ],
+      "priority": 8,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.92,
+      "avgResponseTimeMs": 190,
+      "cacheHits": 0
+    },
+    {
+      "name": "Ferreteria Moreno",
+      "domain": "COMERCIOS",
+      "category": "ferreteria",
+      "urlBase": "https://www.ferreteriamoreno.com",
+      "sourceType": "official",
+      "trustScore": 90,
+      "scrapingStrategy": "catalog",
+      "cms": null,
+      "sitemap": "https://www.ferreteriamoreno.com/sitemap.xml",
+      "location": {
+        "city": "Paraná",
+        "province": "Entre Ríos",
+        "country": "Argentina"
+      },
+      "enrichment": {
+        "description": false,
+        "phones": false,
+        "socials": false,
+        "emails": false
+      },
+      "tags": [
+        "herramientas",
+        "materiales",
+        "construccion",
+        "ferreteria"
+      ],
+      "priority": 7,
+      "ttlHours": 72,
+      "scrapeEnabled": true,
+      "embeddingEnabled": true,
+      "embeddingStatus": "pending",
+      "lastScraped": null,
+      "lastEmbedding": null,
+      "successRate": 0.91,
+      "avgResponseTimeMs": 200,
+      "cacheHits": 0
+    }
+  ]
+}

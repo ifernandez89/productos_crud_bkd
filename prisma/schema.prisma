@@ -325,33 +325,49 @@ model AgentRun {
 // WEB SCRAPING & KNOWLEDGE ACQUISITION LAYER
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── 10) FUENTES CONFIABLES ────────────────────────────────────────────────────
-// Catálogo de fuentes priorizadas por categoría con TTL
+// ── 10) FUENTES CONFIABLES (JarBees v2) ───────────────────────────────────────
+// Catálogo de fuentes priorizadas por categoría con TTL y keywords semánticas
 
 model Source {
   id                Int            @id @default(autoincrement())
-  name              String         // "TyC Sports", "ESPN Argentina", "Meteored"
+  name              String         // "TyC Sports", "Farmacity", "Familia Bercomat"
   urlBase           String         // "https://www.tycsports.com"
-  category          String         // "deportes", "clima", "noticias", "tecnologia", "ciencia"
+  category          String         // "deportes", "salud", "ferreteria", "electronica"
   priority          Int            @default(5) // 1-10, mayor = más prioritario
   ttlHours          Int            @default(6) // TTL en horas para contenido de esta fuente
   active            Boolean        @default(true)
-  lastScraped       DateTime?      // última vez que se scrapeó algo de esta fuente
+  
+  // ── SEMÁNTICA: keywords para matching sin scraping ───────────────────────
+  keywords          String[]       @default([]) // ["medicamentos", "recetas", "salud"]
+  
+  // ── CAPABILIDADES: qué operaciones están habilitadas ──────────────────────
+  scrapeEnabled     Boolean        @default(true)  // ¿se puede scrapear?
+  embeddingEnabled  Boolean        @default(false) // ¿tiene embeddings vectoriales?
+  
+  // ── METRICS: tracking de eficiencia ───────────────────────────────────────
+  lastScraped       DateTime?      // última vez que se scrapeó
+  lastEmbedding     DateTime?      // última vez que se generó embedding
   successRate       Float          @default(1.0) // % de scraping exitoso (0.0-1.0)
   avgResponseTimeMs Int?           // tiempo promedio de respuesta
+  cacheHits         Int            @default(0) // cuántas veces se usó desde caché
+  
+  // ── CONFIGURACIÓN ─────────────────────────────────────────────────────────
   scrapingConfig    Json?          // configuración específica de scraping
+  embeddingConfig   Json?          // configuración de embeddings (model, dimensions)
+  
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   pages             ScrapedPage[]
-
+  
   @@unique([urlBase])
   @@index([category])
   @@index([active])
   @@index([priority])
+  @@index([keywords]) // para búsquedas semánticas
 }
 
 // ── 11) PÁGINAS SCRAPEADAS ───────────────────────────────────────────────────
-// Cache inteligente de contenido web
+// Cache inteligente de contenido web con soporte para embeddings
 
 model ScrapedPage {
   id              Int              @id @default(autoincrement())
@@ -365,6 +381,7 @@ model ScrapedPage {
   status          String           @default("valid") // "valid" | "expired" | "failed"
   cacheHits       Int              @default(0) // cuántas veces se usó desde caché
   lastAccessedAt  DateTime?        // última vez que se sirvió desde caché
+  embeddingId     String?          // referencia a embedding vectorial (cuando se active pgvector)
   source          Source           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   content         ScrapedContent?
 
@@ -374,6 +391,7 @@ model ScrapedPage {
   @@index([status])
   @@index([scrapedAt])
   @@index([cacheHits])
+  @@index([embeddingId])
 }
 
 // ── 12) CONTENIDO CRUDO ───────────────────────────────────────────────────────

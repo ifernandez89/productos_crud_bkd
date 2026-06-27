@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Sistema de Scraping Inteligente y Evolución de Business Sources (2026-06-27)
+
+#### Mejoras en el esquema de Business Sources
+- **Dominio Macro**: Se asignaron dominios (COMERCIOS, SALUD, EDUCACIÓN, TECNOLOGÍA) a las fuentes comerciales para facilitar el ruteo de agentes especializados en el futuro.
+- **Confiabilidad y Estrategia**: Se introdujeron `sourceType`, `trustScore` y `scrapingStrategy` (`catalog`, `healthcare`, `education`, etc.) para ponderar resultados y guiar inteligentemente la extracción de datos.
+- **Soporte Semántico y RAG**: Se reemplazó `keywords` por `tags` y se agregó `embeddingStatus` para integrar de forma nativa la vectorización futura con pgvector.
+- **Enriquecimiento y Ubicación**: Nuevos campos `location` y `enrichment` para segmentar consultas por ciudad/provincia y conocer la disponibilidad de metadatos (email, teléfono, redes).
+
+#### Sitemap Crawler
+- Creado `SitemapCrawlerService` para reemplazar el scraping exploratorio aleatorio por un enfoque basado en sitemaps (`/sitemap.xml`).
+- **Scraping Dirigido**: Filtra, penaliza URLs inútiles (términos, privacidad, tags) y bonifica automáticamente URLs clave según la `scrapingStrategy` (ej. prioriza `/producto/` para catálogos, o `/especialidad/` para clínicas).
+- Mejora de rendimiento garantizada al reducir solicitudes inútiles y extraer páginas de alto valor para el RAG de Jarvis.
+
 ### Changed — Login sin credenciales (2026-06-26)
 
 - `POST /auth/login` ya no requiere body ni `MASTER_PASSWORD`. Emite JWT directamente.
