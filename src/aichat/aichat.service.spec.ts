@@ -55,6 +55,7 @@ describe('AichatService', () => {
   const mockOllamaModel = {
     getModel: jest.fn(),
     invoke: jest.fn(),
+    invokeWithMessages: jest.fn(),
   };
 
   const mockAssistantTools = {
@@ -152,6 +153,20 @@ describe('AichatService', () => {
       expect(result.system).toMatch(/"ubicacion":"Paraná, Entre Ríos"/);
       expect(result.system).toContain('Hoy es');
       expect(result.system).toContain('Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.');
+    });
+  });
+
+  describe('preguntarOllamaOexternal', () => {
+    it('should include a model notice in the user-facing answer', async () => {
+      mockAssistantTools.resolve.mockResolvedValue(null);
+      mockOllamaModel.invokeWithMessages.mockResolvedValue({ content: 'Respuesta de prueba' });
+      jest.spyOn(service as any, 'persistSuccessfulQuestion').mockResolvedValue(undefined);
+
+      const result = await service.preguntarOllamaOexternal({ pregunta: 'hola' } as any);
+
+      expect(result).toContain('Modelo activo');
+      expect(result).toContain('qwen3.5:4b');
+      expect(result).toContain('Respuesta de prueba');
     });
   });
 

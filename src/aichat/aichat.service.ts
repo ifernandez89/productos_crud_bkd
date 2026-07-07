@@ -207,9 +207,13 @@ export class AichatService {
         });
         if (toolAnswer) {
           const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
-          this.lastAssistantMessage = finalToolAnswer;
-          await this.persistSuccessfulQuestion(texto, finalToolAnswer);
-          return finalToolAnswer;
+          const finalAnswerWithModelNotice = this.formatAnswerWithModelNotice(
+            finalToolAnswer,
+            this.getActiveModelName(),
+          );
+          this.lastAssistantMessage = finalAnswerWithModelNotice;
+          await this.persistSuccessfulQuestion(texto, finalAnswerWithModelNotice);
+          return finalAnswerWithModelNotice;
         }
 
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -220,12 +224,14 @@ export class AichatService {
 
         let taskPromise: Promise<string>;
         if (agente) {
+          console.log('Ejecución con agente');
           this.logger.log('Ejecución con agente');
           const prompt = await this.promptAgente(texto);
           // External AI recibe el prompt como string plano concatenado
           const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
           taskPromise = this.callExternalAI(textoParaIA);
         } else {
+          console.log('Ejecución modelo local con Ollama: ', this.getActiveModelName());
           this.logger.log('Ejecución modelo local con Ollama');
           const prompt = await this.promptAgente(texto);
           taskPromise = this.callOllamaModel(prompt, texto);
@@ -377,14 +383,30 @@ export class AichatService {
 
     // Invocar el modelo seleccionado
     const aiMessageChunk = await model.invokeWithMessages(prompt);
-    if (typeof aiMessageChunk.content === 'string') {
-      return aiMessageChunk.content;
-    } else if (Array.isArray(aiMessageChunk.content)) {
-      return aiMessageChunk.content
-        .map((part: AIContentPart) => part.text || '')
-        .join(' ');
+    const content =
+      typeof aiMessageChunk.content === 'string'
+        ? aiMessageChunk.content
+        : Array.isArray(aiMessageChunk.content)
+          ? aiMessageChunk.content
+              .map((part: AIContentPart) => part.text || '')
+              .join(' ')
+          : 'Sin respuesta';
+
+    const modelName = this.getActiveModelName();
+    return this.formatAnswerWithModelNotice(content, modelName);
+  }
+
+  private getActiveModelName(): string {
+    return process.env.OLLAMA_MODEL_NAME ?? '-';
+  }
+
+  private formatAnswerWithModelNotice(answer: string, modelName: string): string {
+    const normalizedAnswer = answer.trim();
+    if (!normalizedAnswer) {
+      return normalizedAnswer;
     }
-    return 'Sin respuesta';
+
+    return `Modelo activo: ${modelName} (Ollama).\n\n${normalizedAnswer}`;
   }
 
   async preguntarHRM(pregunta: string): Promise<string> {
