@@ -1,4 +1,4 @@
-export function resolveOllamaModelName(defaultModel = 'llama3.2:3b'): string {
+export function resolveOllamaModelName(defaultModel = ''): string {
   const configuredModel = [
     process.env.OLLAMA_MODEL_NAME,
     process.env.OLLAMA_MODEL,
