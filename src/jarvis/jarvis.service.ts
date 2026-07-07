@@ -556,6 +556,7 @@ export class JarvisService {
         { role: 'user',   content: userPrompt },
       ],
     });
+    const responseContent = this.formatProviderResponse(response.content, provider);
 
     // ── Fallback automático: si la respuesta parece una negativa y no teníamos
     //    contexto web, buscar en internet y reintentar UNA vez ─────────────────
@@ -585,14 +586,15 @@ export class JarvisService {
             { role: 'user',   content: up2 },
           ],
         });
+        const response2Content = this.formatProviderResponse(response2.content, provider);
         // Persistir la segunda respuesta (mejorada)
-        await this.saveAndObserve(sessionId, userMessage, response2.content, toolsUsed, response2, startTime);
-        return response2.content;
+        await this.saveAndObserve(sessionId, userMessage, response2Content, toolsUsed, response2, startTime);
+        return response2Content;
       }
     }
 
-    await this.saveAndObserve(sessionId, userMessage, response.content, toolsUsed, response, startTime);
-    return response.content;
+    await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
+    return responseContent;
   }
 
   /**
@@ -659,8 +661,23 @@ export class JarvisService {
       ],
     });
 
-    await this.saveAndObserve(sessionId, userMessage, response.content, toolsUsed, response, startTime);
-    return response.content;
+    const responseContent = this.formatProviderResponse(response.content, provider);
+    await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
+    return responseContent;
+  }
+
+  private formatProviderResponse(content: string, provider: ILLMProvider): string {
+    if (provider.getProviderName() !== 'ollama') {
+      return content;
+    }
+
+    const modelName = provider.getDefaultModel();
+    const normalizedContent = content.trim();
+    if (!normalizedContent) {
+      return normalizedContent;
+    }
+
+    return `Modelo activo: ${modelName} (Ollama).\n\n${normalizedContent}`;
   }
 
   /**

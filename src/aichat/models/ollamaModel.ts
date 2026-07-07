@@ -5,6 +5,7 @@ import {
   IModelService,
   AIMessageResponse,
 } from '../interfaces/model.interface';
+import { resolveOllamaModelName } from '../../shared/ollama-config';
 
 export interface StructuredPrompt {
   system: string;
@@ -51,7 +52,7 @@ export class OllamaModelService implements IModelService {
 
   private async create(): Promise<void> {
     this.model = new ChatOllama({
-      model: 'qwen3.5:4b',       //en cloud, EXCELENTE RENDIMIENTO: qwen3-coder-next:cloud //qwen2.5:1.5b aun mas rapido // llama3.2:3b rápido para chat //qwen3.5:4b más preciso para tareas complejas
+      model: resolveOllamaModelName('llama3.2:3b'),
       temperature: 0.2,            // bajado de 0.3 → más determinista
       topP: 0.85,
       topK: 15,

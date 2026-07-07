@@ -8,6 +8,7 @@ import {
   LLMEmbeddingResponse,
   LLMMessage,
 } from './llm-provider.interface';
+import { resolveOllamaModelName } from '../../shared/ollama-config';
 
 @Injectable()
 export class OllamaProvider implements ILLMProvider {
@@ -19,7 +20,7 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   getDefaultModel(): string {
-    return 'llama3.2:3b';
+    return resolveOllamaModelName('llama3.2:3b');
   }
 
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {

@@ -158,6 +158,7 @@ describe('AichatService', () => {
 
   describe('preguntarOllamaOexternal', () => {
     it('should include a model notice in the user-facing answer', async () => {
+      process.env.OLLAMA_MODEL_NAME = 'qwen3.5:4b';
       mockAssistantTools.resolve.mockResolvedValue(null);
       mockOllamaModel.invokeWithMessages.mockResolvedValue({ content: 'Respuesta de prueba' });
       jest.spyOn(service as any, 'persistSuccessfulQuestion').mockResolvedValue(undefined);

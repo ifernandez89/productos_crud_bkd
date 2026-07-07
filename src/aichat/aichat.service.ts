@@ -12,6 +12,7 @@ import * as path from 'path';
 import { existsSync } from 'fs';
 import axios from 'axios';
 import { DateTime } from 'luxon';
+import { resolveOllamaModelName } from '../shared/ollama-config';
 
 // ── Caché simple de productos para evitar DB roundtrip en cada mensaje ──────────
 interface ProductCache {
@@ -397,7 +398,7 @@ export class AichatService {
   }
 
   private getActiveModelName(): string {
-    return process.env.OLLAMA_MODEL_NAME ?? '-';
+    return resolveOllamaModelName('llama3.2:3b');
   }
 
   private formatAnswerWithModelNotice(answer: string, modelName: string): string {

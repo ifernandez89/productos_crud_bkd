@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed — Configuración dinámica del modelo Ollama para Jarvis y Aichat (2026-07-07)
+
+- Se centralizó la resolución del modelo Ollama para que lea `OLLAMA_MODEL_NAME` y, si no existe, `OLLAMA_MODEL` desde el entorno.
+- El chat de Aichat y el flujo de Jarvis ahora usan la misma configuración para invocar el modelo activo.
+- Las respuestas del asistente incluyen un aviso visible con el nombre del modelo activo, por ejemplo: `Modelo activo: llama3.2:3b (Ollama).`
+- Se añadió una utilidad compartida en `src/shared/ollama-config.ts` para evitar duplicación de lógica de configuración.
+
 ### Added — Sistema de Scraping Inteligente y Evolución de Business Sources (2026-06-27)
 
 #### Mejoras en el esquema de Business Sources
