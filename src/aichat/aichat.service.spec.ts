@@ -142,6 +142,22 @@ describe('AichatService', () => {
       expect(productsRepository.findAll).toHaveBeenCalled();
     });
 
+    it('should include previous conversation turns for the same session', async () => {
+      productsRepository.findAll.mockResolvedValue([]);
+      mockPreguntasRepository.findRelevant = jest.fn().mockResolvedValue([]);
+
+      (service as any).sessionContextStore.set('session-1', [
+        { role: 'user', content: 'Mi nombre es Ana' },
+        { role: 'assistant', content: 'Perfecto, lo voy a recordar.' },
+      ]);
+
+      const result = await service.promptAgente('¿cómo me llamo?', 'session-1');
+
+      expect(result.user).toContain('### HILO DE LA CONVERSACIÓN');
+      expect(result.user).toContain('Mi nombre es Ana');
+      expect(result.user).toContain('¿cómo me llamo?');
+    });
+
     it('should include dynamic metadata and the current date in the system prompt', async () => {
       productsRepository.findAll.mockResolvedValue([]);
       mockPreguntasRepository.findRelevant = jest.fn().mockResolvedValue([]);

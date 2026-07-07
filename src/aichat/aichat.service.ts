@@ -41,6 +41,7 @@ export class AichatService {
 
   // ── Almacenamiento del último mensaje de IA ───────────────────────────────────
   private lastAssistantMessage: string | null = null;
+  private readonly sessionContextStore = new Map<string, Array<{ role: 'user' | 'assistant'; content: string }>>();
 
   constructor(
     private readonly preguntasRepository: PreguntasRepository,
@@ -67,12 +68,33 @@ export class AichatService {
     return data;
   }
 
+  private getSessionContext(sessionId?: string, limit = 8) {
+    if (!sessionId) return [];
+    const turns = this.sessionContextStore.get(sessionId) ?? [];
+    return turns.slice(-limit);
+  }
+
+  private rememberSessionTurn(sessionId: string | undefined, role: 'user' | 'assistant', content: string) {
+    if (!sessionId) return;
+    const turns = this.sessionContextStore.get(sessionId) ?? [];
+    turns.push({ role, content });
+    if (turns.length > 12) {
+      turns.splice(0, turns.length - 12);
+    }
+    this.sessionContextStore.set(sessionId, turns);
+  }
+
+  private rememberSessionPair(sessionId: string | undefined, userText: string, assistantText: string) {
+    this.rememberSessionTurn(sessionId, 'user', userText);
+    this.rememberSessionTurn(sessionId, 'assistant', assistantText);
+  }
+
   /**
    * Construye el prompt estructurado { system, user } para Ollama.
    * - system: rol + reglas estrictas (no cambia por pregunta → token cacheado)
    * - user:   contexto RAG + pregunta del usuario
    */
-  async promptAgente(texto: string): Promise<StructuredPrompt> {
+  async promptAgente(texto: string, sessionId?: string): Promise<StructuredPrompt> {
     const [products, preguntasRelevantes] = await Promise.all([
       this.getProducts(),
       this.preguntasRepository.findRelevant(texto, 3),
@@ -130,6 +152,9 @@ export class AichatService {
       .join('\n---\n');
 
     const now = DateTime.now().setZone('America/Argentina/Buenos_Aires').setLocale('es');
+    const sessionHistoryText = this.getSessionContext(sessionId, 6)
+      .map((turn) => `${turn.role === 'user' ? 'Usuario' : 'Asistente'}: ${turn.content}`)
+      .join('\n');
     const fechaActual = now.toFormat('yyyy-MM-dd');
     const horaActual = now.toFormat('HH:mm');
     const ubicacionActual = 'Paraná, Entre Ríos';
@@ -161,6 +186,9 @@ export class AichatService {
     if (historialTexto) {
       contextBlocks.push(`### HISTORIAL RELEVANTE\n${historialTexto}`);
     }
+    if (sessionHistoryText) {
+      contextBlocks.push(`### HILO DE LA CONVERSACIÓN\n${sessionHistoryText}`);
+    }
     if (catalogoTexto) {
       contextBlocks.push(`### CATÁLOGO DE PRODUCTOS\n${catalogoTexto}`);
     }
@@ -180,6 +208,7 @@ export class AichatService {
       agente,
       latitude,
       longitude,
+      sessionId,
     } = createAichatDto;
     
     // ── Detectar comandos especiales para repetir el último mensaje ─────────────
@@ -212,6 +241,7 @@ export class AichatService {
             finalToolAnswer,
             this.getActiveModelName(),
           );
+          this.rememberSessionPair(sessionId, texto, finalAnswerWithModelNotice);
           this.lastAssistantMessage = finalAnswerWithModelNotice;
           await this.persistSuccessfulQuestion(texto, finalAnswerWithModelNotice);
           return finalAnswerWithModelNotice;
@@ -227,14 +257,14 @@ export class AichatService {
         if (agente) {
           console.log('Ejecución con agente');
           this.logger.log('Ejecución con agente');
-          const prompt = await this.promptAgente(texto);
+          const prompt = await this.promptAgente(texto, sessionId);
           // External AI recibe el prompt como string plano concatenado
           const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
           taskPromise = this.callExternalAI(textoParaIA);
         } else {
           console.log('Ejecución modelo local con Ollama: ', this.getActiveModelName());
           this.logger.log('Ejecución modelo local con Ollama');
-          const prompt = await this.promptAgente(texto);
+          const prompt = await this.promptAgente(texto, sessionId);
           taskPromise = this.callOllamaModel(prompt, texto);
         }
         respuesta = (await Promise.race([
@@ -242,6 +272,7 @@ export class AichatService {
           timeoutPromise,
         ])) as string;
         const finalAnswer = this.validateAnswerContent(respuesta, texto);
+        this.rememberSessionPair(sessionId, texto, finalAnswer);
         this.lastAssistantMessage = finalAnswer;
         await this.persistSuccessfulQuestion(texto, finalAnswer);
         return finalAnswer;

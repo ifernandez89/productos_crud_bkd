@@ -36,4 +36,9 @@ export class CreateAichatDto {
   @IsNumber({}, { message: 'longitude debe ser un número' })
   @IsOptional()
   longitude?: number;
+
+  @ApiProperty({ required: false, description: 'Identificador de sesión para mantener el hilo de conversación' })
+  @IsString()
+  @IsOptional()
+  sessionId?: string;
 }
