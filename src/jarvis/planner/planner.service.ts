@@ -27,6 +27,7 @@ Cada paso debe tener el siguiente formato:
   { "stepNumber": 2, "description": "Siguiente acción a realizar", "type": "summarize" }
 ]
 Tipos de pasos disponibles: search, scrape, read_memory, read_docs, summarize, deduplicate, save, respond.
+Si el objetivo parece temporal o efímero (ej. resultado de un partido, clima, horario), evita incluir un paso de save.
 Mantén los pasos entre 2 y 6 máximo. Sé muy directo y específico.
     `.trim();
 

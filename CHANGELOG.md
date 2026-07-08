@@ -12,7 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Se añadió un flujo de deduplicación y resumen de resultados intermedios para reducir repeticiones y convertir múltiples hallazgos en una respuesta más útil y compacta.
 - Se implementó la persistencia de snapshots de temas por conversación, permitiendo capturar aprendizajes clave, tags y conclusiones relevantes.
 - Se habilitó la generación de narrativas de evolución de temas para reconstruir cómo cambió la comprensión o la opinión del usuario sobre un tema a lo largo del tiempo.
-- Los resultados de ejecución pueden guardarse automáticamente en la biblioteca de conocimiento, incrementando el valor reutilizable de cada interacción.
+- Se añadió un filtro de valor de conocimiento para evitar guardar información efímera y priorizar contenidos con mayor potencial de reutilización.
+- El resultado de cada ejecución ahora se entrega en un formato unificado con título, resumen, hechos, fuentes, confianza y metadatos de ejecución.
+- Los resultados de ejecución pueden guardarse automáticamente en la biblioteca de conocimiento cuando superan el umbral de valor definido.
 
 ### Changed — Configuración dinámica del modelo Ollama para Jarvis y Aichat (2026-07-07)
 

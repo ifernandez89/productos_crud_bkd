@@ -49,6 +49,21 @@ export interface ExecutionPlan {
   steps: ExecutionStep[];
 }
 
+// ── Knowledge Filter & Score ─────────────────────────────────────────────────
+
+export interface KnowledgeScore {
+  novelty: number;        // 0-10: ¿Es nuevo o único?
+  importance: number;     // 0-10: ¿Qué tan importante es?
+  reusability: number;    // 0-10: ¿Se puede reutilizar en otros contextos?
+  confidence: number;     // 0-10: ¿Qué tan confiable es la fuente?
+}
+
+export interface KnowledgeFilterResult {
+  shouldSave: boolean;
+  score: KnowledgeScore;
+  reason: string;
+}
+
 export interface ExecutionResult {
   taskId: number;
   objective: string;
@@ -57,6 +72,21 @@ export interface ExecutionResult {
   stepsFailed: number;
   totalDurationMs: number;
   savedToKnowledge: boolean;
+  // Nuevo formato unificado
+  title?: string;
+  summary?: string;
+  facts?: string[];
+  sources?: string[];
+  confidence?: number;
+  artifacts?: Record<string, unknown>[];
+  // Registro de ejecución para aprendizaje
+  executionLog?: {
+    plan: string;
+    steps: string[];
+    toolsUsed: string[];
+    cost?: number;
+    quality?: number;
+  };
 }
 
 // ── Servicio ──────────────────────────────────────────────────────────────────
@@ -170,6 +200,17 @@ export class ExecutionEngine {
       `[engine] plan #${plan.taskId} finalizado: ${stepsCompleted} ok, ${stepsFailed} errores, ${totalDurationMs}ms`,
     );
 
+    // Construir registro de ejecución para aprendizaje
+    const executionLog = {
+      plan: plan.objective,
+      steps: plan.steps.map((s) => `${s.stepNumber}. ${s.description} (${s.type})`),
+      toolsUsed: plan.steps
+        .filter((s) => ['search', 'scrape', 'read_memory', 'read_docs'].includes(s.type))
+        .map((s) => s.type),
+      cost: this.estimateCost(totalDurationMs),
+      quality: this.estimateQuality(stepsCompleted, stepsFailed, finalAnswer),
+    };
+
     return {
       taskId: plan.taskId,
       objective: plan.objective,
@@ -178,7 +219,189 @@ export class ExecutionEngine {
       stepsFailed,
       totalDurationMs,
       savedToKnowledge,
+      // Nuevo formato unificado
+      title: plan.objective.slice(0, 100),
+      summary: finalAnswer.slice(0, 500),
+      facts: this.extractFacts(accumulatedContext),
+      sources: this.extractSources(accumulatedContext),
+      confidence: this.estimateConfidence(stepsCompleted, stepsFailed),
+      artifacts: this.extractArtifacts(accumulatedContext),
+      executionLog,
     };
+  }
+
+  // ── Knowledge Filter & Score ─────────────────────────────────────────────────
+
+  /**
+   * Evalúa si un resultado merece ser guardado en Knowledge.
+   * Filtra información efímera (como resultados de partidos) vs. conocimiento duradero.
+   */
+  evaluateKnowledgeValue(
+    objective: string,
+    answer: string,
+    context: string[],
+  ): KnowledgeFilterResult {
+    // Heurística simple: preguntas sobre eventos específicos en el tiempo suelen ser efímeras
+    const timeSpecificPatterns = [
+      'partido de hoy',
+      'resultado de',
+      'qué hora es',
+      'clima de hoy',
+      'noticia de hoy',
+      'último',
+      'hoy',
+      'ayer',
+      'mañana',
+    ];
+
+    const isTimeSpecific = timeSpecificPatterns.some((p) =>
+      objective.toLowerCase().includes(p),
+    );
+
+    if (isTimeSpecific) {
+      return {
+        shouldSave: false,
+        score: {
+          novelty: 2,
+          importance: 3,
+          reusability: 1,
+          confidence: 5,
+        },
+        reason: 'Información efímera (eventos temporales)',
+      };
+    }
+
+    // Si no es temporal, evaluar potencial de valor
+    const score: KnowledgeScore = {
+      novelty: this.estimateNovelty(objective, answer),
+      importance: this.estimateImportance(objective),
+      reusability: this.estimateReusability(objective),
+      confidence: this.estimateConfidenceFromContext(context),
+    };
+
+    const totalScore = score.novelty + score.importance + score.reusability + score.confidence;
+    const shouldSave = totalScore >= 15; // Umbral para guardar
+
+    return {
+      shouldSave,
+      score,
+      reason: shouldSave
+        ? 'Alto potencial de valor (conceptos, arquitectura, hipótesis)'
+        : 'Valor moderado o bajo',
+    };
+  }
+
+  // ── Helpers de evaluación ────────────────────────────────────────────────────
+
+  private estimateCost(durationMs: number): number {
+    // Estimación simple: $0.0001 por segundo de procesamiento
+    return (durationMs / 1000) * 0.0001;
+  }
+
+  private estimateQuality(completed: number, failed: number, answer: string): number {
+    // 0-10: calidad de la ejecución
+    if (failed > 0 && completed === 0) return 2;
+    if (answer.length < 100) return 4;
+    if (completed > 0 && failed === 0) return 8;
+    return 6;
+  }
+
+  private estimateConfidence(completed: number, failed: number): number {
+    if (failed > 0) return 5;
+    if (completed > 3) return 9;
+    return 7;
+  }
+
+  private estimateNovelty(objective: string, answer: string): number {
+    // Detectar términos técnicos o conceptos complejos
+    const technicalTerms = [
+      'arquitectura',
+      'diseño',
+      'patrón',
+      'algoritmo',
+      'estrategia',
+      'hipótesis',
+      'modelo',
+      'framework',
+      'librería',
+    ];
+    const matches = technicalTerms.filter((t) =>
+      objective.toLowerCase().includes(t) || answer.toLowerCase().includes(t),
+    );
+    return Math.min(10, matches.length * 3);
+  }
+
+  private estimateImportance(objective: string): number {
+    const importantTerms = [
+      'arquitectura',
+      'estrategia',
+      'plan',
+      'decisión',
+      'conclusión',
+      'aprendizaje',
+      'mejores prácticas',
+    ];
+    const matches = importantTerms.filter((t) =>
+      objective.toLowerCase().includes(t),
+    );
+    return Math.min(10, matches.length * 3);
+  }
+
+  private estimateReusability(objective: string): number {
+    // Conceptos abstractos son más reutilizables
+    const abstractTerms = [
+      'cómo',
+      'por qué',
+      'estrategia',
+      'patrón',
+      'principio',
+      'metodología',
+    ];
+    const matches = abstractTerms.filter((t) =>
+      objective.toLowerCase().includes(t),
+    );
+    return Math.min(10, matches.length * 3);
+  }
+
+  private estimateConfidenceFromContext(context: string[]): number {
+    if (context.length === 0) return 5;
+    if (context.some((c) => c.includes('source') || c.includes('fuente'))) return 8;
+    return 6;
+  }
+
+  private extractFacts(context: string[]): string[] {
+    // Extraer líneas que parecen hechos (contienen verbos en presente o pasado)
+    const facts: string[] = [];
+    context.forEach((c) => {
+      const lines = c.split('\n');
+      lines.forEach((l) => {
+        if (l.length > 20 && l.length < 300) {
+          facts.push(l.trim());
+        }
+      });
+    });
+    return facts.slice(0, 10); // Máximo 10 hechos
+  }
+
+  private extractSources(context: string[]): string[] {
+    // Buscar URLs o referencias a fuentes
+    const sources: string[] = [];
+    context.forEach((c) => {
+      const matches = c.match(/https?:\/\/[^\s]+/g);
+      if (matches) sources.push(...matches);
+    });
+    return [...new Set(sources)].slice(0, 5); // Máximo 5 fuentes únicas
+  }
+
+  private extractArtifacts(context: string[]): Record<string, unknown>[] {
+    // Buscar estructuras JSON o código en el contexto
+    const artifacts: Record<string, unknown>[] = [];
+    context.forEach((c) => {
+      if (c.includes('{') && c.includes('}')) {
+        artifacts.push({ content: c.slice(0, 500) });
+      }
+    });
+    return artifacts;
   }
 
   // ── Ejecución individual de pasos ────────────────────────────────────────────
@@ -363,6 +586,15 @@ export class ExecutionEngine {
       return { content: 'Contenido insuficiente para guardar.' };
     }
 
+    const evaluation = this.evaluateKnowledgeValue(objective, content, context);
+
+    if (!evaluation.shouldSave) {
+      return {
+        content: `No se guardó en Knowledge: ${evaluation.reason}`,
+        metadata: { skipped: true, score: evaluation.score },
+      };
+    }
+
     const title = step.input.query || objective.slice(0, 100);
     const result = await this.ingestService.ingestText(
       title,
@@ -372,7 +604,11 @@ export class ExecutionEngine {
 
     return {
       content: `Guardado en biblioteca: "${title}" (${result.chunks} chunks)`,
-      metadata: { documentId: result.documentId },
+      metadata: {
+        documentId: result.documentId,
+        score: evaluation.score,
+        reason: evaluation.reason,
+      },
     };
   }
 
