@@ -39,7 +39,7 @@ export class DocumentRepository {
         documentId:  data.documentId,
         content:     data.content,
         embeddingId: data.embeddingId,
-        metadata:    data.metadata || {},
+        metadata:    data.metadata ? JSON.stringify(data.metadata) : null,
       },
     });
   }

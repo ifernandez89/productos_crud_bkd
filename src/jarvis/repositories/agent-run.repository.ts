@@ -25,7 +25,7 @@ export class AgentRunRepository {
         sessionId: data.sessionId,
         question: data.question,
         answer: data.answer,
-        toolsUsed: data.toolsUsed || [],
+        toolsUsed: JSON.stringify(data.toolsUsed || []),
         modelUsed: data.modelUsed,
         provider: data.provider,
         durationMs: data.durationMs,
@@ -64,7 +64,7 @@ export class AgentRunRepository {
 
     const toolCounts = new Map<string, number>();
     runs.forEach((run) => {
-      const tools = run.toolsUsed as string[];
+      const tools: string[] = run.toolsUsed ? JSON.parse(run.toolsUsed as string) : [];
       tools?.forEach((tool) => {
         toolCounts.set(tool, (toolCounts.get(tool) || 0) + 1);
       });

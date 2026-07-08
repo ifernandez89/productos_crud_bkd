@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Agregación de valor en Jarvis y evolución de conocimiento (2026-07-08)
+
+- Se incorporó un motor de ejecución de planes para Jarvis que procesa tareas paso a paso, acumulando contexto y mejorando la calidad de las respuestas finales.
+- Se añadió un flujo de deduplicación y resumen de resultados intermedios para reducir repeticiones y convertir múltiples hallazgos en una respuesta más útil y compacta.
+- Se implementó la persistencia de snapshots de temas por conversación, permitiendo capturar aprendizajes clave, tags y conclusiones relevantes.
+- Se habilitó la generación de narrativas de evolución de temas para reconstruir cómo cambió la comprensión o la opinión del usuario sobre un tema a lo largo del tiempo.
+- Los resultados de ejecución pueden guardarse automáticamente en la biblioteca de conocimiento, incrementando el valor reutilizable de cada interacción.
+
 ### Changed — Configuración dinámica del modelo Ollama para Jarvis y Aichat (2026-07-07)
 
 - Se centralizó la resolución del modelo Ollama para que lea `OLLAMA_MODEL_NAME` y, si no existe, `OLLAMA_MODEL` desde el entorno.

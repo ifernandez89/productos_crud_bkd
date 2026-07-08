@@ -19,7 +19,7 @@ export class ConversationRepository {
         sessionId: data.sessionId,
         role: data.role,
         content: data.content,
-        metadata: data.metadata || {},
+        metadata: data.metadata ? JSON.stringify(data.metadata) : null,
       },
     });
   }

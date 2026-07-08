@@ -36,6 +36,8 @@ import { GoogleTasksService } from './tools/google/google-tasks.service';
 import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { TaskReminderService } from './tools/tasks/task-reminder.service';
+import { ExecutionEngine } from './planner/execution-engine.service';
+import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -74,6 +76,8 @@ import { TaskReminderService } from './tools/tasks/task-reminder.service';
     PlannerService,
     InvestigationService,
     TaskReminderService,
+    ExecutionEngine,
+    KnowledgeEvolutionService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

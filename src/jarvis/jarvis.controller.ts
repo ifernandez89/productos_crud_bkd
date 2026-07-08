@@ -22,6 +22,7 @@ import { DocumentIngestService } from './library/document-ingest.service';
 import { DashboardService } from './library/dashboard.service';
 import { PlannerService } from './planner/planner.service';
 import { InvestigationService } from './tools/web/investigation.service';
+import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { ConversationRepository } from './repositories/conversation.repository';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
@@ -38,6 +39,7 @@ export class JarvisController {
     private readonly plannerService: PlannerService,
     private readonly investigationService: InvestigationService,
     private readonly conversationRepo: ConversationRepository,
+    private readonly knowledgeEvolution: KnowledgeEvolutionService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -118,6 +120,22 @@ export class JarvisController {
     if (!body.objective) throw new BadRequestException('Se requiere un objetivo');
     const plan = await this.plannerService.createPlan(body.objective, body.sessionId);
     return { success: true, plan };
+  }
+
+  @Public()
+  @Post('planner/execute')
+  @ApiOperation({
+    summary: 'Crear y ejecutar un plan completo',
+    description:
+      'El Execution Engine descompone el objetivo en pasos (search, scrape, summarize, save, respond) ' +
+      'y los ejecuta secuencialmente. Retorna la respuesta final generada por el LLM con el contexto acumulado.',
+  })
+  async executePlan(
+    @Body() body: { objective: string; sessionId?: string },
+  ) {
+    if (!body.objective) throw new BadRequestException('Se requiere un objetivo');
+    const result = await this.plannerService.createAndExecute(body.objective, body.sessionId);
+    return { success: true, ...result };
   }
 
   // ── Dashboard ───────────────────────────────────────────────────────────────
@@ -467,5 +485,43 @@ export class JarvisController {
   @ApiOperation({ summary: 'Listar herramientas habilitadas' })
   async listTools() {
     return { tools: await this.jarvisService.listTools() };
+  }
+
+  // ── Knowledge Evolution ─────────────────────────────────────────────────
+
+  @Public()
+  @Get('evolution')
+  @ApiOperation({
+    summary: 'Consultar cómo evolucionó un tema',
+    description:
+      'Retorna la línea de tiempo de un tema con narración del LLM. ' +
+      'Ejemplo: GET /jarbees/evolution?topic=Qwen\n' +
+      'Responde: hace 6 meses preferías X, ahora usás Y porque...',
+  })
+  async getEvolution(
+    @Query('topic') topic: string,
+    @Query('days') days?: string,
+  ) {
+    if (!topic) throw new BadRequestException('Se requiere un topic. Ej: ?topic=Qwen');
+    const limitDays = days ? parseInt(days, 10) : 365;
+    const report = await this.knowledgeEvolution.getEvolution(topic, limitDays);
+    if (!report) {
+      return {
+        success: false,
+        message: `No hay registros sobre "${topic}" en los últimos ${limitDays} días. Segui hablando con JarBees y pronto habrá historial.`,
+      };
+    }
+    return { success: true, report };
+  }
+
+  @Public()
+  @Get('evolution/topics')
+  @ApiOperation({
+    summary: 'Listar todos los temas registrados',
+    description: 'Retorna los temas más frecuentes con fecha del último registro.',
+  })
+  async listEvolutionTopics() {
+    const topics = await this.knowledgeEvolution.listTopics();
+    return { success: true, topics };
   }
 }

@@ -32,7 +32,7 @@ CREATE TABLE "UserProfile" (
     "timezone" TEXT NOT NULL DEFAULT 'America/Argentina/Buenos_Aires',
     "country" TEXT NOT NULL DEFAULT 'Argentina',
     "language" TEXT NOT NULL DEFAULT 'es-AR',
-    "preferences" JSONB,
+    "preferences" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -77,7 +77,7 @@ CREATE TABLE "ConversationMessage" (
     "sessionId" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "metadata" JSONB,
+    "metadata" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -143,7 +143,7 @@ CREATE TABLE "Chunk" (
     "documentId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "embeddingId" TEXT,
-    "metadata" JSONB,
+    "metadata" TEXT,
     CONSTRAINT "Chunk_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -153,6 +153,9 @@ CREATE TABLE "Task" (
     "sessionId" TEXT,
     "objective" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
+    "priority" TEXT DEFAULT 'normal',
+    "category" TEXT,
+    "project" TEXT,
     "result" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
@@ -189,7 +192,7 @@ CREATE TABLE "Tool" (
     "description" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "config" JSONB,
+    "config" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -200,7 +203,7 @@ CREATE TABLE "AgentRun" (
     "sessionId" TEXT,
     "question" TEXT NOT NULL,
     "answer" TEXT,
-    "toolsUsed" JSONB,
+    "toolsUsed" TEXT,
     "modelUsed" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "durationMs" INTEGER NOT NULL,
@@ -219,10 +222,16 @@ CREATE TABLE "Source" (
     "priority" INTEGER NOT NULL DEFAULT 5,
     "ttlHours" INTEGER NOT NULL DEFAULT 6,
     "active" BOOLEAN NOT NULL DEFAULT true,
+    "keywords" TEXT NOT NULL DEFAULT '[]',
+    "scrapeEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "embeddingEnabled" BOOLEAN NOT NULL DEFAULT false,
     "lastScraped" DATETIME,
+    "lastEmbedding" DATETIME,
     "successRate" REAL NOT NULL DEFAULT 1.0,
     "avgResponseTimeMs" INTEGER,
-    "scrapingConfig" JSONB,
+    "cacheHits" INTEGER NOT NULL DEFAULT 0,
+    "scrapingConfig" TEXT,
+    "embeddingConfig" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -240,6 +249,7 @@ CREATE TABLE "ScrapedPage" (
     "status" TEXT NOT NULL DEFAULT 'valid',
     "cacheHits" INTEGER NOT NULL DEFAULT 0,
     "lastAccessedAt" DATETIME,
+    "embeddingId" TEXT,
     CONSTRAINT "ScrapedPage_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -249,8 +259,8 @@ CREATE TABLE "ScrapedContent" (
     "pageId" INTEGER NOT NULL,
     "htmlRaw" TEXT,
     "textExtracted" TEXT NOT NULL,
-    "jsonExtracted" JSONB,
-    "metadata" JSONB,
+    "jsonExtracted" TEXT,
+    "metadata" TEXT,
     CONSTRAINT "ScrapedContent_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "ScrapedPage" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -259,9 +269,19 @@ CREATE TABLE "Query" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "question" TEXT NOT NULL,
     "category" TEXT NOT NULL,
-    "sourcesUsed" JSONB,
+    "sourcesUsed" TEXT,
     "cacheHit" BOOLEAN NOT NULL DEFAULT false,
     "responseTimeMs" INTEGER NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "TopicSnapshot" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "topic" TEXT NOT NULL,
+    "conclusion" TEXT NOT NULL,
+    "tags" TEXT NOT NULL DEFAULT '[]',
+    "sessionId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -347,6 +367,15 @@ CREATE INDEX "Task_status_idx" ON "Task"("status");
 CREATE INDEX "Task_sessionId_idx" ON "Task"("sessionId");
 
 -- CreateIndex
+CREATE INDEX "Task_priority_idx" ON "Task"("priority");
+
+-- CreateIndex
+CREATE INDEX "Task_category_idx" ON "Task"("category");
+
+-- CreateIndex
+CREATE INDEX "Task_project_idx" ON "Task"("project");
+
+-- CreateIndex
 CREATE INDEX "TaskStep_taskId_idx" ON "TaskStep"("taskId");
 
 -- CreateIndex
@@ -407,6 +436,9 @@ CREATE INDEX "ScrapedPage_scrapedAt_idx" ON "ScrapedPage"("scrapedAt");
 CREATE INDEX "ScrapedPage_cacheHits_idx" ON "ScrapedPage"("cacheHits");
 
 -- CreateIndex
+CREATE INDEX "ScrapedPage_embeddingId_idx" ON "ScrapedPage"("embeddingId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ScrapedPage_url_key" ON "ScrapedPage"("url");
 
 -- CreateIndex
@@ -423,3 +455,12 @@ CREATE INDEX "Query_cacheHit_idx" ON "Query"("cacheHit");
 
 -- CreateIndex
 CREATE INDEX "Query_createdAt_idx" ON "Query"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "TopicSnapshot_topic_idx" ON "TopicSnapshot"("topic");
+
+-- CreateIndex
+CREATE INDEX "TopicSnapshot_createdAt_idx" ON "TopicSnapshot"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "TopicSnapshot_sessionId_idx" ON "TopicSnapshot"("sessionId");

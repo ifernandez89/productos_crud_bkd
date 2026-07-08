@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AssistantToolsService } from './assistant-tools.service';
+import { BrowserToolService } from '../tools/browser/browser-tool.service';
 
 jest.mock('axios');
 
@@ -13,7 +14,8 @@ describe('AssistantToolsService', () => {
   it('returns null for unknown country-like queries so the AI flow can continue', async () => {
     mockedAxios.get.mockResolvedValueOnce({ data: [] } as never);
 
-    const service = new AssistantToolsService();
+    const browserTool = {} as BrowserToolService;
+    const service = new AssistantToolsService(browserTool);
     const result = await service.resolve('Datos de Babilonia');
 
     expect(result).toBeNull();

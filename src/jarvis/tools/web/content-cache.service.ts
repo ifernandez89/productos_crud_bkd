@@ -177,7 +177,7 @@ export class ContentCacheService {
         create: {
           pageId: page.id,
           textExtracted: scraped,
-          metadata: {},
+          metadata: null,
         },
         update: {
           textExtracted: scraped,
@@ -239,7 +239,7 @@ export class ContentCacheService {
       pageId: page.id,
       title: page.title ?? undefined,
       content: page.content.textExtracted,
-      metadata: (page.content.metadata as Record<string, unknown>) ?? undefined,
+      metadata: page.content.metadata ? JSON.parse(page.content.metadata as string) as Record<string, unknown> : undefined,
       scrapedAt: page.scrapedAt,
       expiresAt: page.expiresAt,
       ageMinutes,
@@ -264,7 +264,7 @@ export class ContentCacheService {
         data: {
           question,
           category,
-          sourcesUsed,
+          sourcesUsed: JSON.stringify(sourcesUsed),
           cacheHit,
           responseTimeMs,
         },

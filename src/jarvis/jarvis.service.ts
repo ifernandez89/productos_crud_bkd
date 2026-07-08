@@ -29,6 +29,7 @@ import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { InvestigationService } from './tools/web/investigation.service';
 import { TaskReminderService } from './tools/tasks/task-reminder.service';
+import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -69,6 +70,7 @@ export class JarvisService {
     private readonly investigationService: InvestigationService,
     private readonly taskReminderService: TaskReminderService,
     private readonly memoryExtractor: MemoryExtractorService,
+    private readonly knowledgeEvolution: KnowledgeEvolutionService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -748,6 +750,12 @@ export class JarvisService {
     // Errores acá NO deben romper la respuesta ya enviada al usuario.
     this.memoryExtractor.extractAndSave(question, sessionId).catch((err) => {
       this.logger.warn(`[memory:extract] error background: ${err?.message ?? err}`);
+    });
+
+    // ── Knowledge Evolution (background, no bloquea) ───────────────────────
+    // Snapshot automático de cada intercambio significativo.
+    this.knowledgeEvolution.extractAndSave(question, answer, sessionId).catch((err) => {
+      this.logger.warn(`[evolution:extract] error background: ${err?.message ?? err}`);
     });
   }
 

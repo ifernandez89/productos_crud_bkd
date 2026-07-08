@@ -49,7 +49,7 @@ model UserProfile {
   timezone    String   @default("America/Argentina/Buenos_Aires")
   country     String   @default("Argentina")
   language    String   @default("es-AR")
-  preferences Json?    // JSON libre para customizaciones
+  preferences String?  // JSON serializado
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   credentials UserCredential[]
@@ -115,7 +115,7 @@ model ConversationMessage {
   sessionId String   // UUID de sesión, permite múltiples conversaciones
   role      String   // "user" | "assistant" | "system" | "tool"
   content   String
-  metadata  Json?    // { model, tokens, latency, toolCalls, etc }
+  metadata  String?  // JSON serializado: { model, tokens, latency, toolCalls, etc }
   createdAt DateTime @default(now())
 
   @@index([sessionId])
@@ -213,7 +213,7 @@ model Chunk {
   documentId  Int
   content     String
   embeddingId String?  // referencia a vector store externo (si no usamos pgvector)
-  metadata    Json?    // { page, section, language, etc }
+  metadata    String?  // JSON serializado: { page, section, language, etc }
   document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
@@ -290,7 +290,7 @@ model Tool {
   description String
   category    String   // "external_api", "database", "llm", "system"
   enabled     Boolean  @default(true)
-  config      Json?    // configuración específica de la tool
+  config      String?  // JSON serializado
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -306,7 +306,7 @@ model AgentRun {
   sessionId  String?
   question   String
   answer     String?
-  toolsUsed  Json?    // ["weather", "rag", "memory"]
+  toolsUsed  String?  // JSON serializado: ["weather", "rag", "memory"]
   modelUsed  String   // "llama3.2:3b", "qwen3.5:8b"
   provider   String   // "ollama", "openrouter", "openai"
   durationMs Int      // latencia total
@@ -338,7 +338,7 @@ model Source {
   active            Boolean        @default(true)
   
   // ── SEMÁNTICA: keywords para matching sin scraping ───────────────────────
-  keywords          String[]       @default([]) // ["medicamentos", "recetas", "salud"]
+  keywords          String         @default("[]") // JSON serializado: ["medicamentos", "recetas", "salud"]
   
   // ── CAPABILIDADES: qué operaciones están habilitadas ──────────────────────
   scrapeEnabled     Boolean        @default(true)  // ¿se puede scrapear?
@@ -352,8 +352,8 @@ model Source {
   cacheHits         Int            @default(0) // cuántas veces se usó desde caché
   
   // ── CONFIGURACIÓN ─────────────────────────────────────────────────────────
-  scrapingConfig    Json?          // configuración específica de scraping
-  embeddingConfig   Json?          // configuración de embeddings (model, dimensions)
+  scrapingConfig    String?        // JSON serializado
+  embeddingConfig   String?        // JSON serializado
   
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -363,7 +363,6 @@ model Source {
   @@index([category])
   @@index([active])
   @@index([priority])
-  @@index([keywords]) // para búsquedas semánticas
 }
 
 // ── 11) PÁGINAS SCRAPEADAS ───────────────────────────────────────────────────
@@ -402,8 +401,8 @@ model ScrapedContent {
   pageId       Int          @unique
   htmlRaw      String?      // HTML crudo (opcional, solo para páginas importantes)
   textExtracted String      // Texto limpio extraído
-  jsonExtracted Json?       // Datos estructurados si aplica (ej: goleadores, clima)
-  metadata     Json?        // { wordCount, headlines, links, images, etc }
+  jsonExtracted String?      // JSON serializado
+  metadata     String?       // JSON serializado: { wordCount, headlines, links, images, etc }
   page         ScrapedPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@index([pageId])
@@ -416,7 +415,7 @@ model Query {
   id            Int      @id @default(autoincrement())
   question      String
   category      String   // detectada por intent router
-  sourcesUsed   Json?    // ["tycsports", "espn"] — fuentes consultadas
+  sourcesUsed   String?  // JSON serializado: ["tycsports", "espn"]
   cacheHit      Boolean  @default(false) // si se sirvió desde caché
   responseTimeMs Int     // latencia total
   createdAt     DateTime @default(now())
@@ -424,4 +423,20 @@ model Query {
   @@index([category])
   @@index([cacheHit])
   @@index([createdAt])
+}
+
+// ── 10) KNOWLEDGE EVOLUTION ──────────────────────────────────────────────────
+// El diferencial real de JarBees: cómo evoluciona el pensamiento del usuario
+
+model TopicSnapshot {
+  id         Int      @id @default(autoincrement())
+  topic      String   // "Qwen", "NestJS", "arquitectura backend"
+  conclusion String   // qué se aprendió / concluyó en ese momento
+  tags       String   @default("[]") // JSON serializado: ["llm", "rendimiento", "local"]
+  sessionId  String?
+  createdAt  DateTime @default(now())
+
+  @@index([topic])
+  @@index([createdAt])
+  @@index([sessionId])
 }
