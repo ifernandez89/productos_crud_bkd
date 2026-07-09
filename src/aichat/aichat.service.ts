@@ -438,7 +438,7 @@ export class AichatService {
       return normalizedAnswer;
     }
 
-    return `Modelo activo: ${modelName} (Ollama).\n\n${normalizedAnswer}`;
+    return `Modelo activo: ${modelName} \n\n${normalizedAnswer}`;
   }
 
   async preguntarHRM(pregunta: string): Promise<string> {
