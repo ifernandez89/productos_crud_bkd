@@ -23,6 +23,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aikidosec/safe-chain": "^1.5.12",
     "@langchain/ollama": "^0.2.3",
     "@nestjs/common": "^10.4.15",
     "@nestjs/config": "^3.3.0",
@@ -65,6 +66,7 @@
     "reflect-metadata": "^0.2.0",
     "rss-parser": "^3.13.0",
     "rxjs": "^7.8.1",
+    "safe-chain-test": "^0.0.1-security",
     "sentiment": "^5.0.2",
     "swagger-ui-express": "^5.0.1",
     "systeminformation": "^5.27.7",
@@ -84,6 +86,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@yao-pkg/pkg": "^6.10.1",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -114,5 +117,15 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.27.0": true,
+    "prisma@6.4.0": true,
+    "@nestjs/core@10.4.19": true,
+    "@prisma/client@6.4.0": true,
+    "@prisma/engines@6.4.0": true,
+    "@scarf/scarf@1.4.0": true,
+    "node-pty@1.0.0": true
   }
 }
