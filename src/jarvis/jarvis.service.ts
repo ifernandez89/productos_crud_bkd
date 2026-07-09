@@ -696,7 +696,7 @@ export class JarvisService {
       return normalizedContent;
     }
 
-    return `Modelo activo: ${modelName} (Ollama).\n\n${normalizedContent}`;
+    return `Modelo activo: ${modelName} \n\n${normalizedContent}`;
   }
 
   /**
