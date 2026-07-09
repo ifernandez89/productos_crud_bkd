@@ -312,60 +312,13 @@ Categoría:`;
     const n = this.normalize(message);
     const cleanN = n.replace(/[?¿!¡.]/g, '').trim();
 
-    // 1. buscar/noticias de/sobre X en Y
-    const pattern1 = /(?:noticias?|novedades?|info|informacion|que paso|buscar?|busca|encontrar?|encontra)\s+(?:de|sobre|con)?\s*(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
-    
-    // 2. que dice Y sobre X
-    const pattern2 = /(?:que dice|que dicen|segun|buscar en)\s+([a-z0-9\s.-]+)\s+sobre\s+(.+)$/i;
-
-    // 3. buscar en Y: X o buscar en Y X
-    const pattern3 = /(?:buscar en|busca en)\s+([a-z0-9\s.-]+)(?::|\s+)\s*(.+)$/i;
-
-    // 4. X en Y (cuando Y es un dominio conocido o alias conocido)
-    const pattern4 = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
-
-    let siteCandidate = '';
-    let queryCandidate = '';
-    let match = pattern1.exec(cleanN);
-
-    if (match) {
-      queryCandidate = match[1].trim();
-      siteCandidate = match[2].trim();
-    } else {
-      match = pattern2.exec(cleanN);
-      if (match) {
-        siteCandidate = match[1].trim();
-        queryCandidate = match[2].trim();
-      } else {
-        match = pattern3.exec(cleanN);
-        if (match) {
-          siteCandidate = match[1].trim();
-          queryCandidate = match[2].trim();
-        } else {
-          match = pattern4.exec(cleanN);
-          if (match) {
-            queryCandidate = match[1].trim();
-            siteCandidate = match[2].trim();
-          }
-        }
-      }
-    }
-
-    if (!siteCandidate || !queryCandidate) return null;
-
-    const cleanSite = siteCandidate.trim();
-    const cleanQuery = queryCandidate.trim();
-
-    // Evitar falsos positivos con preposiciones comunes o consultas de lugar/tiempo no web
-    if (['argentina', 'parana', 'entre rios', 'el mundo', 'cancha', 'vivo', 'directo', 'ingles', 'español', 'casa', 'internet'].includes(cleanSite)) {
-      return null;
-    }
-
+    // Alias de sitios conocidos — se usa en todos los patrones
     const siteAliasMap: Record<string, string> = {
       'elonce': 'elonce.com',
       'el once': 'elonce.com',
       'once digital': 'elonce.com',
       'elonce digital': 'elonce.com',
+      'el once digital': 'elonce.com',
       'infobae': 'infobae.com',
       'la nacion': 'lanacion.com.ar',
       'uno': 'unoentrerios.com.ar',
@@ -375,7 +328,6 @@ Categoría:`;
       'analisis': 'analisisdigital.com.ar',
       'analisis digital': 'analisisdigital.com.ar',
       'el entre rios': 'elentrerios.com',
-      'entre rios': 'elentrerios.com',
       'mi parana': 'mi.parana.gob.ar',
       'parana gob': 'parana.gob.ar',
       'tyc': 'tycsports.com',
@@ -407,41 +359,126 @@ Categoría:`;
       'perfil': 'perfil.com',
       'cronica': 'cronica.com.ar',
       'pagina12': 'pagina12.com.ar',
-      'pagina 12': 'pagina12.com.ar'
+      'pagina 12': 'pagina12.com.ar',
     };
 
-    let domain: string | undefined = undefined;
-    const isDomain = /^[a-z0-9-]+\.[a-z.]{2,}$/i.test(cleanSite);
-
-    if (siteAliasMap[cleanSite]) {
-      domain = siteAliasMap[cleanSite];
-    } else {
-      // Búsqueda por subcadena
-      const matchedKey = Object.keys(siteAliasMap).find(
-        (key) => cleanSite.includes(key) || key.includes(cleanSite)
-      );
-      if (matchedKey) {
-        domain = siteAliasMap[matchedKey];
+    // ── Patrón 0: "revisa X", "abrí X", "chequeá X" — detección directa del sitio ──
+    // "revisa el once digital y dame 6 noticias"
+    // "revisá infobae"
+    // "abrí elonce"
+    const revisaMatch = cleanN.match(
+      /^(?:revis[ae]|abre|abri|chequea|cheque[ae]|entr[ae]\s+a|mir[ae])\s+(.+?)(?:\s+y\s+.*)?$/i,
+    );
+    if (revisaMatch) {
+      const siteRaw = revisaMatch[1].trim();
+      const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
+      if (domain) {
+        // Extraer la query del resto del mensaje
+        const afterSite = cleanN.replace(revisaMatch[0], '').trim();
+        const query = afterSite || 'noticias actuales';
+        return { site: domain, query };
       }
     }
 
-    if (!domain && isDomain) {
-      domain = cleanSite;
+    // ── Patrón 1: "dame N noticias del/de elonce/infobae" ──
+    // "dame 8 noticias titulares del once digital"
+    // "dame las últimas noticias de elonce"
+    // "Puedes darme 6 titulares de noticias en mystery planet?"
+    const dameMatch = cleanN.match(
+      /(?:dame|dime|mostrame|muestrame|conseguime|busca|trae|darme|darnos)\s+.*?(?:noticias?|titulares?|novedades?|actualidad).*?(?:de(?:l)?|en|desde)\s+(.+?)(?:\s*$)/i,
+    );
+    if (dameMatch) {
+      const siteRaw = dameMatch[1].trim();
+      const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
+      if (domain) {
+        return { site: domain, query: cleanN };
+      }
     }
 
-    if (!domain) return null;
-
-    // Recuperar la query con mayúsculas/minúsculas originales
-    const queryIndex = cleanN.indexOf(queryCandidate);
-    let originalQuery = cleanQuery;
-    if (queryIndex !== -1) {
-      originalQuery = message.slice(queryIndex, queryIndex + queryCandidate.length).trim();
+    // ── Patrón 2: "noticias de/en X" ──
+    const enPattern = /(?:noticias?|novedades?|info|informacion|que paso|buscar?|busca|encontrar?|encontra)\s+(?:de|sobre|en|desde)?\s*(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
+    let match = enPattern.exec(cleanN);
+    if (match) {
+      const domain = this.resolveSiteAlias(match[2].trim(), siteAliasMap);
+      if (domain) return { site: domain, query: match[1].trim() };
     }
 
-    return {
-      site: domain,
-      query: originalQuery
-    };
+    // ── Patrón 3: "que dice Y sobre X" ──
+    match = /(?:que dice|que dicen|segun|buscar en)\s+([a-z0-9\s.-]+)\s+sobre\s+(.+)$/i.exec(cleanN);
+    if (match) {
+      const domain = this.resolveSiteAlias(match[1].trim(), siteAliasMap);
+      if (domain) return { site: domain, query: match[2].trim() };
+    }
+
+    // ── Patrón 4: "buscar en Y: X" ──
+    match = /(?:buscar en|busca en)\s+([a-z0-9\s.-]+)(?::|\s+)\s*(.+)$/i.exec(cleanN);
+    if (match) {
+      const domain = this.resolveSiteAlias(match[1].trim(), siteAliasMap);
+      if (domain) return { site: domain, query: match[2].trim() };
+    }
+
+    // ── Patrón 5: "X en Y" — solo si Y es un alias conocido ──
+    // Más restrictivo que antes: solo matchea si Y resuelve a un dominio real
+    match = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i.exec(cleanN);
+    if (match) {
+      const falseSites = ['argentina', 'parana', 'entre rios', 'el mundo', 'cancha', 'vivo', 'directo', 'ingles', 'español', 'casa', 'internet'];
+      const siteRaw = match[2].trim();
+      if (!falseSites.includes(siteRaw)) {
+        const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
+        if (domain) return { site: domain, query: match[1].trim() };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Resuelve un alias o nombre de sitio a su dominio real.
+   * Devuelve null si no se puede identificar el sitio.
+   */
+  private resolveSiteAlias(raw: string, aliases: Record<string, string>): string | null {
+    const clean = raw.trim().toLowerCase();
+    if (aliases[clean]) return aliases[clean];
+
+    // Búsqueda por subcadena exacta
+    const matchedKey = Object.keys(aliases).find(
+      (key) => clean.includes(key) || key.includes(clean),
+    );
+    if (matchedKey) return aliases[matchedKey];
+
+    // Búsqueda tolerante a typos: comparar palabra a palabra
+    // "mystery plantet" → busca si cada palabra del alias aparece en el input
+    const cleanWords = clean.split(/\s+/);
+    const fuzzyKey = Object.keys(aliases).find((key) => {
+      const keyWords = key.split(/\s+/);
+      // Si al menos el 75% de las palabras del alias están en el input (con tolerancia de 1 char)
+      const matched = keyWords.filter((kw) =>
+        cleanWords.some((cw) => cw === kw || this.levenshtein(cw, kw) <= 1),
+      );
+      return matched.length >= Math.ceil(keyWords.length * 0.75);
+    });
+    if (fuzzyKey) return aliases[fuzzyKey];
+
+    // Si parece un dominio real
+    if (/^[a-z0-9-]+\.[a-z.]{2,}$/i.test(clean)) return clean;
+
+    return null;
+  }
+
+  /** Distancia de Levenshtein simplificada para strings cortos */
+  private levenshtein(a: string, b: string): number {
+    if (Math.abs(a.length - b.length) > 2) return 99;
+    const dp: number[][] = Array.from({ length: a.length + 1 }, (_, i) =>
+      Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+    );
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        dp[i][j] = a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+    return dp[a.length][b.length];
   }
 
   private normalize(input: string): string {

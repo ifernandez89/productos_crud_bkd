@@ -140,9 +140,78 @@ export class WebHelper {
   }
 
   /**
-   * Scrapea una URL espec\u00edfica con selectores optimizados si se proporciona la fuente.
-   * P\u00fablico para que ContentCacheService pueda usarlo con los selectores correctos.
+   * Scrapea titulares reales de una URL de noticias.
+   * Devuelve una lista numerada de titulares verificados o null si no encuentra ninguno.
+   * Usar esto en vez del scraping genérico para consultas de tipo "dime N noticias".
    */
+  static async scrapeHeadlines(
+    url: string,
+    limit = 10,
+    source?: SourceDefinition,
+  ): Promise<string | null> {
+    try {
+      const resp = await axios.get(url, {
+        headers: {
+          'User-Agent': WebHelper.USER_AGENT,
+          'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8',
+          'Accept': 'text/html,application/xhtml+xml',
+        },
+        timeout: WebHelper.SCRAPE_TIMEOUT,
+        validateStatus: (s) => s < 400,
+      });
+
+      const $ = cheerioLoad(resp.data as string);
+      $('script, style, nav, footer, header, aside, iframe').remove();
+
+      const headlines: string[] = [];
+      const selectors = [
+        'h2 a', 'h3 a',
+        '.titulo a', '.title a', '.nota-titulo',
+        'article h2', 'article h3',
+        '.card-title', '.article-title',
+        '.headline a', '.entry-title a',
+        'h2', 'h3',
+      ];
+
+      // Si la fuente tiene selectores específicos de título, priorizarlos
+      if (source?.selectors?.title) {
+        for (const sel of source.selectors.title) {
+          $(sel).each((_, el) => {
+            const t = $(el).text().trim();
+            if (t.length > 15 && t.length < 250 && !headlines.includes(t)) {
+              headlines.push(t);
+            }
+          });
+        }
+      }
+
+      // Selectores genéricos como fallback
+      for (const sel of selectors) {
+        if (headlines.length >= limit * 2) break;
+        $(sel).each((_, el) => {
+          const t = $(el).text().trim();
+          if (t.length > 15 && t.length < 250 && !headlines.includes(t)) {
+            headlines.push(t);
+          }
+        });
+      }
+
+      if (headlines.length === 0) return null;
+
+      const hostname = (() => { try { return new URL(url).hostname; } catch { return url; } })();
+      const top = headlines.slice(0, limit);
+      const formatted = top.map((h, i) => `${i + 1}. ${h}`).join('\n');
+
+      WebHelper.logger.log(`[WebHelper:headlines] ${top.length} titulares extraídos de ${hostname}`);
+      return `**Titulares verificados de ${hostname}:**\n${formatted}\n\n_(Fuente: https://${hostname} — consultado en tiempo real)_`;
+
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      WebHelper.logger.warn(`[WebHelper:headlines] error scraping ${url}: ${msg}`);
+      return null;
+    }
+  }
+
   static async scrapeUrlWithSelectors(
     url: string,
     contextQuery: string,

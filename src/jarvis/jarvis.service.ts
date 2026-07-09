@@ -291,16 +291,17 @@ export class JarvisService {
 
         // Sin resultados web — si es una consulta de noticias locales:
         if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
-          this.logger.log(`[jarvis] noticias sin resultados → último intento directo a El Once`);
+          this.logger.log(`[jarvis] noticias sin resultados → último intento con titulares de El Once`);
           try {
-            const directCtx = await WebHelper.scrapeUrl('https://www.elonce.com');
+            const elonceSource = SourceRegistry.getAll().find(s => s.urlBase.includes('elonce.com'));
+            const directCtx = await WebHelper.scrapeHeadlines('https://www.elonce.com', 10, elonceSource);
             if (directCtx && directCtx.length > 200) {
-              toolsUsed.push('direct_elonce');
+              toolsUsed.push('direct_elonce_headlines');
               return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx);
             }
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
-            this.logger.warn(`[jarvis] El Once directo falló: ${msg}`);
+            this.logger.warn(`[jarvis] El Once titulares falló: ${msg}`);
           }
 
           const now = new Date();
@@ -537,6 +538,8 @@ export class JarvisService {
     return this.skillRegistry.getAllSkills();
   }
 
+
+
   // ── Respuesta centralizada via LLM ──────────────────────────────────────────
 
   private async respondWithLLM(
@@ -608,7 +611,7 @@ export class JarvisService {
         return response2Content;
       }
     }
-
+    
     await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
     return responseContent;
   }
@@ -1096,15 +1099,33 @@ export class JarvisService {
 
   /**
    * Ejecuta una búsqueda dirigida a un sitio específico.
+   * Si la query pide noticias/titulares, usa scrapeHeadlines para extraer
+   * titulares reales en lugar de texto genérico del cuerpo.
    */
   private async executeSiteSearch(site: string, query: string): Promise<string | null> {
-    const siteQuery = `site:${site} ${query}`;
-    this.logger.log(`[jarvis:site_search] Buscando en sitio específico: "${siteQuery}"`);
+    this.logger.log(`[jarvis:site_search] buscando en ${site}: "${query.slice(0, 60)}"`);
 
-    // 1. Intentar buscar en el caché primero para evitar DDG throttling y mejorar velocidad
+    const isHeadlinesQuery = /\b(noticias|titulares|novedades|que paso|que hay|actualidad|portada|principales|importantes|recientes|hoy)\b/i.test(query);
+
+    // 1. Si pide noticias/titulares → extraer titulares reales primero
+    if (isHeadlinesQuery) {
+      const source = SourceRegistry.getAll().find(s => s.urlBase.includes(site));
+      const targetUrl = source?.urlBase ?? `https://${site}`;
+      const limit = this.extractNumberFromQuery(query) ?? 8;
+
+      const headlines = await WebHelper.scrapeHeadlines(targetUrl, limit, source);
+      if (headlines) {
+        this.logger.log(`[jarvis:site_search] titulares OK de ${site}`);
+        return headlines;
+      }
+      this.logger.warn(`[jarvis:site_search] sin titulares de ${site}, intentando scraping general`);
+    }
+
+    // 2. Intentar caché
     try {
       const source = SourceRegistry.getAll().find(s => s.urlBase.includes(site));
       const category = source?.category ?? 'noticias';
+      const siteQuery = `site:${site} ${query}`;
 
       const cachePromise = this.contentCache.fetchRelevantContent(siteQuery, category, 2);
       const cacheTimeout = new Promise<never>((_, reject) =>
@@ -1113,11 +1134,6 @@ export class JarvisService {
       const cached = await Promise.race([cachePromise, cacheTimeout]);
 
       if (cached && cached.length > 0) {
-        const fromCacheCount = cached.filter((r) => r.fromCache).length;
-        this.logger.log(
-          `[jarvis:site_search] ${cached.length} resultados desde caché (${fromCacheCount} cache hit)`,
-        );
-
         return cached
           .map((r, i) => {
             const sourceLabel = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
@@ -1128,20 +1144,25 @@ export class JarvisService {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[jarvis:site_search] error en caché: ${msg} → fallback a WebHelper`);
+      this.logger.warn(`[jarvis:site_search] error en caché: ${msg}`);
     }
 
-    // 2. Fallback: WebHelper con timeout de 25s
+    // 3. Fallback: WebHelper
     const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
-    const webHelperResult = WebHelper.search(siteQuery, undefined, true);
-    const result = await Promise.race([webHelperResult, webHelperTimeout]);
+    const result = await Promise.race([
+      WebHelper.search(`site:${site} ${query}`, undefined, true),
+      webHelperTimeout,
+    ]);
 
-    if (result) {
-      this.logger.log(`[jarvis:site_search] OK WebHelper (${result.length} chars)`);
-      return result;
-    }
+    return result ?? null;
+  }
 
-    return null;
+  /**
+   * Extrae un número de una query. Ej: "dame 6 noticias" → 6
+   */
+  private extractNumberFromQuery(query: string): number | null {
+    const match = query.match(/\b(\d+)\b/);
+    return match ? Math.min(parseInt(match[1], 10), 15) : null;
   }
 
   /**
@@ -1150,15 +1171,7 @@ export class JarvisService {
    */
   private isCurrentEventQuery(message: string): boolean {
     const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    return /(
-      hoy|ayer|esta semana|esta noche|ahora|actualmente|reciente|
-      noticias|novedad|ultimo|ultima|ocurrio|paso hoy|que hay|
-      resultado|partido|gol|marcador|score|
-      precio actual|cotizacion|dolar hoy|
-      quedo|gano|perdio|empato|clasifico|
-      quien gano|como salio|que paso con|
-      revisa|dame las noticias|titulares
-    )/x.test(n);
+    return /(hoy|ayer|esta semana|esta noche|ahora|actualmente|reciente|noticias|novedad|ultimo|ultima|ocurrio|paso hoy|que hay|resultado|partido|gol|marcador|score|precio actual|cotizacion|dolar hoy|quedo|gano|perdio|empato|clasifico|quien gano|como salio|que paso con|revisa|dame las noticias|titulares)/.test(n);
   }
 
   /**

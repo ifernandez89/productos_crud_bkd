@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Corrupción en `jarvis.service.ts` y `web-helper.ts` (2026-07-08)
+
+- Se eliminó una llave `}` extra que cerraba prematuramente el bloque `if (category === 'noticias' || ...)` en `JarvisService.query()`, dejando el `failMsg` de noticias locales fuera del bloque condicional.
+- Se restauró `WebHelper.scrapeUrlWithSelectors()` que había quedado envuelto en un bloque `/**` sin cerrar, comentando accidentalmente el método completo y causando 4 errores de compilación (`TS2339`) en `jarvis.service.ts`, `content-cache.service.ts` y `web-helper.ts` (×2).
+
+### Fixed — Titulares reales de noticias: scrapeHeadlines + detección SITE_SEARCH (2026-07-08)
+
+- Se diagnosticó la causa raíz de las alucinaciones en noticias: el scraper devolvía 514 chars de menú/navegación del sitio, y el LLM usaba ese texto sin sentido para fabricar noticias plausibles.
+- Nuevo método `WebHelper.scrapeHeadlines()` que extrae específicamente `h2 a`, `h3 a`, `.titulo a`, etc. Verificado contra elonce.com: extrae 60 titulares reales.
+- `executeSiteSearch` ahora detecta queries de noticias/titulares y llama a `scrapeHeadlines` primero en lugar del scraper genérico de cuerpo.
+- El "último recurso directo a El Once" fue reemplazado: ya no usa `scrapeUrl` (que devolvía menús) sino `scrapeHeadlines`.
+- `extractSiteSearchFromText` en `IntentRouterService` reescrito con dos patrones nuevos de alta prioridad:
+  - Patrón 0: "revisa X", "abrí X", "chequeá X" → detecta el sitio directamente.
+  - Patrón 1: "dame N noticias del/de X" → detecta combinación de cantidad + fuente.
+- El alias map y la lógica de resolución de dominios se extrajeron a `resolveSiteAlias()` para reutilización limpia entre patrones.
+- Se corrigió un bug de regex multilínea con flag `/x` (no soportado en TypeScript) que rompía la compilación.
+
 ### Fixed — Evidence-first: sin evidencia web no se responden eventos actuales (2026-07-08)
 
 - Se implementó la regla "Evidence First" en `JarvisService`: si no hay contexto web verificado, las preguntas sobre eventos actuales devuelven un mensaje honesto en lugar de pasar al LLM a inventar.
