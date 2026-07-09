@@ -12,10 +12,14 @@ export class TaskReminderService {
     const original = message.trim();
 
     // ── 1. BORRAR — evaluar PRIMERO para que "borra el pendiente X" no dispare create ──
-    const deleteIntent = /\b(eliminar|elimina|borrar|borra|borre|quitar|quita|sacar|saca|tachar|tacha|limpiar|limpia|remover|remueve|remové|borrá|quitá)\b/i.test(normalized);
+    const deleteIntent = /\b(eliminar|elimina|elimino|borrar|borra|borre|borro|quitar|quita|sacar|saca|tachar|tacha|limpiar|limpia|limpio|vaciar|vacía|remover|remueve|remové|borrá|quitá)\b/i.test(normalized);
     if (deleteIntent) {
-      // Limpiar toda la lista
-      if (/\b(todo|toda|todos|todas|completa|toda la lista|todas las tareas|todo lo|limpiar todo)\b/i.test(normalized)) {
+      // Limpiar toda la lista: "borra todo", "limpia lista", "borra la lista de pendientes", etc.
+      const clearsAll =
+        /\b(todo|toda|todos|todas|completa|todo lo)\b/i.test(normalized) ||
+        /\b(la\s+lista|mis\s+pendientes|todas\s+las\s+tareas)\b/i.test(normalized) ||
+        /^(limpia|limpio|borra|borro)\s+(lista|pendientes|todo)$/i.test(normalized.trim());
+      if (clearsAll) {
         await this.taskRepo.clearPendingTasks(sessionId);
         return '🧹 Se limpió la lista de pendientes.';
       }
@@ -63,7 +67,53 @@ export class TaskReminderService {
       return `📋 Tus pendientes:\n${formatted}`;
     }
 
-    // ── 3. MARCAR COMO COMPLETADO ───────────────────────────────────────────────
+    // ── 3. EDITAR ────────────────────────────────────────────────────────────────
+    // "cambia el 2 a llamar al médico"
+    // "edita el pendiente comprar por comprar leche"
+    // "renombra el 1 a pagar factura"
+    const editIntent = /\b(editar|edita|edito|cambiar|cambia|cambio|modificar|modifica|modifico|renombrar|renombrá|actualizar|actualiza|actualizá|corregir|corregí)\b/i.test(normalized);
+    if (editIntent && /\b(pendiente|tarea|el|la|los)\b/i.test(normalized)) {
+      // Editar por número: "cambia el 2 a pagar la factura"
+      const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
+      if (byNumber) {
+        const index = parseInt(byNumber[1], 10) - 1;
+        const tasks = await this.taskRepo.findPendingTasks(sessionId);
+        if (!tasks[index]) return `No encontré un pendiente con ese número.`;
+
+        const newObjective = this.extractEditNewValue(original);
+        if (newObjective && newObjective.length > 2) {
+          await this.taskRepo.updateTaskObjective(tasks[index].id, newObjective);
+          return `✏️ Pendiente actualizado:\n  Antes: ${tasks[index].objective}\n  Ahora: ${newObjective}`;
+        }
+        return `No entendí el nuevo texto. Usá: "cambia el ${index + 1} a <nuevo texto>"`;
+      }
+
+      // Editar por nombre: "cambia comprar por comprar leche"
+      const { from, to } = this.extractEditFromTo(original);
+      if (from && to) {
+        const tasks = await this.taskRepo.findPendingTasks(sessionId);
+        const match = tasks.find((t) => t.objective.toLowerCase().includes(from.toLowerCase()));
+        if (match) {
+          await this.taskRepo.updateTaskObjective(match.id, to);
+          return `✏️ Pendiente actualizado:\n  Antes: ${match.objective}\n  Ahora: ${to}`;
+        }
+        if (tasks.length > 0) {
+          const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
+          return `No encontré "${from}". Tus pendientes:\n${list}\n\nPodés editar por número: "cambia el 2 a <nuevo texto>"`;
+        }
+        return `No encontré ese pendiente.`;
+      }
+
+      // Sin suficiente info — mostrar ayuda
+      const tasks = await this.taskRepo.findPendingTasks(sessionId);
+      if (tasks.length > 0) {
+        const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
+        return `¿Cuál querés editar?\n${list}\n\nEjemplos:\n- "cambia el 2 a llamar al médico"\n- "edita comprar por comprar leche"`;
+      }
+      return 'No tenés pendientes para editar.';
+    }
+
+    // ── 4. MARCAR COMO COMPLETADO ───────────────────────────────────────────────
     const completeIntent = /\b(completar|completé|completé|hice|hice el|ya hice|terminé|terminé|listo|marcar como|marcar)\b/i.test(normalized);
     if (completeIntent && /\b(pendiente|tarea)\b/i.test(normalized)) {
       const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
@@ -126,6 +176,23 @@ export class TaskReminderService {
     const normalized = message.toLowerCase();
     if (/\b(jarbees|jarvis|ai|ia|mcp|rag|embeddings|graph|llm|ollama)\b/.test(normalized)) return 'JarBees';
     return undefined;
+  }
+
+  /**
+   * Extrae el nuevo valor en "cambia el 2 a <nuevo valor>"
+   */
+  private extractEditNewValue(message: string): string {
+    const match = message.match(/\b(?:a|por|con|como)\s+(.+)$/i);
+    return match ? match[1].trim() : '';
+  }
+
+  /**
+   * Extrae el par from/to en "cambia <from> por/a <to>"
+   */
+  private extractEditFromTo(message: string): { from: string; to: string } {
+    const byPor = message.match(/\b(?:edita[r]?|cambia[r]?|modifica[r]?)\s+(.+?)\s+(?:por|a)\s+(.+)$/i);
+    if (byPor) return { from: byPor[1].trim(), to: byPor[2].trim() };
+    return { from: '', to: '' };
   }
 
   /**

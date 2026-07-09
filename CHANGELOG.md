@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Evidence-first: sin evidencia web no se responden eventos actuales (2026-07-08)
+
+- Se implementó la regla "Evidence First" en `JarvisService`: si no hay contexto web verificado, las preguntas sobre eventos actuales devuelven un mensaje honesto en lugar de pasar al LLM a inventar.
+- `SITE_SEARCH` sin resultados ya no hace fallback a WEB ni al LLM — devuelve un aviso con link directo al sitio pedido.
+- `SPORTS` sin resultados de API ni scraping ya no llama al LLM sin contexto — devuelve aviso honesto.
+- Bloque `WEB` sin resultados ahora pasa por `isCurrentEventQuery()`: si la pregunta tiene señales de evento actual (hoy, ayer, noticias, resultado, gol, precio, etc.) devuelve aviso; si no (preguntas conceptuales) el LLM responde normalmente con conocimiento base.
+- Nuevo método `buildNoEvidenceMessage()` construye respuestas honestas con hora y link al sitio cuando aplica.
+
 ### Fixed — CRUD de pendientes: lógica de comandos y extracción de objetivos (2026-07-08)
 
 - Se corrigió la lógica de `TaskReminderService` donde comandos como "borra el pendiente agregar" se guardaban incorrectamente como nuevos pendientes porque el verbo "agregar" disparaba el intent de creación.

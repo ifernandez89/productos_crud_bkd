@@ -43,6 +43,13 @@ export class TaskRepository {
     });
   }
 
+  async updateTaskObjective(taskId: number, objective: string) {
+    return this.prisma.task.update({
+      where: { id: taskId },
+      data: { objective },
+    });
+  }
+
   async deleteTask(taskId: number) {
     return this.prisma.task.delete({ where: { id: taskId } });
   }

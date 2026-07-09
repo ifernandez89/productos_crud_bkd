@@ -229,16 +229,18 @@ export class JarvisService {
       if (intent.intent === 'SITE_SEARCH' && intent.siteSearch) {
         const { site, query } = intent.siteSearch;
         this.logger.log(`[jarvis] SITE_SEARCH intent detected for site: ${site}, query: ${query}`);
-        
+
         const siteSearchCtx = await this.executeSiteSearch(site, query);
         if (siteSearchCtx) {
           toolsUsed.push('site_search');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx);
         }
-        
-        // Fallback a web general si falla
-        this.logger.log(`[jarvis] SITE_SEARCH vacío → fallback WEB`);
-        intent.intent = 'WEB';
+
+        // Sin evidencia del sitio específico → informar honestamente, no inventar
+        const noEvidenceMsg = this.buildNoEvidenceMessage(userMessage, site);
+        await this.conversationRepo.create({ sessionId, role: 'assistant', content: noEvidenceMsg, metadata: { source: 'site_search_fail' } });
+        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noEvidenceMsg, toolsUsed: [...toolsUsed, 'site_search_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+        return noEvidenceMsg;
       }
 
       // ── SPORTS — cascada: API deportiva → DuckDuckGo → scraping ────────
@@ -256,7 +258,11 @@ export class JarvisService {
           toolsUsed.push('auto_search');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
         }
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+        // Sin evidencia deportiva → no inventar resultados
+        const noSportsMsg = this.buildNoEvidenceMessage(userMessage);
+        await this.conversationRepo.create({ sessionId, role: 'assistant', content: noSportsMsg, metadata: { source: 'sports_fail' } });
+        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noSportsMsg, toolsUsed: [...toolsUsed, 'sports_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+        return noSportsMsg;
       }
 
       // ── WEB — DomainRouter → caché inteligente → DuckDuckGo ──────────────────
@@ -317,7 +323,15 @@ export class JarvisService {
           return failMsg;
         }
 
-        // Para otras categorías sin resultados → LLM con conocimiento propio
+        // Para otras categorías sin resultados web → si la pregunta es sobre eventos
+        // actuales, no pasar al LLM sin evidencia (evita alucinaciones)
+        if (this.isCurrentEventQuery(userMessage)) {
+          const noWebMsg = this.buildNoEvidenceMessage(userMessage);
+          await this.conversationRepo.create({ sessionId, role: 'assistant', content: noWebMsg, metadata: { source: 'web_fail_graceful' } });
+          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noWebMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+          return noWebMsg;
+        }
+        // Para preguntas que no son de eventos actuales → el LLM puede responder con conocimiento base
       }
 
       // ── LOCAL / RAG — pero antes, si needsWebSearch → enriquecer con web ──
@@ -1128,6 +1142,49 @@ export class JarvisService {
     }
 
     return null;
+  }
+
+  /**
+   * Detecta si la pregunta requiere información de eventos actuales/recientes.
+   * Estas preguntas NO deben responderse sin evidencia web — el LLM inventaría.
+   */
+  private isCurrentEventQuery(message: string): boolean {
+    const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return /(
+      hoy|ayer|esta semana|esta noche|ahora|actualmente|reciente|
+      noticias|novedad|ultimo|ultima|ocurrio|paso hoy|que hay|
+      resultado|partido|gol|marcador|score|
+      precio actual|cotizacion|dolar hoy|
+      quedo|gano|perdio|empato|clasifico|
+      quien gano|como salio|que paso con|
+      revisa|dame las noticias|titulares
+    )/x.test(n);
+  }
+
+  /**
+   * Construye un mensaje honesto cuando no hay evidencia web disponible.
+   * Evita que el LLM invente noticias, resultados o eventos actuales.
+   */
+  private buildNoEvidenceMessage(query: string, site?: string): string {
+    const now = new Date();
+    const hora = now.toLocaleTimeString('es-AR', {
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'America/Argentina/Buenos_Aires',
+    });
+
+    const siteHint = site
+      ? `Intenté buscar en **${site}** pero no pude obtener contenido en este momento.`
+      : `Intenté buscar en las fuentes disponibles pero no obtuve resultados verificados.`;
+
+    return [
+      `⚠️ No tengo datos verificados para responder esto (${hora} hs).`,
+      ``,
+      siteHint,
+      ``,
+      `No voy a inventar información sobre eventos actuales. Podés:`,
+      site ? `- Consultar directamente: https://${site}` : `- Reformular la pregunta o intentar en un momento`,
+      `- Volver a preguntarme en unos segundos`,
+    ].join('\n');
   }
 
   private isRepeatRequest(message: string): boolean {
