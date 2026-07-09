@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — CRUD de pendientes: lógica de comandos y extracción de objetivos (2026-07-08)
+
+- Se corrigió la lógica de `TaskReminderService` donde comandos como "borra el pendiente agregar" se guardaban incorrectamente como nuevos pendientes porque el verbo "agregar" disparaba el intent de creación.
+- Los intents de borrado y listado ahora se evalúan antes que el de creación para evitar falsos positivos.
+- Se separaron `extractDeleteTarget` y `extractCreateObjective` en métodos independientes, cada uno limpiando solo los tokens de su contexto.
+- Se agregó borrado por número ("borra el 2") como alternativa más confiable al borrado por nombre.
+- Se agregó soporte para marcar pendientes como completados ("completé el pendiente 1", "ya hice la tarea 2").
+- Cuando no se encuentra un pendiente por nombre al borrar, se muestra la lista numerada para facilitar el borrado por número.
+
 ### Fixed — Evaluador de conocimiento con heurísticas para rechazar contenido efímero (2026-07-08)
 
 - Se agregaron heurísticas en `ExecutionEngineService` para detectar y rechazar contenido sin valor de reutilización antes de guardarlo en la biblioteca de conocimiento.
