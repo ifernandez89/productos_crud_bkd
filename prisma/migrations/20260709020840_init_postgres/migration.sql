@@ -1,155 +1,175 @@
 -- CreateTable
 CREATE TABLE "Product" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "price" REAL NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
     "image" TEXT,
     "stock" INTEGER NOT NULL,
     "isFeatured" BOOLEAN,
     "isOnSale" BOOLEAN,
     "isNew" BOOLEAN,
-    "createdAT" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "marca" TEXT NOT NULL
+    "createdAT" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "marca" TEXT NOT NULL,
+
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Pregunta" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "texto" TEXT NOT NULL,
     "respuesta" TEXT NOT NULL,
     "estado" TEXT NOT NULL DEFAULT 'success',
     "errorMessage" TEXT,
     "errorStatus" INTEGER,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Pregunta_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "UserProfile" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT,
     "timezone" TEXT NOT NULL DEFAULT 'America/Argentina/Buenos_Aires',
     "country" TEXT NOT NULL DEFAULT 'Argentina',
     "language" TEXT NOT NULL DEFAULT 'es-AR',
     "preferences" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserProfile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "UserCredential" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "userProfileId" INTEGER NOT NULL,
     "provider" TEXT NOT NULL,
     "accessToken" TEXT NOT NULL,
     "refreshToken" TEXT,
     "expiryDate" BIGINT,
     "scope" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "UserCredential_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserCredential_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Memory" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "importance" INTEGER NOT NULL DEFAULT 1,
-    "lastAccessed" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "lastAccessed" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Memory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "MemoryChunk" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "memoryId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "embeddingId" TEXT,
-    CONSTRAINT "MemoryChunk_memoryId_fkey" FOREIGN KEY ("memoryId") REFERENCES "Memory" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "MemoryChunk_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "ConversationMessage" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sessionId" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "metadata" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ConversationMessage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "SessionSummary" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sessionId" TEXT NOT NULL,
     "summary" TEXT NOT NULL,
-    "updatedAt" DATETIME NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SessionSummary_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "KnowledgeSource" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "url" TEXT,
     "active" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "KnowledgeSource_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Collection" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "color" TEXT,
     "icon" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Collection_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "CollectionDocument" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "collectionId" INTEGER NOT NULL,
     "documentId" INTEGER NOT NULL,
-    "addedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "CollectionDocument_collectionId_fkey" FOREIGN KEY ("collectionId") REFERENCES "Collection" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "CollectionDocument_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CollectionDocument_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Document" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sourceId" INTEGER,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "category" TEXT,
     "source" TEXT,
     "timesUsed" INTEGER NOT NULL DEFAULT 0,
-    "lastUsed" DATETIME,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Document_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "KnowledgeSource" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "lastUsed" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Document_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Chunk" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "documentId" INTEGER NOT NULL,
     "content" TEXT NOT NULL,
     "embeddingId" TEXT,
     "metadata" TEXT,
-    CONSTRAINT "Chunk_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "Chunk_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Task" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sessionId" TEXT,
     "objective" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'pending',
@@ -157,49 +177,56 @@ CREATE TABLE "Task" (
     "category" TEXT,
     "project" TEXT,
     "result" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "TaskStep" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "taskId" INTEGER NOT NULL,
     "stepNumber" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "result" TEXT,
     "status" TEXT NOT NULL DEFAULT 'pending',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "TaskStep_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TaskStep_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Feedback" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sessionId" TEXT,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "score" INTEGER NOT NULL,
     "comment" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Tool" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "config" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Tool_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "AgentRun" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sessionId" TEXT,
     "question" TEXT NOT NULL,
     "answer" TEXT,
@@ -210,12 +237,14 @@ CREATE TABLE "AgentRun" (
     "tokensUsed" INTEGER,
     "success" BOOLEAN NOT NULL DEFAULT true,
     "errorMsg" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AgentRun_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Source" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "urlBase" TEXT NOT NULL,
     "category" TEXT NOT NULL,
@@ -225,64 +254,72 @@ CREATE TABLE "Source" (
     "keywords" TEXT NOT NULL DEFAULT '[]',
     "scrapeEnabled" BOOLEAN NOT NULL DEFAULT true,
     "embeddingEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "lastScraped" DATETIME,
-    "lastEmbedding" DATETIME,
-    "successRate" REAL NOT NULL DEFAULT 1.0,
+    "lastScraped" TIMESTAMP(3),
+    "lastEmbedding" TIMESTAMP(3),
+    "successRate" DOUBLE PRECISION NOT NULL DEFAULT 1.0,
     "avgResponseTimeMs" INTEGER,
     "cacheHits" INTEGER NOT NULL DEFAULT 0,
     "scrapingConfig" TEXT,
     "embeddingConfig" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Source_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "ScrapedPage" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "sourceId" INTEGER NOT NULL,
     "url" TEXT NOT NULL,
     "title" TEXT,
     "contentHash" TEXT NOT NULL,
-    "scrapedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "publishedAt" DATETIME,
-    "expiresAt" DATETIME NOT NULL,
+    "scrapedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "publishedAt" TIMESTAMP(3),
+    "expiresAt" TIMESTAMP(3) NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'valid',
     "cacheHits" INTEGER NOT NULL DEFAULT 0,
-    "lastAccessedAt" DATETIME,
+    "lastAccessedAt" TIMESTAMP(3),
     "embeddingId" TEXT,
-    CONSTRAINT "ScrapedPage_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "ScrapedPage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "ScrapedContent" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "pageId" INTEGER NOT NULL,
     "htmlRaw" TEXT,
     "textExtracted" TEXT NOT NULL,
     "jsonExtracted" TEXT,
     "metadata" TEXT,
-    CONSTRAINT "ScrapedContent_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "ScrapedPage" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "ScrapedContent_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Query" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "question" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "sourcesUsed" TEXT,
     "cacheHit" BOOLEAN NOT NULL DEFAULT false,
     "responseTimeMs" INTEGER NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Query_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "TopicSnapshot" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "id" SERIAL NOT NULL,
     "topic" TEXT NOT NULL,
     "conclusion" TEXT NOT NULL,
     "tags" TEXT NOT NULL DEFAULT '[]',
     "sessionId" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TopicSnapshot_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -464,3 +501,30 @@ CREATE INDEX "TopicSnapshot_createdAt_idx" ON "TopicSnapshot"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "TopicSnapshot_sessionId_idx" ON "TopicSnapshot"("sessionId");
+
+-- AddForeignKey
+ALTER TABLE "UserCredential" ADD CONSTRAINT "UserCredential_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MemoryChunk" ADD CONSTRAINT "MemoryChunk_memoryId_fkey" FOREIGN KEY ("memoryId") REFERENCES "Memory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CollectionDocument" ADD CONSTRAINT "CollectionDocument_collectionId_fkey" FOREIGN KEY ("collectionId") REFERENCES "Collection"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CollectionDocument" ADD CONSTRAINT "CollectionDocument_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Document" ADD CONSTRAINT "Document_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "KnowledgeSource"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Chunk" ADD CONSTRAINT "Chunk_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TaskStep" ADD CONSTRAINT "TaskStep_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ScrapedPage" ADD CONSTRAINT "ScrapedPage_sourceId_fkey" FOREIGN KEY ("sourceId") REFERENCES "Source"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ScrapedContent" ADD CONSTRAINT "ScrapedContent_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "ScrapedPage"("id") ON DELETE CASCADE ON UPDATE CASCADE;

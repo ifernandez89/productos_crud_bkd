@@ -6,6 +6,33 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Evaluador de conocimiento con heurísticas para rechazar contenido efímero (2026-07-08)
+
+- Se agregaron heurísticas en `ExecutionEngineService` para detectar y rechazar contenido sin valor de reutilización antes de guardarlo en la biblioteca de conocimiento.
+- El filtro evalúa señales como longitud mínima, presencia de fechas muy específicas, referencias a "hoy/ahora/esta semana", y ausencia de conceptos generalizables.
+- Los resultados descartados se loguean con motivo, permitiendo auditar qué se rechazó y por qué.
+
+### Added — Hilo de conversación en Aichat (2026-07-07)
+
+- `AichatService` ahora mantiene un hilo de conversación: acepta `conversationId` opcional en el DTO y acumula mensajes anteriores antes de enviar al modelo.
+- Se agregó `conversationId` a `CreateAichatDto` para que el cliente pueda persistir el contexto entre turnos.
+- Tests de regresión añadidos para cubrir el flujo de hilo con y sin `conversationId`.
+
+### Fixed — Nombre y descripción del modelo Ollama en Aichat (2026-07-07)
+
+- `ollamaModel.ts` y `ollama-config.ts` corregidos para leer `name` y `description` correctamente desde la respuesta de la API de Ollama, evitando que aparecieran `undefined` en los logs y en el aviso del modelo activo.
+
+### Fixed — Configuración dinámica del modelo Ollama (2026-07-07)
+
+- Se centralizó la resolución del modelo en `src/shared/ollama-config.ts`: lee `OLLAMA_MODEL_NAME` y, como fallback, `OLLAMA_MODEL` desde el entorno.
+- `AichatService`, `JarvisService` y `OllamaProvider` usan la misma utilidad, eliminando duplicación y garantizando que todos los flujos invoquen el mismo modelo activo.
+- Las respuestas incluyen un aviso visible con el nombre del modelo, por ejemplo: `Modelo activo: llama3.2:3b (Ollama).`
+
+### Fixed — Detalles del modelo en hardware nuevo (2026-07-07)
+
+- `AichatService` actualizado para obtener y mostrar correctamente los detalles del modelo (parámetros, familia, tamaño) al cambiar de hardware.
+- `ollamaModel.ts` corregido para mapear los campos de la respuesta de Ollama al schema interno sin perder metadatos.
+
 ### Added — Agregación de valor en Jarvis y evolución de conocimiento (2026-07-08)
 
 - Se incorporó un motor de ejecución de planes para Jarvis que procesa tareas paso a paso, acumulando contexto y mejorando la calidad de las respuestas finales.
@@ -1119,3 +1146,15 @@ Evolución completa de la arquitectura con provider abstraction, observabilidad,
 - Initial NestJS backend scaffold.
 - Prisma integration and database migrations.
 - Products, AI chat, and upload modules.
+
+### Fixed - migraci�n Postgres y ConversationMessage (2026-07-08)
+
+- Se resolvi� el error The table public.ConversationMessage does not exist al migrar de SQLite a Postgres.
+- Se elimin� el directorio prisma/migrations/ y se cre� una nueva historia de migraciones limpia para Postgres con prisma migrate dev --name init_postgres.
+- La tabla ConversationMessage ahora se crea correctamente en la base de datos PostgreSQL neon.tech.
+- Se actualiz� el script de inicio r�pido para incluir la instalaci�n de ngrok con 
+pm install -g ngrok.
+- El servidor NestJS ya funciona correctamente con Postgres y expone ngrok activo en https://sustained-spree-carnation.ngrok-free.dev.
+A d d e d   n e w   f e a t u r e :   F i x   f o r   d e v   s e r v e r   s t a r t u p 
+ 
+ 
