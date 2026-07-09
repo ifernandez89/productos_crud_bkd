@@ -1,10 +1,32 @@
+/** Modelo general / conversacional — OLLAMA_MODEL_NAME o OLLAMA_MODEL */
 export function resolveOllamaModelName(defaultModel = ''): string {
   const configuredModel = [
     process.env.OLLAMA_MODEL_NAME,
     process.env.OLLAMA_MODEL,
   ]
-    .map((value) => value?.trim())
-    .find((value) => Boolean(value));
+    .map((v) => v?.trim())
+    .find(Boolean);
 
   return configuredModel || defaultModel;
+}
+
+/**
+ * Modelo de clasificación / razonamiento rápido — OLLAMA_MODEL_TEST2_NAME
+ * Caso de uso: IntentRouterService
+ * ⚠️ Usar un modelo de instrucción sin thinking mode (ej: llama3.2:3b, phi4-mini).
+ *    phi4-mini-reasoning NO es apto — siempre emite <think> y no puede dar 1 sola palabra.
+ */
+export function resolveIntentModel(defaultModel = 'llama3.2:3b'): string {
+  const configured = process.env.OLLAMA_MODEL_TEST2_NAME?.trim();
+  // Si el modelo configurado es un "reasoning" model, ignorarlo para intent classification
+  if (configured && !configured.includes('reasoning')) return configured;
+  return defaultModel;
+}
+
+/**
+ * Modelo técnico / experto — OLLAMA_MODEL_TEST3_NAME
+ * Caso de uso: OllamaQwenModelService, tareas de código y análisis (qwen3:4b)
+ */
+export function resolveTechModel(defaultModel = 'qwen3:4b'): string {
+  return process.env.OLLAMA_MODEL_TEST3_NAME?.trim() || defaultModel;
 }

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
+import { resolveIntentModel } from '../../../shared/ollama-config';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -36,7 +37,7 @@ export class IntentRouterService {
 
   // Ollama URL para clasificación rápida (llamada directa, sin LangChain overhead)
   private readonly OLLAMA_URL = 'http://localhost:11434/api/generate';
-  private readonly CLASSIFIER_MODEL = process.env.OLLAMA_MODEL ?? 'llama3.2:3b';
+  private readonly CLASSIFIER_MODEL = resolveIntentModel();
 
   // ── API pública ─────────────────────────────────────────────────────────────
 
@@ -254,12 +255,16 @@ Categoría:`;
         model: this.CLASSIFIER_MODEL,
         prompt,
         stream: false,
-        options: { temperature: 0, num_predict: 5 }, // mínimo tokens — solo necesita 1 palabra
+        options: { temperature: 0, num_predict: 150 }, // thinking models necesitan tokens para cerrar </think>
+        think: false, // desactiva chain-of-thought en phi4-mini-reasoning y qwen3
       },
       { timeout: 8_000 },
     );
 
-    const raw: string = (response.data?.response ?? '').trim().toUpperCase();
+    const raw: string = (response.data?.response ?? '')
+      .replace(/<think>[\s\S]*?<\/think>/gi, '') // strip chain-of-thought (phi4-mini, qwen3)
+      .trim()
+      .toUpperCase();
 
     // Mapear respuesta del LLM a IntentType
     const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL', 'ASTROLOGY', 'SITE_SEARCH'];

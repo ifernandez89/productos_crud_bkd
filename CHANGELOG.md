@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Multi-model Ollama: resolvers por caso de uso + fix clasificador de intents (2026-07-09)
+
+- Se agregaron dos nuevas funciones exportadas en `src/shared/ollama-config.ts`:
+  - `resolveIntentModel()` → lee `OLLAMA_MODEL_TEST2_NAME`, descarta modelos `reasoning` automáticamente.
+  - `resolveTechModel()` → lee `OLLAMA_MODEL_TEST3_NAME` (qwen3:4b por defecto).
+- `IntentRouterService` ahora usa `resolveIntentModel()` en lugar de leer `OLLAMA_MODEL` directo.
+- `OllamaQwenModelService` (ollamaModel_2.ts) reemplaza el hardcode `qwen3:4b` por `resolveTechModel()`.
+- Se agregó `think: false` y strip de `<think>...</think>` en `llmClassify` para compatibilidad con modelos reasoning.
+- Descubierto via test: `phi4-mini-reasoning` siempre emite chain-of-thought y no puede responder 1 palabra → descartado como clasificador. El resolver lo filtra automáticamente y cae al default `llama3.2:3b`.
+- `.env.example` actualizado con las tres variables de modelo documentadas.
+- Script de verificación en `scratch/test-model-resolvers.mjs` — testea resolución de vars y ping a cada modelo.
+
+### Fixed — SITE_SEARCH: detección de sitios con prefijo ("Puedes darme") y typos (2026-07-09)
+
+- Patrón 1 de `extractSiteSearchFromText` tenía `^` que impedía detectar queries como "Puedes darme 6 titulares de noticias en mystery planet" — se eliminó el ancla y se amplió el verbo `darme`.
+- `resolveSiteAlias` ahora implementa fuzzy matching con Levenshtein (tolerancia 1 char por palabra), resolviendo typos como `plantet` → `mystery planet` → `mysteryplanet.com.ar`.
+
 ### Fixed — Corrupción en `jarvis.service.ts` y `web-helper.ts` (2026-07-08)
 
 - Se eliminó una llave `}` extra que cerraba prematuramente el bloque `if (category === 'noticias' || ...)` en `JarvisService.query()`, dejando el `failMsg` de noticias locales fuera del bloque condicional.

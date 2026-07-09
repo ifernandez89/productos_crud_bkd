@@ -5,6 +5,7 @@ import {
   IModelService,
   AIMessageResponse,
 } from '../interfaces/model.interface';
+import { resolveTechModel } from '../../shared/ollama-config';
 
 export interface StructuredPrompt {
   system: string;
@@ -111,7 +112,7 @@ COMPORTAMIENTO:
      */
     this.model = new ChatOllama({
       baseUrl: 'http://localhost:11434',
-      model: 'qwen3:4b', // Modelo preciso para tareas técnicas complejas
+      model: resolveTechModel(), // OLLAMA_MODEL_TEST3_NAME en .env (qwen3:4b por defecto)
       temperature: 0.2, // Muy bajo: reduce alucinaciones y respuestas creativas
       topP: 0.85,
       topK: 5, // Conservador: solo los 5 tokens más probables
@@ -123,9 +124,8 @@ COMPORTAMIENTO:
     });
 
     this.logger.log(
-      '🔧 Qwen3:4b Tech Expert Model initialized | ' +
-      'Config: temp=0.2, topK=5, ctx=4096, ' +
-      'RAG: chunk=1000, overlap=200, embedding=bge-m3'
+      `🔧 Tech Expert Model initialized: ${resolveTechModel()} | ` +
+      'Config: temp=0.2, topK=5, ctx=4096, RAG: chunk=1000, overlap=200, embedding=bge-m3'
     );
   }
 }
