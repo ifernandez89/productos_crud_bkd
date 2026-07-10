@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Atajo de ayuda "h" + Integración multimodal Qwen2.5-VL (2026-07-10)
+
+- Nuevo atajo `h`: escribir exactamente "h" en el chat devuelve de forma instantánea la guía completa de comandos (agenda, búsqueda web, calendario, memoria, OCR, repetir). Bypasea LLM, intent router y tools — respuesta en ~0ms. Se guarda en el historial de conversación.
+- `VisionService` (`src/jarvis/tools/vision/vision.service.ts`): servicio de análisis de imágenes vía Ollama + `yemifo/qwen25-vl-3b-q4km`. Soporta modos `general | ocr | error | diagram | document`, detección de lenguaje de código y guardado opcional en historial via `sessionId`.
+- Nuevos endpoints en `JarvisController`:
+  - `POST /api/jarbees/vision/analyze` — imagen + pregunta + modo + sessionId opcional.
+  - `POST /api/jarbees/vision/ocr` — OCR rápido sin pregunta.
+- `resolveVisionModel()` agregado a `src/shared/ollama-config.ts`, lee `OLLAMA_MODEL_VL_NAME`.
+- `VisionService` registrado en `JarvisModule`.
+
 ### Added — Multi-model Ollama: resolvers por caso de uso + fix clasificador de intents (2026-07-09)
 
 - Se agregaron dos nuevas funciones exportadas en `src/shared/ollama-config.ts`:

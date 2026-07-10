@@ -93,6 +93,14 @@ export class JarvisService {
     const startTime = Date.now();
     const toolsUsed: string[] = [];
 
+    // ── HELP SHORTCUT — "h", "H", "help", "ayuda" devuelve la guía de comandos ─
+    if (/^(h|help|ayuda)$/i.test(userMessage.trim())) {
+      const helpMsg = this.buildHelpMessage();
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: helpMsg, metadata: { source: 'help' } });
+      return helpMsg;
+    }
+
     if (this.isRepeatRequest(userMessage)) {
       if (!hasSessionId) {
         return 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
@@ -1212,6 +1220,46 @@ export class JarvisService {
   private isVoiceRequest(message: string): boolean {
     const normalized = message.toLowerCase();
     return /voz|audio|habl(a|e|o)|en voz alta|voz alta/.test(normalized);
+  }
+
+  /** Guía de comandos rápida — se activa escribiendo "h" */
+  private buildHelpMessage(): string {
+    return [
+      `📋 **Guía de comandos — JarBees**`,
+      ``,
+      `**AGENDA / PENDIENTES**`,
+      `  Ver lista         →  \`lista de pendientes\``,
+      `  Agregar           →  \`agregar <tarea> a mis pendientes\``,
+      `                       \`pendiente: <tarea>\``,
+      `  Borrar por número →  \`borra el 2\``,
+      `  Borrar por nombre →  \`borra el pendiente <nombre>\``,
+      `  Borrar todo       →  \`borra todos los pendientes\``,
+      `  Editar por número →  \`cambia el 2 a <nuevo texto>\``,
+      `  Editar por nombre →  \`edita <nombre> por <nuevo texto>\``,
+      `  Completar         →  \`completé el pendiente 1\``,
+      ``,
+      `**BÚSQUEDA WEB**`,
+      `  Noticias generales     →  \`últimas noticias\``,
+      `  Sitio específico       →  \`dame 6 noticias de elonce\``,
+      `                             \`dame noticias de infobae\``,
+      `  Deportes               →  \`resultado del partido de Argentina\``,
+      ``,
+      `**CALENDARIO Y TAREAS GOOGLE**`,
+      `  Ver eventos hoy        →  \`qué tengo en el calendario hoy\``,
+      `  Ver tareas pendientes  →  \`mis tareas de Google\``,
+      ``,
+      `**MEMORIA**`,
+      `  Guardar dato           →  \`recorda que mi proyecto se llama JarBees\``,
+      ``,
+      `**REPETIR ÚLTIMA RESPUESTA**`,
+      `  \`repetir\`  /  \`repetí\`  /  \`dilo de nuevo\``,
+      ``,
+      `**IMÁGENES / OCR** *(adjuntá un archivo)*`,
+      `  Analizar error         →  subí la captura + escribí \`¿qué error es este?\``,
+      `  OCR rápido             →  subí imagen + modo \`ocr\``,
+      ``,
+      `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
+    ].join('\n');
   }
 
   async findRelevantSkills(query: string) {
