@@ -38,6 +38,7 @@ import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { TaskReminderService } from './tools/tasks/task-reminder.service';
 import { ExecutionEngine } from './planner/execution-engine.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
+import { VisionService } from './tools/vision/vision.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -78,6 +79,7 @@ import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service'
     TaskReminderService,
     ExecutionEngine,
     KnowledgeEvolutionService,
+    VisionService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

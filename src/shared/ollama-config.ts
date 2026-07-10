@@ -30,3 +30,11 @@ export function resolveIntentModel(defaultModel = 'llama3.2:3b'): string {
 export function resolveTechModel(defaultModel = 'qwen3:4b'): string {
   return process.env.OLLAMA_MODEL_TEST3_NAME?.trim() || defaultModel;
 }
+
+/**
+ * Modelo multimodal / visión — OLLAMA_MODEL_VL_NAME
+ * Caso de uso: VisionService — OCR, análisis de imágenes, PDFs escaneados
+ */
+export function resolveVisionModel(defaultModel = 'yemifo/qwen25-vl-3b-q4km:latest'): string {
+  return process.env.OLLAMA_MODEL_VL_NAME?.trim() || defaultModel;
+}

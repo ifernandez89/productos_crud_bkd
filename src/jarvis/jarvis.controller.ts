@@ -9,10 +9,11 @@ import {
   Param,
   ParseIntPipe,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JarvisService } from './jarvis.service';
 import { FeedbackDto } from './dto/feedback.dto';
@@ -24,6 +25,7 @@ import { PlannerService } from './planner/planner.service';
 import { InvestigationService } from './tools/web/investigation.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { ConversationRepository } from './repositories/conversation.repository';
+import { VisionService } from './tools/vision/vision.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -40,6 +42,7 @@ export class JarvisController {
     private readonly investigationService: InvestigationService,
     private readonly conversationRepo: ConversationRepository,
     private readonly knowledgeEvolution: KnowledgeEvolutionService,
+    private readonly visionService: VisionService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -523,5 +526,94 @@ export class JarvisController {
   async listEvolutionTopics() {
     const topics = await this.knowledgeEvolution.listTopics();
     return { success: true, topics };
+  }
+
+  // ── Visión / Multimodal ─────────────────────────────────────────────────────
+
+  @Public()
+  @Post('vision/analyze')
+  @ApiOperation({
+    summary: 'Analizar imagen con Qwen2.5-VL (OCR, errores, diagramas)',
+    description:
+      'Acepta una imagen (PNG/JPG/WEBP) y una pregunta opcional. ' +
+      'Modes: general | ocr | error | diagram | document. ' +
+      'Si se combina con sessionId, el resultado se guarda en el historial de conversación.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file:      { type: 'string', format: 'binary' },
+        question:  { type: 'string', description: 'Pregunta sobre la imagen (opcional)' },
+        mode:      { type: 'string', enum: ['general', 'ocr', 'error', 'diagram', 'document'] },
+        sessionId: { type: 'string', description: 'Para guardar en historial de conversación' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async analyzeImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { question?: string; mode?: string; sessionId?: string },
+  ) {
+    if (!file) throw new BadRequestException('Se requiere un archivo de imagen');
+
+    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.mimetype)) {
+      throw new BadRequestException('Formato no soportado. Usá PNG, JPG, WEBP o GIF.');
+    }
+
+    const imageBase64 = file.buffer.toString('base64');
+    const mode = (body.mode ?? 'general') as 'general' | 'ocr' | 'error' | 'diagram' | 'document';
+
+    const result = await this.visionService.analyze(imageBase64, body.question, mode);
+
+    // Si hay sessionId, guardar la interacción en el historial de conversación
+    if (body.sessionId) {
+      const userMsg = body.question
+        ? `[Imagen adjunta] ${body.question}`
+        : `[Imagen adjunta — análisis: ${mode}]`;
+
+      await this.conversationRepo.create({
+        sessionId: body.sessionId,
+        role: 'user',
+        content: userMsg,
+        metadata: { source: 'vision', filename: file.originalname, mimetype: file.mimetype },
+      });
+      await this.conversationRepo.create({
+        sessionId: body.sessionId,
+        role: 'assistant',
+        content: result.text,
+        metadata: { source: 'vision', model: result.model, latencyMs: result.latencyMs },
+      });
+    }
+
+    return {
+      success: true,
+      answer: result.text,
+      model: result.model,
+      latencyMs: result.latencyMs,
+      detectedLanguage: result.detectedLanguage,
+    };
+  }
+
+  @Public()
+  @Post('vision/ocr')
+  @ApiOperation({
+    summary: 'OCR rápido — extrae solo el texto de una imagen o PDF escaneado',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async ocrImage(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Se requiere un archivo');
+    const imageBase64 = file.buffer.toString('base64');
+    const text = await this.visionService.extractText(imageBase64);
+    return { success: true, text };
   }
 }
