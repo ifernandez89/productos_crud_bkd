@@ -3,7 +3,26 @@ import { DocumentRepository } from '../repositories/document.repository';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { EmbeddingsService } from './embeddings.service';
-const pdfParse = require('pdf-parse');
+
+// pdf-parse: diagnóstico de exportación en runtime
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParseModule = require('pdf-parse');
+
+// Log de diagnóstico — visible en logs al arrancar el servidor
+const _pdfModuleType   = typeof pdfParseModule;
+const _pdfDefaultType  = typeof pdfParseModule?.default;
+const _pdfKeys         = Object.keys(pdfParseModule ?? {}).slice(0, 10).join(', ');
+console.log(`[pdf-parse:init] module type=${_pdfModuleType} | default type=${_pdfDefaultType} | keys=[${_pdfKeys}]`);
+
+// Resolver la función correcta según la estructura real del módulo
+const pdfParse: (buffer: Buffer) => Promise<{ text: string; numpages: number }> =
+  typeof pdfParseModule === 'function'
+    ? pdfParseModule
+    : typeof pdfParseModule?.default === 'function'
+      ? pdfParseModule.default
+      : typeof pdfParseModule?.pdf === 'function'
+        ? pdfParseModule.pdf
+        : pdfParseModule; // último recurso — fallará con el error original si no es función
 
 export interface IngestResult {
   documentId: number;
@@ -48,13 +67,20 @@ export class DocumentIngestService {
     category?: string,
     source?: string,
   ): Promise<IngestResult> {
+    this.logger.log(`[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes | categoría=${category ?? 'pdf'}`);
+    this.logger.log(`[pdf:parser] función disponible=${typeof pdfParse === 'function'} | tipo=${typeof pdfParse}`);
+
     let text: string;
     try {
+      this.logger.log(`[pdf:parse] iniciando extracción de texto...`);
       const parsed = await pdfParse(buffer);
+      this.logger.log(`[pdf:parse] OK — páginas=${parsed.numpages} | chars=${parsed.text?.length ?? 0}`);
       text = parsed.text?.trim();
-      if (!text) throw new Error('PDF sin texto extraíble');
+      if (!text) throw new Error('PDF sin texto extraíble (puede ser un PDF escaneado/imagen)');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`[pdf:parse] ERROR en "${title}": ${msg}`);
+      this.logger.error(`[pdf:parse] pdfParseModule keys: ${Object.keys(pdfParseModule ?? {}).join(', ')}`);
       throw new BadRequestException(`No pude extraer texto del PDF: ${msg}`);
     }
 
