@@ -6,6 +6,108 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Sistema de Detección Automática de Categorías y Resúmenes Inteligentes (2026-07-10)
+
+**🎯 Detección Automática de Categorías:**
+- Al subir documentos/PDFs, el sistema detecta automáticamente la categoría del contenido usando una estrategia en cascada de 3 niveles:
+  1. **Keywords (rápido)**: Analiza título y contenido con patrones predefinidos para 30+ categorías
+  2. **LLM (inteligente)**: Si no hay match de keywords, usa el modelo de IA para clasificar
+  3. **Fallback (seguro)**: Extrae categoría del título o usa "general"
+- Categorías detectables: medicina, plantas_medicinales, desarrollo, ia, tecnologia, agricultura, biologia, quimica, fisica, matematicas, economia, derecho, historia, arte, literatura, musica, deportes, gastronomia, y más.
+- El campo `category` ahora es opcional en todos los endpoints de ingestión (PDF, texto, URL).
+- Implementado en `DocumentIngestService.detectCategory()` con métodos auxiliares:
+  - `detectCategoryFromKeywords()`: búsqueda por patrones
+  - `detectCategoryWithLLM()`: clasificación con IA
+  - `fallbackCategoryFromTitle()`: respaldo final
+
+**📚 Resúmenes Inteligentes por Categoría:**
+- Nuevo `CategorySummaryService` que genera resúmenes combinados de múltiples documentos de la misma categoría.
+- Cuando el usuario pregunta "resumen sobre plantas medicinales" o "tenemos información en documentos sobre tecnología?":
+  1. Detecta la categoría solicitada
+  2. Recupera chunks de TODOS los documentos con esa categoría (máx. 15 por defecto)
+  3. Balancea contenido de diferentes documentos para evitar sesgos
+  4. Genera un resumen coherente usando el LLM
+  5. Cita las fuentes consultadas (títulos de documentos)
+- Soporta queries específicas dentro de la categoría: "resumen de medicina sobre plantas antiinflamatorias"
+- Si no hay documentos en la categoría, muestra:
+  - Lista de categorías disponibles con conteo de documentos
+  - Sugerencia de qué categorías puede consultar
+- Nuevos métodos en `DocumentRepository`:
+  - `searchChunksByCategory(category, limit)`: busca por categoría
+  - `searchChunksByQueryAndCategory(query, category, limit)`: busca con filtro adicional
+
+**🔍 Detección Mejorada de Consultas:**
+- `IntentRouter` mejorado con más patrones para detectar consultas sobre documentos:
+  - "tenemos/hay información en documentos sobre X"
+  - "mis documentos de X"
+  - "qué tengo sobre X"
+  - "según mis PDFs de X"
+- `JarvisService.detectCategorySummaryRequest()` con 7 patrones diferentes:
+  - Resumen directo: "resumen sobre X"
+  - Documentos: "documentos sobre X", "PDFs de X"
+  - Búsqueda: "busca en X"
+  - Existencia: "tenemos información sobre X"
+  - Posesión: "mis documentos de X"
+  - Consulta: "qué tengo sobre X"
+  - Referencia: "según mis documentos de X"
+- Validación automática de categorías (mínimo 3 caracteres, excluye palabras comunes)
+- Log de detección para debugging: muestra categoría detectada y mensaje original
+
+**🛡️ Sanitización de Texto para PostgreSQL:**
+- Nuevo método `sanitizeText()` que limpia caracteres problemáticos antes de guardar:
+  - Remueve caracteres nulos (`\x00`) que causan error "invalid byte sequence for encoding UTF8"
+  - Remueve caracteres de control problemáticos (excepto saltos de línea y tabs)
+  - Normaliza múltiples espacios en blanco
+- Aplicado en todos los puntos de ingestión: `ingestPdf()`, `ingestText()`, `ingestUrl()`
+- Limpia tanto títulos como contenido antes de guardar en BD
+
+**🌐 Endpoints Nuevos/Actualizados:**
+- `POST /jarbees/library/ingest/pdf`: campo `category` ahora opcional (se detecta automáticamente)
+- `POST /jarbees/library/ingest/text`: campo `category` ahora opcional (se detecta automáticamente)
+- `POST /jarbees/library/ingest/url`: campo `category` ahora opcional (se detecta automáticamente)
+- `POST /jarbees/library/category-summary`: nuevo endpoint para generar resúmenes por categoría
+  - Body: `{ category: string, query?: string, maxChunks?: number }`
+  - Response: `{ category, documentsUsed, chunksUsed, summary, documentTitles }`
+
+**💬 Integración en Chat:**
+- El flujo conversacional (`POST /jarbees/chat`) detecta automáticamente solicitudes de resumen por categoría
+- No requiere endpoints especiales - funciona con lenguaje natural
+- Ejemplos que funcionan:
+  - "resumen sobre plantas medicinales"
+  - "tenemos información en documentos sobre tecnología?"
+  - "qué dicen mis PDFs de medicina"
+  - "información sobre desarrollo"
+  - "hay algo de agricultura en mis archivos?"
+
+**📖 Comandos Actualizados en Ayuda:**
+- Guía de ayuda (`h`) actualizada con sección **BIBLIOTECA / DOCUMENTOS / PDFs**:
+  - Ver documentos: `mis documentos` / `biblioteca`
+  - Resumen por categoría: `resumen sobre <tema>`
+  - Ejemplos: `resumen sobre plantas medicinales`, `qué dicen mis PDFs de medicina`
+  - Buscar en docs: `busca en mis documentos <tema>`
+  - Limpiar duplicados: `eliminar documentos repetidos`
+- Nota explicativa sobre detección automática de categorías
+- Sugerencia de uso: el usuario puede preguntar por temas específicos y el sistema combina información de múltiples documentos
+
+**📄 Documentación:**
+- Nuevo documento completo: `docs/CATEGORY_AUTO_DETECTION.md` con:
+  - Explicación detallada del sistema de detección automática
+  - Flujos de trabajo (diagramas)
+  - Ejemplos de uso (curl, chat)
+  - Arquitectura técnica (componentes, métodos)
+  - Lista completa de categorías detectables
+  - Ejemplos reales de uso
+  - Planes de mejoras futuras
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/document-ingest.service.ts`: detección automática + sanitización
+- `src/jarvis/library/category-summary.service.ts`: nuevo servicio de resúmenes
+- `src/jarvis/repositories/document.repository.ts`: nuevas queries por categoría
+- `src/jarvis/jarvis.service.ts`: integración en flujo conversacional + detección mejorada
+- `src/jarvis/jarvis.controller.ts`: nuevo endpoint + import de CategorySummaryService
+- `src/jarvis/jarvis.module.ts`: registro de CategorySummaryService
+- `src/jarvis/tools/intent/intent-router.service.ts`: patrones mejorados para RAG
+
 ### Added — Comando "eliminar documentos repetidos" (2026-07-10)
 
 - Nuevo atajo de chat: `eliminar documentos repetidos`, `borrar duplicados`, `deduplicar`, `limpiar biblioteca` y variantes.

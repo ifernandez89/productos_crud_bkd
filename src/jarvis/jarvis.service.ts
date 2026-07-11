@@ -20,6 +20,7 @@ import { IntentRouterService } from './tools/intent/intent-router.service';
 import { DomainRouterService } from './tools/intent/domain-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
+import { CategorySummaryService } from './library/category-summary.service';
 import { WebHelper } from './tools/web/web-helper';
 import { SourceRegistry } from './tools/web/source-registry';
 import { randomUUID } from 'crypto';
@@ -62,6 +63,7 @@ export class JarvisService {
     private readonly domainRouter: DomainRouterService,
     private readonly sportsTool: SportsTool,
     private readonly contentCache: ContentCacheService,
+    private readonly categorySummaryService: CategorySummaryService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
@@ -509,13 +511,44 @@ export class JarvisService {
 
     // RAG de documentos
     if (useDocuments) {
-      const chunks = await this.documentRepo.searchChunks(userMessage, 3);
-      if (chunks.length > 0) {
-        usedDocs = true;
-        const docText = chunks
-          .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-          .join('\n---\n');
-        contextParts.push(`### DOCUMENTOS\n${docText}`);
+      // Primero intentar detectar si es una solicitud de resumen por categoría
+      const categorySummary = this.detectCategorySummaryRequest(userMessage);
+      
+      if (categorySummary.isRequest && categorySummary.category) {
+        this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
+        
+        try {
+          // Generar resumen combinado de la categoría
+          const result = await this.categorySummaryService.generateCategorySummary(
+            categorySummary.category,
+            categorySummary.query,
+          );
+
+          if (result.chunksUsed > 0) {
+            usedDocs = true;
+            // Agregar el resumen generado como contexto
+            contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
+          } else {
+            // No hay documentos en esa categoría
+            contextParts.push(`### DOCUMENTOS\nNo encontré documentos en la categoría "${categorySummary.category}". Podés subir PDFs o textos relacionados.`);
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
+          // Fallback a búsqueda normal si falla el resumen por categoría
+        }
+      }
+      
+      // Búsqueda normal de chunks si no es resumen por categoría o si falló
+      if (!categorySummary.isRequest) {
+        const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+        if (chunks.length > 0) {
+          usedDocs = true;
+          const docText = chunks
+            .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+            .join('\n---\n');
+          contextParts.push(`### DOCUMENTOS\n${docText}`);
+        }
       }
     }
 
@@ -1254,9 +1287,15 @@ export class JarvisService {
       `  Editar por nombre →  \`edita <nombre> por <nuevo texto>\``,
       `  Completar         →  \`completé el pendiente 1\``,
       ``,
-      `**BIBLIOTECA**`,
-      `  Ver documentos    →  \`mis documentos\`  /  \`biblioteca\``,
-      `  Limpiar duplicados →  \`eliminar documentos repetidos\``,
+      `**BIBLIOTECA / DOCUMENTOS / PDFs**`,
+      `  Ver documentos        →  \`mis documentos\`  /  \`biblioteca\``,
+      `  Resumen por categoría →  \`resumen sobre <tema>\``,
+      `                           \`resumen sobre plantas medicinales\``,
+      `                           \`qué dicen mis PDFs de medicina\``,
+      `                           \`información sobre desarrollo\``,
+      `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
+      `                           \`según mis PDFs, <pregunta>\``,
+      `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
       ``,
       `**BÚSQUEDA WEB**`,
       `  Noticias generales     →  \`últimas noticias\``,
@@ -1279,6 +1318,10 @@ export class JarvisService {
       `  OCR rápido             →  subí imagen + modo \`ocr\``,
       ``,
       `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
+      ``,
+      `📄 **Nota sobre PDFs:** Al subir documentos/PDFs, la categoría se detecta`,
+      `    automáticamente del contenido. Podés preguntar por temas específicos`,
+      `    y JarBees combinará información de todos los documentos relacionados.`,
     ].join('\n');
   }
 
@@ -1323,16 +1366,20 @@ export class JarvisService {
     const lines: string[] = [`📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
 
     for (const [category, items] of byCategory.entries()) {
-      lines.push(`**${category.toUpperCase()}**`);
+      lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
       for (const doc of items) {
         const chunks = (doc as any)._count?.chunks ?? '?';
-        const used = (doc as any).timesUsed > 0 ? ` · usado ${(doc as any).timesUsed}x` : '';
-        lines.push(`  • ${doc.title}  _(${chunks} chunks${used})_`);
+        const used   = (doc as any).timesUsed > 0 ? ` · usado ${(doc as any).timesUsed}x` : '';
+        const tipo = (doc as any).category === 'web' ? 'web' : 'pdf';
+        lines.push(`  • ${doc.title}  [${tipo}] - CATEGORÍA: "${((doc as any).category ?? 'sin categoría').toUpperCase()}"${used ? `  _(${used.trim()})_` : ''}`);
       }
       lines.push(``);
     }
 
-    lines.push(`💡 Para buscar dentro de tus documentos preguntame directamente, ej: "¿qué dice mi carta astral sobre Mercurio?"`);
+    lines.push(`💡 Podés preguntar:`);
+    lines.push(`  - "¿qué dice mi carta astral sobre Mercurio?"`);
+    lines.push(`  - "dame un resumen de los documentos de categoría pdf"`);
+    lines.push(`  - "eliminar documentos repetidos"`);
 
     return lines.join('\n');
   }
@@ -1407,6 +1454,74 @@ export class JarvisService {
     return this.documentRepo.searchDocuments(query);
   }
 
+  /**
+   * Detecta si el usuario está pidiendo un resumen por categoría y extrae la categoría.
+   * Ejemplos:
+   * - "resumen sobre plantas medicinales" → plantas_medicinales
+   * - "qué dicen mis documentos de medicina" → medicina
+   * - "información sobre desarrollo" → desarrollo
+   * - "tenemos información en documentos sobre tecnología?" → tecnologia
+   * - "hay algo de agricultura en mis PDFs?" → agricultura
+   */
+  private detectCategorySummaryRequest(message: string): { isRequest: boolean; category?: string; query?: string } {
+    const normalized = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Patrones para detectar resumen por categoría
+    const patterns = [
+      // "resumen sobre X", "información sobre X"
+      /(?:resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
+      
+      // "documentos sobre X", "PDFs de X"
+      /(?:documentos?|pdfs?|archivos?)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
+      
+      // "busca en X", "mostrame de X"
+      /(?:busca|buscar|mostrame|muestra)\s+(?:en|de)\s+([a-z_\s]+)/i,
+      
+      // "tenemos/hay/existe información EN documentos SOBRE X"
+      /(?:tenemos|hay|existe|tenes)\s+(?:algo|informacion|info|datos?|contenido)?\s*(?:en|de)?\s*(?:mis|los|tus)?\s*(?:documentos?|pdfs?|archivos?|biblioteca)?\s+(?:sobre|de|acerca de|en)\s+([a-z_\s]+)/i,
+      
+      // "mis documentos de X", "en mis PDFs de X"
+      /(?:mis|los|tus)\s+(?:documentos?|pdfs?|archivos?)\s+(?:de|sobre)\s+([a-z_\s]+)/i,
+      
+      // "que tengo sobre X", "que hay de X"
+      /(?:que|cual)\s+(?:tengo|hay|existe|tenes|tenemos)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
+      
+      // "según mis documentos de X"
+      /(?:segun|en base a)\s+(?:mis|los)?\s*(?:documentos?|pdfs?)\s+(?:de|sobre)\s+([a-z_\s]+)/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = normalized.match(pattern);
+      if (match && match[1]) {
+        let categoryRaw = match[1].trim();
+        
+        // Remover palabras comunes al final que no son parte de la categoría
+        categoryRaw = categoryRaw
+          .replace(/\s+(en|de|sobre|con|sin|para|por|como|que|cual|donde|cuando|porque).*$/i, '')
+          .trim();
+        
+        // Normalizar la categoría detectada
+        const category = categoryRaw
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z_]/g, '');
+
+        // Validar que la categoría no sea demasiado corta o una palabra común
+        if (category.length < 3 || ['mis', 'los', 'tus', 'una', 'ese', 'esto', 'eso'].includes(category)) {
+          continue;
+        }
+
+        // Extraer query específica si existe (ej: "resumen de plantas medicinales sobre propiedades")
+        const queryMatch = message.match(/(?:sobre|de|con)\s+([a-z\s]+)$/i);
+        const query = queryMatch && queryMatch[1].length > 3 ? queryMatch[1].trim() : undefined;
+
+        this.logger.log(`[category-detection] detectado: "${category}" de mensaje: "${message.slice(0, 60)}..."`);
+        return { isRequest: true, category, query };
+      }
+    }
+
+    return { isRequest: false };
+  }
+
   // ── Perfil ──────────────────────────────────────────────────────────────────
 
   async getProfile() {
@@ -1474,4 +1589,4 @@ export class JarvisService {
     return this.browserTool.search(query, limit);
   }
 }
-
+

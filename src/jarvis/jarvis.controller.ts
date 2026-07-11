@@ -26,6 +26,7 @@ import { InvestigationService } from './tools/web/investigation.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { ConversationRepository } from './repositories/conversation.repository';
 import { VisionService } from './tools/vision/vision.service';
+import { CategorySummaryService } from './library/category-summary.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -43,6 +44,7 @@ export class JarvisController {
     private readonly conversationRepo: ConversationRepository,
     private readonly knowledgeEvolution: KnowledgeEvolutionService,
     private readonly visionService: VisionService,
+    private readonly categorySummaryService: CategorySummaryService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -315,6 +317,24 @@ export class JarvisController {
   @ApiOperation({ summary: 'Estadísticas de la biblioteca (docs, chunks, categorías, top usados)' })
   async libraryStats() {
     return this.documentRepo.getLibraryStats();
+  }
+
+  @Public()
+  @Post('library/category-summary')
+  @ApiOperation({ 
+    summary: 'Generar resumen inteligente por categoría',
+    description: 'Combina información de múltiples documentos de una categoría específica y genera un resumen coherente. ' +
+                 'Ejemplo: categoría="plantas_medicinales" con query="propiedades curativas" → resumen basado en todos los PDFs sobre plantas medicinales.'
+  })
+  async categorySummary(
+    @Body() body: { category: string; query?: string; maxChunks?: number },
+  ) {
+    const result = await this.categorySummaryService.generateCategorySummary(
+      body.category,
+      body.query,
+      body.maxChunks,
+    );
+    return { success: true, ...result };
   }
 
   // ── Biblioteca — Colecciones ────────────────────────────────────────────────

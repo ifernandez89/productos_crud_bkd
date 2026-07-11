@@ -96,6 +96,81 @@ export class DocumentRepository {
     return chunks;
   }
 
+  /**
+   * Busca chunks por categoría, útil para generar resúmenes temáticos.
+   * Ejemplo: "resumen sobre plantas medicinales" → recupera todos los chunks 
+   * de documentos con category='plantas_medicinales'
+   */
+  async searchChunksByCategory(category: string, limit = 20): Promise<(Chunk & { document: Document })[]> {
+    const chunks = await this.prisma.chunk.findMany({
+      where: {
+        document: {
+          category: { equals: category },
+        },
+      },
+      include: { document: true },
+      orderBy: { document: { lastUsed: 'desc' } },
+      take: limit,
+    }) as (Chunk & { document: Document })[];
+
+    // Actualizar tracking de uso
+    const docIds = [...new Set(chunks.map((c) => c.documentId))];
+    if (docIds.length > 0) {
+      await this.prisma.document.updateMany({
+        where: { id: { in: docIds } },
+        data:  { timesUsed: { increment: 1 }, lastUsed: new Date() },
+      });
+    }
+
+    return chunks;
+  }
+
+  /**
+   * Busca chunks combinando query de texto + filtro por categoría.
+   * Más específico que searchChunks general.
+   */
+  async searchChunksByQueryAndCategory(
+    query: string, 
+    category: string, 
+    limit = 10
+  ): Promise<(Chunk & { document: Document })[]> {
+    const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
+    if (terms.length === 0) {
+      // Si no hay términos, devolver chunks de la categoría
+      return this.searchChunksByCategory(category, limit);
+    }
+
+    const chunks = await this.prisma.chunk.findMany({
+      where: {
+        AND: [
+          {
+            OR: terms.map((term) => ({
+              content: { contains: term },
+            })),
+          },
+          {
+            document: {
+              category: { equals: category },
+            },
+          },
+        ],
+      },
+      include: { document: true },
+      take: limit,
+    }) as (Chunk & { document: Document })[];
+
+    // Actualizar tracking de uso
+    const docIds = [...new Set(chunks.map((c) => c.documentId))];
+    if (docIds.length > 0) {
+      await this.prisma.document.updateMany({
+        where: { id: { in: docIds } },
+        data:  { timesUsed: { increment: 1 }, lastUsed: new Date() },
+      });
+    }
+
+    return chunks;
+  }
+
   async getDocumentWithChunks(id: number) {
     return this.prisma.document.findUnique({
       where: { id },

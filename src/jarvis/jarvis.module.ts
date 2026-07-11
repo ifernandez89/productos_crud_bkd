@@ -40,6 +40,7 @@ import { ExecutionEngine } from './planner/execution-engine.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { VisionService } from './tools/vision/vision.service';
 import { DocumentEnrichmentService } from './library/document-enrichment.service';
+import { CategorySummaryService } from './library/category-summary.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -82,6 +83,7 @@ import { DocumentEnrichmentService } from './library/document-enrichment.service
     KnowledgeEvolutionService,
     VisionService,
     DocumentEnrichmentService,
+    CategorySummaryService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

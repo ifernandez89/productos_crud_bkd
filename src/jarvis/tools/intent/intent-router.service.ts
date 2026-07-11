@@ -211,6 +211,21 @@ export class IntentRouterService {
       return { intent: 'RAG', confidence: 'high', reason: 'explicit RAG request' };
     }
 
+    // RAG con categoría específica — resumen temático
+    if (/(resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(sobre|de|acerca de)\s+\w+/i.test(n)) {
+      return { intent: 'RAG', confidence: 'high', reason: 'category summary request' };
+    }
+
+    // RAG — consultas sobre existencia de documentos
+    if (/(tenemos|hay|existe|tenes)\s+.*(documentos?|pdfs?|archivos?|informacion|info|datos?).*(sobre|de|acerca de)/i.test(n)) {
+      return { intent: 'RAG', confidence: 'high', reason: 'document existence query' };
+    }
+
+    // RAG — "mis documentos de X"
+    if (/(mis|los|tus)\s+(documentos?|pdfs?|archivos?)\s+(de|sobre)/i.test(n)) {
+      return { intent: 'RAG', confidence: 'high', reason: 'my documents query' };
+    }
+
     // LOCAL — alta confianza (conversación trivial, identidad del asistente)
     const trivialPattern = /^(hola|buenas|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios)[\s!?.]*$/i;
     if (trivialPattern.test(n.trim())) {

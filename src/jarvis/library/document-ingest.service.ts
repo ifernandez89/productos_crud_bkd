@@ -40,11 +40,21 @@ export class DocumentIngestService {
     category?: string,
     source?: string,
   ): Promise<IngestResult> {
-    const doc = await this.documentRepo.createDocument({ title, content, category, source });
-    const chunks = await this.buildAndSaveChunks(doc.id, content);
+    // Limpiar título y contenido
+    const cleanTitle = this.sanitizeText(title);
+    const cleanContent = this.sanitizeText(content);
+    
+    const detectedCategory = category ?? await this.detectCategory(cleanTitle, cleanContent);
+    const doc = await this.documentRepo.createDocument({ 
+      title: cleanTitle, 
+      content: cleanContent, 
+      category: detectedCategory, 
+      source 
+    });
+    const chunks = await this.buildAndSaveChunks(doc.id, cleanContent);
 
-    this.logger.log(`[library] ingestado "${title}" — ${chunks} chunks`);
-    return { documentId: doc.id, title, chunks, category };
+    this.logger.log(`[library] ingestado "${cleanTitle}" — categoría: ${detectedCategory} — ${chunks} chunks`);
+    return { documentId: doc.id, title: cleanTitle, chunks, category: detectedCategory };
   }
 
   // ── Ingesta desde buffer de PDF ─────────────────────────────────────────────
@@ -66,31 +76,38 @@ export class DocumentIngestService {
       this.logger.log(`[pdf:parse] OK — páginas=${result.total ?? '?'} | chars=${result.text?.length ?? 0}`);
       text = result.text?.trim();
       if (!text) throw new Error('PDF sin texto extraíble (puede ser un PDF escaneado/imagen)');
+      
+      // Limpiar caracteres nulos y otros caracteres problemáticos para PostgreSQL
+      text = this.sanitizeText(text);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`[pdf:parse] ERROR en "${title}": ${msg}`);
       throw new BadRequestException(`No pude extraer texto del PDF: ${msg}`);
     }
 
+    // Limpiar el título también
+    const cleanTitle = this.sanitizeText(title);
+    const detectedCategory = category ?? await this.detectCategory(cleanTitle, text);
+    
     const doc = await this.documentRepo.createDocument({
-      title,
+      title: cleanTitle,
       content:  text,
-      category: category ?? 'pdf',
+      category: detectedCategory,
       source,
     });
 
     const chunks = await this.buildAndSaveChunks(doc.id, text);
-    this.logger.log(`[library] PDF "${title}" ingestado — ${chunks} chunks`);
+    this.logger.log(`[library] PDF "${cleanTitle}" ingestado — categoría: ${detectedCategory} — ${chunks} chunks`);
 
     // Enriquecimiento en background — no bloquea la respuesta al usuario
-    this.enrichmentService.enrich(doc.id, title, text).catch((err) => {
-      this.logger.warn(`[enrichment] error background en "${title}": ${err?.message ?? err}`);
+    this.enrichmentService.enrich(doc.id, cleanTitle, text).catch((err) => {
+      this.logger.warn(`[enrichment] error background en "${cleanTitle}": ${err?.message ?? err}`);
     });
 
     // Generar respuesta con el contenido del PDF
-    const answer = await this.answerFromText(text, title, question);
+    const answer = await this.answerFromText(text, cleanTitle, question);
 
-    return { documentId: doc.id, title, chunks, category: category ?? 'pdf', answer };
+    return { documentId: doc.id, title: cleanTitle, chunks, category: detectedCategory, answer };
   }
 
   // ── Ingesta desde URL (Scraping) ─────────────────────────────────────────────
@@ -124,7 +141,12 @@ export class DocumentIngestService {
     text = text.replace(/\s+/g, ' ').trim();
     if (!text) throw new BadRequestException('No se pudo extraer texto de la página');
 
-    return this.ingestText(title, text, category ?? 'web', url);
+    // Sanitizar antes de guardar
+    const cleanTitle = this.sanitizeText(title);
+    const cleanText = this.sanitizeText(text);
+    
+    const detectedCategory = category ?? await this.detectCategory(cleanTitle, cleanText);
+    return this.ingestText(cleanTitle, cleanText, detectedCategory, url);
   }
 
   // ── Respuesta con LLM sobre el contenido del documento ─────────────────────
@@ -209,5 +231,220 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
     }
 
     return chunks.filter((c) => c.length > 20);
+  }
+
+  // ── Detección automática de categoría ────────────────────────────────────────
+
+  /**
+   * Detecta la categoría de un documento automáticamente:
+   * 1. Primero intenta con el título usando keywords
+   * 2. Si no hay match, analiza el contenido (primeros 2000 chars) con keywords
+   * 3. Si sigue sin match, usa el LLM para clasificar (fallback inteligente)
+   */
+  private async detectCategory(title: string, content: string): Promise<string> {
+    // 1. Intentar detectar desde el título
+    const categoryFromTitle = this.detectCategoryFromKeywords(title);
+    if (categoryFromTitle) {
+      this.logger.log(`[category] detectada desde título: "${categoryFromTitle}"`);
+      return categoryFromTitle;
+    }
+
+    // 2. Intentar detectar desde el contenido (primeros 2000 chars para velocidad)
+    const excerpt = content.slice(0, 2000).toLowerCase();
+    const categoryFromContent = this.detectCategoryFromKeywords(excerpt);
+    if (categoryFromContent) {
+      this.logger.log(`[category] detectada desde contenido: "${categoryFromContent}"`);
+      return categoryFromContent;
+    }
+
+    // 3. Fallback: usar LLM para clasificar (solo cuando no hay match claro)
+    this.logger.log(`[category] sin match de keywords → usando LLM`);
+    return this.detectCategoryWithLLM(title, content.slice(0, 1500));
+  }
+
+  /**
+   * Detecta categoría usando keywords (rápido, sin llamadas a LLM).
+   * Prioriza matches más específicos primero.
+   */
+  private detectCategoryFromKeywords(text: string): string | null {
+    const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // ── MEDICINA & SALUD ──
+    if (/(medicina|medic|salud|enfermedad|tratamiento|farma|terapia|clinica|hospital|diagnostico|sintoma|paciente|doctor|enfermero|cirugia|antibiotico|vacuna|inmun|patologia|anatomia|fisiologia|epidemiologia)/i.test(normalized)) {
+      return 'medicina';
+    }
+
+    // ── PLANTAS MEDICINALES (más específico que medicina general) ──
+    if (/(planta medicinal|hierba medicinal|fitoterapia|herbal|botanica medicinal|remedios naturales|medicina natural|medicina herbaria|herbolaria)/i.test(normalized)) {
+      return 'plantas_medicinales';
+    }
+
+    // ── AGRICULTURA & AGRONOMÍA ──
+    if (/(agricultura|agronomia|cultivo|cosecha|semilla|fertilizante|riego|suelo|siembra|agropecuario|horticultura|agroecologia)/i.test(normalized)) {
+      return 'agricultura';
+    }
+
+    // ── DESARROLLO & PROGRAMACIÓN ──
+    if (/(nestjs|nodejs|typescript|javascript|react|vue|angular|python|rust|golang|framework|api rest|graphql|backend|frontend|desarrollo|programacion|codigo|software)/i.test(normalized)) {
+      return 'desarrollo';
+    }
+
+    // ── INTELIGENCIA ARTIFICIAL ──
+    if (/(\bia\b|inteligencia artificial|machine learning|deep learning|llm|openai|chatgpt|modelo de lenguaje|red neuronal|transformer)/i.test(normalized)) {
+      return 'ia';
+    }
+
+    // ── ASTRONOMÍA & ASTROLOGÍA ──
+    if (/(astronomia|astro|planeta|estrella|galaxia|cosmos|universo|telescopio|nasa|espacio|satelite|orbital)/i.test(normalized)) {
+      return 'astronomia';
+    }
+    if (/(astrologia|signo zodiacal|horoscopo|carta natal|ascendente|casa astrologica)/i.test(normalized)) {
+      return 'astrologia';
+    }
+
+    // ── CIENCIAS ──
+    if (/(fisica|cuantic|relatividad|energia|particula|cern)/i.test(normalized)) {
+      return 'fisica';
+    }
+    if (/(quimica|molecula|atomo|reaccion|elemento|compuesto|laboratorio)/i.test(normalized)) {
+      return 'quimica';
+    }
+    if (/(biologia|celula|adn|genetica|evolucion|organismo|ecosistema)/i.test(normalized)) {
+      return 'biologia';
+    }
+    if (/(matematica|ecuacion|teorema|calculo|algebra|geometria)/i.test(normalized)) {
+      return 'matematicas';
+    }
+
+    // ── NEGOCIOS & ECONOMÍA ──
+    if (/(economia|finanzas|mercado|inversion|banco|capital|comercio|empresa|negocio|contabilidad|impuesto)/i.test(normalized)) {
+      return 'economia';
+    }
+
+    // ── DERECHO & LEGAL ──
+    if (/(derecho|legal|ley|jurisprudencia|constitucion|codigo|abogado|juez|tribunal|sentencia|demanda)/i.test(normalized)) {
+      return 'derecho';
+    }
+
+    // ── HISTORIA ──
+    if (/(historia|historic|siglo|epoca|revolucion|guerra|antiguo|medieval|civilizacion)/i.test(normalized)) {
+      return 'historia';
+    }
+
+    // ── ARTE & CULTURA ──
+    if (/(arte|pintura|escultura|museo|galeria|artista|renacimiento|barroco|impresionismo)/i.test(normalized)) {
+      return 'arte';
+    }
+    if (/(literatura|novela|poesia|autor|escritor|libro|cuento|narrativa)/i.test(normalized)) {
+      return 'literatura';
+    }
+    if (/(musica|cancion|album|compositor|instrumento|sinfonia|opera)/i.test(normalized)) {
+      return 'musica';
+    }
+
+    // ── TECNOLOGÍA ──
+    if (/(tecnologia|software|hardware|gadget|computadora|procesador|internet|cloud|ciberseguridad)/i.test(normalized)) {
+      return 'tecnologia';
+    }
+
+    // ── EDUCACIÓN ──
+    if (/(educacion|pedagogia|didactica|escuela|universidad|alumno|profesor|enseñanza|aprendizaje)/i.test(normalized)) {
+      return 'educacion';
+    }
+
+    // ── DEPORTES ──
+    if (/(deporte|futbol|basket|tenis|atletismo|olimpico|campeonato|entrenamiento|jugador)/i.test(normalized)) {
+      return 'deportes';
+    }
+
+    // ── COCINA & GASTRONOMÍA ──
+    if (/(cocina|receta|gastronomia|ingrediente|chef|plato|comida|restaurante)/i.test(normalized)) {
+      return 'gastronomia';
+    }
+
+    return null;
+  }
+
+  /**
+   * Usa el LLM para clasificar el documento cuando no hay match de keywords.
+   * Devuelve una categoría corta y específica.
+   */
+  private async detectCategoryWithLLM(title: string, contentExcerpt: string): Promise<string> {
+    const systemPrompt = `Sos un clasificador de documentos experto.
+Analizá el título y contenido del documento y devolvé UNA SOLA PALABRA que represente su categoría principal.
+
+Categorías comunes:
+- medicina, plantas_medicinales, salud, biologia, quimica, fisica, matematicas
+- desarrollo, ia, tecnologia, ciberseguridad
+- economia, finanzas, negocios, marketing
+- derecho, politica, historia, filosofia
+- literatura, arte, musica, cine
+- deportes, gastronomia, turismo, educacion
+- agricultura, veterinaria, ambiente
+
+Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
+
+    const userPrompt = `Título: "${title}"\n\nContenido:\n${contentExcerpt.slice(0, 1000)}`;
+
+    try {
+      const response = await this.ollamaProvider.generate({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt },
+        ],
+        maxTokens: 20,
+      });
+
+      // Limpiar y normalizar la respuesta
+      const category = response.content
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z_]/g, '')
+        .slice(0, 50);
+
+      return category || 'general';
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[category:llm] error al clasificar: ${msg}`);
+      // Fallback final: extraer del título o usar "general"
+      return this.fallbackCategoryFromTitle(title);
+    }
+  }
+
+  /**
+   * Extrae una categoría básica del título cuando todo lo demás falla.
+   */
+  private fallbackCategoryFromTitle(title: string): string {
+    const words = title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 4); // palabras significativas
+
+    if (words.length > 0) {
+      // Usar la primera palabra significativa como categoría
+      return words[0];
+    }
+
+    return 'general';
+  }
+
+  /**
+   * Limpia el texto removiendo caracteres nulos y otros problemáticos para PostgreSQL.
+   * Los caracteres nulos (0x00) causan errores en PostgreSQL con encoding UTF-8.
+   */
+  private sanitizeText(text: string): string {
+    if (!text) return '';
+    
+    return text
+      // Remover caracteres nulos (0x00) - causa error en PostgreSQL
+      .replace(/\x00/g, '')
+      // Remover otros caracteres de control problemáticos excepto saltos de línea y tabs
+      .replace(/[\x01-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
+      // Normalizar múltiples espacios en blanco
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }
