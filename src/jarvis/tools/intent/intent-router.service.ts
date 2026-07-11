@@ -243,6 +243,12 @@ export class IntentRouterService {
       return { intent: 'LOCAL', confidence: 'high', reason: 'memory command' };
     }
 
+    // WEB — pedido explícito (alta confianza)
+    if (/(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web|search on internet|search the web)/i.test(n)) {
+      return { intent: 'WEB', confidence: 'high', reason: 'explicit web search request' };
+    }
+
+
     // WEB — señales claras pero no definitivas
     if (/(noticias|noticia|ultima hora|novedades|hoy|ayer|esta semana|precio de|cotizacion|cuando es|donde queda)/i.test(n)) {
       return { intent: 'WEB', confidence: 'medium', reason: 'web signal keyword' };

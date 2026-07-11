@@ -99,6 +99,47 @@ export class JarvisService {
     const startTime = Date.now();
     const toolsUsed: string[] = [];
 
+    // ── Obtener preferencias del usuario (Modo RAG/Online) ──────────────────
+    const profile = await this.userProfileRepo.getOrCreate();
+    let preferences: Record<string, any> = {};
+    if (profile.preferences) {
+      try {
+        preferences = typeof profile.preferences === 'string'
+          ? JSON.parse(profile.preferences)
+          : (profile.preferences as any);
+      } catch (err) {
+        // ignore
+      }
+    }
+    const mode = (preferences.ragMode || 'LOCAL_FIRST') as 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST';
+
+    // ── CONFIGURACIÓN DE MODO RAG / ONLINE ───────────────────────────────────
+    const modeChangeMatch = userMessage.trim().match(/^(?:configurar\s+)?modo\s+(offline|localfirst|local[-_\s]first|hybrid|hibrido|webfirst|web[-_\s]first)$/i);
+    if (modeChangeMatch) {
+      let targetMode: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST' = 'LOCAL_FIRST';
+      const m = modeChangeMatch[1].toLowerCase().replace(/[-_\s]/g, '');
+      if (m === 'offline') targetMode = 'OFFLINE';
+      else if (m === 'localfirst') targetMode = 'LOCAL_FIRST';
+      else if (m === 'hybrid' || m === 'hibrido') targetMode = 'HYBRID';
+      else if (m === 'webfirst') targetMode = 'WEB_FIRST';
+
+      const updatedPrefs = { ...preferences, ragMode: targetMode };
+      await this.userProfileRepo.update(profile.id, { preferences: updatedPrefs });
+
+      const explanation: Record<string, string> = {
+        OFFLINE: '🔒 **Modo OFFLINE activado**: No consultaré internet bajo ninguna circunstancia. Solo usaré los documentos indexados en la biblioteca y mis conocimientos locales.',
+        LOCAL_FIRST: '🏠 **Modo LOCAL FIRST activado (Recomendado)**: Buscaré primero en tus documentos (RAG) o en mi conocimiento base. Solo iré a internet como último recurso si no encuentro la información.',
+        HYBRID: '⚖️ **Modo HÍBRIDO activado**: Usaré herramientas web automáticas para temas dinámicos (clima, noticias, cotizaciones), y para todo lo demás priorizaré tus documentos y conocimiento local.',
+        WEB_FIRST: '🌐 **Modo WEB FIRST activado**: Buscaré primero en internet para enriquecer todas las respuestas, excepto saludos y comandos simples.',
+      };
+
+      const reply = explanation[targetMode];
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: reply, metadata: { source: 'mode_change', mode: targetMode } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: reply, toolsUsed: ['mode_change'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return reply;
+    }
+
     // ── HELP SHORTCUT — "h", "H", "help", "ayuda" devuelve la guía de comandos ─
     if (/^(h|help|ayuda)$/i.test(userMessage.trim())) {
       const helpMsg = this.buildHelpMessage();
@@ -248,6 +289,54 @@ export class JarvisService {
       const intent = await this.intentRouter.classify(userMessage);
       this.logger.log(`[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`);
 
+      // ── RAG PRE-SEARCH (Buscar en base de datos antes de decidir ir a la web) ─
+      let prefetchedRagContext: string | undefined = undefined;
+      let hasRagHits = false;
+
+      if (useDocuments && !/^(h|help|ayuda|mis documentos|biblioteca|deduplicar|eliminar documentos)/i.test(userMessage)) {
+        const categorySummary = this.detectCategorySummaryRequest(userMessage);
+        if (categorySummary.isRequest && categorySummary.category) {
+          try {
+            const result = await this.categorySummaryService.generateCategorySummary(
+              categorySummary.category,
+              categorySummary.query,
+            );
+            if (result.chunksUsed > 0) {
+              hasRagHits = true;
+              prefetchedRagContext = `### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`;
+            }
+          } catch (err: any) {
+            this.logger.warn(`[rag:pre-search] error en categoría: ${err.message}`);
+          }
+        } else {
+          const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+          if (chunks.length > 0) {
+            hasRagHits = true;
+            prefetchedRagContext = `### DOCUMENTOS\n` + chunks
+              .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+              .join('\n---\n');
+          }
+        }
+      }
+
+      // ── Decidir si buscar en la web en primera instancia ───────────────────
+      let triggerWebSearch = false;
+
+      if (mode !== 'OFFLINE') {
+        if (intent.intent === 'WEB' || intent.intent === 'SPORTS') {
+          if (mode === 'WEB_FIRST') {
+            triggerWebSearch = true;
+          } else if (mode === 'HYBRID') {
+            const isDynamic = /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura|busca en internet|busca en la web|googlea)/i.test(userMessage);
+            triggerWebSearch = isDynamic || !hasRagHits;
+          } else if (mode === 'LOCAL_FIRST') {
+            const isExplicitWeb = /(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web)/i.test(userMessage);
+            const isDynamic = /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura)/i.test(userMessage);
+            triggerWebSearch = isExplicitWeb || (isDynamic && !hasRagHits);
+          }
+        }
+      }
+
       // ── REPEAT ────────────────────────────────────────────────────────────
       if (intent.intent === 'REPEAT') {
         const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
@@ -274,7 +363,7 @@ export class JarvisService {
         const calContext = await this.googleCalendar.getUpcomingEvents();
         if (calContext) {
           toolsUsed.push('google_calendar');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext, undefined, mode);
         }
       }
 
@@ -283,7 +372,7 @@ export class JarvisService {
         const tasksContext = await this.googleTasks.getPendingTasks();
         if (tasksContext) {
           toolsUsed.push('google_tasks');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext, undefined, mode);
         }
       }
 
@@ -297,8 +386,6 @@ export class JarvisService {
           : this.astrologyTool.getTodaySkyData();
 
         toolsUsed.push('astrology_calculated');
-        // ⚠️ NO guardar aquí — respondWithAstrologyPrompt llama saveAndObserve internamente
-        // (antes había doble-guardado: conversationRepo.create + agentRunRepo.create + respondWithLLM)
         return await this.respondWithAstrologyPrompt(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
       }
 
@@ -309,10 +396,10 @@ export class JarvisService {
         if (browserCtx) {
           toolsUsed.push('browser');
           await this.conversationRepo.create({ sessionId, role: 'system', content: browserCtx, metadata: { source: 'browser_context' } });
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, browserCtx);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, browserCtx, undefined, mode);
         }
         // Sin contexto (solo URL, sin pregunta) → responder sin browserCtx
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, undefined, mode);
       }
 
       // ── SITE_SEARCH — buscar en un sitio específico ────────────────────────
@@ -323,7 +410,7 @@ export class JarvisService {
         const siteSearchCtx = await this.executeSiteSearch(site, query);
         if (siteSearchCtx) {
           toolsUsed.push('site_search');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx, prefetchedRagContext, mode);
         }
 
         // Sin evidencia del sitio específico → informar honestamente, no inventar
@@ -335,20 +422,22 @@ export class JarvisService {
 
       // ── SPORTS — cascada: API deportiva → DuckDuckGo → scraping ────────
       if (intent.intent === 'SPORTS') {
-        const sportsResult = await this.sportsTool.search(intent.sportsQuery ?? userMessage);
-        if (sportsResult.found) {
-          toolsUsed.push(sportsResult.hasGoalDetail ? 'sports_scraping' : 'sports_api');
-          const webCtx = `**Datos deportivos (${sportsResult.source}):**\n${sportsResult.content}`;
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+        if (mode !== 'OFFLINE' && triggerWebSearch) {
+          const sportsResult = await this.sportsTool.search(intent.sportsQuery ?? userMessage);
+          if (sportsResult.found) {
+            toolsUsed.push(sportsResult.hasGoalDetail ? 'sports_scraping' : 'sports_api');
+            const webCtx = `**Datos deportivos (${sportsResult.source}):**\n${sportsResult.content}`;
+            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
+          }
+          // Sin datos en ninguna fuente → búsqueda web general con caché
+          this.logger.log(`[intent] sports vacío → fallback WEB con caché`);
+          const webCtx = await this.autoWebSearch(userMessage, 'deportes');
+          if (webCtx) {
+            toolsUsed.push('auto_search');
+            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
+          }
         }
-        // Sin datos en ninguna fuente → búsqueda web general con caché
-        this.logger.log(`[intent] sports vacío → fallback WEB con caché`);
-        const webCtx = await this.autoWebSearch(userMessage, 'deportes');
-        if (webCtx) {
-          toolsUsed.push('auto_search');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
-        }
-        // Sin evidencia deportiva → no inventar resultados
+        // Sin evidencia deportiva o modo offline → no inventar resultados
         const noSportsMsg = this.buildNoEvidenceMessage(userMessage);
         await this.conversationRepo.create({ sessionId, role: 'assistant', content: noSportsMsg, metadata: { source: 'sports_fail' } });
         await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noSportsMsg, toolsUsed: [...toolsUsed, 'sports_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
@@ -357,89 +446,88 @@ export class JarvisService {
 
       // ── WEB — DomainRouter → caché inteligente → DuckDuckGo ──────────────────
       if (intent.intent === 'WEB') {
-        // DomainRouter clasifica el dominio y sugiere las 3 fuentes más relevantes
-        const domain = this.domainRouter.classify(userMessage);
-        this.logger.log(`[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`);
+        if (triggerWebSearch) {
+          // DomainRouter clasifica el dominio y sugiere las 3 fuentes más relevantes
+          const domain = this.domainRouter.classify(userMessage);
+          this.logger.log(`[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`);
 
-        // Mapear dominio a categoría de SourceRegistry
-        const category = this.domainToCategory(domain.domain) ?? this.detectCategory(userMessage);
+          // Mapear dominio a categoría de SourceRegistry
+          const category = this.domainToCategory(domain.domain) ?? this.detectCategory(userMessage);
 
-        // Usar la query enriquecida si el DomainRouter la mejoró
-        const searchQuery = domain.enrichedQuery ?? userMessage;
+          // Usar la query enriquecida si el DomainRouter la mejoró
+          const searchQuery = domain.enrichedQuery ?? userMessage;
 
-        const webCtx = await this.autoWebSearchWithSources(
-          searchQuery,
-          category,
-          domain.suggestedSources,
-        );
+          const webCtx = await this.autoWebSearchWithSources(
+            searchQuery,
+            category,
+            domain.suggestedSources,
+          );
 
-        if (webCtx) {
-          toolsUsed.push('auto_search');
-          if (domain.domain !== 'UNKNOWN') toolsUsed.push(`domain:${domain.domain}`);
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
-        }
-
-        // Sin resultados web — si es una consulta de noticias locales:
-        if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
-          this.logger.log(`[jarvis] noticias sin resultados → último intento con titulares de El Once`);
-          try {
-            const elonceSource = SourceRegistry.getAll().find(s => s.urlBase.includes('elonce.com'));
-            const directCtx = await WebHelper.scrapeHeadlines('https://www.elonce.com', 10, elonceSource);
-            if (directCtx && directCtx.length > 200) {
-              toolsUsed.push('direct_elonce_headlines');
-              return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx);
-            }
-          } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : String(err);
-            this.logger.warn(`[jarvis] El Once titulares falló: ${msg}`);
+          if (webCtx) {
+            toolsUsed.push('auto_search');
+            if (domain.domain !== 'UNKNOWN') toolsUsed.push(`domain:${domain.domain}`);
+            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
           }
 
-          const now = new Date();
-          const hora = now.toLocaleTimeString('es-AR', {
-            hour: '2-digit', minute: '2-digit',
-            timeZone: 'America/Argentina/Buenos_Aires',
-          });
-          const failMsg = [
-            `⚠️ No pude obtener las noticias actuales en este momento (${hora} hs).`,
-            ``,
-            `Intenté conectarme a las fuentes locales pero no respondieron. Podés consultarlas directamente en:`,
-            `- 📰 **El Once**: https://www.elonce.com`,
-            `- 📰 **UNO Entre Ríos**: https://www.unoentrerios.com.ar`,
-            `- 🏗️ **Mi Paraná**: https://mi.parana.gob.ar`,
-            ``,
-            `Volvé a preguntarme en un momento, las fuentes suelen recuperarse enseguida.`,
-          ].join('\n');
-          await this.conversationRepo.create({ sessionId, role: 'assistant', content: failMsg, metadata: { source: 'web_fail_graceful' } });
-          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: failMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
-          return failMsg;
-        }
+          // Sin resultados web — si es una consulta de noticias locales:
+          if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
+            this.logger.log(`[jarvis] noticias sin resultados → último intento con titulares de El Once`);
+            try {
+              const elonceSource = SourceRegistry.getAll().find(s => s.urlBase.includes('elonce.com'));
+              const directCtx = await WebHelper.scrapeHeadlines('https://www.elonce.com', 10, elonceSource);
+              if (directCtx && directCtx.length > 200) {
+                toolsUsed.push('direct_elonce_headlines');
+                return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx, prefetchedRagContext, mode);
+              }
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              this.logger.warn(`[jarvis] El Once titulares falló: ${msg}`);
+            }
 
-        // Para otras categorías sin resultados web → si la pregunta es sobre eventos
-        // actuales, no pasar al LLM sin evidencia (evita alucinaciones)
-        if (this.isCurrentEventQuery(userMessage)) {
-          const noWebMsg = this.buildNoEvidenceMessage(userMessage);
-          await this.conversationRepo.create({ sessionId, role: 'assistant', content: noWebMsg, metadata: { source: 'web_fail_graceful' } });
-          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noWebMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
-          return noWebMsg;
+            const now = new Date();
+            const hora = now.toLocaleTimeString('es-AR', {
+              hour: '2-digit', minute: '2-digit',
+              timeZone: 'America/Argentina/Buenos_Aires',
+            });
+            const failMsg = [
+              `⚠️ No pude obtener las noticias actuales en este momento (${hora} hs).`,
+              ``,
+              `Intenté conectarme a las fuentes locales pero no respondieron. Podés consultarlas directamente en:`,
+              `- 📰 **El Once**: https://www.elonce.com`,
+              `- 📰 **UNO Entre Ríos**: https://www.unoentrerios.com.ar`,
+              `- 🏗️ **Mi Paraná**: https://mi.parana.gob.ar`,
+              ``,
+              `Volvé a preguntarme en un momento, las fuentes suelen recuperarse enseguida.`,
+            ].join('\n');
+            await this.conversationRepo.create({ sessionId, role: 'assistant', content: failMsg, metadata: { source: 'web_fail_graceful' } });
+            await this.agentRunRepo.create({ sessionId, question: userMessage, answer: failMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+            return failMsg;
+          }
+
+          // Para otras categorías sin resultados web → si la pregunta es sobre eventos
+          // actuales, no pasar al LLM sin evidencia (evita alucinaciones)
+          if (this.isCurrentEventQuery(userMessage)) {
+            const noWebMsg = this.buildNoEvidenceMessage(userMessage);
+            await this.conversationRepo.create({ sessionId, role: 'assistant', content: noWebMsg, metadata: { source: 'web_fail_graceful' } });
+            await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noWebMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+            return noWebMsg;
+          }
         }
-        // Para preguntas que no son de eventos actuales → el LLM puede responder con conocimiento base
       }
 
       // ── LOCAL / RAG — pero antes, si needsWebSearch → enriquecer con web ──
-      // Esto cubre casos donde el IntentRouter dijo LOCAL pero la pregunta
-      // requiere datos actuales (noticias, gobierno, personas, eventos, etc.)
       if (this.needsWebSearch(userMessage)) {
         const category = this.detectCategory(userMessage);
         const webCtx = await this.autoWebSearch(userMessage, category);
         if (webCtx) {
           toolsUsed.push('auto_search');
           if (category) toolsUsed.push(`cache:${category}`);
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx);
+          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
         }
       }
 
       // ── LOCAL puro — memoria + documentos + historial + LLM ───────────────
-      return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime);
+      return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, prefetchedRagContext, mode);
 
     } catch (error) {
       const errMsg: string = error?.message ?? String(error);
@@ -482,6 +570,7 @@ export class JarvisService {
     maxHistoryMessages: number,
     browserContext?: string,
     hasWebContext?: boolean,   // true cuando viene de búsqueda automática (no browser)
+    prefetchedRagContext?: string, // RAG prefetcheado antes en la query
   ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
     const profile = await this.userProfileRepo.getOrCreate();
     const identity = this.jarvisIdentity.getIdentity();
@@ -516,7 +605,7 @@ export class JarvisService {
       `- Hora: ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone || 'America/Argentina/Buenos_Aires' })}`,
       '',
       '📍 CONTEXTO LOCAL — Paraná, Entre Ríos, Argentina:',
-      '- Ciudad capital de Entre Ríos, fundada el 25 de junio de 1813',
+      '- Ciudad capital de Entre Ríos, founded el 25 de junio de 1813',
       '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
       '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
       '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
@@ -575,78 +664,84 @@ export class JarvisService {
 
     // RAG de documentos
     if (useDocuments) {
-      // Primero intentar detectar si es una solicitud de resumen de documento individual
-      const docSummary = this.detectDocumentSummaryRequest(userMessage);
-      
-      if (docSummary.isRequest && docSummary.title) {
-        this.logger.log(`[rag:document] detectado resumen de documento: "${docSummary.title}"`);
-        
-        try {
-          const result = await this.documentSummaryService.generateDocumentSummary(
-            docSummary.title,
-            docSummary.maxKeyPoints,
-          );
-
-          usedDocs = true;
-          
-          // Formatear el resumen para el contexto
-          const formattedSummary = [
-            `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
-            result.category ? `**Categoría:** ${result.category}` : '',
-            result.wordCount > 0 ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}` : '',
-            '',
-            '**RESUMEN EJECUTIVO:**',
-            result.summary,
-            '',
-            '**PUNTOS CLAVE:**',
-            ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
-          ].filter(line => line !== '').join('\n');
-
-          contextParts.push(formattedSummary);
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : String(err);
-          this.logger.warn(`[rag:document] error al generar resumen: ${msg}`);
-          // Si el documento no se encuentra, agregar mensaje de error al contexto
-          contextParts.push(`### DOCUMENTOS\n${msg}`);
-        }
+      // Si ya tenemos el RAG prefetcheado, lo usamos directamente (evita consultas dobles a la BD)
+      if (prefetchedRagContext) {
+        usedDocs = true;
+        contextParts.push(prefetchedRagContext);
       } else {
-        // Si no es resumen de documento individual, intentar resumen por categoría
-        const categorySummary = this.detectCategorySummaryRequest(userMessage);
+        // Primero intentar detectar si es una solicitud de resumen de documento individual
+        const docSummary = this.detectDocumentSummaryRequest(userMessage);
         
-        if (categorySummary.isRequest && categorySummary.category) {
-          this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
+        if (docSummary.isRequest && docSummary.title) {
+          this.logger.log(`[rag:document] detectado resumen de documento: "${docSummary.title}"`);
           
           try {
-            // Generar resumen combinado de la categoría
-            const result = await this.categorySummaryService.generateCategorySummary(
-              categorySummary.category,
-              categorySummary.query,
+            const result = await this.documentSummaryService.generateDocumentSummary(
+              docSummary.title,
+              docSummary.maxKeyPoints,
             );
 
-            if (result.chunksUsed > 0) {
-              usedDocs = true;
-              // Agregar el resumen generado como contexto
-              contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
-            } else {
-              // No hay documentos en esa categoría
-              contextParts.push(`### DOCUMENTOS\n${result.summary}`);
-            }
+            usedDocs = true;
+            
+            // Formatear el resumen para el contexto
+            const formattedSummary = [
+              `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
+              result.category ? `**Categoría:** ${result.category}` : '',
+              result.wordCount > 0 ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}` : '',
+              '',
+              '**RESUMEN EJECUTIVO:**',
+              result.summary,
+              '',
+              '**PUNTOS CLAVE:**',
+              ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
+            ].filter(line => line !== '').join('\n');
+
+            contextParts.push(formattedSummary);
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
-            this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
-            // Fallback a búsqueda normal si falla el resumen por categoría
+            this.logger.warn(`[rag:document] error al generar resumen: ${msg}`);
+            // Si el documento no se encuentra, agregar mensaje de error al contexto
+            contextParts.push(`### DOCUMENTOS\n${msg}`);
           }
-        }
-        
-        // Búsqueda normal de chunks si no es resumen por categoría ni por documento
-        if (!categorySummary.isRequest) {
-          const chunks = await this.documentRepo.searchChunks(userMessage, 3);
-          if (chunks.length > 0) {
-            usedDocs = true;
-            const docText = chunks
-              .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-              .join('\n---\n');
-            contextParts.push(`### DOCUMENTOS\n${docText}`);
+        } else {
+          // Si no es resumen de documento individual, intentar resumen por categoría
+          const categorySummary = this.detectCategorySummaryRequest(userMessage);
+          
+          if (categorySummary.isRequest && categorySummary.category) {
+            this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
+            
+            try {
+              // Generar resumen combinado de la categoría
+              const result = await this.categorySummaryService.generateCategorySummary(
+                categorySummary.category,
+                categorySummary.query,
+              );
+
+              if (result.chunksUsed > 0) {
+                usedDocs = true;
+                // Agregar el resumen generado como contexto
+                contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
+              } else {
+                // No hay documentos en esa categoría
+                contextParts.push(`### DOCUMENTOS\n${result.summary}`);
+              }
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
+              // Fallback a búsqueda normal si falla el resumen por categoría
+            }
+          }
+          
+          // Búsqueda normal de chunks si no es resumen por categoría ni por documento
+          if (!categorySummary.isRequest) {
+            const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+            if (chunks.length > 0) {
+              usedDocs = true;
+              const docText = chunks
+                .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+                .join('\n---\n');
+              contextParts.push(`### DOCUMENTOS\n${docText}`);
+            }
           }
         }
       }
@@ -707,9 +802,11 @@ export class JarvisService {
     toolsUsed: string[],
     startTime: number,
     webContext?: string,
+    prefetchedRagContext?: string,
+    mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext);
+      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext, prefetchedRagContext);
 
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs) toolsUsed.push('rag');
@@ -736,7 +833,7 @@ export class JarvisService {
 
     // ── Fallback automático: si la respuesta parece una negativa y no teníamos
     //    contexto web, buscar en internet y reintentar UNA vez ─────────────────
-    const isEvasiveResponse = !webContext && this.looksEvasive(response.content);
+    const isEvasiveResponse = !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
     if (isEvasiveResponse) {
       this.logger.log(`[jarvis] respuesta evasiva detectada → buscando en internet`);
       const category = this.detectCategory(userMessage);
@@ -933,46 +1030,26 @@ export class JarvisService {
     });
   }
 
-  /**
-   * Determina si la pregunta necesita búsqueda web automática.
-   * Regla principal: buscar SIEMPRE a menos que sea conversación trivial.
-   */
   private needsWebSearch(message: string): boolean {
     const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
-    // Excluir mensajes muy cortos (<3 palabras)
-    if (n.split(/\s+/).filter(Boolean).length < 3) return false;
-
-    // Excluir saludos y conversación trivial
-    if (/^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|como estas|como andas|que tal|que onda|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo)[\s!?.]*$/i.test(n)) {
-      return false;
-    }
-
-    // Excluir preguntas sobre el asistente mismo
-    if (/(quien eres|como te llamas|que eres|que podes hacer|que sabes|cuales son tus capacidades|sos un|eres un)/i.test(n)) {
-      return false;
-    }
-
-    // Excluir comandos de memoria/perfil
-    if (/^(recorda|guarda|guarda|anota|anota|mi nombre es|me llamo|prefiero|siempre)/i.test(n)) {
-      return false;
-    }
-
-    // ⚠️ Excluir astrología — tiene su propio router y NO necesita web
-    // Si una query astrológica cayó en LOCAL (bug de routing), no intentar web
-    if (/(astrolog|horoscopo|carta astral|luna llena|luna nueva|luna creciente|luna menguante|mercurio retrogrado|venus retrograda|energia lunar|energia astral|que dicen los astros|planetas visibles)/i.test(n)) {
-      this.logger.warn(`[needsWebSearch] query astrológico detectado en LOCAL — NO buscar web (debería haber ido por ASTROLOGY)`);
-      return false;
-    }
-
-    // ⚠️ FORZAR búsqueda web para gobierno local (datos cambian frecuentemente)
-    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
-      this.logger.log(`[needsWebSearch] gobierno local detectado → FORZAR WEB`);
+    // 1. Si pide explícitamente buscar en internet/web
+    if (/(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web|search on internet|search the web)/i.test(n)) {
+      this.logger.log(`[needsWebSearch] pedido explícito de búsqueda web detectado.`);
       return true;
     }
 
-    // Todo lo demás → buscar en internet
-    return true;
+    // 2. Forzar búsqueda web para gobierno local (las autoridades cambian)
+    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
+      this.logger.log(`[needsWebSearch] gobierno local detectado → buscando en internet`);
+      return true;
+    }
+
+    // Por defecto, NO buscar en internet preventivamente.
+    // Esto asegura que se consulte primero en la BD (RAG) o en los conocimientos locales del LLM.
+    // Si la respuesta del LLM es evasiva ("no sé", "no tengo acceso"), el flujo de fallbacks
+    // buscará en internet de forma automática en una segunda instancia.
+    return false;
   }
 
   /**
@@ -1409,6 +1486,10 @@ export class JarvisService {
       `  Sitio específico       →  \`dame 6 noticias de elonce\``,
       `                             \`dame noticias de infobae\``,
       `  Deportes               →  \`resultado del partido de Argentina\``,
+      ``,
+      `**MODO DE BÚSQUEDA / INTERNET**`,
+      `  Cambiar modo      →  \`modo offline\`  /  \`modo local first\``,
+      `                       \`modo hybrid\`   /  \`modo web first\``,
       ``,
       `**CALENDARIO Y TAREAS GOOGLE**`,
       `  Ver eventos hoy        →  \`qué tengo en el calendario hoy\``,

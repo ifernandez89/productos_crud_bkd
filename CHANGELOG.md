@@ -6,6 +6,33 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Modos de Búsqueda Flexibles e Internet Controlado (2026-07-11)
+
+**🎯 Arquitectura "Local First" y Modos de Búsqueda:**
+- Añadidos 4 modos de comportamiento para el RAG e internet, guardados de forma persistente en las preferencias del perfil de usuario:
+  - **`OFFLINE`**: Desactiva internet de forma total. Las consultas web y deportivas se ignoran y no se realiza ningún fallback web.
+  - **`LOCAL_FIRST` (Por defecto / Recomendado)**: Intenta responder usando la base de datos (RAG) o el LLM primero. Solo busca en internet si la pregunta es de alta confianza sobre temas dinámicos (clima/precio) Y no hay coincidencias locales, o como fallback automático si el LLM da una respuesta evasiva.
+  - **`HYBRID`**: Las herramientas y temas dinámicos (clima, deportes, noticias, cotizaciones, autoridades) buscan en internet inmediatamente. Para el resto de consultas, prioriza documentos locales y el conocimiento del modelo antes de usar la web.
+  - **`WEB_FIRST`**: Busca en la web inmediatamente para enriquecer cualquier pregunta (excepto saludos y comandos directos).
+
+**💬 Comandos en el Chat para Configurar el Modo:**
+- `modo offline` o `configurar modo offline` -> Cambia el comportamiento a OFFLINE de forma persistente.
+- `modo local first` -> Cambia al modo por defecto.
+- `modo hybrid` / `modo hibrido` -> Cambia al modo híbrido.
+- `modo web first` -> Cambia a búsqueda en internet en primera instancia.
+
+**⚡ Optimización con Pre-búsqueda RAG (RAG Pre-search):**
+- Antes de tomar cualquier decisión de ir a internet en consultas `WEB` o `SPORTS` (en modos `LOCAL_FIRST` e `HYBRID`), el sistema realiza una pre-búsqueda en la base de datos de documentos.
+- Si existen hits de documentos locales (`hasRagHits === true`), **cancela** la búsqueda web inicial y le da prioridad a responder con tus PDFs.
+- El contexto recuperado se transfiere a `respondWithLLM()` mediante un parámetro `prefetchedRagContext` para evitar realizar consultas redundantes a la base de datos, mejorando la latencia en ~150ms.
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/jarvis.service.ts`: Lógica de pre-búsqueda RAG, decisión de `triggerWebSearch`, comandos de cambio de modo, y ayuda (`h`) actualizada.
+- `src/jarvis/repositories/user-profile.repository.ts` / `Prisma`: Mapeo y guardado de preferencias en base de datos.
+
+
+---
+
 ### Added — Sistema de Diagnóstico y Validación de Conocimiento RAG (2026-07-11)
 
 **🔬 Nuevo `KnowledgeTestService`:**
