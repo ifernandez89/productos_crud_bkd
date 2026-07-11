@@ -50,10 +50,22 @@ export class DocumentSummaryService {
       : await this.findDocumentByTitle(titleOrId as string);
 
     if (!document) {
-      throw new NotFoundException(
-        `No encontré un documento con el título o ID: "${titleOrId}". ` +
-        `Podés ver tus documentos con el comando "mis documentos".`
+      // Buscar candidatos cercanos para sugerir al usuario
+      const suggestions = await this.documentRepo.searchDocuments(
+        typeof titleOrId === 'string' ? titleOrId : String(titleOrId),
+        3,
       );
+
+      let message = `❌ No encontré ningún documento con el título "${titleOrId}".`;
+
+      if (suggestions.length > 0) {
+        message += `\n\n¿Quizás quisiste decir?\n${suggestions.map(d => `  • *${d.title}*`).join('\n')}`;
+        message += `\n\nUsá el título exacto o escribí \`mis documentos\` para ver todos.`;
+      } else {
+        message += `\n\nEscribí \`mis documentos\` para ver los títulos disponibles.`;
+      }
+
+      throw new NotFoundException(message);
     }
 
     this.logger.log(`[document-summary] documento encontrado: id=${document.id}, title="${document.title}", chunks=${document.chunks?.length ?? 0}`);
@@ -182,9 +194,11 @@ export class DocumentSummaryService {
       return this.documentRepo.getDocumentWithChunks(best.doc.id);
     }
 
-    // 6. Fallback: primer candidato
-    this.logger.log(`[document-summary:search] fallback → "${allCandidates[0].title}"`);
-    return this.documentRepo.getDocumentWithChunks(allCandidates[0].id);
+    // Sin score suficiente — no devolver resultado incorrecto
+    this.logger.warn(
+      `[document-summary:search] mejor score ${Math.round((best?.score ?? 0) * 100)}% — umbral no alcanzado para: "${normalizedSearch}"`,
+    );
+    return null;
   }
 
 
