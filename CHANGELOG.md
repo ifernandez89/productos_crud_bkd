@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Escaneo Estructural y Mitigación de Vulnerabilidades en PDFs (2026-07-11)
+
+**🛡️ Inmunidad y Validación Estructural de PDFs (Zero-Trust):**
+- Implementado el método `ensureNoDangerousCatalogActions()` en `DocumentIngestService` para mitigar ataques y exploits binarios y de JavaScript embebido en archivos PDF cargados.
+- Integra la librería `pdf-lib` para auditar estructuralmente el documento y arroja un error `BadRequestException` impidiendo la ingesta si se detecta alguna anomalía:
+  1. **AcroForms:** Bloquea formularios interactivos completos para mitigar interactividad oculta.
+  2. **OpenAction:** Bloquea eventos de apertura automática de links o scripts.
+  3. **Additional Actions (/AA):** Bloquea disparadores automáticos en el catálogo general y en cada página individual.
+  4. **Annots peligrosas:** Bloquea anotaciones del tipo `/Screen` o `/Link` con acciones ejecutables `/Launch` o `/JavaScript`.
+  5. **EmbeddedFiles:** Bloquea archivos adjuntos ocultos en el árbol `/Names`.
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/document-ingest.service.ts`: Integrado el flujo de validación estructural con `pdf-lib` en `ingestPdf()`.
+
+---
+
 ### Added — Comparación entre Documentos y Vista de Categorías (2026-07-11)
 
 **📊 Comparación Cruzada entre Documentos (`DocumentCompareService`):**

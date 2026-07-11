@@ -5,6 +5,7 @@ import * as cheerio from 'cheerio';
 import { EmbeddingsService } from './embeddings.service';
 import { OllamaProvider } from '../llm/ollama.provider';
 import { DocumentEnrichmentService } from './document-enrichment.service';
+import { PDFDocument, PDFName, PDFDict, PDFArray } from 'pdf-lib';
 
 // pdf-parse v2: API basada en clase — new PDFParse({ data: buffer }).getText()
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -67,6 +68,9 @@ export class DocumentIngestService {
     question?: string,
   ): Promise<IngestResult> {
     this.logger.log(`[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes`);
+
+    // Validar seguridad estructural del PDF
+    await this.ensureNoDangerousCatalogActions(buffer, title);
 
     let text: string;
     try {
@@ -189,17 +193,21 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
   private async buildAndSaveChunks(documentId: number, content: string): Promise<number> {
     const chunks = this.splitIntoChunks(content);
     for (const [i, chunkContent] of chunks.entries()) {
+      // Sanitizar el chunk antes de guardarlo — evita errores de encoding en PostgreSQL
+      const safeContent = this.sanitizeText(chunkContent);
+      if (!safeContent) continue; // skip chunks vacíos tras sanitización
+
       let embeddingStr: string | null = null;
       try {
-        const vec = await this.embeddingsService.generateEmbedding(chunkContent);
-        embeddingStr = JSON.stringify(vec); // Fallback store as string
+        const vec = await this.embeddingsService.generateEmbedding(safeContent);
+        embeddingStr = JSON.stringify(vec);
       } catch (err) {
         this.logger.warn(`No se pudo generar el embedding para chunk ${i}: ${err.message}`);
       }
 
       await this.documentRepo.createChunk({
         documentId,
-        content: chunkContent,
+        content: safeContent,
         embeddingId: embeddingStr,
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
@@ -455,14 +463,106 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
    */
   private sanitizeText(text: string): string {
     if (!text) return '';
-    
+
     return text
-      // Remover caracteres nulos (0x00) - causa error en PostgreSQL
+      // 1. Remover caracteres nulos (0x00)
       .replace(/\x00/g, '')
-      // Remover otros caracteres de control problemáticos excepto saltos de línea y tabs
-      .replace(/[\x01-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
-      // Normalizar múltiples espacios en blanco
-      .replace(/\s+/g, ' ')
+      // 2. Remover secuencias hex escape incompletas o inválidas (ej: \xNN sueltas)
+      .replace(/\\x[0-9a-fA-F]{0,1}(?![0-9a-fA-F])/g, '')
+      // 3. Remover bytes no imprimibles del rango C0/C1 excepto \t \n \r
+      .replace(/[\x01-\x08\x0B-\x0C\x0E-\x1F\x7F\x80-\x9F]/g, '')
+      // 4. Reemplazar caracteres Unicode problemáticos para PostgreSQL
+      .replace(/[\uFFFD\uFFFE\uFFFF]/g, '')
+      // 5. Normalizar espacios múltiples (pero preservar saltos de línea)
+      .replace(/[^\S\n]+/g, ' ')
       .trim();
+  }
+
+  /**
+   * Realiza un escaneo estructural de seguridad sobre el PDF usando pdf-lib.
+   * Mitiga ataques estructurales y de interactividad peligrosa en entornos gubernamentales (Zero-Trust):
+   * - Bloquea AcroForms interactivos.
+   * - Bloquea OpenAction (disparadores de apertura).
+   * - Bloquea Additional Actions (/AA) en el catálogo y páginas.
+   * - Bloquea anotaciones ejecutables (/Launch, /JavaScript, /Screen).
+   * - Bloquea archivos adjuntos ocultos (/EmbeddedFiles).
+   */
+  private async ensureNoDangerousCatalogActions(buffer: Buffer, title: string): Promise<void> {
+    try {
+      const pdfDoc = await PDFDocument.load(buffer);
+      const context = pdfDoc.context;
+      const catalog = pdfDoc.catalog;
+
+      // 1. Bloqueo estricto de AcroForms completos (Zero-Trust)
+      if (catalog.has(PDFName.of('AcroForm'))) {
+        throw new BadRequestException('El PDF contiene formularios interactivos (AcroForm) no permitidos.');
+      }
+
+      // 2. Bloqueo estricto de cualquier OpenAction
+      if (catalog.has(PDFName.of('OpenAction'))) {
+        throw new BadRequestException('El PDF contiene acciones de apertura automática (OpenAction).');
+      }
+
+      // 3. Buscar acciones adicionales (/AA) en el catálogo y en CADA página
+      if (catalog.has(PDFName.of('AA'))) {
+        throw new BadRequestException('El PDF contiene acciones adicionales automáticas (/AA) en el catálogo.');
+      }
+
+      const pages = pdfDoc.getPages();
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const pageRef = page.ref;
+        if (!pageRef) continue;
+        const pageDict = context.lookup(pageRef) as PDFDict;
+        if (!pageDict) continue;
+
+        if (pageDict.has(PDFName.of('AA'))) {
+          throw new BadRequestException(`La página ${i + 1} contiene disparadores de acciones automáticas (/AA).`);
+        }
+
+        // Bloquear anotaciones de tipo /Launch, /JavaScript o /Screen (ejecución remota de código)
+        const annots = pageDict.get(PDFName.of('Annots'));
+        if (annots) {
+          const annotsArray = context.lookup(annots) as PDFArray;
+          if (annotsArray && typeof annotsArray.asArray === 'function') {
+            const arr = annotsArray.asArray();
+            arr.forEach((annotRef) => {
+              const annotDict = context.lookup(annotRef) as PDFDict;
+              if (annotDict && typeof annotDict.get === 'function') {
+                const subType = annotDict.get(PDFName.of('Subtype'))?.toString();
+                if (subType === '/Screen' || subType === '/Link') {
+                  const A = annotDict.get(PDFName.of('A'));
+                  if (A) {
+                    const action = context.lookup(A) as PDFDict;
+                    const S = action?.get?.(PDFName.of('S'))?.toString();
+                    if (S === '/Launch' || S === '/JavaScript') {
+                      throw new BadRequestException('El PDF contiene enlaces con acciones ejecutables peligrosas.');
+                    }
+                  }
+                }
+              }
+            });
+          }
+        }
+      }
+
+      // 4. Bloquear archivos embebidos en el árbol de nombres
+      if (catalog.has(PDFName.of('Names'))) {
+        const names = context.lookup(catalog.get(PDFName.of('Names'))) as PDFDict;
+        if (names && names.has(PDFName.of('EmbeddedFiles'))) {
+          throw new BadRequestException('El PDF contiene archivos adjuntos ocultos (/EmbeddedFiles).');
+        }
+      }
+    } catch (e: any) {
+      if (e instanceof BadRequestException) throw e;
+
+      const isDev = process.env.NODE_ENV === 'development';
+      const mensaje = isDev
+        ? `Error estructural al analizar el PDF "${title}": ${e?.message ?? 'desconocido'}`
+        : `El PDF "${title}" no se pudo verificar de forma segura y fue rechazado por seguridad.`;
+
+      this.logger.error(`[pdf:security] Error en validación estructural de "${title}":`, e);
+      throw new BadRequestException(mensaje);
+    }
   }
 }
