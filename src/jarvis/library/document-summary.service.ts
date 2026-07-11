@@ -136,31 +136,31 @@ export class DocumentSummaryService {
 
     this.logger.log(`[document-summary:search] buscando: "${normalizedSearch}" (${searchWords.length} palabras)`);
 
-    // 1. Buscar candidatos por full-text
-    const candidates = await this.documentRepo.searchDocuments(normalizedSearch);
+    // 1. Buscar candidatos — primero solo por título (más preciso), luego full-text
+    let candidates = await this.documentRepo.searchDocumentsByTitle(normalizedSearch);
 
-    // 2. Si el título original busca solo una parte → también buscar en todos los docs
-    //    para capturar casos donde "Carta astral" está en el título "Resumen Carta astral..."
-    let allCandidates = candidates;
-    if (candidates.length === 0 || searchWords.length > 0) {
-      // Intentar búsqueda adicional solo por palabras largas del título
+    // Si no hay candidatos por título, buscar también en contenido
+    if (candidates.length === 0) {
+      candidates = await this.documentRepo.searchDocuments(normalizedSearch);
+    }
+
+    // Búsqueda adicional por palabras largas si todavía no hay resultados
+    if (candidates.length === 0 && searchWords.length > 0) {
       const longWords = searchWords.filter(w => w.length >= 5);
-      if (longWords.length > 0 && longWords.length < searchWords.length) {
-        const extra = await this.documentRepo.searchDocuments(longWords.join(' '));
-        const existingIds = new Set(candidates.map(d => d.id));
-        allCandidates = [...candidates, ...extra.filter(d => !existingIds.has(d.id))];
+      if (longWords.length > 0) {
+        candidates = await this.documentRepo.searchDocumentsByTitle(longWords.join(' '));
       }
     }
 
-    if (allCandidates.length === 0) {
+    if (candidates.length === 0) {
       this.logger.warn(`[document-summary:search] sin candidatos para: "${normalizedSearch}"`);
       return null;
     }
 
-    this.logger.log(`[document-summary:search] ${allCandidates.length} candidato(s): ${allCandidates.map(d => `"${d.title}"`).join(', ')}`);
+    this.logger.log(`[document-summary:search] ${candidates.length} candidato(s): ${candidates.map(d => `"${d.title}"`).join(', ')}`);
 
-    // 3. Match exacto (normalizado, sin extensión)
-    const exactMatch = allCandidates.find(doc =>
+    // 2. Match exacto (normalizado, sin extensión)
+    const exactMatch = candidates.find(doc =>
       normalize(doc.title) === normalizedSearch,
     );
     if (exactMatch) {
@@ -168,8 +168,8 @@ export class DocumentSummaryService {
       return this.documentRepo.getDocumentWithChunks(exactMatch.id);
     }
 
-    // 4. El título del doc CONTIENE toda la query buscada
-    const containsAll = allCandidates.find(doc => {
+    // 3. El título del doc CONTIENE toda la query buscada
+    const containsAll = candidates.find(doc => {
       const docNorm = normalize(doc.title);
       return searchWords.every(w => docNorm.includes(w));
     });
@@ -178,10 +178,10 @@ export class DocumentSummaryService {
       return this.documentRepo.getDocumentWithChunks(containsAll.id);
     }
 
-    // 5. Overlap score: # de palabras de búsqueda presentes en el título del doc
-    const scored = allCandidates
+    // 4. Overlap score
+    const scored = candidates
       .map(doc => {
-        const docWords = normalize(doc.title).split(/\s+/).filter(w => w.length > 2);
+        const docWords = normalize(doc.title).split(/[\s\-_]+/).filter(w => w.length > 2);
         const hits = searchWords.filter(w => docWords.some(dw => dw.includes(w) || w.includes(dw)));
         const score = searchWords.length > 0 ? hits.length / searchWords.length : 0;
         return { doc, score, hits: hits.length };
@@ -189,12 +189,11 @@ export class DocumentSummaryService {
       .sort((a, b) => b.score - a.score || b.hits - a.hits);
 
     const best = scored[0];
-    if (best && best.score >= 0.5) {
+    if (best && best.score >= 0.4) {
       this.logger.log(`[document-summary:search] overlap match (${Math.round(best.score * 100)}%) → "${best.doc.title}"`);
       return this.documentRepo.getDocumentWithChunks(best.doc.id);
     }
 
-    // Sin score suficiente — no devolver resultado incorrecto
     this.logger.warn(
       `[document-summary:search] mejor score ${Math.round((best?.score ?? 0) * 100)}% — umbral no alcanzado para: "${normalizedSearch}"`,
     );

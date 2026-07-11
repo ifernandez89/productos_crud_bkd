@@ -1775,43 +1775,11 @@ export class JarvisService {
    * - "puntos clave del PDF sobre agricultura"
    */
   private detectDocumentSummaryRequest(message: string): { isRequest: boolean; title?: string; maxKeyPoints?: number } {
-    const normalized = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    // Detectar número de puntos solicitados
-    const numberMatch = message.match(/(\d+)\s+(?:puntos|items|conceptos|ideas)/i);
-    const maxKeyPoints = numberMatch ? parseInt(numberMatch[1], 10) : 10;
-
-    // Patrones para detectar resumen de documento específico
-    const patterns = [
-      // "resumen de 'X'" o "resumen del documento X"
-      /(?:resumen|resumir|resumime)\s+(?:de|del)\s+(?:documento|pdf|libro|archivo)?\s*['"]?([^'"]+?)['"]?$/i,
-      
-      // "puntos clave de 'X'" o "items relevantes del X"
-      /(?:puntos clave|conceptos clave|ideas principales|items relevantes|lo mas importante)\s+(?:de|del)\s+(?:documento|pdf|libro)?\s*['"]?([^'"]+?)['"]?$/i,
-      
-      // "dame X puntos del documento Y"
-      /(?:dame|mostrame|muestra)\s+(?:\d+\s+)?(?:puntos|items|conceptos)?\s+(?:de|del)\s+(?:documento|pdf|libro)?\s*['"]?([^'"]+?)['"]?$/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = normalized.match(pattern);
-      if (match && match[1]) {
-        let title = match[1].trim();
-        
-        // Limpiar título
-        title = title
-          .replace(/^(?:documento|pdf|libro|archivo)\s+/i, '')
-          .replace(/\s+(?:documento|pdf|libro|archivo)$/i, '')
-          .trim();
-
-        // Validar longitud mínima
-        if (title.length < 3) continue;
-
-        this.logger.log(`[document-summary-detection] detectado: "${title}" | keyPoints=${maxKeyPoints}`);
-        return { isRequest: true, title, maxKeyPoints };
-      }
+    // Reutilizar la misma lógica robusta de extractDocumentSummaryRequest
+    const extracted = this.extractDocumentSummaryRequest(message);
+    if (extracted) {
+      return { isRequest: true, title: extracted.title, maxKeyPoints: extracted.maxItems };
     }
-
     return { isRequest: false };
   }
 

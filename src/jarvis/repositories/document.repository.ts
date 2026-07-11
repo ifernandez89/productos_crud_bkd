@@ -58,19 +58,44 @@ export class DocumentRepository {
     const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3);
     if (terms.length === 0) return [];
 
-    // Buscar tanto por la query normalizada como por términos individuales
-    // Incluye variantes con guión para matchear títulos tipo "13-Botanica-Oculta"
     const termsWithHyphens = terms.map(t => t.replace(/\s/g, '-'));
 
     return this.prisma.document.findMany({
       where: {
         OR: [
-          // Match por términos con espacios
           ...terms.flatMap((term) => [
             { title:   { contains: term, mode: 'insensitive' as const } },
             { content: { contains: term, mode: 'insensitive' as const } },
           ]),
-          // Match por términos con guiones (para títulos tipo "Botanica-Oculta")
+          ...termsWithHyphens.map((term) => ({
+            title: { contains: term, mode: 'insensitive' as const },
+          })),
+        ],
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+    });
+  }
+
+  /**
+   * Busca SOLO por título, ignorando el contenido.
+   * Más confiable para encontrar un documento por nombre cuando hay muchos docs.
+   */
+  async searchDocumentsByTitle(query: string, limit = 20): Promise<Document[]> {
+    const normalizedQuery = query.toLowerCase().replace(/[-_]+/g, ' ').trim();
+    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3);
+    if (terms.length === 0) return [];
+
+    const termsWithHyphens = terms.map(t => t.replace(/\s/g, '-'));
+
+    return this.prisma.document.findMany({
+      where: {
+        OR: [
+          // términos con espacios
+          ...terms.map((term) => ({
+            title: { contains: term, mode: 'insensitive' as const },
+          })),
+          // variantes con guión
           ...termsWithHyphens.map((term) => ({
             title: { contains: term, mode: 'insensitive' as const },
           })),
