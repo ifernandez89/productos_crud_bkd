@@ -41,7 +41,7 @@ export class DocumentIngestService {
     source?: string,
   ): Promise<IngestResult> {
     // Limpiar título y contenido
-    const cleanTitle = this.sanitizeText(title);
+    const cleanTitle = this.sanitizeTitle(title);
     const cleanContent = this.sanitizeText(content);
     
     const detectedCategory = category ?? await this.detectCategory(cleanTitle, cleanContent);
@@ -85,8 +85,8 @@ export class DocumentIngestService {
       throw new BadRequestException(`No pude extraer texto del PDF: ${msg}`);
     }
 
-    // Limpiar el título también
-    const cleanTitle = this.sanitizeText(title);
+    // Limpiar el título también (quitando extensiones y caracteres problemáticos)
+    const cleanTitle = this.sanitizeTitle(title);
     const detectedCategory = category ?? await this.detectCategory(cleanTitle, text);
     
     const doc = await this.documentRepo.createDocument({
@@ -429,6 +429,22 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
     }
 
     return 'general';
+  }
+
+  /**
+   * Limpia un título de documento:
+   * - Elimina extensiones de archivo comunes (.pdf, .docx, .doc, .txt, .md, .xlsx, .pptx, .csv, .odt...)
+   * - Aplica limpieza general de caracteres problemáticos
+   * - Quita espacios extra al inicio/fin
+   */
+  sanitizeTitle(title: string): string {
+    if (!title) return '';
+    // Quitar extensiones de archivo comunes (case-insensitive)
+    const withoutExt = title.replace(
+      /\.(pdf|docx?|xlsx?|pptx?|txt|md|csv|odt|ods|odp|rtf|html?|epub|mobi)$/i,
+      '',
+    );
+    return this.sanitizeText(withoutExt);
   }
 
   /**

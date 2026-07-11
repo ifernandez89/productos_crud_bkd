@@ -178,6 +178,10 @@ export class DocumentRepository {
     });
   }
 
+  async updateDocument(id: number, data: Partial<Pick<CreateDocumentData, 'title' | 'category' | 'source'>>): Promise<Document> {
+    return this.prisma.document.update({ where: { id }, data });
+  }
+
   async deleteDocument(id: number): Promise<void> {
     await this.prisma.document.delete({ where: { id } });
   }

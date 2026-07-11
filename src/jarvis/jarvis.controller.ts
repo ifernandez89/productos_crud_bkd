@@ -230,7 +230,8 @@ export class JarvisController {
     if (!file.mimetype.includes('pdf')) {
       throw new BadRequestException('El archivo debe ser un PDF');
     }
-    const title = body.title || file.originalname.replace(/\.pdf$/i, '');
+    const rawTitle = body.title || file.originalname;
+    const title = this.ingestService.sanitizeTitle(rawTitle);
     const result = await this.ingestService.ingestPdf(
       file.buffer,
       title,

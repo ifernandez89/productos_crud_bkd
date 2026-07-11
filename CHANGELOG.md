@@ -6,7 +6,55 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Added — Resumen Detallado de Documento Individual (2026-07-11)
+### Fixed — Sanitización de Extensiones en Títulos de Documentos (2026-07-11)
+
+**🐛 Problema:** Al subir archivos `.docx`, `.doc`, `.txt` u otras extensiones, el título quedaba con la extensión incluida (ej: `"las mareas del inconsciente.docx"`), lo que impedía encontrarlo correctamente al buscar por nombre.
+
+**✅ Correcciones:**
+- Nuevo método `DocumentIngestService.sanitizeTitle()` que elimina extensiones de archivo comunes antes de guardar:
+  - `.pdf`, `.docx`, `.doc`, `.xlsx`, `.xls`, `.pptx`, `.ppt`, `.txt`, `.md`, `.csv`, `.odt`, `.ods`, `.odp`, `.rtf`, `.html`, `.htm`, `.epub`, `.mobi`
+- `JarvisController.ingestPdf()`: ahora usa `sanitizeTitle()` en lugar de solo quitar `.pdf` — cubre uploads de cualquier tipo.
+- `DocumentIngestService.ingestText()` e `ingestPdf()`: ambos usan `sanitizeTitle()` para normalizar el título antes de persistir.
+- **Corrección de datos existentes:** el documento `"las mareas del inconsciente.docx"` fue renombrado a `"las mareas del inconsciente"` directamente en la base de datos.
+- Nuevo método `DocumentRepository.updateDocument()` para poder parchear título/categoría/fuente de documentos existentes.
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/document-ingest.service.ts`: nuevo `sanitizeTitle()`, aplicado en `ingestText()` e `ingestPdf()`
+- `src/jarvis/jarvis.controller.ts`: usa `sanitizeTitle()` al extraer título del archivo subido
+- `src/jarvis/repositories/document.repository.ts`: nuevo método `updateDocument()`
+
+---
+
+### Added — Integración Conversacional de Resumen por Documento (2026-07-11)
+
+**📄 Integración en el flujo de chat (`jarvis.service.ts`):**
+- Nuevo shortcut de alta prioridad en `query()`: detecta solicitudes de resumen de un documento individual **antes** del Intent Router, por lo que no necesita clasificación LLM.
+- Nuevo método privado `extractDocumentSummaryRequest()`: detecta 3 patrones de lenguaje natural:
+  1. **Título entre comillas:** `resumen de 'Manual de Plantas'`, `puntos clave de "TypeScript Handbook"`
+  2. **Con tipo de archivo explícito:** `resumen del libro Manual de NestJS`, `resumen del pdf Guía Herbal`
+  3. **Título en mayúsculas (sin comillas):** `resumen de Manual de Plantas Medicinales`
+- Extrae automáticamente el número de puntos si el usuario lo especifica: `dame los 5 items de '...'` → `maxItems=5` (rango: 3–15).
+- Nuevo método privado `buildDocumentSummaryResponse()`: formatea la respuesta con título, categoría, stats de palabras/secciones, resumen ejecutivo y lista numerada de puntos clave.
+- Manejo de errores amigable: si el documento no existe, sugiere usar comillas y ver `mis documentos`.
+
+**💬 Comandos soportados (nuevos ejemplos confirmados):**
+```
+resumen de 'Las mareas del inconsciente'
+puntos clave de "TypeScript Handbook"
+dame los 10 items de 'Guía de NestJS'
+resumen del libro Manual de Plantas Medicinales
+lo más importante de 'nombre del documento'
+```
+
+**📋 Ayuda actualizada (`buildLibraryMessage()`):**
+- Los tips al final del listado de documentos ahora muestran los nuevos comandos de resumen individual.
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/jarvis.service.ts`: shortcut + `extractDocumentSummaryRequest()` + `buildDocumentSummaryResponse()`
+
+---
+
+
 
 **📄 Nuevo `DocumentSummaryService`:**
 - Nuevo servicio `src/jarvis/library/document-summary.service.ts` que genera resúmenes ejecutivos y extrae los puntos clave de un documento individual.
