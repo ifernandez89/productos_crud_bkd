@@ -27,6 +27,7 @@ import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service'
 import { ConversationRepository } from './repositories/conversation.repository';
 import { VisionService } from './tools/vision/vision.service';
 import { CategorySummaryService } from './library/category-summary.service';
+import { DocumentSummaryService } from './library/document-summary.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -45,6 +46,7 @@ export class JarvisController {
     private readonly knowledgeEvolution: KnowledgeEvolutionService,
     private readonly visionService: VisionService,
     private readonly categorySummaryService: CategorySummaryService,
+    private readonly documentSummaryService: DocumentSummaryService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -333,6 +335,24 @@ export class JarvisController {
       body.category,
       body.query,
       body.maxChunks,
+    );
+    return { success: true, ...result };
+  }
+
+  @Public()
+  @Post('library/document-summary')
+  @ApiOperation({ 
+    summary: 'Generar resumen detallado de un documento específico',
+    description: 'Genera un resumen ejecutivo y extrae los puntos clave (top 10) de un documento individual. ' +
+                 'Busca el documento por título (fuzzy match) o ID numérico. ' +
+                 'Ejemplos: "Manual de Plantas Medicinales", "TypeScript Handbook", o ID: 123'
+  })
+  async documentSummary(
+    @Body() body: { titleOrId: string | number; maxKeyPoints?: number },
+  ) {
+    const result = await this.documentSummaryService.generateDocumentSummary(
+      body.titleOrId,
+      body.maxKeyPoints || 10,
     );
     return { success: true, ...result };
   }

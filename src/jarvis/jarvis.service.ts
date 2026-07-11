@@ -21,6 +21,7 @@ import { DomainRouterService } from './tools/intent/domain-router.service';
 import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { CategorySummaryService } from './library/category-summary.service';
+import { DocumentSummaryService } from './library/document-summary.service';
 import { WebHelper } from './tools/web/web-helper';
 import { SourceRegistry } from './tools/web/source-registry';
 import { randomUUID } from 'crypto';
@@ -64,6 +65,7 @@ export class JarvisService {
     private readonly sportsTool: SportsTool,
     private readonly contentCache: ContentCacheService,
     private readonly categorySummaryService: CategorySummaryService,
+    private readonly documentSummaryService: DocumentSummaryService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
@@ -109,6 +111,19 @@ export class JarvisService {
       await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
       await this.conversationRepo.create({ sessionId, role: 'assistant', content: libraryMsg, metadata: { source: 'library_list' } });
       return libraryMsg;
+    }
+
+    // ── RESUMEN DE DOCUMENTO INDIVIDUAL ────────────────────────────────────
+    const docSummaryRequest = this.extractDocumentSummaryRequest(userMessage);
+    if (docSummaryRequest) {
+      const summaryMsg = await this.buildDocumentSummaryResponse(
+        docSummaryRequest.title,
+        docSummaryRequest.maxItems,
+      );
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: summaryMsg, metadata: { source: 'document_summary' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: summaryMsg, toolsUsed: ['document_summary'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      return summaryMsg;
     }
 
     // ── DEDUPLICAR DOCUMENTOS ────────────────────────────────────────────────
@@ -511,43 +526,79 @@ export class JarvisService {
 
     // RAG de documentos
     if (useDocuments) {
-      // Primero intentar detectar si es una solicitud de resumen por categoría
-      const categorySummary = this.detectCategorySummaryRequest(userMessage);
+      // Primero intentar detectar si es una solicitud de resumen de documento individual
+      const docSummary = this.detectDocumentSummaryRequest(userMessage);
       
-      if (categorySummary.isRequest && categorySummary.category) {
-        this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
+      if (docSummary.isRequest && docSummary.title) {
+        this.logger.log(`[rag:document] detectado resumen de documento: "${docSummary.title}"`);
         
         try {
-          // Generar resumen combinado de la categoría
-          const result = await this.categorySummaryService.generateCategorySummary(
-            categorySummary.category,
-            categorySummary.query,
+          const result = await this.documentSummaryService.generateDocumentSummary(
+            docSummary.title,
+            docSummary.maxKeyPoints,
           );
 
-          if (result.chunksUsed > 0) {
-            usedDocs = true;
-            // Agregar el resumen generado como contexto
-            contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
-          } else {
-            // No hay documentos en esa categoría
-            contextParts.push(`### DOCUMENTOS\nNo encontré documentos en la categoría "${categorySummary.category}". Podés subir PDFs o textos relacionados.`);
-          }
+          usedDocs = true;
+          
+          // Formatear el resumen para el contexto
+          const formattedSummary = [
+            `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
+            result.category ? `**Categoría:** ${result.category}` : '',
+            result.wordCount > 0 ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}` : '',
+            '',
+            '**RESUMEN EJECUTIVO:**',
+            result.summary,
+            '',
+            '**PUNTOS CLAVE:**',
+            ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
+          ].filter(line => line !== '').join('\n');
+
+          contextParts.push(formattedSummary);
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err);
-          this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
-          // Fallback a búsqueda normal si falla el resumen por categoría
+          this.logger.warn(`[rag:document] error al generar resumen: ${msg}`);
+          // Si el documento no se encuentra, agregar mensaje de error al contexto
+          contextParts.push(`### DOCUMENTOS\n${msg}`);
         }
-      }
-      
-      // Búsqueda normal de chunks si no es resumen por categoría o si falló
-      if (!categorySummary.isRequest) {
-        const chunks = await this.documentRepo.searchChunks(userMessage, 3);
-        if (chunks.length > 0) {
-          usedDocs = true;
-          const docText = chunks
-            .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-            .join('\n---\n');
-          contextParts.push(`### DOCUMENTOS\n${docText}`);
+      } else {
+        // Si no es resumen de documento individual, intentar resumen por categoría
+        const categorySummary = this.detectCategorySummaryRequest(userMessage);
+        
+        if (categorySummary.isRequest && categorySummary.category) {
+          this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
+          
+          try {
+            // Generar resumen combinado de la categoría
+            const result = await this.categorySummaryService.generateCategorySummary(
+              categorySummary.category,
+              categorySummary.query,
+            );
+
+            if (result.chunksUsed > 0) {
+              usedDocs = true;
+              // Agregar el resumen generado como contexto
+              contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
+            } else {
+              // No hay documentos en esa categoría
+              contextParts.push(`### DOCUMENTOS\n${result.summary}`);
+            }
+          } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
+            // Fallback a búsqueda normal si falla el resumen por categoría
+          }
+        }
+        
+        // Búsqueda normal de chunks si no es resumen por categoría ni por documento
+        if (!categorySummary.isRequest) {
+          const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+          if (chunks.length > 0) {
+            usedDocs = true;
+            const docText = chunks
+              .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+              .join('\n---\n');
+            contextParts.push(`### DOCUMENTOS\n${docText}`);
+          }
         }
       }
     }
@@ -1293,6 +1344,10 @@ export class JarvisService {
       `                           \`resumen sobre plantas medicinales\``,
       `                           \`qué dicen mis PDFs de medicina\``,
       `                           \`información sobre desarrollo\``,
+      `  Resumen de documento  →  \`resumen de '<título>'\``,
+      `                           \`resumen de 'Manual de Plantas'\``,
+      `                           \`puntos clave de 'TypeScript Handbook'\``,
+      `                           \`dame 10 items de 'Guía de NestJS'\``,
       `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
       `                           \`según mis PDFs, <pregunta>\``,
       `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
@@ -1377,11 +1432,121 @@ export class JarvisService {
     }
 
     lines.push(`💡 Podés preguntar:`);
-    lines.push(`  - "¿qué dice mi carta astral sobre Mercurio?"`);
-    lines.push(`  - "dame un resumen de los documentos de categoría pdf"`);
-    lines.push(`  - "eliminar documentos repetidos"`);
+    lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
+    lines.push(`  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``);
+    lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
+    lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
 
     return lines.join('\n');
+  }
+
+  /**
+   * Detecta si el usuario pide un resumen de un documento específico.
+   * Patrones soportados:
+   *   - "resumen de 'Manual de Plantas Medicinales'"
+   *   - "resumen del libro 'TypeScript Handbook'"
+   *   - "puntos clave de 'Guía de NestJS'"
+   *   - "dame los 10 items de 'nombre del libro'"
+   *   - "dame 5 puntos del documento 'título'"
+   *   - "lo más importante de 'nombre'"
+   */
+  private extractDocumentSummaryRequest(
+    message: string,
+  ): { title: string; maxItems: number } | null {
+    // Normalizar quitando tildes para mejor matching
+    const normalized = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+    // Extraer número de items si se especifica ("dame los 10 puntos", "5 items")
+    const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
+    const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
+
+    // Patrón 1: título entre comillas simples o dobles
+    //   "resumen de 'Manual de Plantas'"
+    //   "puntos clave de \"TypeScript Handbook\""
+    const quotedMatch = message.match(
+      /(?:resumen|puntos\s*clave|items?\s*(?:mas|más)?\s*(?:relevantes?|importantes?)?|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))\s*(?:de(?:l)?|sobre|del\s*(?:libro|pdf|documento))?\s*['"]([^'"]{3,})['"/]?/i,
+    );
+    if (quotedMatch?.[1]?.trim()) {
+      return { title: quotedMatch[1].trim(), maxItems };
+    }
+
+    // Patrón 2: "resumen del libro/pdf/documento <título>"
+    //   "resumen del libro Manual de Plantas Medicinales"
+    //   "resumen del pdf Guía de NestJS"
+    const docTypeMatch = message.match(
+      /(?:resumen|puntos\s*clave|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?))\s*(?:de(?:l)?\s*(?:libro|pdf|documento|doc|archivo))\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,60})/i,
+    );
+    if (docTypeMatch?.[1]?.trim()) {
+      return { title: docTypeMatch[1].trim(), maxItems };
+    }
+
+    // Patrón 3: "resumen de <TÍTULO CON MAYÚSCULAS>" (sin comillas, título en mayúsculas)
+    //   "resumen de Manual de Plantas Medicinales"
+    const noQuoteMatch = message.match(
+      /^(?:resumen|puntos\s*clave|lo\s*(?:mas|más)?\s*importante)\s+(?:de(?:l)?|sobre)\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,60})/,
+    );
+    if (noQuoteMatch?.[1]?.trim()) {
+      const title = noQuoteMatch[1].trim();
+      // Asegurarse de que no sea una categoría genérica ("plantas medicinales" → RAG, no doc summary)
+      // Si tiene más de 3 palabras cortas sin mayúsculas → probablemente es un tema genérico
+      const words = title.split(/\s+/);
+      const hasProperNoun = words.some(w => w.length > 1 && w[0] === w[0].toUpperCase());
+      if (hasProperNoun || words.length >= 3) {
+        return { title, maxItems };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Genera y formatea el mensaje de respuesta con el resumen de un documento.
+   */
+  private async buildDocumentSummaryResponse(
+    titleOrId: string | number,
+    maxKeyPoints = 10,
+  ): Promise<string> {
+    try {
+      const result = await this.documentSummaryService.generateDocumentSummary(
+        titleOrId,
+        maxKeyPoints,
+      );
+
+      const lines: string[] = [
+        `📄 **${result.title}**`,
+        result.category ? `📁 Categoría: ${result.category}` : '',
+        `📊 ${result.wordCount.toLocaleString('es-AR')} palabras · ${result.chunkCount} secciones`,
+        ``,
+        `## Resumen`,
+        result.summary,
+        ``,
+        `## Puntos Clave (top ${result.keyPoints.length})`,
+      ];
+
+      result.keyPoints.forEach((point, i) => {
+        lines.push(`${i + 1}. ${point}`);
+      });
+
+      lines.push(``);
+      lines.push(`💡 Podés profundizar con: _"busca en mis documentos <tema>"_`);
+
+      return lines.filter(l => l !== undefined).join('\n');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // NotFoundException (documento no encontrado) → mensaje amigable
+      if (msg.includes('No encontré')) {
+        return [
+          `⚠️ ${msg}`,
+          ``,
+          `💡 Tip: usá comillas para el título exacto:`,
+          `   \`resumen de 'Nombre exacto del documento'\``,
+          ``,
+          `O revisá tus documentos con: \`mis documentos\``,
+        ].join('\n');
+      }
+      this.logger.error(`[document-summary] error: ${msg}`);
+      return `⚠️ No pude generar el resumen en este momento. Intentá de nuevo.`;
+    }
   }
 
   async findRelevantSkills(query: string) {
@@ -1516,6 +1681,55 @@ export class JarvisService {
 
         this.logger.log(`[category-detection] detectado: "${category}" de mensaje: "${message.slice(0, 60)}..."`);
         return { isRequest: true, category, query };
+      }
+    }
+
+    return { isRequest: false };
+  }
+
+  /**
+   * Detecta si el usuario está pidiendo un resumen de un documento específico.
+   * Ejemplos:
+   * - "resumen de 'Manual de Plantas Medicinales'"
+   * - "resumen del documento TypeScript Handbook"
+   * - "dame los 10 puntos clave de 'Guía de NestJS'"
+   * - "puntos clave del PDF sobre agricultura"
+   */
+  private detectDocumentSummaryRequest(message: string): { isRequest: boolean; title?: string; maxKeyPoints?: number } {
+    const normalized = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    // Detectar número de puntos solicitados
+    const numberMatch = message.match(/(\d+)\s+(?:puntos|items|conceptos|ideas)/i);
+    const maxKeyPoints = numberMatch ? parseInt(numberMatch[1], 10) : 10;
+
+    // Patrones para detectar resumen de documento específico
+    const patterns = [
+      // "resumen de 'X'" o "resumen del documento X"
+      /(?:resumen|resumir|resumime)\s+(?:de|del)\s+(?:documento|pdf|libro|archivo)?\s*['"]?([^'"]+?)['"]?$/i,
+      
+      // "puntos clave de 'X'" o "items relevantes del X"
+      /(?:puntos clave|conceptos clave|ideas principales|items relevantes|lo mas importante)\s+(?:de|del)\s+(?:documento|pdf|libro)?\s*['"]?([^'"]+?)['"]?$/i,
+      
+      // "dame X puntos del documento Y"
+      /(?:dame|mostrame|muestra)\s+(?:\d+\s+)?(?:puntos|items|conceptos)?\s+(?:de|del)\s+(?:documento|pdf|libro)?\s*['"]?([^'"]+?)['"]?$/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = normalized.match(pattern);
+      if (match && match[1]) {
+        let title = match[1].trim();
+        
+        // Limpiar título
+        title = title
+          .replace(/^(?:documento|pdf|libro|archivo)\s+/i, '')
+          .replace(/\s+(?:documento|pdf|libro|archivo)$/i, '')
+          .trim();
+
+        // Validar longitud mínima
+        if (title.length < 3) continue;
+
+        this.logger.log(`[document-summary-detection] detectado: "${title}" | keyPoints=${maxKeyPoints}`);
+        return { isRequest: true, title, maxKeyPoints };
       }
     }
 

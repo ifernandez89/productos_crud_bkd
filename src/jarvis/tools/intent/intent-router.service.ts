@@ -226,6 +226,11 @@ export class IntentRouterService {
       return { intent: 'RAG', confidence: 'high', reason: 'my documents query' };
     }
 
+    // RAG — resumen de documento individual
+    if (/(resumen|puntos clave|items relevantes|lo mas importante)\s+(?:de|del)\s+(?:documento|pdf|libro)/i.test(n)) {
+      return { intent: 'RAG', confidence: 'high', reason: 'document summary request' };
+    }
+
     // LOCAL — alta confianza (conversación trivial, identidad del asistente)
     const trivialPattern = /^(hola|buenas|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios)[\s!?.]*$/i;
     if (trivialPattern.test(n.trim())) {

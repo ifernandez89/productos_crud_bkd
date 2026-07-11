@@ -6,6 +6,45 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Resumen Detallado de Documento Individual (2026-07-11)
+
+**📄 Nuevo `DocumentSummaryService`:**
+- Nuevo servicio `src/jarvis/library/document-summary.service.ts` que genera resúmenes ejecutivos y extrae los puntos clave de un documento individual.
+- Busca el documento por título con **fuzzy matching** (match exacto → match por palabras → primer candidato).
+- Combina todos los chunks del documento para analizar el contenido completo.
+- Para libros/PDFs largos (>10.000 chars), procesa inicio (8.000) + final (2.000) para capturar intro y conclusiones.
+- Fallback graceful cuando Ollama no está disponible: devuelve extracto básico con el contenido crudo.
+
+**💬 Comandos Nuevos (lenguaje natural):**
+- `resumen de 'título del documento'` → resumen ejecutivo + 10 puntos clave
+- `resumen del libro 'título'` → ídem
+- `puntos clave de 'título'` → top 10 items más relevantes
+- `dame 5 puntos de 'título'` → cantidad configurable (1-N)
+- `items relevantes del documento 'título'` → variante alternativa
+
+**🔍 Detección Automática en Chat:**
+- `JarvisService.detectDocumentSummaryRequest()`: detecta 3 patrones de solicitud de resumen individual.
+- Prioridad en el flujo RAG: **documento individual → resumen por categoría → búsqueda normal de chunks**.
+- Extrae automáticamente el número de puntos solicitados si el usuario lo especifica (ej: "dame 5 puntos").
+
+**🌐 Nuevo Endpoint REST:**
+- `POST /jarbees/library/document-summary`
+  - Body: `{ titleOrId: string | number, maxKeyPoints?: number }`
+  - Response: `{ documentId, title, category, summary, keyPoints[], wordCount, chunkCount }`
+
+**📖 Ayuda (`h`) Actualizada:**
+- Sección **BIBLIOTECA / DOCUMENTOS / PDFs** ampliada con los nuevos comandos:
+  - `resumen de '<título>'`
+  - `puntos clave de '<título>'`
+  - `dame 10 items de '<título>'`
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/document-summary.service.ts`: nuevo servicio
+- `src/jarvis/jarvis.service.ts`: detección + flujo RAG reestructurado + ayuda actualizada
+- `src/jarvis/jarvis.controller.ts`: nuevo endpoint + import
+- `src/jarvis/jarvis.module.ts`: registro del servicio
+- `src/jarvis/tools/intent/intent-router.service.ts`: nuevo patrón RAG para resumen de documento
+
 ### Added — Sistema de Detección Automática de Categorías y Resúmenes Inteligentes (2026-07-10)
 
 **🎯 Detección Automática de Categorías:**
