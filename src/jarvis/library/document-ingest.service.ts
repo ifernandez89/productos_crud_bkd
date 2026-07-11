@@ -294,12 +294,14 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
       return 'ia';
     }
 
-    // ── ASTRONOMÍA & ASTROLOGÍA ──
-    if (/(astronomia|astro|planeta|estrella|galaxia|cosmos|universo|telescopio|nasa|espacio|satelite|orbital)/i.test(normalized)) {
-      return 'astronomia';
-    }
-    if (/(astrologia|signo zodiacal|horoscopo|carta natal|ascendente|casa astrologica)/i.test(normalized)) {
+    // ── ASTROLOGÍA (va ANTES que astronomía para evitar falsos matches) ──
+    if (/(astrologia|carta astral|carta natal|signo zodiacal|horoscopo|ascendente|casa astrologica|luna natal|sol natal|paracelso|alquimia|hermetismo|hermes trimegisto|tarot|numerologia|kabbalah|ocultismo|botanica oculta|magia|esoter)/i.test(normalized)) {
       return 'astrologia';
+    }
+
+    // ── ASTRONOMÍA ──
+    if (/(astronomia|galaxia|cosmos|universo|telescopio|nasa|satelite|orbital|agujero negro|nebulosa|constelacion)/i.test(normalized)) {
+      return 'astronomia';
     }
 
     // ── CIENCIAS ──
