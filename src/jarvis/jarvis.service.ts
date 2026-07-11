@@ -101,6 +101,22 @@ export class JarvisService {
       return helpMsg;
     }
 
+    // ── BIBLIOTECA — lista de documentos guardados ───────────────────────────
+    if (/^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs))$/i.test(userMessage.trim())) {
+      const libraryMsg = await this.buildLibraryMessage();
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: libraryMsg, metadata: { source: 'library_list' } });
+      return libraryMsg;
+    }
+
+    // ── DEDUPLICAR DOCUMENTOS ────────────────────────────────────────────────
+    if (/^(elimina(r)? (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|borr(a|ar) (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|deduplicar|limpiar (la )?biblioteca)$/i.test(userMessage.trim())) {
+      const dedupMsg = await this.deduplicateDocuments();
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: dedupMsg, metadata: { source: 'library_dedup' } });
+      return dedupMsg;
+    }
+
     if (this.isRepeatRequest(userMessage)) {
       if (!hasSessionId) {
         return 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
@@ -529,8 +545,8 @@ export class JarvisService {
       : '';
 
     const userPrompt = contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
-        : userMessage;
+      ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
+      : userMessage;
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
   }
 
@@ -563,24 +579,24 @@ export class JarvisService {
       await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext);
 
     if (usedMemory) toolsUsed.push('memory');
-    if (usedDocs)   toolsUsed.push('rag');
+    if (usedDocs) toolsUsed.push('rag');
 
     const finalSystemPrompt = webContext
       ? systemPrompt
-          .replace(
-            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-            '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
-          )
-          .replace(
-            '3. No inventar datos. Si no tenés la info, decilo claramente.',
-            '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
-          )
+        .replace(
+          '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+          '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
+        )
+        .replace(
+          '3. No inventar datos. Si no tenés la info, decilo claramente.',
+          '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
+        )
       : systemPrompt;
 
     const response = await provider.generate({
       messages: [
         { role: 'system', content: finalSystemPrompt },
-        { role: 'user',   content: userPrompt },
+        { role: 'user', content: userPrompt },
       ],
     });
     const responseContent = this.formatProviderResponse(response.content, provider);
@@ -610,7 +626,7 @@ export class JarvisService {
         const response2 = await provider.generate({
           messages: [
             { role: 'system', content: sp2Final },
-            { role: 'user',   content: up2 },
+            { role: 'user', content: up2 },
           ],
         });
         const response2Content = this.formatProviderResponse(response2.content, provider);
@@ -619,7 +635,7 @@ export class JarvisService {
         return response2Content;
       }
     }
-    
+
     await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
     return responseContent;
   }
@@ -641,13 +657,13 @@ export class JarvisService {
     startTime: number,
     astroData: string,
   ): Promise<string> {
-    const profile   = await this.userProfileRepo.getOrCreate();
-    const identity  = this.jarvisIdentity.getIdentity();
-    const now       = new Date();
-    const dateStr   = now.toLocaleDateString('es-AR', {
+    const profile = await this.userProfileRepo.getOrCreate();
+    const identity = this.jarvisIdentity.getIdentity();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-AR', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
-    const timeStr   = now.toLocaleTimeString('es-AR', {
+    const timeStr = now.toLocaleTimeString('es-AR', {
       hour: '2-digit', minute: '2-digit',
       timeZone: profile.timezone || 'America/Argentina/Buenos_Aires',
     });
@@ -684,7 +700,7 @@ export class JarvisService {
     const response = await provider.generate({
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt },
+        { role: 'user', content: userPrompt },
       ],
     });
 
@@ -882,7 +898,7 @@ export class JarvisService {
     // 2. Fallback: WebHelper con fuentes priorizadas por categoría
     // ⏱️ Timeout de 25s total — si tarda más, es mejor dar una respuesta parcial
     const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
-    const webHelperResult  = WebHelper.search(enrichedQuery, category, true);
+    const webHelperResult = WebHelper.search(enrichedQuery, category, true);
     const result = await Promise.race([webHelperResult, webHelperTimeout]);
 
     if (result) {
@@ -900,27 +916,27 @@ export class JarvisService {
    */
   private domainToCategory(domain: string): string | undefined {
     const map: Record<string, string> = {
-      SPORTS:           'deportes',
-      LOCAL_NEWS:       'noticias',
-      NATIONAL_NEWS:    'noticias',
-      POLITICS:         'noticias',
-      AI:               'ia',
-      AI_PAPERS:        'academic_ai',
-      PROGRAMMING:      'tecnologia',
-      DEVELOPMENT:      'desarrollo',
-      SCIENCE:          'ciencia',
-      TECHNOLOGY:       'tecnologia',
-      MUSIC:            'musica',
-      MOVIES_TV:        'entretenimiento',
-      MYSTERY:          'misterios',
-      ECONOMY:          'noticias',
+      SPORTS: 'deportes',
+      LOCAL_NEWS: 'noticias',
+      NATIONAL_NEWS: 'noticias',
+      POLITICS: 'noticias',
+      AI: 'ia',
+      AI_PAPERS: 'academic_ai',
+      PROGRAMMING: 'tecnologia',
+      DEVELOPMENT: 'desarrollo',
+      SCIENCE: 'ciencia',
+      TECHNOLOGY: 'tecnologia',
+      MUSIC: 'musica',
+      MOVIES_TV: 'entretenimiento',
+      MYSTERY: 'misterios',
+      ECONOMY: 'noticias',
       GOVERNMENT_LOCAL: 'gobierno',
-      REFERENCE:        'referencia',
-      PLANTS:           'referencia',
-      MATH:             'academic_math',
-      PHYSICS:          'academic_physics',
-      ASTRONOMY:        'academic_astronomy',
-      WEB_DOCS:         'academic_dev',
+      REFERENCE: 'referencia',
+      PLANTS: 'referencia',
+      MATH: 'academic_math',
+      PHYSICS: 'academic_physics',
+      ASTRONOMY: 'academic_astronomy',
+      WEB_DOCS: 'academic_dev',
     };
     return map[domain];
   }
@@ -982,16 +998,16 @@ export class JarvisService {
 
     // Detectar localidad en la query original
     const n = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const mentionsParana   = /parana|entre rios|litoral/.test(n);
+    const mentionsParana = /parana|entre rios|litoral/.test(n);
     const mentionsArgentina = /argentin/.test(n);
 
     // Para noticias: construir query limpia si es genérica o enriquecerla si es específica
     if (category === 'noticias') {
       const isGeneric = /^(noticias?|novedades?|actualidad|que paso|que hay de nuevo|noticias de hoy|ultimas noticias)[\s?¿!¡.]*$/i.test(n.trim());
       if (isGeneric) {
-        const localidad = mentionsParana   ? 'Paraná Entre Ríos'
-                        : mentionsArgentina ? 'Argentina'
-                        : '';
+        const localidad = mentionsParana ? 'Paraná Entre Ríos'
+          : mentionsArgentina ? 'Argentina'
+            : '';
         return `noticias ${localidad} hoy`.replace(/\s+/g, ' ').trim();
       }
       // No es genérico, mantener el término de búsqueda y agregar 'noticias' / 'hoy' si no están
@@ -1011,7 +1027,7 @@ export class JarvisService {
     }
 
     // Deportes: conservar query original pero agregar fecha actual
-    const now   = new Date();
+    const now = new Date();
     const today = `${now.getDate()} de ${now.toLocaleDateString('es-AR', { month: 'long' })} de ${now.getFullYear()}`;
     if (/\bhoy\b/i.test(query)) return query.replace(/\bhoy\b/gi, today);
     return `${query} ${today}`;
@@ -1238,6 +1254,10 @@ export class JarvisService {
       `  Editar por nombre →  \`edita <nombre> por <nuevo texto>\``,
       `  Completar         →  \`completé el pendiente 1\``,
       ``,
+      `**BIBLIOTECA**`,
+      `  Ver documentos    →  \`mis documentos\`  /  \`biblioteca\``,
+      `  Limpiar duplicados →  \`eliminar documentos repetidos\``,
+      ``,
       `**BÚSQUEDA WEB**`,
       `  Noticias generales     →  \`últimas noticias\``,
       `  Sitio específico       →  \`dame 6 noticias de elonce\``,
@@ -1260,6 +1280,61 @@ export class JarvisService {
       ``,
       `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
     ].join('\n');
+  }
+
+  /** Elimina documentos duplicados, conservando el más reciente de cada título */
+  private async deduplicateDocuments(): Promise<string> {
+    const groups = await this.documentRepo.findDuplicates();
+
+    if (groups.length === 0) {
+      return `✅ Tu biblioteca no tiene documentos duplicados.`;
+    }
+
+    const allDupeIds = groups.flatMap((g) => g.duplicates);
+    const deleted = await this.documentRepo.deleteManyDocuments(allDupeIds);
+
+    const lines: string[] = [
+      `🧹 **Duplicados eliminados: ${deleted} documento${deleted !== 1 ? 's' : ''}**`,
+      ``,
+    ];
+    for (const g of groups) {
+      lines.push(`  • "${g.title}" — se eliminaron ${g.duplicates.length} copia${g.duplicates.length !== 1 ? 's' : ''} (conservado id:${g.keeper})`);
+    }
+    lines.push(``, `✅ Biblioteca limpia.`);
+    return lines.join('\n');
+  }
+
+  /** Lista los documentos de la biblioteca agrupados por categoría */
+  private async buildLibraryMessage(): Promise<string> {
+    const docs = await this.documentRepo.getMostRecentDocuments(50);
+
+    if (!docs || docs.length === 0) {
+      return `📚 Tu biblioteca está vacía.\n\nSubí un PDF desde el chat para empezar a construirla.`;
+    }
+
+    // Agrupar por categoría
+    const byCategory = new Map<string, typeof docs>();
+    for (const doc of docs) {
+      const cat = (doc as any).category ?? 'sin categoría';
+      if (!byCategory.has(cat)) byCategory.set(cat, []);
+      byCategory.get(cat)!.push(doc);
+    }
+
+    const lines: string[] = [`📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
+
+    for (const [category, items] of byCategory.entries()) {
+      lines.push(`**${category.toUpperCase()}**`);
+      for (const doc of items) {
+        const chunks = (doc as any)._count?.chunks ?? '?';
+        const used = (doc as any).timesUsed > 0 ? ` · usado ${(doc as any).timesUsed}x` : '';
+        lines.push(`  • ${doc.title}  _(${chunks} chunks${used})_`);
+      }
+      lines.push(``);
+    }
+
+    lines.push(`💡 Para buscar dentro de tus documentos preguntame directamente, ej: "¿qué dice mi carta astral sobre Mercurio?"`);
+
+    return lines.join('\n');
   }
 
   async findRelevantSkills(query: string) {
@@ -1399,3 +1474,4 @@ export class JarvisService {
     return this.browserTool.search(query, limit);
   }
 }
+

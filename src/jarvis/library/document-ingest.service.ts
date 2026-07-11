@@ -3,45 +3,33 @@ import { DocumentRepository } from '../repositories/document.repository';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { EmbeddingsService } from './embeddings.service';
+import { OllamaProvider } from '../llm/ollama.provider';
+import { DocumentEnrichmentService } from './document-enrichment.service';
 
-// pdf-parse: diagnóstico de exportación en runtime
+// pdf-parse v2: API basada en clase — new PDFParse({ data: buffer }).getText()
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParseModule = require('pdf-parse');
-
-// Log de diagnóstico — visible en logs al arrancar el servidor
-const _pdfModuleType   = typeof pdfParseModule;
-const _pdfDefaultType  = typeof pdfParseModule?.default;
-const _pdfKeys         = Object.keys(pdfParseModule ?? {}).slice(0, 10).join(', ');
-console.log(`[pdf-parse:init] module type=${_pdfModuleType} | default type=${_pdfDefaultType} | keys=[${_pdfKeys}]`);
-
-// Resolver la función correcta según la estructura real del módulo
-const pdfParse: (buffer: Buffer) => Promise<{ text: string; numpages: number }> =
-  typeof pdfParseModule === 'function'
-    ? pdfParseModule
-    : typeof pdfParseModule?.default === 'function'
-      ? pdfParseModule.default
-      : typeof pdfParseModule?.pdf === 'function'
-        ? pdfParseModule.pdf
-        : pdfParseModule; // último recurso — fallará con el error original si no es función
+const { PDFParse } = require('pdf-parse');
 
 export interface IngestResult {
   documentId: number;
   title: string;
   chunks: number;
   category?: string;
+  answer?: string; // resumen o respuesta a la pregunta del usuario
 }
 
 @Injectable()
 export class DocumentIngestService {
   private readonly logger = new Logger(DocumentIngestService.name);
 
-  // Tamaño de chunk en caracteres (overlap del 10%)
   private readonly CHUNK_SIZE    = 800;
   private readonly CHUNK_OVERLAP = 80;
 
   constructor(
     private readonly documentRepo: DocumentRepository,
     private readonly embeddingsService: EmbeddingsService,
+    private readonly ollamaProvider: OllamaProvider,
+    private readonly enrichmentService: DocumentEnrichmentService,
   ) {}
 
   // ── Ingesta desde texto plano o markdown ────────────────────────────────────
@@ -66,21 +54,21 @@ export class DocumentIngestService {
     title: string,
     category?: string,
     source?: string,
+    question?: string,
   ): Promise<IngestResult> {
-    this.logger.log(`[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes | categoría=${category ?? 'pdf'}`);
-    this.logger.log(`[pdf:parser] función disponible=${typeof pdfParse === 'function'} | tipo=${typeof pdfParse}`);
+    this.logger.log(`[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes`);
 
     let text: string;
     try {
-      this.logger.log(`[pdf:parse] iniciando extracción de texto...`);
-      const parsed = await pdfParse(buffer);
-      this.logger.log(`[pdf:parse] OK — páginas=${parsed.numpages} | chars=${parsed.text?.length ?? 0}`);
-      text = parsed.text?.trim();
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      await parser.destroy();
+      this.logger.log(`[pdf:parse] OK — páginas=${result.total ?? '?'} | chars=${result.text?.length ?? 0}`);
+      text = result.text?.trim();
       if (!text) throw new Error('PDF sin texto extraíble (puede ser un PDF escaneado/imagen)');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`[pdf:parse] ERROR en "${title}": ${msg}`);
-      this.logger.error(`[pdf:parse] pdfParseModule keys: ${Object.keys(pdfParseModule ?? {}).join(', ')}`);
       throw new BadRequestException(`No pude extraer texto del PDF: ${msg}`);
     }
 
@@ -93,7 +81,16 @@ export class DocumentIngestService {
 
     const chunks = await this.buildAndSaveChunks(doc.id, text);
     this.logger.log(`[library] PDF "${title}" ingestado — ${chunks} chunks`);
-    return { documentId: doc.id, title, chunks, category: category ?? 'pdf' };
+
+    // Enriquecimiento en background — no bloquea la respuesta al usuario
+    this.enrichmentService.enrich(doc.id, title, text).catch((err) => {
+      this.logger.warn(`[enrichment] error background en "${title}": ${err?.message ?? err}`);
+    });
+
+    // Generar respuesta con el contenido del PDF
+    const answer = await this.answerFromText(text, title, question);
+
+    return { documentId: doc.id, title, chunks, category: category ?? 'pdf', answer };
   }
 
   // ── Ingesta desde URL (Scraping) ─────────────────────────────────────────────
@@ -128,6 +125,41 @@ export class DocumentIngestService {
     if (!text) throw new BadRequestException('No se pudo extraer texto de la página');
 
     return this.ingestText(title, text, category ?? 'web', url);
+  }
+
+  // ── Respuesta con LLM sobre el contenido del documento ─────────────────────
+
+  private async answerFromText(text: string, title: string, question?: string): Promise<string> {
+    // Limitar el texto al modelo — usar los primeros 6000 chars para no saturar el contexto
+    const excerpt = text.length > 6000
+      ? text.slice(0, 6000) + '\n\n[... contenido truncado ...]'
+      : text;
+
+    const systemPrompt = `Sos un asistente experto en análisis de documentos. 
+Respondé siempre en español argentino, de forma clara y estructurada.
+Si el usuario hizo una pregunta, respondela exclusivamente con el contenido del documento.
+Si no hizo pregunta, generá un resumen completo del documento.`;
+
+    const userPrompt = question
+      ? `Documento: "${title}"\n\n${excerpt}\n\n---\nPregunta del usuario: ${question}`
+      : `Hacé un resumen completo y estructurado del siguiente documento: "${title}"\n\n${excerpt}`;
+
+    this.logger.log(`[pdf:llm] generando ${question ? 'respuesta a pregunta' : 'resumen'} para "${title}"`);
+
+    try {
+      const response = await this.ollamaProvider.generate({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt },
+        ],
+        maxTokens: 800,
+      });
+      return response.content;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`[pdf:llm] no se pudo generar respuesta: ${msg}`);
+      return `✅ PDF "${title}" guardado correctamente (${text.length} chars). El modelo LLM no estaba disponible para generar un resumen.`;
+    }
   }
 
   // ── Chunking deslizante ─────────────────────────────────────────────────────

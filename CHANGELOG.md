@@ -6,6 +6,46 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Comando "eliminar documentos repetidos" (2026-07-10)
+
+- Nuevo atajo de chat: `eliminar documentos repetidos`, `borrar duplicados`, `deduplicar`, `limpiar biblioteca` y variantes.
+- Detecta grupos de documentos con el mismo título (normalizado), conserva el más reciente y elimina las copias anteriores junto con sus chunks (cascade).
+- Muestra un resumen de qué se eliminó y qué se conservó.
+- `DocumentRepository` tiene dos nuevos métodos: `findDuplicates()` y `deleteManyDocuments()`.
+- Comando agregado a la guía `h`.
+
+### Added — Comando "mis documentos" / "biblioteca" (2026-07-10)
+
+- Nuevo atajo de chat: escribir `mis documentos`, `biblioteca`, `mis libros`, `mis pdfs` o variantes retorna instantáneamente la lista de documentos guardados en BD, agrupados por categoría con conteo de chunks y veces usado.
+- Se actualizó la guía `h` para incluir el nuevo comando en la sección **BIBLIOTECA**.
+
+### Added — DocumentEnrichmentService: biblioteca personal inteligente (2026-07-10)
+
+- Nuevo `DocumentEnrichmentService` (`src/jarvis/library/document-enrichment.service.ts`).
+- Al ingestar un PDF, se dispara en background un pipeline de enriquecimiento que extrae:
+  - **Resumen global** (2-3 párrafos) del documento completo
+  - **15-20 conceptos clave** detectados por el LLM
+  - **Entidades**: personas, teorías/frameworks, tecnologías
+  - **Citas destacadas** (máx. 5)
+  - **Tags** para búsqueda semántica
+- Todo se guarda como chunks especiales (`type: summary | concepts | entities | quotes`) en la tabla `Chunk` → disponibles automáticamente en RAG.
+- Se crean `TopicSnapshot` en Knowledge Evolution: uno por documento y uno por cada uno de los 5 conceptos más importantes → consultables con `GET /api/jarbees/evolution?topic=X`.
+- Procesa el texto en secciones de 4000 chars (máx. 8 secciones) para no saturar el modelo en libros largos.
+- Corre en background — no bloquea la respuesta al usuario ni el tiempo de ingestión.
+
+### Added — PDF: respuesta automática con LLM tras ingestión (2026-07-10)
+
+- `DocumentIngestService.ingestPdf()` ahora acepta un `question` opcional y genera automáticamente una respuesta con el LLM después de parsear el PDF.
+- Si se envía `question` → responde la pregunta usando el contenido del documento.
+- Si no se envía `question` → genera un resumen completo estructurado.
+- El endpoint `POST /api/jarbees/library/document/pdf` acepta los nuevos campos `question` y `sessionId`. Si se provee `sessionId`, la interacción (PDF + respuesta) se guarda en el historial de conversación.
+- La respuesta se retorna en el campo `answer` del response JSON.
+- Fallback graceful: si Ollama no está disponible, retorna confirmación de guardado sin romper la ingestión.
+
+### Fixed — pdf-parse v2: API de clase (2026-07-10)
+
+- `pdf-parse@2.x` cambió completamente su API — ya no es una función sino una clase: `new PDFParse({ data: buffer }).getText()`. Corregido el import y el uso en `DocumentIngestService`.
+
 ### Added — Atajo de ayuda "h" + Integración multimodal Qwen2.5-VL (2026-07-10)
 
 - Nuevo atajo `h`: escribir exactamente "h" en el chat devuelve de forma instantánea la guía completa de comandos (agenda, búsqueda web, calendario, memoria, OCR, repetir). Bypasea LLM, intent router y tools — respuesta en ~0ms. Se guarda en el historial de conversación.

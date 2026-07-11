@@ -39,6 +39,7 @@ import { TaskReminderService } from './tools/tasks/task-reminder.service';
 import { ExecutionEngine } from './planner/execution-engine.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { VisionService } from './tools/vision/vision.service';
+import { DocumentEnrichmentService } from './library/document-enrichment.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -80,6 +81,7 @@ import { VisionService } from './tools/vision/vision.service';
     ExecutionEngine,
     KnowledgeEvolutionService,
     VisionService,
+    DocumentEnrichmentService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

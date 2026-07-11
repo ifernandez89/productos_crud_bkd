@@ -208,29 +208,52 @@ export class JarvisController {
     schema: {
       type: 'object',
       properties: {
-        file:     { type: 'string', format: 'binary' },
-        title:    { type: 'string' },
-        category: { type: 'string' },
-        source:   { type: 'string' },
+        file:      { type: 'string', format: 'binary' },
+        title:     { type: 'string' },
+        category:  { type: 'string' },
+        source:    { type: 'string' },
+        question:  { type: 'string', description: 'Pregunta sobre el contenido del PDF (opcional, si no se envía se genera un resumen)' },
+        sessionId: { type: 'string', description: 'Para guardar la respuesta en el historial de conversación' },
       },
     },
   })
   @UseInterceptors(FileInterceptor('file'))
   async ingestPdf(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { title?: string; category?: string; source?: string },
+    @Body() body: { title?: string; category?: string; source?: string; question?: string; sessionId?: string },
   ) {
     if (!file) throw new BadRequestException('Se requiere un archivo PDF');
     if (!file.mimetype.includes('pdf')) {
       throw new BadRequestException('El archivo debe ser un PDF');
     }
-    const title = body.title || file.originalname.replace('.pdf', '');
+    const title = body.title || file.originalname.replace(/\.pdf$/i, '');
     const result = await this.ingestService.ingestPdf(
       file.buffer,
       title,
       body.category,
       body.source,
+      body.question,
     );
+
+    // Guardar en historial si hay sessionId
+    if (body.sessionId && result.answer) {
+      const userMsg = body.question
+        ? `[PDF: ${file.originalname}] ${body.question}`
+        : `[PDF: ${file.originalname}] Resumime este documento.`;
+      await this.conversationRepo.create({
+        sessionId: body.sessionId,
+        role: 'user',
+        content: userMsg,
+        metadata: { source: 'pdf_upload', filename: file.originalname },
+      });
+      await this.conversationRepo.create({
+        sessionId: body.sessionId,
+        role: 'assistant',
+        content: result.answer,
+        metadata: { source: 'pdf_ingest', documentId: result.documentId },
+      });
+    }
+
     return { success: true, ...result };
   }
 

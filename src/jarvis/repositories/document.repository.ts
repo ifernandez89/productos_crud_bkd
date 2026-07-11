@@ -139,4 +139,43 @@ export class DocumentRepository {
       },
     });
   }
+
+  /**
+   * Encuentra documentos con títulos duplicados.
+   * Para cada grupo de duplicados, devuelve el más reciente (keeper) y los anteriores (duplicates).
+   */
+  async findDuplicates(): Promise<Array<{ title: string; keeper: number; duplicates: number[] }>> {
+    // Obtener todos los docs agrupados por título normalizado
+    const all = await this.prisma.document.findMany({
+      select: { id: true, title: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const groups = new Map<string, typeof all>();
+    for (const doc of all) {
+      const key = doc.title.trim().toLowerCase().replace(/[\s_\-]+/g, ' ');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(doc);
+    }
+
+    const result: Array<{ title: string; keeper: number; duplicates: number[] }> = [];
+    for (const [, docs] of groups) {
+      if (docs.length < 2) continue;
+      // El primero ya está ordenado desc (más reciente primero)
+      const [keeper, ...dupes] = docs;
+      result.push({
+        title:      keeper.title,
+        keeper:     keeper.id,
+        duplicates: dupes.map(d => d.id),
+      });
+    }
+    return result;
+  }
+
+  async deleteManyDocuments(ids: number[]): Promise<number> {
+    const { count } = await this.prisma.document.deleteMany({
+      where: { id: { in: ids } },
+    });
+    return count;
+  }
 }
