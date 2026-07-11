@@ -22,6 +22,7 @@ import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
+import { KnowledgeTestService } from './library/knowledge-test.service';
 import { WebHelper } from './tools/web/web-helper';
 import { SourceRegistry } from './tools/web/source-registry';
 import { randomUUID } from 'crypto';
@@ -66,6 +67,7 @@ export class JarvisService {
     private readonly contentCache: ContentCacheService,
     private readonly categorySummaryService: CategorySummaryService,
     private readonly documentSummaryService: DocumentSummaryService,
+    private readonly knowledgeTestService: KnowledgeTestService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
@@ -124,6 +126,43 @@ export class JarvisService {
       await this.conversationRepo.create({ sessionId, role: 'assistant', content: summaryMsg, metadata: { source: 'document_summary' } });
       await this.agentRunRepo.create({ sessionId, question: userMessage, answer: summaryMsg, toolsUsed: ['document_summary'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
       return summaryMsg;
+    }
+
+    // ── DIAGNÓSTICO BIBLIOTECA RAG ────────────────────────────────────────
+    if (/^(diagn[oó]stico( de( la)?)? biblioteca|estado del conocimiento|cobertura rag|stats biblioteca|diagn[oó]stico rag)$/i.test(userMessage.trim())) {
+      const diag = await this.knowledgeTestService.getLibraryDiagnostic();
+      const diagMsg = this.knowledgeTestService.formatDiagnostic(diag);
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: diagMsg, metadata: { source: 'library_diagnostic' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: diagMsg, toolsUsed: ['library_diagnostic'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return diagMsg;
+    }
+
+    // ── TEST DE CONOCIMIENTO RAG ───────────────────────────────────────────
+    const knowledgeTestMatch = userMessage.trim().match(
+      /^(test de conocimiento|validar conocimiento|test rag|validar rag|probar rag)(?:\s+(\d+))?$/i,
+    );
+    if (knowledgeTestMatch) {
+      const numTests = knowledgeTestMatch[2] ? parseInt(knowledgeTestMatch[2], 10) : 3;
+      const testResult = await this.knowledgeTestService.runKnowledgeValidation(
+        Math.min(Math.max(numTests, 1), 5),
+      );
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: testResult.summary, metadata: { source: 'knowledge_test', passRate: testResult.passRate } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: testResult.summary, toolsUsed: ['knowledge_test'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      return testResult.summary;
+    }
+
+    // ── PROBE RAG (qué chunks recupera el RAG para esta query) ──────────────
+    const probeMatch = userMessage.trim().match(/^probe:\s*(.+)$/i);
+    if (probeMatch) {
+      const probeQuery = probeMatch[1].trim();
+      const probeResult = await this.knowledgeTestService.probeRag(probeQuery);
+      const probeMsg = this.knowledgeTestService.formatProbeResult(probeResult);
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: probeMsg, metadata: { source: 'rag_probe', query: probeQuery } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: probeMsg, toolsUsed: ['rag_probe'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return probeMsg;
     }
 
     // ── DEDUPLICAR DOCUMENTOS ────────────────────────────────────────────────
@@ -1384,6 +1423,14 @@ export class JarvisService {
       `**IMÁGENES / OCR** *(adjuntá un archivo)*`,
       `  Analizar error         →  subí la captura + escribí \`¿qué error es este?\``,
       `  OCR rápido             →  subí imagen + modo \`ocr\``,
+      ``,
+      `**DIAGNÓSTICO Y VALIDACIÓN RAG**`,
+      `  Estado de la biblioteca  →  \`diagnóstico biblioteca\``,
+      `                               \`estado del conocimiento\``,
+      `  Validar que el RAG        →  \`test de conocimiento\``,
+      `  aprende de tus PDFs           \`test de conocimiento 5\` (5 pruebas)`,
+      `  Ver qué chunks recupera  →  \`probe: <tu pregunta>\``,
+      `                               \`probe: qué dice sobre las plantas?\``,
       ``,
       `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
       ``,

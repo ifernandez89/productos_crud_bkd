@@ -28,6 +28,7 @@ import { ConversationRepository } from './repositories/conversation.repository';
 import { VisionService } from './tools/vision/vision.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
+import { KnowledgeTestService } from './library/knowledge-test.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -47,6 +48,7 @@ export class JarvisController {
     private readonly visionService: VisionService,
     private readonly categorySummaryService: CategorySummaryService,
     private readonly documentSummaryService: DocumentSummaryService,
+    private readonly knowledgeTestService: KnowledgeTestService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -356,6 +358,57 @@ export class JarvisController {
       body.maxKeyPoints || 10,
     );
     return { success: true, ...result };
+  }
+
+  // ── Diagnóstico y Validación de Conocimiento RAG ─────────────────────────
+
+  @Public()
+  @Get('library/diagnostic')
+  @ApiOperation({
+    summary: 'Diagnóstico completo de la biblioteca RAG',
+    description:
+      'Retorna estadísticas detalladas: total de documentos, chunks indexados, ' +
+      'categorías, documentos más consultados, documentos sin chunks (posible error de ingesta) ' +
+      'y recomendaciones para mejorar la cobertura del RAG.',
+  })
+  async libraryDiagnostic() {
+    const diag = await this.knowledgeTestService.getLibraryDiagnostic();
+    const formatted = this.knowledgeTestService.formatDiagnostic(diag);
+    return { success: true, diagnostic: diag, formatted };
+  }
+
+  @Public()
+  @Post('library/knowledge-test')
+  @ApiOperation({
+    summary: 'Validación automática del RAG con N pruebas',
+    description:
+      'Para cada documento testeado: genera una pregunta de prueba con el LLM, ' +
+      'ejecuta la búsqueda RAG y verifica si recuperó el documento correcto. ' +
+      'Retorna tasa de éxito y diagnóstico por documento. Body: { numTests?: number }',
+  })
+  async runKnowledgeTest(@Body() body: { numTests?: number }) {
+    const result = await this.knowledgeTestService.runKnowledgeValidation(
+      body.numTests ?? 3,
+    );
+    return { success: true, ...result };
+  }
+
+  @Public()
+  @Post('library/probe')
+  @ApiOperation({
+    summary: 'Inspeccionar qué chunks recupera el RAG para una consulta',
+    description:
+      'Ejecuta la búsqueda de chunks con la consulta dada y retorna los N resultados más relevantes ' +
+      'con título del documento, categoría y snippet del contenido. ' +
+      'Útil para debuggear por qué el asistente no encontró algo. Body: { query: string, limit?: number }',
+  })
+  async probeRag(
+    @Body() body: { query: string; limit?: number },
+  ) {
+    if (!body.query) throw new BadRequestException('Se requiere una query');
+    const result = await this.knowledgeTestService.probeRag(body.query, body.limit ?? 8);
+    const formatted = this.knowledgeTestService.formatProbeResult(result);
+    return { success: true, ...result, formatted };
   }
 
   // ── Biblioteca — Colecciones ────────────────────────────────────────────────

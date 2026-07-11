@@ -42,6 +42,7 @@ import { VisionService } from './tools/vision/vision.service';
 import { DocumentEnrichmentService } from './library/document-enrichment.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
+import { KnowledgeTestService } from './library/knowledge-test.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -86,6 +87,7 @@ import { DocumentSummaryService } from './library/document-summary.service';
     DocumentEnrichmentService,
     CategorySummaryService,
     DocumentSummaryService,
+    KnowledgeTestService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
 })

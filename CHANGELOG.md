@@ -6,6 +6,32 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Sistema de Diagnóstico y Validación de Conocimiento RAG (2026-07-11)
+
+**🔬 Nuevo `KnowledgeTestService`:**
+- Creado en `src/jarvis/library/knowledge-test.service.ts` para proveer diagnósticos de biblioteca, pruebas automatizadas de RAG y herramientas de inspección (probing).
+- **Diagnóstico de Biblioteca:** Calcula estadísticas de cobertura (docs, chunks indexados, promedio de chunks por documento, categorías, top usados, y alertas de documentos sin chunks).
+- **Pruebas de Conocimiento Automatizadas:** Selecciona N documentos, genera preguntas de prueba específicas por LLM a partir de chunks intermedios, simula la consulta RAG del usuario y valida si el documento de origen fue recuperado en el Top 3 (mide Recall@5 y tasa de éxito general).
+- **Sonda de Chunks (Probe):** Inspecciona detalladamente qué chunks de qué documentos recupera el RAG para cualquier consulta y muestra un snippet de cada uno.
+
+**💬 Comandos Nuevos en el Chat:**
+- `diagnóstico biblioteca` / `estado del conocimiento` -> Muestra el estado del RAG, estadísticas de uso y alertas.
+- `test de conocimiento` / `test de conocimiento <N>` -> Ejecuta pruebas automáticas de recuperación RAG (por defecto 3 tests).
+- `probe: <pregunta>` -> Muestra un reporte detallado con los chunks exactos recuperados por el RAG para esa pregunta.
+
+**🌐 Nuevos Endpoints REST:**
+- `GET /jarbees/library/diagnostic`
+- `POST /jarbees/library/knowledge-test` (Body: `{ numTests?: number }`)
+- `POST /jarbees/library/probe` (Body: `{ query: string, limit?: number }`)
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/knowledge-test.service.ts`: nuevo servicio de testeo.
+- `src/jarvis/jarvis.service.ts`: atajos conversacionales integrados + ayuda actualizada (`h`).
+- `src/jarvis/jarvis.controller.ts`: nuevos endpoints REST expuestos.
+- `src/jarvis/jarvis.module.ts`: registro de `KnowledgeTestService` en NestJS.
+
+---
+
 ### Fixed — Detección Mejorada de Resumen por Documento (2026-07-11)
 
 **🐛 Problema:** El comando `"Resumen Carta astral Ignacio Gabriel Fernández"` (título del documento sin comillas y sin preposición) era interceptado por el intent ASTROLOGY en lugar de activar el resumen de documento.
