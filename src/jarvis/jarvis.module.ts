@@ -42,6 +42,7 @@ import { VisionService } from './tools/vision/vision.service';
 import { DocumentEnrichmentService } from './library/document-enrichment.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
+import { DocumentCompareService } from './library/document-compare.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
 
 @Module({
@@ -87,6 +88,7 @@ import { KnowledgeTestService } from './library/knowledge-test.service';
     DocumentEnrichmentService,
     CategorySummaryService,
     DocumentSummaryService,
+    DocumentCompareService,
     KnowledgeTestService,
   ],
   exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],

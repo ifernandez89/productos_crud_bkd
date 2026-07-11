@@ -6,6 +6,33 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Comparación entre Documentos y Vista de Categorías (2026-07-11)
+
+**📊 Comparación Cruzada entre Documentos (`DocumentCompareService`):**
+- Nuevo servicio `src/jarvis/library/document-compare.service.ts` para realizar análisis comparativos entre dos documentos (PDFs, textos, etc.).
+- Obtiene en paralelo los resúmenes y puntos clave individuales mediante `DocumentSummaryService`.
+- Utiliza el LLM para estructurar un análisis de:
+  - **Similitudes:** Conceptos o ideas que comparten.
+  - **Diferencias:** Discrepancias en enfoque o perspectiva.
+  - **Complementariedad:** Qué aporta cada uno.
+  - **Conclusión:** Breve síntesis.
+- **Nuevos comandos de chat detectados:**
+  - `resumen de 'Libro A' relaciona 'Libro B'` / `resumen 'Libro A' relaciona 'Libro B'`
+  - `compara 'Libro A' con 'Libro B'`
+  - `relaciona 'Libro A' y 'Libro B'`
+  - `diferencias entre 'Libro A' y 'Libro B'`
+
+**📁 Comando `mis categorias`:**
+- Nuevo comando conversacional para listar las categorías disponibles en la biblioteca y la cantidad de documentos que pertenecen a cada una.
+- Sugiere comandos automáticos específicos para cada categoría (ej: `📂 plantas_medicinales — 5 documentos -> resumen sobre plantas_medicinales`).
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/library/document-compare.service.ts`: Nuevo servicio de análisis comparativo.
+- `src/jarvis/jarvis.service.ts`: Integrados shortcuts de chat para `mis categorias` y comparación de documentos, junto con sus métodos auxiliares `buildCategoriesMessage()`, `extractCompareRequest()` y `buildCompareResponse()`.
+- `src/jarvis/jarvis.module.ts`: Registrado `DocumentCompareService` en los proveedores.
+
+---
+
 ### Added — Modos de Búsqueda Flexibles e Internet Controlado (2026-07-11)
 
 **🎯 Arquitectura "Local First" y Modos de Búsqueda:**

@@ -22,6 +22,7 @@ import { SportsTool } from './tools/sports/sports-tool.service';
 import { ContentCacheService } from './tools/web/content-cache.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
+import { DocumentCompareService } from './library/document-compare.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
 import { WebHelper } from './tools/web/web-helper';
 import { SourceRegistry } from './tools/web/source-registry';
@@ -67,6 +68,7 @@ export class JarvisService {
     private readonly contentCache: ContentCacheService,
     private readonly categorySummaryService: CategorySummaryService,
     private readonly documentSummaryService: DocumentSummaryService,
+    private readonly documentCompareService: DocumentCompareService,
     private readonly knowledgeTestService: KnowledgeTestService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
@@ -156,6 +158,15 @@ export class JarvisService {
       return libraryMsg;
     }
 
+    // ── CATEGORÍAS — lista de categorías con conteo ──────────────────────────
+    if (/^(mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay))$/i.test(userMessage.trim())) {
+      const catMsg = await this.buildCategoriesMessage();
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: catMsg, metadata: { source: 'library_categories' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: catMsg, toolsUsed: ['library_categories'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return catMsg;
+    }
+
     // ── RESUMEN DE DOCUMENTO INDIVIDUAL ────────────────────────────────────
     const docSummaryRequest = this.extractDocumentSummaryRequest(userMessage);
     if (docSummaryRequest) {
@@ -167,6 +178,16 @@ export class JarvisService {
       await this.conversationRepo.create({ sessionId, role: 'assistant', content: summaryMsg, metadata: { source: 'document_summary' } });
       await this.agentRunRepo.create({ sessionId, question: userMessage, answer: summaryMsg, toolsUsed: ['document_summary'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
       return summaryMsg;
+    }
+
+    // ── COMPARACIÓN ENTRE DOS DOCUMENTOS ────────────────────────────────────
+    const compareRequest = this.extractCompareRequest(userMessage);
+    if (compareRequest) {
+      const compareMsg = await this.buildCompareResponse(compareRequest.titleA, compareRequest.titleB);
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: compareMsg, metadata: { source: 'document_compare' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: compareMsg, toolsUsed: ['document_compare'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      return compareMsg;
     }
 
     // ── DIAGNÓSTICO BIBLIOTECA RAG ────────────────────────────────────────
@@ -1575,6 +1596,88 @@ export class JarvisService {
     }
     lines.push(``, `✅ Biblioteca limpia.`);
     return lines.join('\n');
+  }
+
+  /** Lista las categorías con conteo de documentos y comandos sugeridos */
+  private async buildCategoriesMessage(): Promise<string> {
+    const stats = await this.documentRepo.getLibraryStats();
+
+    if (stats.totalDocs === 0) {
+      return `📁 No tenés categorías aún — tu biblioteca está vacía.\n\nSubí un PDF y la categoría se detecta automáticamente.`;
+    }
+
+    const lines = [
+      `📁 **Tus categorías** (${stats.totalDocs} documento${stats.totalDocs !== 1 ? 's' : ''} · ${stats.totalChunks} secciones indexadas)`,
+      ``,
+    ];
+
+    for (const cat of stats.byCategory) {
+      const name = cat.category ?? 'sin categoría';
+      const count = cat._count.id;
+      lines.push(`  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+      lines.push(`     → \`resumen sobre ${name}\``);
+    }
+
+    lines.push(``);
+    lines.push(`💡 Podés pedir:`);
+    lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
+    lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Extrae dos títulos de una solicitud de comparación.
+   * Patrones:
+   *   "resumen de 'A' relaciona 'B'"
+   *   "compara 'A' con 'B'"
+   *   "relaciona 'A' y 'B'"
+   *   "diferencias entre 'A' y 'B'"
+   */
+  private extractCompareRequest(message: string): { titleA: string; titleB: string } | null {
+    const patterns = [
+      // "resumen de 'A' relaciona 'B'" o "resumen 'A' relaciona 'B'"
+      /resumen\s+(?:de\s+)?['"]([^'"]{3,})['"]\s+(?:relaciona(?:do)?\s+(?:con)?|vs\.?|versus)\s+['"]([^'"]{3,})['"]/i,
+      // "compara 'A' con 'B'"
+      /compara(?:r)?\s+['"]([^'"]{3,})['"]\s+(?:con|y|vs\.?)\s+['"]([^'"]{3,})['"]/i,
+      // "relaciona 'A' y 'B'"
+      /relaciona(?:r)?\s+['"]([^'"]{3,})['"]\s+(?:con|y)\s+['"]([^'"]{3,})['"]/i,
+      // "diferencias entre 'A' y 'B'"
+      /diferencia(?:s)?\s+entre\s+['"]([^'"]{3,})['"]\s+y\s+['"]([^'"]{3,})['"]/i,
+      // sin comillas: "compara A con B" (hasta 6 palabras por título)
+      /(?:compara(?:r)?|relaciona(?:r)?)\s+([\w\s]{3,40}?)\s+(?:con|y|vs\.?)\s+([\w\s]{3,40}?)$/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = message.trim().match(pattern);
+      if (match?.[1] && match?.[2]) {
+        return {
+          titleA: match[1].trim(),
+          titleB: match[2].trim(),
+        };
+      }
+    }
+    return null;
+  }
+
+  /** Genera y formatea el mensaje de comparación entre dos documentos */
+  private async buildCompareResponse(titleA: string, titleB: string): Promise<string> {
+    try {
+      const result = await this.documentCompareService.compare(titleA, titleB);
+
+      return [
+        `🔀 **Comparación: "${result.titleA}" ↔ "${result.titleB}"**`,
+        ``,
+        result.comparison,
+        ``,
+        `💡 Podés profundizar con:`,
+        `  \`resumen de '${result.titleA}'\``,
+        `  \`resumen de '${result.titleB}'\``,
+      ].join('\n');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return `❌ ${msg}`;
+    }
   }
 
   /** Lista los documentos de la biblioteca agrupados por categoría */
