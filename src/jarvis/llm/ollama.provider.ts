@@ -26,9 +26,10 @@ export class OllamaProvider implements ILLMProvider {
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {
     const startTime = Date.now();
 
-    if (!this.model) {
-      await this.initialize();
-    }
+    // Crear modelo con numPredict dinámico según lo que pida cada llamada
+    // Esto evita que el 400 hardcodeado corte respuestas largas (resúmenes, comparaciones)
+    const numPredict = options.maxTokens ?? 400;
+    const model = await this.getModel(numPredict);
 
     // Convertir mensajes a formato LangChain
     const messages = options.messages.map((msg) => {
@@ -45,7 +46,7 @@ export class OllamaProvider implements ILLMProvider {
     });
 
     try {
-      const response = await this.model!.invoke(messages);
+      const response = await model.invoke(messages);
 
       const content =
         typeof response.content === 'string'
@@ -86,20 +87,48 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   async embed(text: string): Promise<LLMEmbeddingResponse> {
-    // Ollama tiene un endpoint de embeddings separado
-    // Por ahora placeholder, se implementaría con axios a http://localhost:11434/api/embeddings
     throw new Error('Embeddings not yet implemented for Ollama provider');
   }
 
-  private async initialize(): Promise<void> {
-    this.model = new ChatOllama({
-      model: this.getDefaultModel(),
-      temperature: 0.2, // determinista para asistente
-      topP: 0.85,
-      topK: 15,
-      numPredict: 400,
+  /**
+   * Devuelve un modelo con el numPredict solicitado.
+   * Reutiliza el modelo cacheado si el numPredict coincide,
+   * sino crea uno nuevo (costo mínimo — solo cambia un parámetro).
+   */
+  private async getModel(numPredict: number): Promise<ChatOllama> {
+    if (this.model && this.currentNumPredict === numPredict) {
+      return this.model;
+    }
+    // Para el modelo "default" (400 tokens) cacheamos
+    if (numPredict === 400) {
+      if (!this.model) await this.initialize();
+      return this.model!;
+    }
+    // Para llamadas con tokens distintos, crear instancia temporal
+    return new ChatOllama({
+      model:         this.getDefaultModel(),
+      temperature:   0.2,
+      topP:          0.85,
+      topK:          15,
+      numPredict,
       repeatPenalty: 1.1,
-      numCtx: 4096, // contexto largo para memoria + docs
+      numCtx:        4096,
+      stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
+    });
+  }
+
+  private currentNumPredict = 400;
+
+  private async initialize(): Promise<void> {
+    this.currentNumPredict = 400;
+    this.model = new ChatOllama({
+      model:         this.getDefaultModel(),
+      temperature:   0.2,
+      topP:          0.85,
+      topK:          15,
+      numPredict:    400,
+      repeatPenalty: 1.1,
+      numCtx:        4096,
       stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
     });
     this.logger.log(`Ollama provider initialized: ${this.getDefaultModel()}`);
