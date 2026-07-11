@@ -102,41 +102,91 @@ export class DocumentSummaryService {
   }
 
   /**
-   * Busca un documento por título usando fuzzy matching.
-   * Prioriza matches exactos, luego parciales.
+   * Busca un documento por título usando fuzzy matching progresivo:
+   * 1. Match exacto (normalizado)
+   * 2. El documento contiene TODAS las palabras buscadas (>2 chars)
+   * 3. Overlap score: mayor % de palabras en común
+   * 4. Primer candidato de búsqueda full-text (fallback)
    */
   private async findDocumentByTitle(title: string): Promise<any | null> {
-    const normalizedSearch = title.toLowerCase().trim();
-    
-    // Buscar con el método de búsqueda del repository
+    const normalize = (s: string) =>
+      s
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')  // quitar tildes
+        .replace(/\.(pdf|docx?|xlsx?|pptx?|txt|md|csv|odt|rtf|html?|epub|mobi)$/i, '') // quitar extensión
+        .toLowerCase()
+        .trim();
+
+    const normalizedSearch = normalize(title);
+    const searchWords = normalizedSearch
+      .split(/\s+/)
+      .filter(w => w.length > 2);
+
+    this.logger.log(`[document-summary:search] buscando: "${normalizedSearch}" (${searchWords.length} palabras)`);
+
+    // 1. Buscar candidatos por full-text
     const candidates = await this.documentRepo.searchDocuments(normalizedSearch);
-    
-    if (candidates.length === 0) {
+
+    // 2. Si el título original busca solo una parte → también buscar en todos los docs
+    //    para capturar casos donde "Carta astral" está en el título "Resumen Carta astral..."
+    let allCandidates = candidates;
+    if (candidates.length === 0 || searchWords.length > 0) {
+      // Intentar búsqueda adicional solo por palabras largas del título
+      const longWords = searchWords.filter(w => w.length >= 5);
+      if (longWords.length > 0 && longWords.length < searchWords.length) {
+        const extra = await this.documentRepo.searchDocuments(longWords.join(' '));
+        const existingIds = new Set(candidates.map(d => d.id));
+        allCandidates = [...candidates, ...extra.filter(d => !existingIds.has(d.id))];
+      }
+    }
+
+    if (allCandidates.length === 0) {
+      this.logger.warn(`[document-summary:search] sin candidatos para: "${normalizedSearch}"`);
       return null;
     }
 
-    // Priorizar match exacto
-    const exactMatch = candidates.find(doc => 
-      doc.title.toLowerCase().trim() === normalizedSearch
+    this.logger.log(`[document-summary:search] ${allCandidates.length} candidato(s): ${allCandidates.map(d => `"${d.title}"`).join(', ')}`);
+
+    // 3. Match exacto (normalizado, sin extensión)
+    const exactMatch = allCandidates.find(doc =>
+      normalize(doc.title) === normalizedSearch,
     );
     if (exactMatch) {
+      this.logger.log(`[document-summary:search] match exacto → "${exactMatch.title}"`);
       return this.documentRepo.getDocumentWithChunks(exactMatch.id);
     }
 
-    // Priorizar match que contenga todas las palabras buscadas
-    const searchWords = normalizedSearch.split(/\s+/).filter(w => w.length > 2);
-    const bestMatch = candidates.find(doc => {
-      const docTitle = doc.title.toLowerCase();
-      return searchWords.every(word => docTitle.includes(word));
+    // 4. El título del doc CONTIENE toda la query buscada
+    const containsAll = allCandidates.find(doc => {
+      const docNorm = normalize(doc.title);
+      return searchWords.every(w => docNorm.includes(w));
     });
-
-    if (bestMatch) {
-      return this.documentRepo.getDocumentWithChunks(bestMatch.id);
+    if (containsAll) {
+      this.logger.log(`[document-summary:search] contains-all match → "${containsAll.title}"`);
+      return this.documentRepo.getDocumentWithChunks(containsAll.id);
     }
 
-    // Devolver el primer candidato (mejor score de búsqueda)
-    return this.documentRepo.getDocumentWithChunks(candidates[0].id);
+    // 5. Overlap score: # de palabras de búsqueda presentes en el título del doc
+    const scored = allCandidates
+      .map(doc => {
+        const docWords = normalize(doc.title).split(/\s+/).filter(w => w.length > 2);
+        const hits = searchWords.filter(w => docWords.some(dw => dw.includes(w) || w.includes(dw)));
+        const score = searchWords.length > 0 ? hits.length / searchWords.length : 0;
+        return { doc, score, hits: hits.length };
+      })
+      .sort((a, b) => b.score - a.score || b.hits - a.hits);
+
+    const best = scored[0];
+    if (best && best.score >= 0.5) {
+      this.logger.log(`[document-summary:search] overlap match (${Math.round(best.score * 100)}%) → "${best.doc.title}"`);
+      return this.documentRepo.getDocumentWithChunks(best.doc.id);
+    }
+
+    // 6. Fallback: primer candidato
+    this.logger.log(`[document-summary:search] fallback → "${allCandidates[0].title}"`);
+    return this.documentRepo.getDocumentWithChunks(allCandidates[0].id);
   }
+
 
   /**
    * Genera el resumen y puntos clave usando el LLM.

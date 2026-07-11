@@ -6,7 +6,40 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Detección Mejorada de Resumen por Documento (2026-07-11)
+
+**🐛 Problema:** El comando `"Resumen Carta astral Ignacio Gabriel Fernández"` (título del documento sin comillas y sin preposición) era interceptado por el intent ASTROLOGY en lugar de activar el resumen de documento.
+
+**✅ Correcciones en `extractDocumentSummaryRequest()` (`jarvis.service.ts`):**
+
+- **Patrón 4 — `resumen <título>` sin preposición:**
+  - Detecta `"Resumen Carta astral Ignacio Gabriel Fernández"` → busca documento con ese título.
+  - Excluye mediante negative-lookahead frases genéricas: `"resumen de..."`, `"resumen sobre..."`, `"resumeme..."`, etc.
+  - Requiere al menos 2 palabras para evitar falsos positivos con "resumen" solo.
+
+- **Patrón 5 — Mensaje completo == título del documento:**
+  - Cuando el usuario escribe exactamente el título de un doc (2–10 palabras, inicia con mayúscula, no es un verbo de comando), se intenta buscarlo directamente en la biblioteca.
+  - Lista de exclusión `COMMAND_STARTERS`: evita capturar `"busca en mis docs..."`, `"dame los puntos..."`, etc.
+  - Lista `GENERIC_STARTERS`: evita capturar frases como `"sobre plantas medicinales"`, `"las últimas noticias"`, etc.
+
+- **Patrón 3 mejorado:** ahora no requiere que el título empiece con mayúscula (más flexible).
+
+**✅ Fuzzy matching mejorado en `DocumentSummaryService.findDocumentByTitle()`:**
+- Normaliza tildes antes de comparar (`"Fernández"` == `"Fernandez"`).
+- Quita extensiones de archivo de los títulos al comparar (`.pdf`, `.docx`, etc.).
+- Nuevo **overlap score**: cuenta qué % de las palabras buscadas aparecen en el título del candidato — permite encontrar `"Resumen Carta astral Ignacio Gabriel Fernández"` buscando `"Carta astral Ignacio Gabriel Fernández"`.
+- Umbral de aceptación: ≥ 50% de palabras en común.
+- Búsqueda de respaldo con palabras largas (≥ 5 chars) cuando la búsqueda principal no encuentra nada.
+- Logging detallado de cada paso para facilitar debugging.
+
+**🔧 Archivos Modificados:**
+- `src/jarvis/jarvis.service.ts`: Patrones 4 y 5 en `extractDocumentSummaryRequest()`; Patrón 3 más flexible
+- `src/jarvis/library/document-summary.service.ts`: `findDocumentByTitle()` reescrito con scoring por overlap
+
+---
+
 ### Fixed — Sanitización de Extensiones en Títulos de Documentos (2026-07-11)
+
 
 **🐛 Problema:** Al subir archivos `.docx`, `.doc`, `.txt` u otras extensiones, el título quedaba con la extensión incluida (ej: `"las mareas del inconsciente.docx"`), lo que impedía encontrarlo correctamente al buscar por nombre.
 

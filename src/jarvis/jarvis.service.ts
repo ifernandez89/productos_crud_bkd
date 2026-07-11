@@ -1500,51 +1500,83 @@ export class JarvisService {
   private extractDocumentSummaryRequest(
     message: string,
   ): { title: string; maxItems: number } | null {
+    const trimmed = message.trim();
+
     // Normalizar quitando tildes para mejor matching
-    const normalized = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const normalized = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    // Palabras que NO deben iniciar un título (son preposiciones / artículos / comandos genéricos)
+    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
 
     // Extraer número de items si se especifica ("dame los 10 puntos", "5 items")
     const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
     const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
 
-    // Patrón 1: título entre comillas simples o dobles
+    // ── Patrón 1: título entre comillas simples o dobles ──────────────────────
     //   "resumen de 'Manual de Plantas'"
     //   "puntos clave de \"TypeScript Handbook\""
-    const quotedMatch = message.match(
-      /(?:resumen|puntos\s*clave|items?\s*(?:mas|más)?\s*(?:relevantes?|importantes?)?|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))\s*(?:de(?:l)?|sobre|del\s*(?:libro|pdf|documento))?\s*['"]([^'"]{3,})['"/]?/i,
+    const quotedMatch = trimmed.match(
+      /(?:resumen|puntos\s*clave|items?\s*(?:mas|más)?\s*(?:relevantes?|importantes?)?|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))[\s\S]*?['""]([^'""]{3,})['""]?/i,
     );
     if (quotedMatch?.[1]?.trim()) {
       return { title: quotedMatch[1].trim(), maxItems };
     }
 
-    // Patrón 2: "resumen del libro/pdf/documento <título>"
+    // ── Patrón 2: "resumen del libro/pdf/documento <título>" ─────────────────
     //   "resumen del libro Manual de Plantas Medicinales"
-    //   "resumen del pdf Guía de NestJS"
-    const docTypeMatch = message.match(
-      /(?:resumen|puntos\s*clave|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?))\s*(?:de(?:l)?\s*(?:libro|pdf|documento|doc|archivo))\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,60})/i,
+    const docTypeMatch = trimmed.match(
+      /(?:resumen|puntos\s*clave|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?))\s*(?:de(?:l)?\s*(?:libro|pdf|documento|doc|archivo))\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,80})/i,
     );
     if (docTypeMatch?.[1]?.trim()) {
       return { title: docTypeMatch[1].trim(), maxItems };
     }
 
-    // Patrón 3: "resumen de <TÍTULO CON MAYÚSCULAS>" (sin comillas, título en mayúsculas)
+    // ── Patrón 3: "resumen de/del/sobre <título>" (con preposición explícita) ─
     //   "resumen de Manual de Plantas Medicinales"
-    const noQuoteMatch = message.match(
-      /^(?:resumen|puntos\s*clave|lo\s*(?:mas|más)?\s*importante)\s+(?:de(?:l)?|sobre)\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,60})/,
+    const withPrepMatch = trimmed.match(
+      /^(?:resumen|puntos\s*clave|lo\s*(?:mas|más)?\s*importante)\s+(?:de(?:l)?|sobre)\s+(.{3,80})/i,
     );
-    if (noQuoteMatch?.[1]?.trim()) {
-      const title = noQuoteMatch[1].trim();
-      // Asegurarse de que no sea una categoría genérica ("plantas medicinales" → RAG, no doc summary)
-      // Si tiene más de 3 palabras cortas sin mayúsculas → probablemente es un tema genérico
-      const words = title.split(/\s+/);
-      const hasProperNoun = words.some(w => w.length > 1 && w[0] === w[0].toUpperCase());
-      if (hasProperNoun || words.length >= 3) {
+    if (withPrepMatch?.[1]?.trim()) {
+      const title = withPrepMatch[1].trim();
+      if (!GENERIC_STARTERS.test(title)) {
         return { title, maxItems };
+      }
+    }
+
+    // ── Patrón 4: "resumen <título>" SIN preposición ──────────────────────────
+    //   "Resumen Carta astral Ignacio Gabriel Fernández"
+    //   "resumen Manual de Plantas Medicinales"
+    // EXCLUYE: "resumen sobre ...", "resumen de ...", "resumeme ...", etc.
+    const directMatch = trimmed.match(
+      /^resumen\s+(?!(?:de(?:l)?|sobre|los|las|un|una|el|la|mis|tus|sus|me|nos|les|le|ya|si|no|por|en|para|con|sin|que)\s)(.{4,80})/i,
+    );
+    if (directMatch?.[1]?.trim()) {
+      const title = directMatch[1].trim();
+      const words = title.split(/\s+/);
+      // Al menos 2 palabras y no un tema genérico de una sola palabra
+      if (words.length >= 2) {
+        return { title, maxItems };
+      }
+    }
+
+    // ── Patrón 5: mensaje completo == título del documento ────────────────────
+    // El usuario escribe exactamente el título guardado en la DB sin comandos
+    // Condiciones: 2-10 palabras, al menos una con mayúscula, no empieza con verbo de comando
+    const COMMAND_STARTERS = /^(?:busca|buscame|buscá|dame|dime|mostrame|muestra|explica|explicame|describe|describime|analiza|que dice|que dicen|qué dice|qué dicen|cuanto|cuánto|cuando|cuándo|donde|dónde|como|cómo|por qué|porque|cual|cuál|tiene|hay|existe)\b/i;
+    const wordCount = trimmed.split(/\s+/).length;
+    if (wordCount >= 2 && wordCount <= 10 && !COMMAND_STARTERS.test(trimmed)) {
+      // Tiene alguna mayúscula (indica nombre propio / título)
+      const hasUpperCase = /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
+      // No empieza con minúscula genérica (ej: "plantas medicinales")
+      const startsWithUpper = /^[A-ZÁÉÍÓÚÑ\d]/.test(trimmed);
+      if (hasUpperCase && startsWithUpper && !GENERIC_STARTERS.test(trimmed)) {
+        return { title: trimmed, maxItems };
       }
     }
 
     return null;
   }
+
 
   /**
    * Genera y formatea el mensaje de respuesta con el resumen de un documento.
