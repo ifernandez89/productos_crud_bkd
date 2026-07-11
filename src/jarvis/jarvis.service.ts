@@ -134,6 +134,16 @@ export class JarvisService {
       return dedupMsg;
     }
 
+    // ── ELIMINAR DOCUMENTO POR TÍTULO ────────────────────────────────────────
+    const deleteDocRequest = this.extractDeleteDocumentRequest(userMessage);
+    if (deleteDocRequest) {
+      const deleteMsg = await this.deleteDocumentByTitle(deleteDocRequest);
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: deleteMsg, metadata: { source: 'library_delete' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: deleteMsg, toolsUsed: ['library_delete'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return deleteMsg;
+    }
+
     if (this.isRepeatRequest(userMessage)) {
       if (!hasSessionId) {
         return 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
@@ -1351,6 +1361,9 @@ export class JarvisService {
       `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
       `                           \`según mis PDFs, <pregunta>\``,
       `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
+      `  Eliminar por título   →  \`eliminar documento '<título>'\``,
+      `                           \`borrar el libro 'Botanica Oculta'\``,
+      `                           \`eliminar el PDF 'TypeScript Handbook'\``,
       ``,
       `**BÚSQUEDA WEB**`,
       `  Noticias generales     →  \`últimas noticias\``,
@@ -1378,6 +1391,40 @@ export class JarvisService {
       `    automáticamente del contenido. Podés preguntar por temas específicos`,
       `    y JarBees combinará información de todos los documentos relacionados.`,
     ].join('\n');
+  }
+
+  /**
+   * Extrae el título del documento a eliminar del mensaje del usuario.
+   * Detecta: "eliminar documento 'X'", "borrar el PDF 'X'", "borra el libro X", etc.
+   */
+  private extractDeleteDocumentRequest(message: string): string | null {
+    const pattern = /(?:elimina(?:r)?|borra(?:r)?|borrar|remover|quitar)\s+(?:el\s+)?(?:documento|pdf|libro|archivo)\s+['"]?(.+?)['"]?$/i;
+    const match = message.trim().match(pattern);
+    if (match && match[1]) {
+      return match[1].trim().replace(/['".]+$/, '').trim();
+    }
+    return null;
+  }
+
+  /**
+   * Elimina un documento por título (fuzzy match).
+   */
+  private async deleteDocumentByTitle(title: string): Promise<string> {
+    const candidates = await this.documentRepo.searchDocuments(title, 5);
+
+    if (candidates.length === 0) {
+      return `❌ No encontré ningún documento con el título "${title}".\n\nUsá \`mis documentos\` para ver los títulos disponibles.`;
+    }
+
+    // Match exacto tiene prioridad
+    const exact = candidates.find(
+      d => d.title.toLowerCase().trim() === title.toLowerCase().trim(),
+    );
+    const target = exact ?? candidates[0];
+
+    await this.documentRepo.deleteDocument(target.id);
+
+    return `🗑️ Documento eliminado correctamente.\n\n  • **Título:** ${target.title}\n  • **Categoría:** ${target.category ?? 'sin categoría'}\n  • **ID:** ${target.id}`;
   }
 
   /** Elimina documentos duplicados, conservando el más reciente de cada título */

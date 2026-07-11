@@ -53,17 +53,28 @@ export class DocumentRepository {
   }
 
   async searchDocuments(query: string, limit = 5): Promise<Document[]> {
-    const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
+    // Normalizar la query: convertir guiones/underscores a espacios para mejor matching
+    const normalizedQuery = query.toLowerCase().replace(/[-_]+/g, ' ').trim();
+    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3);
     if (terms.length === 0) return [];
 
-    // SQLite doesn't support mode: 'insensitive' for contains
-    // Since we already convert query to lowercase, this provides case-insensitive search
+    // Buscar tanto por la query normalizada como por términos individuales
+    // Incluye variantes con guión para matchear títulos tipo "13-Botanica-Oculta"
+    const termsWithHyphens = terms.map(t => t.replace(/\s/g, '-'));
+
     return this.prisma.document.findMany({
       where: {
-        OR: terms.flatMap((term) => [
-          { title:   { contains: term } },
-          { content: { contains: term } },
-        ]),
+        OR: [
+          // Match por términos con espacios
+          ...terms.flatMap((term) => [
+            { title:   { contains: term, mode: 'insensitive' as const } },
+            { content: { contains: term, mode: 'insensitive' as const } },
+          ]),
+          // Match por términos con guiones (para títulos tipo "Botanica-Oculta")
+          ...termsWithHyphens.map((term) => ({
+            title: { contains: term, mode: 'insensitive' as const },
+          })),
+        ],
       },
       orderBy: { updatedAt: 'desc' },
       take: limit,
