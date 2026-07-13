@@ -39,4 +39,4 @@ echo   COPIA LA URL DE NGROK Y ACTUALIZA:
 echo   GitHub Secret: NEXT_PUBLIC_BACKEND_URL
 echo ==========================================
 echo.
-ngrok http 4000
+ngrok start --config oauth.yml jarbees-secure

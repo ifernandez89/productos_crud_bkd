@@ -1,0 +1,12 @@
+version: "3"
+
+tunnels:
+  jarbees-secure:
+    proto: http
+    addr: 4000  # Puerto donde corre NestJS
+    oauth:
+      provider: google
+      # ⚠️ Reemplazá con tu email y el de tu equipo.
+      # Si querés que cualquier cuenta de Google pueda entrar, eliminá la sección allow_emails.
+      allow_emails:
+        - nacho.xiphos@gmail.com

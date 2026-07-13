@@ -42,4 +42,4 @@ Write-Host "   GitHub Secret: NEXT_PUBLIC_BACKEND_URL" -ForegroundColor Yellow
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-& ngrok http 4000
+& ngrok start --config oauth.yml jarbees-secure
