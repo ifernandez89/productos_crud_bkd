@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Seguridad y configuración de OAuth para Jarvis/BeeS (2026-07-12)
+
+**🔐 Integración de seguridad para Jarbees y OAuth:**
+- Añadido el archivo de configuración `oauth.yml` para el soporte de OAuth en el entorno.
+- Actualizados los scripts `start-with-ngrok.bat` y `start-with-ngrok.ps1` para mantener la compatibilidad con el nuevo flujo seguro.
+
+---
+
+### Fixed — Corrección de manejo de `maxTokens` en Ollama (2026-07-11)
+
+**🐛 Ajuste de límite de tokens:**
+- Corregido el manejo de `maxTokens` en `src/jarvis/llm/ollama.provider.ts` para evitar errores de configuración y mejorar la estabilidad de las llamadas al modelo.
+
+---
+
+### Added — Reporte de arquitectura y diseño Jarvis (2026-07-11)
+
+**📘 Documentación de arquitectura:**
+- Añadido `docs/ARCHITECTURE_REPORT_JARVIS.md` con el diseño y arquitectura del sistema Jarvis.
+
+---
+
 ### Added — Escaneo Estructural y Mitigación de Vulnerabilidades en PDFs (2026-07-11)
 
 **🛡️ Inmunidad y Validación Estructural de PDFs (Zero-Trust):**
