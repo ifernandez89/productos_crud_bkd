@@ -1,0 +1,8 @@
+{
+  "name": "Teoría de Decisiones",
+  "description": "Evaluación racional bajo incertidumbre. Frameworks para estructurar decisiones complejas, analizar trade-offs y evitar sesgos cognitivos en la elección.",
+  "category": "razonamiento",
+  "keywords": ["decision", "opciones", "riesgo", "incertidumbre", "tradeoff", "alternativas", "criterios", "eleccion", "sesgo", "consecuencias", "dilema"],
+  "priority": 7,
+  "capabilities": ["reasoning", "planning", "evaluation"]
+}

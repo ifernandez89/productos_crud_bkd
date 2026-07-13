@@ -6,6 +6,47 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Biblioteca de Habilidades Cognitivas: Razonamiento Modular (2026-07-12)
+
+**🧠 Concepto:**
+Skills de razonamiento especializado que el orquestador activa automáticamente según la naturaleza de la pregunta. No tocan el núcleo — se cargan como archivos desde `skills/` y el `SkillRegistryService` existente los inyecta al contexto del LLM cuando son relevantes.
+
+**📦 Skills Creadas:**
+
+- `skills/epistemologia/` — Marco central de evaluación del conocimiento. Evalúa certeza, origen de afirmaciones y sesgos antes de responder. Define 4 niveles de confianza epistémica (alta certeza / confianza razonable / especulación informada / incertidumbre honesta). Prioridad 8.
+
+- `skills/logica-formal/` — Razonamiento deductivo, inductivo y abductivo. Detecta falacias (ad hominem, pendiente resbaladiza, falsa dicotomía, post hoc, etc.). Evalúa validez estructural de argumentos independientemente de su contenido. Prioridad 7.
+
+- `skills/teoria-decisiones/` — Frameworks para decisiones bajo incertidumbre. Incluye análisis de opciones, maximin/maximax, valor esperado, análisis de reversibilidad y sesgos como aversión a la pérdida y costo hundido. Prioridad 7.
+
+- `skills/metodo-cientifico/` — Evaluación de evidencia empírica. Distingue causalidad de correlación, evalúa calidad de estudios, detecta pseudociencia y aplica el ciclo hipótesis → predicción → verificación → revisión. Prioridad 7.
+
+**⚙️ Integración:**
+- Sin cambios al núcleo — el `SkillRegistryService` ya soporta este formato.
+- Cada skill tiene `metadata.json` (nombre, descripción, categoría, keywords, prioridad, capacidades) y `skill.md` (contenido completo con identidad, heurísticas, preguntas clave y criterios de activación).
+- Se activan automáticamente por relevancia semántica de la query del usuario.
+- Pueden activarse en conjunto — una pregunta sobre "¿debería creer este estudio?" puede activar epistemología + método científico + lógica formal simultáneamente.
+
+**🗂️ Estructura:**
+```
+skills/
+├── epistemologia/
+│   ├── metadata.json
+│   └── skill.md
+├── logica-formal/
+│   ├── metadata.json
+│   └── skill.md
+├── teoria-decisiones/
+│   ├── metadata.json
+│   └── skill.md
+└── metodo-cientifico/
+    ├── metadata.json
+    └── skill.md
+```
+
+**🔮 Extensión futura sin tocar el núcleo:**
+Agregar nuevos skills es tan simple como crear una carpeta con `metadata.json` + `skill.md`. Candidatos naturales: `pensamiento-lateral/`, `retorica/`, `filosofia-mente/`, `estadistica-bayesiana/`, `etica-aplicada/`.
+
 ### Added — Seguridad y configuración de OAuth para Jarvis/BeeS (2026-07-12)
 
 **🔐 Integración de seguridad para Jarbees y OAuth:**

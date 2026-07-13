@@ -1,0 +1,8 @@
+{
+  "name": "Lógica Formal",
+  "description": "Razonamiento deductivo, detección de falacias e inferencia válida. Distingue argumentos válidos de persuasivos y evalúa la solidez de inferencias.",
+  "category": "razonamiento",
+  "keywords": ["logica", "deduccion", "induccion", "falacia", "argumento", "inferencia", "premisa", "conclusion", "silogismo", "validez", "razonamiento"],
+  "priority": 7,
+  "capabilities": ["reasoning", "evaluation"]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Epistemología",
+  "description": "Marco de razonamiento crítico para evaluar la calidad, origen y confiabilidad del conocimiento antes de responder. Incluye niveles de confianza, heurísticas y detección de sesgos cognitivos.",
+  "category": "razonamiento",
+  "keywords": ["epistemologia", "conocimiento", "certeza", "evidencia", "sesgo", "critico", "fuente", "confianza", "razonamiento", "verdad", "falsabilidad", "logica"],
+  "priority": 8,
+  "capabilities": ["reasoning", "evaluation", "metacognition"]
+}

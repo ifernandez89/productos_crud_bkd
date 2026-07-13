@@ -1,0 +1,8 @@
+{
+  "name": "Método Científico",
+  "description": "Razonamiento empírico y evaluación de evidencia. Distingue hipótesis de hechos, evalúa calidad de estudios y formula explicaciones falsables.",
+  "category": "razonamiento",
+  "keywords": ["ciencia", "hipotesis", "evidencia", "experimento", "falsabilidad", "empirico", "datos", "estudio", "causalidad", "correlacion", "replicacion", "consenso"],
+  "priority": 7,
+  "capabilities": ["reasoning", "evaluation", "research"]
+}
