@@ -1794,8 +1794,18 @@ export class JarvisService {
     // El usuario escribe exactamente el título guardado en la DB sin comandos
     // Condiciones: 2-10 palabras, al menos una con mayúscula, no empieza con verbo de comando
     const COMMAND_STARTERS = /^(?:busca|buscame|buscá|dame|dime|mostrame|muestra|explica|explicame|describe|describime|analiza|que dice|que dicen|qué dice|qué dicen|cuanto|cuánto|cuando|cuándo|donde|dónde|como|cómo|por qué|porque|cual|cuál|tiene|hay|existe)\b/i;
+
+    // Saludos y frases conversacionales que NUNCA deben ser títulos
+    const CONVERSATIONAL = /^(?:hola|buenas|buenos|buen|hey|hi|hello|saludos|que tal|qué tal|como estas|cómo estás|como anda|cómo va|que onda|qué onda|gracias|de nada|ok|dale|si|no|claro|perfecto|genial|excelente|entendido|listo|chau|adios|hasta|nos vemos|bye|todo bien|bien gracias|muy bien|re bien)\b/i;
+
     const wordCount = trimmed.split(/\s+/).length;
-    if (wordCount >= 2 && wordCount <= 10 && !COMMAND_STARTERS.test(trimmed)) {
+    if (
+      wordCount >= 2 &&
+      wordCount <= 10 &&
+      !COMMAND_STARTERS.test(trimmed) &&
+      !CONVERSATIONAL.test(trimmed) &&
+      !/[?¿!¡]/.test(trimmed) // mensajes con signos de pregunta/exclamación NO son títulos
+    ) {
       // Tiene alguna mayúscula (indica nombre propio / título)
       const hasUpperCase = /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
       // No empieza con minúscula genérica (ej: "plantas medicinales")
