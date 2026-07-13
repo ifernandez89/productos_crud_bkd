@@ -29,6 +29,9 @@ import { SourceRegistry } from './tools/web/source-registry';
 import { randomUUID } from 'crypto';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
+import { GoogleGmailService } from './tools/google/google-gmail.service';
+import { GoogleDriveService } from './tools/google/google-drive.service';
+import { YouTubeService } from './tools/google/youtube.service';
 import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { InvestigationService } from './tools/web/investigation.service';
@@ -74,6 +77,9 @@ export class JarvisService {
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
     private readonly googleTasks: GoogleTasksService,
+    private readonly googleGmail: GoogleGmailService,
+    private readonly googleDrive: GoogleDriveService,
+    private readonly youtubeService: YouTubeService,
     private readonly astrologyTool: AstrologyTool,
     private readonly investigationService: InvestigationService,
     private readonly taskReminderService: TaskReminderService,
@@ -395,6 +401,92 @@ export class JarvisService {
           toolsUsed.push('google_tasks');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext, undefined, mode);
         }
+      }
+
+      // ── GMAIL ─────────────────────────────────────────────────────────────
+      if (intent.intent === 'GMAIL') {
+        const n = userMessage.toLowerCase();
+        let gmailContext: string;
+
+        if (/(correos de hoy|de hoy|recibidos hoy)/i.test(n)) {
+          gmailContext = await this.googleGmail.getEmailsFromToday();
+        } else if (/(busca|buscar|buscame)\s+.*(correo|email|mail)/i.test(n)) {
+          const queryMatch = userMessage.match(/busca(?:r|me)?\s+(?:en\s+(?:mi\s+)?(?:correo|gmail))?\s*['""]?([^'""\n]+)['""]?/i);
+          const q = queryMatch?.[1]?.trim() ?? userMessage;
+          gmailContext = await this.googleGmail.searchEmails(q);
+        } else if (/(borrador|redacta|escrib[ei])\s+/i.test(n)) {
+          // Parsing básico de borrador: "redacta un email a X sobre Y"
+          const toMatch = userMessage.match(/(?:a|para)\s+([\w.@+-]+@[\w.]+)/i);
+          const subjectMatch = userMessage.match(/(?:sobre|asunto|subject)\s+['"]?([^'""\n]{3,60})['"]?/i);
+          if (toMatch && subjectMatch) {
+            const body = userMessage.replace(/.*(?:sobre|asunto)\s+['""]?[^'""\n]+['""]?/i, '').trim() || '(cuerpo pendiente)';
+            gmailContext = await this.googleGmail.draftEmail(toMatch[1], subjectMatch[1], body);
+          } else {
+            gmailContext = '⚠️ Para crear un borrador necesito el destinatario y el asunto.\nEjemplo: "redactá un email a nombre@email.com sobre Reunión del lunes"';
+          }
+        } else {
+          gmailContext = await this.googleGmail.getImportantEmails();
+        }
+
+        toolsUsed.push('gmail');
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, gmailContext, undefined, mode);
+      }
+
+      // ── GOOGLE DRIVE ──────────────────────────────────────────────────────
+      if (intent.intent === 'DRIVE') {
+        const n = userMessage.toLowerCase();
+        let driveContext: string;
+
+        if (/(sincroniza|agrega al conocimiento|importa)\s+/i.test(n)) {
+          // Intentar extraer fileId de una URL de Drive
+          const idMatch = userMessage.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
+          if (idMatch) {
+            driveContext = await this.googleDrive.syncToKnowledge(idMatch[1]);
+          } else {
+            driveContext = '⚠️ Para sincronizar un archivo de Drive, compartí la URL del archivo.\nEjemplo: "sincronizá https://drive.google.com/file/d/FILE_ID/view"';
+          }
+        } else if (/(archivos recientes|archivos de drive|mis archivos)/i.test(n)) {
+          driveContext = await this.googleDrive.listRecentFiles();
+        } else {
+          const queryMatch = userMessage.match(/(?:busca|encontrá|encontrar|buscar)\s+(?:en\s+drive\s+)?['"]?([^'""\n]{3,60})['"]?/i);
+          const q = queryMatch?.[1]?.trim() ?? userMessage;
+          driveContext = await this.googleDrive.searchFiles(q);
+        }
+
+        toolsUsed.push('drive');
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, driveContext, undefined, mode);
+      }
+
+      // ── YOUTUBE ───────────────────────────────────────────────────────────
+      if (intent.intent === 'YOUTUBE') {
+        const videoId = this.youtubeService.extractVideoId(userMessage);
+        let ytContext: string;
+
+        if (videoId) {
+          // Si pide comentarios, traerlos también
+          if (/(comentarios?|comments?|que dice la gente|opiniones?)/i.test(userMessage)) {
+            const [info, comments] = await Promise.all([
+              this.youtubeService.getVideoInfo(videoId),
+              this.youtubeService.getVideoComments(videoId),
+            ]);
+            ytContext = `${info}\n\n---\n\n${comments}`;
+          } else {
+            ytContext = await this.youtubeService.getVideoInfo(videoId);
+          }
+        } else if (/(canal|channel)\s+/i.test(userMessage)) {
+          const idMatch = userMessage.match(/(?:canal|channel)\s+(?:de\s+)?[@]?([\w.-]{3,})/i);
+          ytContext = idMatch?.[1]
+            ? await this.youtubeService.getChannelInfo(idMatch[1])
+            : await this.youtubeService.searchVideos(userMessage);
+        } else {
+          const queryMatch = userMessage.match(/(?:busca(?:r)?|dame|mostrame)\s+(?:videos?\s+(?:de|sobre))?\s*['"]?([^'""\n]{3,80})['"]?/i)
+            ?? userMessage.match(/(?:videos?\s+(?:de|sobre))\s+['"]?([^'""\n]{3,80})['"]?/i);
+          const q = queryMatch?.[1]?.trim() ?? userMessage;
+          ytContext = await this.youtubeService.searchVideos(q);
+        }
+
+        toolsUsed.push('youtube');
+        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, ytContext, undefined, mode);
       }
 
       // ── ASTROLOGY — cálculos instantáneos sin scraping ────────────────────
@@ -1514,7 +1606,24 @@ export class JarvisService {
       ``,
       `**CALENDARIO Y TAREAS GOOGLE**`,
       `  Ver eventos hoy        →  \`qué tengo en el calendario hoy\``,
+      `  Ver agenda del día     →  \`agenda del lunes\``,
       `  Ver tareas pendientes  →  \`mis tareas de Google\``,
+      `  Detectar conflictos    →  \`tengo conflictos el lunes?\``,
+      ``,
+      `**GMAIL**`,
+      `  Correos importantes    →  \`correos importantes\`  /  \`mis emails\``,
+      `  Correos de hoy         →  \`correos de hoy\``,
+      `  Buscar correo          →  \`busca en mi correo <tema>\``,
+      `  Crear borrador         →  \`redactá un email a nombre@mail.com sobre <asunto>\``,
+      ``,
+      `**GOOGLE DRIVE**`,
+      `  Archivos recientes     →  \`mis archivos de Drive\``,
+      `  Buscar archivo         →  \`busca en Drive <nombre>\``,
+      `  Sincronizar con RAG    →  \`sincronizá <URL de Drive>\``,
+      ``,
+      `**YOUTUBE**`,
+      `  Buscar videos          →  \`busca videos de <tema>\``,
+      `  Info de un video       →  \`info de https://youtube.com/watch?v=ID\``,
       ``,
       `**MEMORIA**`,
       `  Guardar dato           →  \`recorda que mi proyecto se llama JarBees\``,

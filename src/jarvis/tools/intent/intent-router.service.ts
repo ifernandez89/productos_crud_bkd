@@ -15,7 +15,10 @@ export type IntentType =
   | 'REPEAT'     // Repetir última respuesta
   | 'CALENDAR'   // Consultar o agendar en Google Calendar
   | 'TASKS'      // Consultar o agendar en Google Tasks
-  | 'SITE_SEARCH'; // Búsqueda dirigida en un sitio específico (elonce, wikipedia, etc.)
+  | 'GMAIL'      // Leer, buscar o redactar correos en Gmail
+  | 'DRIVE'      // Buscar, leer o sincronizar archivos de Google Drive
+  | 'YOUTUBE'    // Buscar videos o info de YouTube
+  | 'SITE_SEARCH'; // Búsqueda dirigida en un sitio específico
 
 export interface IntentResult {
   intent: IntentType;
@@ -115,6 +118,25 @@ export class IntentRouterService {
     // TASKS — alta confianza
     if (/(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes)/i.test(n)) {
       return { intent: 'TASKS', confidence: 'high', reason: 'tasks keyword' };
+    }
+
+    // GMAIL — alta confianza
+    if (/(correo|email|mail|gmail|bandeja|mensaje recibido|correos de hoy|correos importantes|borrador|draft|busca en mi correo)/i.test(n)) {
+      return { intent: 'GMAIL', confidence: 'high', reason: 'gmail keyword' };
+    }
+
+    // DRIVE — alta confianza
+    if (/(google drive|mi drive|busca en drive|archivo en drive|subir a drive|sincronizar drive|documentos de drive)/i.test(n)) {
+      return { intent: 'DRIVE', confidence: 'high', reason: 'drive keyword' };
+    }
+
+    // YOUTUBE — alta confianza
+    if (/(youtube|busca un video|buscar video|canal de youtube|playlist de youtube|video de youtube)/i.test(n)) {
+      return { intent: 'YOUTUBE', confidence: 'high', reason: 'youtube keyword' };
+    }
+    // YouTube por URL directa
+    if (/(youtu\.be|youtube\.com\/watch)/i.test(n)) {
+      return { intent: 'YOUTUBE', confidence: 'high', reason: 'youtube url' };
     }
 
     // URL — alta confianza

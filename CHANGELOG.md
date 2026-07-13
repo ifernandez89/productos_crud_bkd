@@ -6,6 +6,65 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Google Workspace + YouTube Integration (2026-07-12)
+
+**📅 Google Calendar (ampliado):**
+- `getDailyAgenda(date?)` — agenda estructurada del día dividida en Mañana/Tarde/Noche.
+- `getEventsInRange(start, end)` — eventos en un rango de fechas.
+- `detectConflicts(date)` — detecta solapamiento de eventos en un día.
+- `createMeetingWithAttendees(summary, attendees[], start, end)` — crea reuniones con participantes y enlace de Google Meet automático.
+- Comandos de chat: `agenda del lunes`, `tengo conflictos el martes?`, `agenda una reunión con X`.
+
+**📧 Nuevo `GoogleGmailService`:**
+- `getImportantEmails()` — correos no leídos con etiqueta IMPORTANT del inbox.
+- `getEmailsFromToday()` — correos recibidos en las últimas 24hs.
+- `searchEmails(query)` — búsqueda con sintaxis Gmail (`from:`, `subject:`, `has:attachment`, etc.).
+- `draftEmail(to, subject, body)` — crea un borrador (scope `gmail.compose`, no requiere permisos sensibles).
+- `summarizeThread(threadId)` — extrae el cuerpo del hilo para pasarlo al LLM.
+- Comandos de chat: `mis emails`, `correos de hoy`, `busca en mi correo <tema>`, `redactá un email a X sobre Y`.
+
+**📁 Nuevo `GoogleDriveService`:**
+- `searchFiles(query, mimeType?)` — busca por nombre con enlace directo a Drive.
+- `listRecentFiles()` — archivos modificados recientemente.
+- `syncToKnowledge(fileId)` — descarga un PDF o Google Doc de Drive y lo ingesta en el sistema RAG (Document + Chunks), igual que un PDF subido manualmente. La categoría se detecta automáticamente.
+- `uploadTextFile(fileName, content)` — sube texto plano a Drive.
+- Comandos de chat: `mis archivos de Drive`, `busca en Drive <nombre>`, `sincronizá <URL de Drive>`.
+
+**🎬 Nuevo `YouTubeService`:**
+- `searchVideos(query, maxResults?)` — búsqueda usando YouTube Data API v3 (API Key, no OAuth).
+- `getVideoInfo(videoId)` — título, canal, vistas, duración y descripción de un video.
+- `getChannelVideos(channelId)` — videos recientes de un canal.
+- `extractVideoId(url)` — parsea cualquier formato de URL de YouTube.
+- Comandos de chat: `busca videos de NestJS`, `info de https://youtube.com/watch?v=ID`.
+
+**🔐 Scopes OAuth ampliados (`GoogleAuthService`):**
+- Agregados: `gmail.readonly`, `gmail.compose`, `drive.readonly`, `drive.file`, `userinfo.email`.
+- El usuario debe re-autorizar visitando `/api/jarbees/google/auth` para activar los nuevos permisos.
+
+**🧠 IntentRouter — nuevos intents:**
+- `GMAIL` — detecta: `correo`, `email`, `gmail`, `bandeja`, `borrador`, `busca en mi correo`.
+- `DRIVE` — detecta: `google drive`, `mi drive`, `busca en drive`, `sincronizar drive`.
+- `YOUTUBE` — detecta: `youtube`, `busca un video`, `canal de youtube`, URLs de `youtu.be` / `youtube.com/watch`.
+
+**📖 Ayuda (`h`) actualizada:**
+- Secciones nuevas: GMAIL, GOOGLE DRIVE, YOUTUBE.
+- Calendario ampliado con `agenda del día` y `conflictos`.
+
+**⚙️ Variables de entorno:**
+- `YOUTUBE_API_KEY` — nueva variable requerida para YouTube. Obtener en Google Cloud Console.
+- `.env.example` actualizado con instrucciones.
+
+**🔧 Archivos creados/modificados:**
+- `src/jarvis/tools/google/google-gmail.service.ts` — nuevo
+- `src/jarvis/tools/google/google-drive.service.ts` — nuevo
+- `src/jarvis/tools/google/youtube.service.ts` — nuevo
+- `src/google/google-auth.service.ts` — scopes ampliados
+- `src/jarvis/tools/google/google-calendar.service.ts` — 4 métodos nuevos
+- `src/jarvis/jarvis.service.ts` — imports, constructor, 3 handlers nuevos, ayuda actualizada
+- `src/jarvis/jarvis.module.ts` — 3 providers nuevos
+- `src/jarvis/tools/intent/intent-router.service.ts` — 3 intents nuevos + patrones
+- `.env.example` — GOOGLE_* + YOUTUBE_API_KEY
+
 ### Added — Biblioteca de Habilidades Cognitivas: Razonamiento Modular (2026-07-12)
 
 **🧠 Concepto:**

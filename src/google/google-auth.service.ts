@@ -20,10 +20,20 @@ export class GoogleAuthService {
    */
   getAuthUrl(): string {
     const scopes = [
+      // Calendar
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/calendar.events',
+      // Tasks
       'https://www.googleapis.com/auth/tasks.readonly',
-      'https://www.googleapis.com/auth/tasks'
+      'https://www.googleapis.com/auth/tasks',
+      // Gmail
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.compose',
+      // Drive
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/drive.file',
+      // Perfil básico
+      'https://www.googleapis.com/auth/userinfo.email',
     ];
 
     return this.oauth2Client.generateAuthUrl({
