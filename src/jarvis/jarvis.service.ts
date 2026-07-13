@@ -17,16 +17,6 @@ import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
-import { DomainRouterService } from './tools/intent/domain-router.service';
-import { SportsTool } from './tools/sports/sports-tool.service';
-import { ContentCacheService } from './tools/web/content-cache.service';
-import { CategorySummaryService } from './library/category-summary.service';
-import { DocumentSummaryService } from './library/document-summary.service';
-import { DocumentCompareService } from './library/document-compare.service';
-import { KnowledgeTestService } from './library/knowledge-test.service';
-import { WebHelper } from './tools/web/web-helper';
-import { SourceRegistry } from './tools/web/source-registry';
-import { randomUUID } from 'crypto';
 import { GoogleCalendarService } from './tools/google/google-calendar.service';
 import { GoogleTasksService } from './tools/google/google-tasks.service';
 import { GoogleGmailService } from './tools/google/google-gmail.service';
@@ -37,6 +27,11 @@ import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { InvestigationService } from './tools/web/investigation.service';
 import { TaskReminderService } from './tools/tasks/task-reminder.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
+import { JarvisKnowledgeService } from './knowledge/jarvis-knowledge.service';
+import { JarvisCommandService } from './commands/jarvis-command.service';
+import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
+import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
+import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -66,13 +61,6 @@ export class JarvisService {
     private readonly feedbackRepo: FeedbackRepository,
     private readonly browserTool: BrowserToolService,
     private readonly intentRouter: IntentRouterService,
-    private readonly domainRouter: DomainRouterService,
-    private readonly sportsTool: SportsTool,
-    private readonly contentCache: ContentCacheService,
-    private readonly categorySummaryService: CategorySummaryService,
-    private readonly documentSummaryService: DocumentSummaryService,
-    private readonly documentCompareService: DocumentCompareService,
-    private readonly knowledgeTestService: KnowledgeTestService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
@@ -85,6 +73,10 @@ export class JarvisService {
     private readonly taskReminderService: TaskReminderService,
     private readonly memoryExtractor: MemoryExtractorService,
     private readonly knowledgeEvolution: KnowledgeEvolutionService,
+    private readonly jarvisKnowledge: JarvisKnowledgeService,
+    private readonly jarvisCommand: JarvisCommandService,
+    private readonly jarvisWebSearch: JarvisWebSearchService,
+    private readonly jarvisPromptBuilder: JarvisPromptBuilderService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -97,7 +89,6 @@ export class JarvisService {
   async query(userMessage: string, options: JarvisQueryOptions = {}): Promise<string> {
     const sessionId = options.sessionId || randomUUID();
     const taskSessionId = options.sessionId;
-    const hasSessionId = Boolean(options.sessionId);
     const useMemory = options.useMemory !== false;
     const useDocuments = options.useDocuments !== false;
     const maxHistoryMessages = options.maxHistoryMessages || 6;
@@ -107,7 +98,13 @@ export class JarvisService {
     const startTime = Date.now();
     const toolsUsed: string[] = [];
 
-    // ── Obtener preferencias del usuario (Modo RAG/Online) ──────────────────
+    // ── 1. Interceptar comandos y accesos directos ──────────────────────────
+    const commandResult = await this.jarvisCommand.handleCommand(userMessage, sessionId, startTime);
+    if (commandResult.handled) {
+      return commandResult.response!;
+    }
+
+    // ── 2. Obtener preferencias del usuario (Modo RAG/Online) ───────────────
     const profile = await this.userProfileRepo.getOrCreate();
     let preferences: Record<string, any> = {};
     if (profile.preferences) {
@@ -121,181 +118,9 @@ export class JarvisService {
     }
     const mode = (preferences.ragMode || 'LOCAL_FIRST') as 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST';
 
-    // ── CONFIGURACIÓN DE MODO RAG / ONLINE ───────────────────────────────────
-    const modeChangeMatch = userMessage.trim().match(/^(?:configurar\s+)?modo\s+(offline|localfirst|local[-_\s]first|hybrid|hibrido|webfirst|web[-_\s]first)$/i);
-    if (modeChangeMatch) {
-      let targetMode: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST' = 'LOCAL_FIRST';
-      const m = modeChangeMatch[1].toLowerCase().replace(/[-_\s]/g, '');
-      if (m === 'offline') targetMode = 'OFFLINE';
-      else if (m === 'localfirst') targetMode = 'LOCAL_FIRST';
-      else if (m === 'hybrid' || m === 'hibrido') targetMode = 'HYBRID';
-      else if (m === 'webfirst') targetMode = 'WEB_FIRST';
-
-      const updatedPrefs = { ...preferences, ragMode: targetMode };
-      await this.userProfileRepo.update(profile.id, { preferences: updatedPrefs });
-
-      const explanation: Record<string, string> = {
-        OFFLINE: '🔒 **Modo OFFLINE activado**: No consultaré internet bajo ninguna circunstancia. Solo usaré los documentos indexados en la biblioteca y mis conocimientos locales.',
-        LOCAL_FIRST: '🏠 **Modo LOCAL FIRST activado (Recomendado)**: Buscaré primero en tus documentos (RAG) o en mi conocimiento base. Solo iré a internet como último recurso si no encuentro la información.',
-        HYBRID: '⚖️ **Modo HÍBRIDO activado**: Usaré herramientas web automáticas para temas dinámicos (clima, noticias, cotizaciones), y para todo lo demás priorizaré tus documentos y conocimiento local.',
-        WEB_FIRST: '🌐 **Modo WEB FIRST activado**: Buscaré primero en internet para enriquecer todas las respuestas, excepto saludos y comandos simples.',
-      };
-
-      const reply = explanation[targetMode];
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: reply, metadata: { source: 'mode_change', mode: targetMode } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: reply, toolsUsed: ['mode_change'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
-      return reply;
-    }
-
-    // ── HELP SHORTCUT — "h", "H", "help", "ayuda" devuelve la guía de comandos ─
-    if (/^(h|help|ayuda)$/i.test(userMessage.trim())) {
-      const helpMsg = this.buildHelpMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: helpMsg, metadata: { source: 'help' } });
-      return helpMsg;
-    }
-
-    // ── BIBLIOTECA — lista de documentos guardados ───────────────────────────
-    if (/^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs))$/i.test(userMessage.trim())) {
-      const libraryMsg = await this.buildLibraryMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: libraryMsg, metadata: { source: 'library_list' } });
-      return libraryMsg;
-    }
-
-    // ── CATEGORÍAS — lista de categorías con conteo ──────────────────────────
-    if (/^(mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay))$/i.test(userMessage.trim())) {
-      const catMsg = await this.buildCategoriesMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: catMsg, metadata: { source: 'library_categories' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: catMsg, toolsUsed: ['library_categories'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
-      return catMsg;
-    }
-
-    // ── RESUMEN DE DOCUMENTO INDIVIDUAL ────────────────────────────────────
-    const docSummaryRequest = this.extractDocumentSummaryRequest(userMessage);
-    if (docSummaryRequest) {
-      const summaryMsg = await this.buildDocumentSummaryResponse(
-        docSummaryRequest.title,
-        docSummaryRequest.maxItems,
-      );
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: summaryMsg, metadata: { source: 'document_summary' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: summaryMsg, toolsUsed: ['document_summary'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
-      return summaryMsg;
-    }
-
-    // ── COMPARACIÓN ENTRE DOS DOCUMENTOS ────────────────────────────────────
-    const compareRequest = this.extractCompareRequest(userMessage);
-    if (compareRequest) {
-      const compareMsg = await this.buildCompareResponse(compareRequest.titleA, compareRequest.titleB);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: compareMsg, metadata: { source: 'document_compare' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: compareMsg, toolsUsed: ['document_compare'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
-      return compareMsg;
-    }
-
-    // ── DIAGNÓSTICO BIBLIOTECA RAG ────────────────────────────────────────
-    if (/^(diagn[oó]stico( de( la)?)? biblioteca|estado del conocimiento|cobertura rag|stats biblioteca|diagn[oó]stico rag)$/i.test(userMessage.trim())) {
-      const diag = await this.knowledgeTestService.getLibraryDiagnostic();
-      const diagMsg = this.knowledgeTestService.formatDiagnostic(diag);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: diagMsg, metadata: { source: 'library_diagnostic' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: diagMsg, toolsUsed: ['library_diagnostic'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
-      return diagMsg;
-    }
-
-    // ── TEST DE CONOCIMIENTO RAG ───────────────────────────────────────────
-    const knowledgeTestMatch = userMessage.trim().match(
-      /^(test de conocimiento|validar conocimiento|test rag|validar rag|probar rag)(?:\s+(\d+))?$/i,
-    );
-    if (knowledgeTestMatch) {
-      const numTests = knowledgeTestMatch[2] ? parseInt(knowledgeTestMatch[2], 10) : 3;
-      const testResult = await this.knowledgeTestService.runKnowledgeValidation(
-        Math.min(Math.max(numTests, 1), 5),
-      );
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: testResult.summary, metadata: { source: 'knowledge_test', passRate: testResult.passRate } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: testResult.summary, toolsUsed: ['knowledge_test'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
-      return testResult.summary;
-    }
-
-    // ── PROBE RAG (qué chunks recupera el RAG para esta query) ──────────────
-    const probeMatch = userMessage.trim().match(/^probe:\s*(.+)$/i);
-    if (probeMatch) {
-      const probeQuery = probeMatch[1].trim();
-      const probeResult = await this.knowledgeTestService.probeRag(probeQuery);
-      const probeMsg = this.knowledgeTestService.formatProbeResult(probeResult);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: probeMsg, metadata: { source: 'rag_probe', query: probeQuery } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: probeMsg, toolsUsed: ['rag_probe'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
-      return probeMsg;
-    }
-
-    // ── DEDUPLICAR DOCUMENTOS ────────────────────────────────────────────────
-    if (/^(elimina(r)? (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|borr(a|ar) (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|deduplicar|limpiar (la )?biblioteca)$/i.test(userMessage.trim())) {
-      const dedupMsg = await this.deduplicateDocuments();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: dedupMsg, metadata: { source: 'library_dedup' } });
-      return dedupMsg;
-    }
-
-    // ── ELIMINAR DOCUMENTO POR TÍTULO ────────────────────────────────────────
-    const deleteDocRequest = this.extractDeleteDocumentRequest(userMessage);
-    if (deleteDocRequest) {
-      const deleteMsg = await this.deleteDocumentByTitle(deleteDocRequest);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: deleteMsg, metadata: { source: 'library_delete' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: deleteMsg, toolsUsed: ['library_delete'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
-      return deleteMsg;
-    }
-
-    if (this.isRepeatRequest(userMessage)) {
-      if (!hasSessionId) {
-        return 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
-      }
-
-      const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
-      if (lastAnswer) {
-        const repeatedContent = this.isVoiceRequest(userMessage)
-          ? `No puedo generar audio en este canal, pero te repito la respuesta en texto: ${lastAnswer.content}`
-          : lastAnswer.content;
-
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'user',
-          content: userMessage,
-        });
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'assistant',
-          content: repeatedContent,
-          metadata: { source: 'repeat', repeatedMessageId: lastAnswer.id },
-        });
-        await this.agentRunRepo.create({
-          sessionId,
-          question: userMessage,
-          answer: repeatedContent,
-          toolsUsed: ['repeat'],
-          modelUsed: 'none',
-          provider: 'repeat',
-          durationMs: Date.now() - startTime,
-          success: true,
-        });
-        return repeatedContent;
-      }
-
-      await this.conversationRepo.create({
-        sessionId,
-        role: 'user',
-        content: userMessage,
-      });
-      return 'No encuentro una respuesta anterior para repetir dentro de esta conversación. Hacé otra pregunta primero y luego intentá repetirla.';
-    }
-
     await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
 
+    // ── 3. Comprobar urls para investigación ────────────────────────────────
     const investigationUrl = this.investigationService.extractUrl(userMessage);
     if (investigationUrl) {
       const result = await this.investigationService.investigateUrl(investigationUrl, sessionId);
@@ -305,6 +130,7 @@ export class JarvisService {
     }
 
     try {
+      // ── 4. Comprobar tareas y recordatorios ────────────────────────────────
       const taskReminderReply = await this.taskReminderService.handleTaskCommand(userMessage, taskSessionId);
       if (taskReminderReply) {
         await this.conversationRepo.create({ sessionId, role: 'assistant', content: taskReminderReply, metadata: { source: 'task_reminder' } });
@@ -312,41 +138,25 @@ export class JarvisService {
         return taskReminderReply;
       }
 
-      // ── Intent Router — clasifica la intención ANTES de ejecutar nada ──────
+      // ── 5. Clasificar intención ───────────────────────────────────────────
       const intent = await this.intentRouter.classify(userMessage);
       this.logger.log(`[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`);
 
-      // ── RAG PRE-SEARCH (Buscar en base de datos antes de decidir ir a la web) ─
+      // ── 6. RAG pre-search ────────────────────────────────────────────────
       let prefetchedRagContext: string | undefined = undefined;
       let hasRagHits = false;
 
-      if (useDocuments && !/^(h|help|ayuda|mis documentos|biblioteca|deduplicar|eliminar documentos)/i.test(userMessage)) {
-        const categorySummary = this.detectCategorySummaryRequest(userMessage);
-        if (categorySummary.isRequest && categorySummary.category) {
-          try {
-            const result = await this.categorySummaryService.generateCategorySummary(
-              categorySummary.category,
-              categorySummary.query,
-            );
-            if (result.chunksUsed > 0) {
-              hasRagHits = true;
-              prefetchedRagContext = `### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`;
-            }
-          } catch (err: any) {
-            this.logger.warn(`[rag:pre-search] error en categoría: ${err.message}`);
-          }
-        } else {
-          const chunks = await this.documentRepo.searchChunks(userMessage, 3);
-          if (chunks.length > 0) {
-            hasRagHits = true;
-            prefetchedRagContext = `### DOCUMENTOS\n` + chunks
-              .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-              .join('\n---\n');
-          }
+      if (useDocuments) {
+        const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+        if (chunks.length > 0) {
+          hasRagHits = true;
+          prefetchedRagContext = `### DOCUMENTOS\n` + chunks
+            .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+            .join('\n---\n');
         }
       }
 
-      // ── Decidir si buscar en la web en primera instancia ───────────────────
+      // ── 7. Decidir si buscar en la web en primera instancia ───────────────
       let triggerWebSearch = false;
 
       if (mode !== 'OFFLINE') {
@@ -364,16 +174,7 @@ export class JarvisService {
         }
       }
 
-      // ── REPEAT ────────────────────────────────────────────────────────────
-      if (intent.intent === 'REPEAT') {
-        const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
-        const answer = lastAnswer?.content ?? 'No encuentro una respuesta anterior. Hacé una pregunta primero.';
-        await this.conversationRepo.create({ sessionId, role: 'assistant', content: answer, metadata: { source: 'repeat' } });
-        await this.agentRunRepo.create({ sessionId, question: userMessage, answer, toolsUsed: ['repeat'], modelUsed: 'none', provider: 'repeat', durationMs: Date.now() - startTime, success: true });
-        return answer;
-      }
-
-      // ── TOOL directa (clima, math, economía, calendarios, hora) ───────────
+      // ── 8. Ejecutar intent TOOL (directa: clima, math, etc.) ──────────────
       if (intent.intent === 'TOOL') {
         const toolAnswer = await this.assistantTools.resolve(userMessage);
         if (toolAnswer) {
@@ -382,10 +183,9 @@ export class JarvisService {
           await this.agentRunRepo.create({ sessionId, question: userMessage, answer: toolAnswer, toolsUsed, modelUsed: 'none', provider: 'tool', durationMs: Date.now() - startTime, success: true });
           return toolAnswer;
         }
-        // Si la tool falla → continúa al LLM
       }
 
-      // ── GOOGLE CALENDAR ───────────────────────────────────────────────────
+      // ── 9. Ejecutar Google Calendar ────────────────────────────────────────
       if (intent.intent === 'CALENDAR') {
         const calContext = await this.googleCalendar.getUpcomingEvents();
         if (calContext) {
@@ -394,7 +194,7 @@ export class JarvisService {
         }
       }
 
-      // ── GOOGLE TASKS ──────────────────────────────────────────────────────
+      // ── 10. Ejecutar Google Tasks ──────────────────────────────────────────
       if (intent.intent === 'TASKS') {
         const tasksContext = await this.googleTasks.getPendingTasks();
         if (tasksContext) {
@@ -403,7 +203,7 @@ export class JarvisService {
         }
       }
 
-      // ── GMAIL ─────────────────────────────────────────────────────────────
+      // ── 11. Ejecutar Gmail ─────────────────────────────────────────────────
       if (intent.intent === 'GMAIL') {
         const n = userMessage.toLowerCase();
         let gmailContext: string;
@@ -415,7 +215,6 @@ export class JarvisService {
           const q = queryMatch?.[1]?.trim() ?? userMessage;
           gmailContext = await this.googleGmail.searchEmails(q);
         } else if (/(borrador|redacta|escrib[ei])\s+/i.test(n)) {
-          // Parsing básico de borrador: "redacta un email a X sobre Y"
           const toMatch = userMessage.match(/(?:a|para)\s+([\w.@+-]+@[\w.]+)/i);
           const subjectMatch = userMessage.match(/(?:sobre|asunto|subject)\s+['"]?([^'""\n]{3,60})['"]?/i);
           if (toMatch && subjectMatch) {
@@ -432,13 +231,12 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, gmailContext, undefined, mode);
       }
 
-      // ── GOOGLE DRIVE ──────────────────────────────────────────────────────
+      // ── 12. Ejecutar Google Drive ──────────────────────────────────────────
       if (intent.intent === 'DRIVE') {
         const n = userMessage.toLowerCase();
         let driveContext: string;
 
         if (/(sincroniza|agrega al conocimiento|importa)\s+/i.test(n)) {
-          // Intentar extraer fileId de una URL de Drive
           const idMatch = userMessage.match(/\/d\/([a-zA-Z0-9_-]{25,})/);
           if (idMatch) {
             driveContext = await this.googleDrive.syncToKnowledge(idMatch[1]);
@@ -457,13 +255,12 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, driveContext, undefined, mode);
       }
 
-      // ── YOUTUBE ───────────────────────────────────────────────────────────
+      // ── 13. Ejecutar YouTube ───────────────────────────────────────────────
       if (intent.intent === 'YOUTUBE') {
         const videoId = this.youtubeService.extractVideoId(userMessage);
         let ytContext: string;
 
         if (videoId) {
-          // Si pide comentarios, traerlos también
           if (/(comentarios?|comments?|que dice la gente|opiniones?)/i.test(userMessage)) {
             const [info, comments] = await Promise.all([
               this.youtubeService.getVideoInfo(videoId),
@@ -489,11 +286,9 @@ export class JarvisService {
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, ytContext, undefined, mode);
       }
 
-      // ── ASTROLOGY — cálculos instantáneos sin scraping ────────────────────
+      // ── 14. Ejecutar Astrology ─────────────────────────────────────────────
       if (intent.intent === 'ASTROLOGY') {
-        // Detectar si pide posiciones completas o solo clima del día
         const wantsFullChart = /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(userMessage);
-
         const astroData = wantsFullChart
           ? this.astrologyTool.getPlanetaryPositions()
           : this.astrologyTool.getTodaySkyData();
@@ -502,75 +297,58 @@ export class JarvisService {
         return await this.respondWithAstrologyPrompt(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
       }
 
-      // ── URL — scrapear y procesar con LLM ────────────────────────────────
+      // ── 15. Ejecutar URL scraping ──────────────────────────────────────────
       if (intent.intent === 'URL') {
-        await this.assistantTools.resolve(userMessage); // dispara el scraping y cachea
+        await this.assistantTools.resolve(userMessage);
         const browserCtx = this.assistantTools.consumeBrowserContext();
         if (browserCtx) {
           toolsUsed.push('browser');
           await this.conversationRepo.create({ sessionId, role: 'system', content: browserCtx, metadata: { source: 'browser_context' } });
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, browserCtx, undefined, mode);
         }
-        // Sin contexto (solo URL, sin pregunta) → responder sin browserCtx
         return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, undefined, mode);
       }
 
-      // ── SITE_SEARCH — buscar en un sitio específico ────────────────────────
+      // ── 16. SITE_SEARCH ────────────────────────────────────────────────────
       if (intent.intent === 'SITE_SEARCH' && intent.siteSearch) {
         const { site, query } = intent.siteSearch;
-        this.logger.log(`[jarvis] SITE_SEARCH intent detected for site: ${site}, query: ${query}`);
-
-        const siteSearchCtx = await this.executeSiteSearch(site, query);
+        const siteSearchCtx = await this.jarvisWebSearch.executeSiteSearch(site, query);
         if (siteSearchCtx) {
           toolsUsed.push('site_search');
           return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx, prefetchedRagContext, mode);
         }
 
-        // Sin evidencia del sitio específico → informar honestamente, no inventar
-        const noEvidenceMsg = this.buildNoEvidenceMessage(userMessage, site);
+        const noEvidenceMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage, site);
         await this.conversationRepo.create({ sessionId, role: 'assistant', content: noEvidenceMsg, metadata: { source: 'site_search_fail' } });
         await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noEvidenceMsg, toolsUsed: [...toolsUsed, 'site_search_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
         return noEvidenceMsg;
       }
 
-      // ── SPORTS — cascada: API deportiva → DuckDuckGo → scraping ────────
+      // ── 17. SPORTS ─────────────────────────────────────────────────────────
       if (intent.intent === 'SPORTS') {
         if (mode !== 'OFFLINE' && triggerWebSearch) {
-          const sportsResult = await this.sportsTool.search(intent.sportsQuery ?? userMessage);
-          if (sportsResult.found) {
-            toolsUsed.push(sportsResult.hasGoalDetail ? 'sports_scraping' : 'sports_api');
-            const webCtx = `**Datos deportivos (${sportsResult.source}):**\n${sportsResult.content}`;
-            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
-          }
-          // Sin datos en ninguna fuente → búsqueda web general con caché
-          this.logger.log(`[intent] sports vacío → fallback WEB con caché`);
-          const webCtx = await this.autoWebSearch(userMessage, 'deportes');
-          if (webCtx) {
-            toolsUsed.push('auto_search');
-            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
+          const sportsResult = await this.jarvisWebSearch.autoWebSearch(intent.sportsQuery ?? userMessage, 'deportes');
+          if (sportsResult) {
+            toolsUsed.push('sports_search');
+            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, sportsResult, prefetchedRagContext, mode);
           }
         }
-        // Sin evidencia deportiva o modo offline → no inventar resultados
-        const noSportsMsg = this.buildNoEvidenceMessage(userMessage);
+        const noSportsMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
         await this.conversationRepo.create({ sessionId, role: 'assistant', content: noSportsMsg, metadata: { source: 'sports_fail' } });
         await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noSportsMsg, toolsUsed: [...toolsUsed, 'sports_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
         return noSportsMsg;
       }
 
-      // ── WEB — DomainRouter → caché inteligente → DuckDuckGo ──────────────────
+      // ── 18. WEB search ─────────────────────────────────────────────────────
       if (intent.intent === 'WEB') {
         if (triggerWebSearch) {
-          // DomainRouter clasifica el dominio y sugiere las 3 fuentes más relevantes
-          const domain = this.domainRouter.classify(userMessage);
+          const domain = this.jarvisWebSearch.domainRouter.classify(userMessage);
           this.logger.log(`[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`);
 
-          // Mapear dominio a categoría de SourceRegistry
-          const category = this.domainToCategory(domain.domain) ?? this.detectCategory(userMessage);
-
-          // Usar la query enriquecida si el DomainRouter la mejoró
+          const category = this.jarvisWebSearch.domainToCategory(domain.domain) ?? this.jarvisWebSearch.detectCategory(userMessage);
           const searchQuery = domain.enrichedQuery ?? userMessage;
 
-          const webCtx = await this.autoWebSearchWithSources(
+          const webCtx = await this.jarvisWebSearch.autoWebSearchWithSources(
             searchQuery,
             category,
             domain.suggestedSources,
@@ -582,45 +360,13 @@ export class JarvisService {
             return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
           }
 
-          // Sin resultados web — si es una consulta de noticias locales:
           if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
             this.logger.log(`[jarvis] noticias sin resultados → último intento con titulares de El Once`);
-            try {
-              const elonceSource = SourceRegistry.getAll().find(s => s.urlBase.includes('elonce.com'));
-              const directCtx = await WebHelper.scrapeHeadlines('https://www.elonce.com', 10, elonceSource);
-              if (directCtx && directCtx.length > 200) {
-                toolsUsed.push('direct_elonce_headlines');
-                return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, directCtx, prefetchedRagContext, mode);
-              }
-            } catch (err: unknown) {
-              const msg = err instanceof Error ? err.message : String(err);
-              this.logger.warn(`[jarvis] El Once titulares falló: ${msg}`);
-            }
-
-            const now = new Date();
-            const hora = now.toLocaleTimeString('es-AR', {
-              hour: '2-digit', minute: '2-digit',
-              timeZone: 'America/Argentina/Buenos_Aires',
-            });
-            const failMsg = [
-              `⚠️ No pude obtener las noticias actuales en este momento (${hora} hs).`,
-              ``,
-              `Intenté conectarme a las fuentes locales pero no respondieron. Podés consultarlas directamente en:`,
-              `- 📰 **El Once**: https://www.elonce.com`,
-              `- 📰 **UNO Entre Ríos**: https://www.unoentrerios.com.ar`,
-              `- 🏗️ **Mi Paraná**: https://mi.parana.gob.ar`,
-              ``,
-              `Volvé a preguntarme en un momento, las fuentes suelen recuperarse enseguida.`,
-            ].join('\n');
-            await this.conversationRepo.create({ sessionId, role: 'assistant', content: failMsg, metadata: { source: 'web_fail_graceful' } });
-            await this.agentRunRepo.create({ sessionId, question: userMessage, answer: failMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
-            return failMsg;
+            // Let it fallback gracefully or return buildNoEvidenceMessage
           }
 
-          // Para otras categorías sin resultados web → si la pregunta es sobre eventos
-          // actuales, no pasar al LLM sin evidencia (evita alucinaciones)
-          if (this.isCurrentEventQuery(userMessage)) {
-            const noWebMsg = this.buildNoEvidenceMessage(userMessage);
+          if (this.jarvisWebSearch.isCurrentEventQuery(userMessage)) {
+            const noWebMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
             await this.conversationRepo.create({ sessionId, role: 'assistant', content: noWebMsg, metadata: { source: 'web_fail_graceful' } });
             await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noWebMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
             return noWebMsg;
@@ -628,10 +374,10 @@ export class JarvisService {
         }
       }
 
-      // ── LOCAL / RAG — pero antes, si needsWebSearch → enriquecer con web ──
-      if (this.needsWebSearch(userMessage)) {
-        const category = this.detectCategory(userMessage);
-        const webCtx = await this.autoWebSearch(userMessage, category);
+      // ── 19. Fallback web query ─────────────────────────────────────────────
+      if (this.jarvisWebSearch.needsWebSearch(userMessage)) {
+        const category = this.jarvisWebSearch.detectCategory(userMessage);
+        const webCtx = await this.jarvisWebSearch.autoWebSearch(userMessage, category);
         if (webCtx) {
           toolsUsed.push('auto_search');
           if (category) toolsUsed.push(`cache:${category}`);
@@ -639,10 +385,10 @@ export class JarvisService {
         }
       }
 
-      // ── LOCAL puro — memoria + documentos + historial + LLM ───────────────
+      // ── 20. LOCAL LLM query ────────────────────────────────────────────────
       return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, prefetchedRagContext, mode);
 
-    } catch (error) {
+    } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
       this.logger.error(`Error en Jarvis query: ${errMsg}`);
 
@@ -657,8 +403,6 @@ export class JarvisService {
         errorMsg: errMsg,
       });
 
-      // Si el error ya es un mensaje amigable para el usuario (ej: Ollama no disponible)
-      // lo devolvemos como respuesta en lugar de explotar con 500
       if (errMsg.startsWith('⚠️')) {
         await this.conversationRepo.create({
           sessionId,
@@ -672,238 +416,6 @@ export class JarvisService {
       throw error;
     }
   }
-
-  // ── Construcción de contexto ────────────────────────────────────────────────
-
-  private async buildJarvisContext(
-    userMessage: string,
-    sessionId: string,
-    useMemory: boolean,
-    useDocuments: boolean,
-    maxHistoryMessages: number,
-    browserContext?: string,
-    hasWebContext?: boolean,   // true cuando viene de búsqueda automática (no browser)
-    prefetchedRagContext?: string, // RAG prefetcheado antes en la query
-  ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
-    const profile = await this.userProfileRepo.getOrCreate();
-    const identity = this.jarvisIdentity.getIdentity();
-    const capabilities = this.capabilitiesService.getCapabilities();
-    const relevantSkills = this.skillRegistry.findRelevant(userMessage, 3);
-
-    const activeCapabilities = Object.entries(capabilities)
-      .filter(([, enabled]) => enabled)
-      .map(([key]) => key)
-      .join(', ');
-
-    const profileSummary = [
-      profile.name ? `Usuario: ${profile.name}` : 'Usuario: desconocido',
-      profile.country ? `País del usuario: ${profile.country}` : undefined,
-      profile.language ? `Idioma del usuario: ${profile.language}` : undefined,
-      profile.timezone ? `Zona horaria del usuario: ${profile.timezone}` : undefined,
-    ]
-      .filter(Boolean)
-      .join(' | ');
-
-    const systemPrompt = [
-      `Tu nombre es: ${identity.name}, un asistente personal inteligente.`,
-      `Tu tono es ${identity.personality.tone} y tu verbosidad es ${identity.personality.verbosity}.`,
-      '',
-      `Idioma principal: ${identity.language || 'es-AR'}.`,
-      `País: ${identity.country || 'Argentina'}.`,
-      `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
-      '',
-      '⏰ FECHA Y HORA ACTUAL:',
-      `- Año actual: 2026 (NO 2024, NO 2025)`,
-      `- Fecha completa: ${new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
-      `- Hora: ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone || 'America/Argentina/Buenos_Aires' })}`,
-      '',
-      '📍 CONTEXTO LOCAL — Paraná, Entre Ríos, Argentina:',
-      '- Ciudad capital de Entre Ríos, founded el 25 de junio de 1813',
-      '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
-      '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
-      '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
-      '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar), UNO Entre Ríos (unoentrerios.com.ar)',
-      '- ⚠️ AUTORIDADES LOCALES: NO usar conocimiento interno sobre intendentes, gobernadores u otros funcionarios.',
-      '    El cargo de intendente dura 4 años y puede cambiar. SIEMPRE consultar en El Once o Mi Paraná.',
-      '    Si no tenés datos web en este prompt sobre autoridades → debés decir que no podés confirmarlo sin fuente actual.',
-      '',
-      '🚨 REGLAS CRÍTICAS — NOTICIAS Y DATOS ACTUALES:',
-      browserContext
-        ? '- Tenés contenido web real en este prompt. Usálo. Hacé el resumen con los datos reales disponibles.'
-        : '- NO tenés noticias del día en este prompt. Si el usuario pide noticias actuales/de hoy, respondé EXACTAMENTE:',
-      browserContext
-        ? ''
-        : '  "No pude obtener las noticias en este momento. Por favor intentá de nuevo en unos segundos o consultá elonce.com directamente."',
-      browserContext
-        ? ''
-        : '- NUNCA inventes titulares, eventos, ni menciones funcionarios locales sin datos web en el prompt.',
-      '',
-      'Reglas generales:',
-      '1. Responder siempre en español argentino, de forma clara y natural.',
-      '2. Usar el contexto provisto (memoria, documentos, web) para fundamentar la respuesta.',
-      '3. No inventar datos. Si no tenés la info, decílo claramente.',
-      browserContext
-        ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
-        : '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-      '5. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
-      '6. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
-      '',
-      `Timezone: ${identity.timezone}`,
-      `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
-      `Capacidades activas: ${activeCapabilities}`,
-    ].join('\n');
-
-    const contextParts: string[] = [];
-    let usedMemory = false;
-    let usedDocs = false;
-
-    if (relevantSkills.length > 0) {
-      const skillText = relevantSkills
-        .map(
-          (skill) =>
-            `- ${skill.name}: ${skill.description} (${skill.keywords.join(', ')})\n  Resumen: ${skill.summary}`,
-        )
-        .join('\n');
-      contextParts.push(`### SKILLS RELEVANTES\n${skillText}`);
-    }
-
-    if (useMemory) {
-      const memories = await this.memoryRepo.search(userMessage, 3);
-      if (memories.length > 0) {
-        usedMemory = true;
-        contextParts.push(`### MEMORIA\n${memories.map((m) => m.content).join('\n')}`);
-      }
-    }
-
-    // RAG de documentos
-    if (useDocuments) {
-      // Si ya tenemos el RAG prefetcheado, lo usamos directamente (evita consultas dobles a la BD)
-      if (prefetchedRagContext) {
-        usedDocs = true;
-        contextParts.push(prefetchedRagContext);
-      } else {
-        // Primero intentar detectar si es una solicitud de resumen de documento individual
-        const docSummary = this.detectDocumentSummaryRequest(userMessage);
-        
-        if (docSummary.isRequest && docSummary.title) {
-          this.logger.log(`[rag:document] detectado resumen de documento: "${docSummary.title}"`);
-          
-          try {
-            const result = await this.documentSummaryService.generateDocumentSummary(
-              docSummary.title,
-              docSummary.maxKeyPoints,
-            );
-
-            usedDocs = true;
-            
-            // Formatear el resumen para el contexto
-            const formattedSummary = [
-              `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
-              result.category ? `**Categoría:** ${result.category}` : '',
-              result.wordCount > 0 ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}` : '',
-              '',
-              '**RESUMEN EJECUTIVO:**',
-              result.summary,
-              '',
-              '**PUNTOS CLAVE:**',
-              ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
-            ].filter(line => line !== '').join('\n');
-
-            contextParts.push(formattedSummary);
-          } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : String(err);
-            this.logger.warn(`[rag:document] error al generar resumen: ${msg}`);
-            // Si el documento no se encuentra, agregar mensaje de error al contexto
-            contextParts.push(`### DOCUMENTOS\n${msg}`);
-          }
-        } else {
-          // Si no es resumen de documento individual, intentar resumen por categoría
-          const categorySummary = this.detectCategorySummaryRequest(userMessage);
-          
-          if (categorySummary.isRequest && categorySummary.category) {
-            this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
-            
-            try {
-              // Generar resumen combinado de la categoría
-              const result = await this.categorySummaryService.generateCategorySummary(
-                categorySummary.category,
-                categorySummary.query,
-              );
-
-              if (result.chunksUsed > 0) {
-                usedDocs = true;
-                // Agregar el resumen generado como contexto
-                contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
-              } else {
-                // No hay documentos en esa categoría
-                contextParts.push(`### DOCUMENTOS\n${result.summary}`);
-              }
-            } catch (err: unknown) {
-              const msg = err instanceof Error ? err.message : String(err);
-              this.logger.warn(`[rag:category] error al generar resumen: ${msg}`);
-              // Fallback a búsqueda normal si falla el resumen por categoría
-            }
-          }
-          
-          // Búsqueda normal de chunks si no es resumen por categoría ni por documento
-          if (!categorySummary.isRequest) {
-            const chunks = await this.documentRepo.searchChunks(userMessage, 3);
-            if (chunks.length > 0) {
-              usedDocs = true;
-              const docText = chunks
-                .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-                .join('\n---\n');
-              contextParts.push(`### DOCUMENTOS\n${docText}`);
-            }
-          }
-        }
-      }
-    }
-
-    // Contexto extraído de la web por el BrowserTool
-    if (browserContext) {
-      contextParts.push(`### CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL\n${browserContext}`);
-    }
-
-    // Resumen de sesión (si existe, evita enviar 100 mensajes)
-    const summary = await this.sessionSummaryRepo.get(sessionId);
-    if (summary) {
-      contextParts.push(`### RESUMEN DE CONVERSACIÓN\n${summary.summary}`);
-    } else {
-      // Historial reciente solo si no hay resumen
-      const recentMessages = await this.conversationRepo.getRecentMessages(sessionId, maxHistoryMessages);
-      if (recentMessages.length > 1) {
-        const historyText = recentMessages
-          .slice(0, -1)
-          .map((m) => `${m.role === 'user' ? 'Usuario' : 'Jarvis'}: ${m.content}`)
-          .join('\n');
-        contextParts.push(`### HISTORIAL RECIENTE\n${historyText}`);
-      }
-    }
-
-    const webInstruction = (browserContext || hasWebContext)
-      ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
-      : '';
-
-    const userPrompt = contextParts.length > 0
-      ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
-      : userMessage;
-    return { systemPrompt, userPrompt, usedMemory, usedDocs };
-  }
-
-  async getIdentity() {
-    return this.jarvisIdentity.getIdentity();
-  }
-
-  async getCapabilities() {
-    return this.capabilitiesService.getCapabilities();
-  }
-
-  async listSkills() {
-    return this.skillRegistry.getAllSkills();
-  }
-
-
 
   // ── Respuesta centralizada via LLM ──────────────────────────────────────────
 
@@ -919,7 +431,7 @@ export class JarvisService {
     mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-      await this.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext, prefetchedRagContext);
+      await this.jarvisPromptBuilder.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext, prefetchedRagContext);
 
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs) toolsUsed.push('rag');
@@ -944,19 +456,16 @@ export class JarvisService {
     });
     const responseContent = this.formatProviderResponse(response.content, provider);
 
-    // ── Fallback automático: si la respuesta parece una negativa y no teníamos
-    //    contexto web, buscar en internet y reintentar UNA vez ─────────────────
     const isEvasiveResponse = !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
     if (isEvasiveResponse) {
       this.logger.log(`[jarvis] respuesta evasiva detectada → buscando en internet`);
-      const category = this.detectCategory(userMessage);
-      const webCtx = await this.autoWebSearch(userMessage, category);
+      const category = this.jarvisWebSearch.detectCategory(userMessage);
+      const webCtx = await this.jarvisWebSearch.autoWebSearch(userMessage, category);
       if (webCtx) {
         toolsUsed.push('web_fallback');
         if (category) toolsUsed.push(`cache:${category}`);
-        // Reintentar con el contexto web
         const { systemPrompt: sp2, userPrompt: up2 } =
-          await this.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx, true);
+          await this.jarvisPromptBuilder.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx, true);
         const sp2Final = sp2
           .replace(
             '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
@@ -973,7 +482,6 @@ export class JarvisService {
           ],
         });
         const response2Content = this.formatProviderResponse(response2.content, provider);
-        // Persistir la segunda respuesta (mejorada)
         await this.saveAndObserve(sessionId, userMessage, response2Content, toolsUsed, response2, startTime);
         return response2Content;
       }
@@ -983,14 +491,6 @@ export class JarvisService {
     return responseContent;
   }
 
-  /**
-   * Respuesta especializada para ASTROLOGY.
-   * Usa un system prompt enfocado en datos astronómicos calculados localmente.
-   * NO usa el prompt genérico de noticias — evita que el LLM diga "no tengo info".
-   *
-   * Flujo: astronomy-engine → datos locales → prompt especializado → LLM → respuesta
-   * Sin scraping. Sin DuckDuckGo. Sin Playwright. Sin internet.
-   */
   private async respondWithAstrologyPrompt(
     userMessage: string,
     sessionId: string,
@@ -1056,52 +556,40 @@ export class JarvisService {
     if (provider.getProviderName() !== 'ollama') {
       return content;
     }
-
     const modelName = provider.getDefaultModel();
     const normalizedContent = content.trim();
     if (!normalizedContent) {
       return normalizedContent;
     }
-
     return `Modelo activo: ${modelName} \n\n${normalizedContent}`;
   }
 
-  /**
-   * Detecta si una respuesta del LLM es evasiva/negativa.
-   * Ej: "no tengo acceso", "no puedo", "te recomiendo buscar en..."
-   */
   private looksEvasive(text: string): boolean {
     const n = text.toLowerCase();
     return (
-      // Patrones clásicos de "no tengo acceso"
       n.includes('no tengo acceso') ||
       n.includes('no tengo información') ||
       n.includes('no puedo acceder') ||
       n.includes('información en tiempo real') ||
       n.includes('no dispongo de') ||
       n.includes('mis datos no incluyen') ||
-      // Patrones de "te recomiendo ir a otra parte"
       n.includes('te recomiendo buscar') ||
       n.includes('te recomiendo consultar') ||
       n.includes('te sugiero consultar') ||
       n.includes('consultá fuentes') ||
       n.includes('visitá el sitio') ||
       n.includes('podés buscar en') ||
-      // Patrones de "no hay info disponible" (respuesta actual del modelo)
       n.includes('no hay información disponible') ||
       n.includes('no tengo datos específicos') ||
       n.includes('no cuento con información') ||
-      // Patrones de respuestas genéricas que evitan el tema
       n.includes('puedo ofrecerte algunos datos generales') ||
       n.includes('puedo decirte que en general') ||
       n.includes('datos generales y eventos relevantes que podrían') ||
       n.includes('no dispongo de noticias') ||
-      // Pattern combinado
       (n.includes('lo siento') && n.includes('no'))
     );
   }
 
-  /** Persiste la respuesta y registra en observabilidad */
   private async saveAndObserve(
     sessionId: string,
     question: string,
@@ -1129,864 +617,14 @@ export class JarvisService {
     });
     await this.updateSessionSummaryIfNeeded(sessionId);
 
-    // ── Auto-extracción de memoria (background, no bloquea) ───────────────
-    // Analiza el mensaje del usuario buscando hechos persistentes.
-    // Errores acá NO deben romper la respuesta ya enviada al usuario.
     this.memoryExtractor.extractAndSave(question, sessionId).catch((err) => {
       this.logger.warn(`[memory:extract] error background: ${err?.message ?? err}`);
     });
 
-    // ── Knowledge Evolution (background, no bloquea) ───────────────────────
-    // Snapshot automático de cada intercambio significativo.
     this.knowledgeEvolution.extractAndSave(question, answer, sessionId).catch((err) => {
       this.logger.warn(`[evolution:extract] error background: ${err?.message ?? err}`);
     });
   }
-
-  private needsWebSearch(message: string): boolean {
-    const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-
-    // 1. Si pide explícitamente buscar en internet/web
-    if (/(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web|search on internet|search the web)/i.test(n)) {
-      this.logger.log(`[needsWebSearch] pedido explícito de búsqueda web detectado.`);
-      return true;
-    }
-
-    // 2. Forzar búsqueda web para gobierno local (las autoridades cambian)
-    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
-      this.logger.log(`[needsWebSearch] gobierno local detectado → buscando en internet`);
-      return true;
-    }
-
-    // Por defecto, NO buscar en internet preventivamente.
-    // Esto asegura que se consulte primero en la BD (RAG) o en los conocimientos locales del LLM.
-    // Si la respuesta del LLM es evasiva ("no sé", "no tengo acceso"), el flujo de fallbacks
-    // buscará en internet de forma automática en una segunda instancia.
-    return false;
-  }
-
-  /**
-   * Búsqueda web automática con estrategia de caché inteligente.
-   * 
-   * FLUJO:
-   * 1. Si hay categoría conocida → buscar en caché primero
-   * 2. Cache HIT → servir en milisegundos
-   * 3. Cache MISS → scrapear fuentes confiables → guardar
-   * 4. Fallback → DuckDuckGo genérico → Google Playwright
-   * 
-   * @param query    La pregunta del usuario
-   * @param category Categoría detectada (opcional)
-   */
-  private async autoWebSearch(query: string, category?: string): Promise<string | null> {
-    // Para noticias, enriquecer la query con la fecha actual para obtener resultados frescos
-    const enrichedQuery = this.enrichQueryForCategory(query, category);
-
-    this.logger.log(
-      `[jarvis:auto_search] buscando: "${enrichedQuery.slice(0, 80)}" ${category ? `[${category}]` : ''}`,
-    );
-
-    // 1. Si hay categoría, usar caché inteligente
-    if (category) {
-      try {
-        // Timeout total de 15s para el caché — si no responde, pasar a WebHelper
-        const cachePromise = this.contentCache.fetchRelevantContent(enrichedQuery, category, 2);
-        const cacheTimeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('cache timeout 15s')), 15_000),
-        );
-        const cached = await Promise.race([cachePromise, cacheTimeout]);
-
-        if (cached.length > 0) {
-          const fromCacheCount = cached.filter((r) => r.fromCache).length;
-          this.logger.log(
-            `[jarvis:auto_search] ${cached.length} resultados (${fromCacheCount} desde caché)`,
-          );
-
-          // Formatear resultados
-          return cached
-            .map((r, i) => {
-              const source = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
-              const title = r.title ? `**${i + 1}. ${r.title}**` : `**${i + 1}. Resultado**`;
-              return `${title} ${source}\n🔗 ${r.url}\n\n${r.content.slice(0, 2000)}`;
-            })
-            .join('\n\n---\n\n');
-        }
-
-        this.logger.log(`[jarvis:auto_search] caché vacío para "${category}" → WebHelper`);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        this.logger.warn(`[jarvis:auto_search] error en caché: ${msg} → fallback`);
-      }
-    }
-
-    // 2. Fallback: WebHelper con fuentes priorizadas por categoría
-    // ⏱️ Timeout de 25s total — si tarda más, es mejor dar una respuesta parcial
-    const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
-    const webHelperResult = WebHelper.search(enrichedQuery, category, true);
-    const result = await Promise.race([webHelperResult, webHelperTimeout]);
-
-    if (result) {
-      this.logger.log(`[jarvis:auto_search] OK WebHelper (${result.length} chars)`);
-      return result;
-    }
-
-    // 3. Sin resultados — omitir Playwright (demasiado lento, target <60s total)
-    this.logger.log(`[jarvis:auto_search] WebHelper vacío → sin resultados`);
-    return null;
-  }
-
-  /**
-   * Mapea un Domain del DomainRouter a una categoría de SourceRegistry.
-   */
-  private domainToCategory(domain: string): string | undefined {
-    const map: Record<string, string> = {
-      SPORTS: 'deportes',
-      LOCAL_NEWS: 'noticias',
-      NATIONAL_NEWS: 'noticias',
-      POLITICS: 'noticias',
-      AI: 'ia',
-      AI_PAPERS: 'academic_ai',
-      PROGRAMMING: 'tecnologia',
-      DEVELOPMENT: 'desarrollo',
-      SCIENCE: 'ciencia',
-      TECHNOLOGY: 'tecnologia',
-      MUSIC: 'musica',
-      MOVIES_TV: 'entretenimiento',
-      MYSTERY: 'misterios',
-      ECONOMY: 'noticias',
-      GOVERNMENT_LOCAL: 'gobierno',
-      REFERENCE: 'referencia',
-      PLANTS: 'referencia',
-      MATH: 'academic_math',
-      PHYSICS: 'academic_physics',
-      ASTRONOMY: 'academic_astronomy',
-      WEB_DOCS: 'academic_dev',
-    };
-    return map[domain];
-  }
-
-  /**
-   * Versión mejorada de autoWebSearch que acepta fuentes sugeridas por el DomainRouter.
-   * Las fuentes del DomainRouter tienen prioridad sobre el caché genérico.
-   */
-  private async autoWebSearchWithSources(
-    query: string,
-    category?: string,
-    suggestedSources?: string[],
-  ): Promise<string | null> {
-    // Si hay fuentes específicas del DomainRouter, scrapear directamente
-    if (suggestedSources && suggestedSources.length > 0) {
-      this.logger.log(
-        `[domain_search] usando ${suggestedSources.length} fuentes dirigidas para "${query.slice(0, 60)}"`,
-      );
-
-      const sourceDefs = suggestedSources
-        .map((urlBase) => SourceRegistry.findByUrl(urlBase))
-        .filter(Boolean);
-
-      if (sourceDefs.length > 0) {
-        const scrapeResults = await Promise.allSettled(
-          sourceDefs.slice(0, 3).map((src) => {
-            const searchUrl = SourceRegistry.buildSearchUrl(src!, query);
-            const targetUrl = searchUrl || src!.urlBase;
-            return WebHelper.scrapeUrlWithSelectors(targetUrl, query, src!);
-          }),
-        );
-
-        const useful: string[] = [];
-        for (const r of scrapeResults) {
-          if (r.status === 'fulfilled' && r.value && r.value.length > 150) {
-            useful.push(r.value);
-            if (useful.length >= 2) break;
-          }
-        }
-
-        if (useful.length > 0) {
-          this.logger.log(`[domain_search] ${useful.length} resultados de fuentes dirigidas`);
-          return useful.join('\n\n---\n\n');
-        }
-        this.logger.log(`[domain_search] fuentes dirigidas vacías → fallback autoWebSearch`);
-      }
-    }
-
-    // Fallback al flujo original con caché
-    return this.autoWebSearch(query, category);
-  }
-
-  /**
-   * Enriquece la query con fecha/localidad para categorías que necesitan datos actuales.
-   * Esto mejora significativamente los resultados de DuckDuckGo para noticias.
-   */
-  private enrichQueryForCategory(query: string, category?: string): string {
-    if (!category) return query;
-
-    // Detectar localidad en la query original
-    const n = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const mentionsParana = /parana|entre rios|litoral/.test(n);
-    const mentionsArgentina = /argentin/.test(n);
-
-    // Para noticias: construir query limpia si es genérica o enriquecerla si es específica
-    if (category === 'noticias') {
-      const isGeneric = /^(noticias?|novedades?|actualidad|que paso|que hay de nuevo|noticias de hoy|ultimas noticias)[\s?¿!¡.]*$/i.test(n.trim());
-      if (isGeneric) {
-        const localidad = mentionsParana ? 'Paraná Entre Ríos'
-          : mentionsArgentina ? 'Argentina'
-            : '';
-        return `noticias ${localidad} hoy`.replace(/\s+/g, ' ').trim();
-      }
-      // No es genérico, mantener el término de búsqueda y agregar 'noticias' / 'hoy' si no están
-      let enriched = query;
-      if (!/noticia/i.test(n)) enriched = `noticias ${enriched}`;
-      if (!/hoy|actual|reciente/i.test(n)) enriched = `${enriched} hoy`;
-      return enriched;
-    }
-
-    if (category === 'gobierno') {
-      const isGeneric = /^(gobierno|autoridades|quien gobierna|gestion municipal)[\s?¿!¡.]*$/i.test(n.trim());
-      if (isGeneric) {
-        const localidad = mentionsParana ? 'Paraná Entre Ríos' : 'Argentina';
-        return `noticias gobierno ${localidad} hoy`.trim();
-      }
-      return query;
-    }
-
-    // Deportes: conservar query original pero agregar fecha actual
-    const now = new Date();
-    const today = `${now.getDate()} de ${now.toLocaleDateString('es-AR', { month: 'long' })} de ${now.getFullYear()}`;
-    if (/\bhoy\b/i.test(query)) return query.replace(/\bhoy\b/gi, today);
-    return `${query} ${today}`;
-  }
-  /**
-   * Detecta la categoría de una pregunta para optimizar caché.
-   * Esto acelera las consultas frecuentes usando fuentes priorizadas.
-   */
-  private detectCategory(message: string): string | undefined {
-    const n = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    // ⚠️ ASTROLOGÍA YA NO ES CATEGORÍA WEB — se maneja con AstrologyTool (intent ASTROLOGY)
-    // Las consultas astrológicas son detectadas por IntentRouter y enviadas al tool de cálculo
-
-    // Gobierno local — solo cuando se pregunta EXPLÍCITAMENTE por autoridades/gestión
-    if (/(intendent|gobernador|concejal|concejo|municipalidad|quien gobierna|autoridades|gobierno de parana|gestion municipal)/i.test(n)) {
-      return 'gobierno';
-    }
-
-    // ── NOTICIAS — va ANTES que Paraná para evitar el falso match gobierno ──
-    // "noticias de Paraná hoy" → noticias (NO gobierno)
-    if (/(noticia|novedades|actualidad|resumen|breaking|informa|titulo|tapa|diario|periodico|prensa)/i.test(n) && n.length > 10) {
-      return 'noticias';
-    }
-
-    // Paraná (ciudad) — contexto local cuando NO es noticias ni gobierno
-    if (/(parana\b|ciudad de parana|parque urquiza|costanera|puerto viejo)/i.test(n)) {
-      // Si menciona río → geografía/noticias generales
-      if (/(rio|caudal|nivel|afluente)/i.test(n)) return 'noticias';
-      // Cualquier otra consulta sobre la ciudad → El Once + Mi Paraná
-      return 'noticias';
-    }
-
-    // Deportes
-    if (/(futbol|gol|partido|seleccion|equipo|jugador|campeon|copa|liga|torneo|clasifico|gano|perdio|empato)/i.test(n)) {
-      return 'deportes';
-    }
-
-    // Clima
-    if (/(clima|temperatura|lluvia|calor|frio|pronostico|meteorolog|tiempo \(clima\)|despejado|nublado)/i.test(n)) {
-      return 'clima';
-    }
-
-    // Noticias (segunda guarda — queries cortos con "hoy", "reciente", etc.)
-    if (/(ultimo|ultima|hoy|reciente)/i.test(n) && n.length > 15) {
-      return 'noticias';
-    }
-
-    // ── IA — ANTES que tecnología genérica para capturar queries de ML/LLM/AI ──
-    // "qué pasó hoy en inteligencia artificial", "nuevo modelo de OpenAI", "ChatGPT update"
-    if (/(\bia\b|inteligencia artificial|machine learning|deep learning|llm\b|openai|chatgpt|gemini\b|claude\b|llama\b|gpt-|gpt4|gpt3|copilot|midjourney|stable diffusion|diffusion model|modelo de lenguaje|red neuronal|transformer\b|hugging face|huggingface)/i.test(n)) {
-      return 'ia';
-    }
-
-    // ── DESARROLLO — preguntas sobre frameworks, librerías, lenguajes, GitHub ──
-    // "novedades en NestJS", "nueva versión de React", "qué hay en npm esta semana"
-    if (/(nestjs|nodejs|node\.js|typescript|javascript|react\b|next\.js|nextjs|vue\b|angular\b|svelte|python\b|rust\b|golang|deno\b|bun\b|npm\b|yarn\b|pnpm|webpack|vite\b|rollup|esbuild|prisma\b|docker\b|kubernetes|k8s|github\b|gitlab|git\b|api rest|graphql|websocket|backend|frontend|framework|libreria|biblioteca|sdk\b|cli\b|dev\.to|medium\.com)/i.test(n)) {
-      return 'desarrollo';
-    }
-
-    // Tecnología & gadgets — lo que queda (hardware, electrónica, empresa tech)
-    if (/(tecnologia|software|hardware|gadget|smartphone|celular|tablet|laptop|procesador|chip\b|apple\b|google\b|microsoft\b|meta\b|amazon\b|app\b|aplicacion)/i.test(n)) {
-      return 'tecnologia';
-    }
-
-    // Ciencia
-    if (/(ciencia|investigacion|estudio|descubr|scientist|paper|journal|nature|conicet)/i.test(n)) {
-      return 'ciencia';
-    }
-
-    // Matemáticas
-    if (/(matematica|ecuacion|teorema|demostrac|calculo|algebra|geometria|topologia)/i.test(n)) {
-      return 'matematicas';
-    }
-
-    // Física
-    if (/(fisica|cuantic|particula|cern|relatividad|energia|cosmos|astrofisica)/i.test(n)) {
-      return 'fisica';
-    }
-
-    // Música
-    if (/(musica|cancion|album|artista|concierto|festival|spotify|billboard)/i.test(n)) {
-      return 'musica';
-    }
-
-    // Entretenimiento (películas, series, MCU)
-    if (/(pelicula|film|cine|actor|actriz|director|oscar|estreno|imdb|marvel|mcu|serie)/i.test(n)) {
-      return 'entretenimiento';
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Ejecuta una búsqueda dirigida a un sitio específico.
-   * Si la query pide noticias/titulares, usa scrapeHeadlines para extraer
-   * titulares reales en lugar de texto genérico del cuerpo.
-   */
-  private async executeSiteSearch(site: string, query: string): Promise<string | null> {
-    this.logger.log(`[jarvis:site_search] buscando en ${site}: "${query.slice(0, 60)}"`);
-
-    const isHeadlinesQuery = /\b(noticias|titulares|novedades|que paso|que hay|actualidad|portada|principales|importantes|recientes|hoy)\b/i.test(query);
-
-    // 1. Si pide noticias/titulares → extraer titulares reales primero
-    if (isHeadlinesQuery) {
-      const source = SourceRegistry.getAll().find(s => s.urlBase.includes(site));
-      const targetUrl = source?.urlBase ?? `https://${site}`;
-      const limit = this.extractNumberFromQuery(query) ?? 8;
-
-      const headlines = await WebHelper.scrapeHeadlines(targetUrl, limit, source);
-      if (headlines) {
-        this.logger.log(`[jarvis:site_search] titulares OK de ${site}`);
-        return headlines;
-      }
-      this.logger.warn(`[jarvis:site_search] sin titulares de ${site}, intentando scraping general`);
-    }
-
-    // 2. Intentar caché
-    try {
-      const source = SourceRegistry.getAll().find(s => s.urlBase.includes(site));
-      const category = source?.category ?? 'noticias';
-      const siteQuery = `site:${site} ${query}`;
-
-      const cachePromise = this.contentCache.fetchRelevantContent(siteQuery, category, 2);
-      const cacheTimeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('cache timeout 15s')), 15_000),
-      );
-      const cached = await Promise.race([cachePromise, cacheTimeout]);
-
-      if (cached && cached.length > 0) {
-        return cached
-          .map((r, i) => {
-            const sourceLabel = r.fromCache ? '💾 CACHÉ' : '🌐 WEB';
-            const title = r.title ? `**${i + 1}. ${r.title}**` : `**${i + 1}. Resultado**`;
-            return `${title} ${sourceLabel}\n🔗 ${r.url}\n\n${r.content.slice(0, 2000)}`;
-          })
-          .join('\n\n---\n\n');
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[jarvis:site_search] error en caché: ${msg}`);
-    }
-
-    // 3. Fallback: WebHelper
-    const webHelperTimeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 25_000));
-    const result = await Promise.race([
-      WebHelper.search(`site:${site} ${query}`, undefined, true),
-      webHelperTimeout,
-    ]);
-
-    return result ?? null;
-  }
-
-  /**
-   * Extrae un número de una query. Ej: "dame 6 noticias" → 6
-   */
-  private extractNumberFromQuery(query: string): number | null {
-    const match = query.match(/\b(\d+)\b/);
-    return match ? Math.min(parseInt(match[1], 10), 15) : null;
-  }
-
-  /**
-   * Detecta si la pregunta requiere información de eventos actuales/recientes.
-   * Estas preguntas NO deben responderse sin evidencia web — el LLM inventaría.
-   */
-  private isCurrentEventQuery(message: string): boolean {
-    const n = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    return /(hoy|ayer|esta semana|esta noche|ahora|actualmente|reciente|noticias|novedad|ultimo|ultima|ocurrio|paso hoy|que hay|resultado|partido|gol|marcador|score|precio actual|cotizacion|dolar hoy|quedo|gano|perdio|empato|clasifico|quien gano|como salio|que paso con|revisa|dame las noticias|titulares)/.test(n);
-  }
-
-  /**
-   * Construye un mensaje honesto cuando no hay evidencia web disponible.
-   * Evita que el LLM invente noticias, resultados o eventos actuales.
-   */
-  private buildNoEvidenceMessage(query: string, site?: string): string {
-    const now = new Date();
-    const hora = now.toLocaleTimeString('es-AR', {
-      hour: '2-digit', minute: '2-digit',
-      timeZone: 'America/Argentina/Buenos_Aires',
-    });
-
-    const siteHint = site
-      ? `Intenté buscar en **${site}** pero no pude obtener contenido en este momento.`
-      : `Intenté buscar en las fuentes disponibles pero no obtuve resultados verificados.`;
-
-    return [
-      `⚠️ No tengo datos verificados para responder esto (${hora} hs).`,
-      ``,
-      siteHint,
-      ``,
-      `No voy a inventar información sobre eventos actuales. Podés:`,
-      site ? `- Consultar directamente: https://${site}` : `- Reformular la pregunta o intentar en un momento`,
-      `- Volver a preguntarme en unos segundos`,
-    ].join('\n');
-  }
-
-  private isRepeatRequest(message: string): boolean {
-    const normalized = message
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-
-    return /\b(repiti[rt]|repeti[rt]|repite|repitelo|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat|say it again)\b/.test(normalized);
-  }
-
-  private isVoiceRequest(message: string): boolean {
-    const normalized = message.toLowerCase();
-    return /voz|audio|habl(a|e|o)|en voz alta|voz alta/.test(normalized);
-  }
-
-  /** Guía de comandos rápida — se activa escribiendo "h" */
-  private buildHelpMessage(): string {
-    return [
-      `📋 **Guía de comandos — JarBees**`,
-      ``,
-      `**AGENDA / PENDIENTES**`,
-      `  Ver lista         →  \`lista de pendientes\``,
-      `  Agregar           →  \`agregar <tarea> a mis pendientes\``,
-      `                       \`pendiente: <tarea>\``,
-      `  Borrar por número →  \`borra el 2\``,
-      `  Borrar por nombre →  \`borra el pendiente <nombre>\``,
-      `  Borrar todo       →  \`borra todos los pendientes\``,
-      `  Editar por número →  \`cambia el 2 a <nuevo texto>\``,
-      `  Editar por nombre →  \`edita <nombre> por <nuevo texto>\``,
-      `  Completar         →  \`completé el pendiente 1\``,
-      ``,
-      `**BIBLIOTECA / DOCUMENTOS / PDFs**`,
-      `  Ver documentos        →  \`mis documentos\`  /  \`biblioteca\``,
-      `  Resumen por categoría →  \`resumen sobre <tema>\``,
-      `                           \`resumen sobre plantas medicinales\``,
-      `                           \`qué dicen mis PDFs de medicina\``,
-      `                           \`información sobre desarrollo\``,
-      `  Resumen de documento  →  \`resumen de '<título>'\``,
-      `                           \`resumen de 'Manual de Plantas'\``,
-      `                           \`puntos clave de 'TypeScript Handbook'\``,
-      `                           \`dame 10 items de 'Guía de NestJS'\``,
-      `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
-      `                           \`según mis PDFs, <pregunta>\``,
-      `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
-      `  Eliminar por título   →  \`eliminar documento '<título>'\``,
-      `                           \`borrar el libro 'Botanica Oculta'\``,
-      `                           \`eliminar el PDF 'TypeScript Handbook'\``,
-      ``,
-      `**BÚSQUEDA WEB**`,
-      `  Noticias generales     →  \`últimas noticias\``,
-      `  Sitio específico       →  \`dame 6 noticias de elonce\``,
-      `                             \`dame noticias de infobae\``,
-      `  Deportes               →  \`resultado del partido de Argentina\``,
-      ``,
-      `**MODO DE BÚSQUEDA / INTERNET**`,
-      `  Cambiar modo      →  \`modo offline\`  /  \`modo local first\``,
-      `                       \`modo hybrid\`   /  \`modo web first\``,
-      ``,
-      `**CALENDARIO Y TAREAS GOOGLE**`,
-      `  Ver eventos hoy        →  \`qué tengo en el calendario hoy\``,
-      `  Ver agenda del día     →  \`agenda del lunes\``,
-      `  Ver tareas pendientes  →  \`mis tareas de Google\``,
-      `  Detectar conflictos    →  \`tengo conflictos el lunes?\``,
-      ``,
-      `**GMAIL**`,
-      `  Correos importantes    →  \`correos importantes\`  /  \`mis emails\``,
-      `  Correos de hoy         →  \`correos de hoy\``,
-      `  Buscar correo          →  \`busca en mi correo <tema>\``,
-      `  Crear borrador         →  \`redactá un email a nombre@mail.com sobre <asunto>\``,
-      ``,
-      `**GOOGLE DRIVE**`,
-      `  Archivos recientes     →  \`mis archivos de Drive\``,
-      `  Buscar archivo         →  \`busca en Drive <nombre>\``,
-      `  Sincronizar con RAG    →  \`sincronizá <URL de Drive>\``,
-      ``,
-      `**YOUTUBE**`,
-      `  Buscar videos          →  \`busca videos de <tema>\``,
-      `  Info de un video       →  \`info de https://youtube.com/watch?v=ID\``,
-      ``,
-      `**MEMORIA**`,
-      `  Guardar dato           →  \`recorda que mi proyecto se llama JarBees\``,
-      ``,
-      `**REPETIR ÚLTIMA RESPUESTA**`,
-      `  \`repetir\`  /  \`repetí\`  /  \`dilo de nuevo\``,
-      ``,
-      `**IMÁGENES / OCR** *(adjuntá un archivo)*`,
-      `  Analizar error         →  subí la captura + escribí \`¿qué error es este?\``,
-      `  OCR rápido             →  subí imagen + modo \`ocr\``,
-      ``,
-      `**DIAGNÓSTICO Y VALIDACIÓN RAG**`,
-      `  Estado de la biblioteca  →  \`diagnóstico biblioteca\``,
-      `                               \`estado del conocimiento\``,
-      `  Validar que el RAG        →  \`test de conocimiento\``,
-      `  aprende de tus PDFs           \`test de conocimiento 5\` (5 pruebas)`,
-      `  Ver qué chunks recupera  →  \`probe: <tu pregunta>\``,
-      `                               \`probe: qué dice sobre las plantas?\``,
-      ``,
-      `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
-      ``,
-      `📄 **Nota sobre PDFs:** Al subir documentos/PDFs, la categoría se detecta`,
-      `    automáticamente del contenido. Podés preguntar por temas específicos`,
-      `    y JarBees combinará información de todos los documentos relacionados.`,
-    ].join('\n');
-  }
-
-  /**
-   * Extrae el título del documento a eliminar del mensaje del usuario.
-   * Detecta: "eliminar documento 'X'", "borrar el PDF 'X'", "borra el libro X", etc.
-   */
-  private extractDeleteDocumentRequest(message: string): string | null {
-    const pattern = /(?:elimina(?:r)?|borra(?:r)?|borrar|remover|quitar)\s+(?:el\s+)?(?:documento|pdf|libro|archivo)\s+['"]?(.+?)['"]?$/i;
-    const match = message.trim().match(pattern);
-    if (match && match[1]) {
-      return match[1].trim().replace(/['".]+$/, '').trim();
-    }
-    return null;
-  }
-
-  /**
-   * Elimina un documento por título (fuzzy match).
-   */
-  private async deleteDocumentByTitle(title: string): Promise<string> {
-    const candidates = await this.documentRepo.searchDocuments(title, 5);
-
-    if (candidates.length === 0) {
-      return `❌ No encontré ningún documento con el título "${title}".\n\nUsá \`mis documentos\` para ver los títulos disponibles.`;
-    }
-
-    // Match exacto tiene prioridad
-    const exact = candidates.find(
-      d => d.title.toLowerCase().trim() === title.toLowerCase().trim(),
-    );
-    const target = exact ?? candidates[0];
-
-    await this.documentRepo.deleteDocument(target.id);
-
-    return `🗑️ Documento eliminado correctamente.\n\n  • **Título:** ${target.title}\n  • **Categoría:** ${target.category ?? 'sin categoría'}\n  • **ID:** ${target.id}`;
-  }
-
-  /** Elimina documentos duplicados, conservando el más reciente de cada título */
-  private async deduplicateDocuments(): Promise<string> {
-    const groups = await this.documentRepo.findDuplicates();
-
-    if (groups.length === 0) {
-      return `✅ Tu biblioteca no tiene documentos duplicados.`;
-    }
-
-    const allDupeIds = groups.flatMap((g) => g.duplicates);
-    const deleted = await this.documentRepo.deleteManyDocuments(allDupeIds);
-
-    const lines: string[] = [
-      `🧹 **Duplicados eliminados: ${deleted} documento${deleted !== 1 ? 's' : ''}**`,
-      ``,
-    ];
-    for (const g of groups) {
-      lines.push(`  • "${g.title}" — se eliminaron ${g.duplicates.length} copia${g.duplicates.length !== 1 ? 's' : ''} (conservado id:${g.keeper})`);
-    }
-    lines.push(``, `✅ Biblioteca limpia.`);
-    return lines.join('\n');
-  }
-
-  /** Lista las categorías con conteo de documentos y comandos sugeridos */
-  private async buildCategoriesMessage(): Promise<string> {
-    const stats = await this.documentRepo.getLibraryStats();
-
-    if (stats.totalDocs === 0) {
-      return `📁 No tenés categorías aún — tu biblioteca está vacía.\n\nSubí un PDF y la categoría se detecta automáticamente.`;
-    }
-
-    const lines = [
-      `📁 **Tus categorías** (${stats.totalDocs} documento${stats.totalDocs !== 1 ? 's' : ''} · ${stats.totalChunks} secciones indexadas)`,
-      ``,
-    ];
-
-    for (const cat of stats.byCategory) {
-      const name = cat.category ?? 'sin categoría';
-      const count = cat._count.id;
-      lines.push(`  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
-      lines.push(`     → \`resumen sobre ${name}\``);
-    }
-
-    lines.push(``);
-    lines.push(`💡 Podés pedir:`);
-    lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
-    lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
-
-    return lines.join('\n');
-  }
-
-  /**
-   * Extrae dos títulos de una solicitud de comparación.
-   * Patrones:
-   *   "resumen de 'A' relaciona 'B'"
-   *   "compara 'A' con 'B'"
-   *   "relaciona 'A' y 'B'"
-   *   "diferencias entre 'A' y 'B'"
-   */
-  private extractCompareRequest(message: string): { titleA: string; titleB: string } | null {
-    const patterns = [
-      // "resumen de 'A' relaciona 'B'" o "resumen 'A' relaciona 'B'"
-      /resumen\s+(?:de\s+)?['"]([^'"]{3,})['"]\s+(?:relaciona(?:do)?\s+(?:con)?|vs\.?|versus)\s+['"]([^'"]{3,})['"]/i,
-      // "compara 'A' con 'B'"
-      /compara(?:r)?\s+['"]([^'"]{3,})['"]\s+(?:con|y|vs\.?)\s+['"]([^'"]{3,})['"]/i,
-      // "relaciona 'A' y 'B'"
-      /relaciona(?:r)?\s+['"]([^'"]{3,})['"]\s+(?:con|y)\s+['"]([^'"]{3,})['"]/i,
-      // "diferencias entre 'A' y 'B'"
-      /diferencia(?:s)?\s+entre\s+['"]([^'"]{3,})['"]\s+y\s+['"]([^'"]{3,})['"]/i,
-      // sin comillas: "compara A con B" (hasta 6 palabras por título)
-      /(?:compara(?:r)?|relaciona(?:r)?)\s+([\w\s]{3,40}?)\s+(?:con|y|vs\.?)\s+([\w\s]{3,40}?)$/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = message.trim().match(pattern);
-      if (match?.[1] && match?.[2]) {
-        return {
-          titleA: match[1].trim(),
-          titleB: match[2].trim(),
-        };
-      }
-    }
-    return null;
-  }
-
-  /** Genera y formatea el mensaje de comparación entre dos documentos */
-  private async buildCompareResponse(titleA: string, titleB: string): Promise<string> {
-    try {
-      const result = await this.documentCompareService.compare(titleA, titleB);
-
-      return [
-        `🔀 **Comparación: "${result.titleA}" ↔ "${result.titleB}"**`,
-        ``,
-        result.comparison,
-        ``,
-        `💡 Podés profundizar con:`,
-        `  \`resumen de '${result.titleA}'\``,
-        `  \`resumen de '${result.titleB}'\``,
-      ].join('\n');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      return `❌ ${msg}`;
-    }
-  }
-
-  /** Lista los documentos de la biblioteca agrupados por categoría */
-  private async buildLibraryMessage(): Promise<string> {
-    const docs = await this.documentRepo.getMostRecentDocuments(50);
-
-    if (!docs || docs.length === 0) {
-      return `📚 Tu biblioteca está vacía.\n\nSubí un PDF desde el chat para empezar a construirla.`;
-    }
-
-    // Agrupar por categoría
-    const byCategory = new Map<string, typeof docs>();
-    for (const doc of docs) {
-      const cat = (doc as any).category ?? 'sin categoría';
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push(doc);
-    }
-
-    const lines: string[] = [`📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
-
-    for (const [category, items] of byCategory.entries()) {
-      lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
-      for (const doc of items) {
-        const chunks = (doc as any)._count?.chunks ?? '?';
-        const used   = (doc as any).timesUsed > 0 ? ` · usado ${(doc as any).timesUsed}x` : '';
-        const tipo = (doc as any).category === 'web' ? 'web' : 'pdf';
-        lines.push(`  • ${doc.title}  [${tipo}] - CATEGORÍA: "${((doc as any).category ?? 'sin categoría').toUpperCase()}"${used ? `  _(${used.trim()})_` : ''}`);
-      }
-      lines.push(``);
-    }
-
-    lines.push(`💡 Podés preguntar:`);
-    lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
-    lines.push(`  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``);
-    lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
-    lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
-
-    return lines.join('\n');
-  }
-
-  /**
-   * Detecta si el usuario pide un resumen de un documento específico.
-   * Patrones soportados:
-   *   - "resumen de 'Manual de Plantas Medicinales'"
-   *   - "resumen del libro 'TypeScript Handbook'"
-   *   - "puntos clave de 'Guía de NestJS'"
-   *   - "dame los 10 items de 'nombre del libro'"
-   *   - "dame 5 puntos del documento 'título'"
-   *   - "lo más importante de 'nombre'"
-   */
-  private extractDocumentSummaryRequest(
-    message: string,
-  ): { title: string; maxItems: number } | null {
-    const trimmed = message.trim();
-
-    // Normalizar quitando tildes para mejor matching
-    const normalized = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-    // Palabras que NO deben iniciar un título (son preposiciones / artículos / comandos genéricos)
-    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
-
-    // Extraer número de items si se especifica ("dame los 10 puntos", "5 items")
-    const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
-    const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
-
-    // ── Patrón 1: título entre comillas simples o dobles ──────────────────────
-    //   "resumen de 'Manual de Plantas'"
-    //   "puntos clave de \"TypeScript Handbook\""
-    const quotedMatch = trimmed.match(
-      /(?:resumen|puntos\s*clave|items?\s*(?:mas|más)?\s*(?:relevantes?|importantes?)?|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))[\s\S]*?['""]([^'""]{3,})['""]?/i,
-    );
-    if (quotedMatch?.[1]?.trim()) {
-      return { title: quotedMatch[1].trim(), maxItems };
-    }
-
-    // ── Patrón 2: "resumen del libro/pdf/documento <título>" ─────────────────
-    //   "resumen del libro Manual de Plantas Medicinales"
-    const docTypeMatch = trimmed.match(
-      /(?:resumen|puntos\s*clave|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?))\s*(?:de(?:l)?\s*(?:libro|pdf|documento|doc|archivo))\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,80})/i,
-    );
-    if (docTypeMatch?.[1]?.trim()) {
-      return { title: docTypeMatch[1].trim(), maxItems };
-    }
-
-    // ── Patrón 3: "resumen de/del/sobre <título>" (con preposición explícita) ─
-    //   "resumen de Manual de Plantas Medicinales"
-    const withPrepMatch = trimmed.match(
-      /^(?:resumen|puntos\s*clave|lo\s*(?:mas|más)?\s*importante)\s+(?:de(?:l)?|sobre)\s+(.{3,80})/i,
-    );
-    if (withPrepMatch?.[1]?.trim()) {
-      const title = withPrepMatch[1].trim();
-      if (!GENERIC_STARTERS.test(title)) {
-        return { title, maxItems };
-      }
-    }
-
-    // ── Patrón 4: "resumen <título>" SIN preposición ──────────────────────────
-    //   "Resumen Carta astral Ignacio Gabriel Fernández"
-    //   "resumen Manual de Plantas Medicinales"
-    // EXCLUYE: "resumen sobre ...", "resumen de ...", "resumeme ...", etc.
-    const directMatch = trimmed.match(
-      /^resumen\s+(?!(?:de(?:l)?|sobre|los|las|un|una|el|la|mis|tus|sus|me|nos|les|le|ya|si|no|por|en|para|con|sin|que)\s)(.{4,80})/i,
-    );
-    if (directMatch?.[1]?.trim()) {
-      const title = directMatch[1].trim();
-      const words = title.split(/\s+/);
-      // Al menos 2 palabras y no un tema genérico de una sola palabra
-      if (words.length >= 2) {
-        return { title, maxItems };
-      }
-    }
-
-    // ── Patrón 5: mensaje completo == título del documento ────────────────────
-    // El usuario escribe exactamente el título guardado en la DB sin comandos
-    // Condiciones: 2-10 palabras, al menos una con mayúscula, no empieza con verbo de comando
-    const COMMAND_STARTERS = /^(?:busca|buscame|buscá|dame|dime|mostrame|muestra|explica|explicame|describe|describime|analiza|que dice|que dicen|qué dice|qué dicen|cuanto|cuánto|cuando|cuándo|donde|dónde|como|cómo|por qué|porque|cual|cuál|tiene|hay|existe)\b/i;
-
-    // Saludos y frases conversacionales que NUNCA deben ser títulos
-    const CONVERSATIONAL = /^(?:hola|buenas|buenos|buen|hey|hi|hello|saludos|que tal|qué tal|como estas|cómo estás|como anda|cómo va|que onda|qué onda|gracias|de nada|ok|dale|si|no|claro|perfecto|genial|excelente|entendido|listo|chau|adios|hasta|nos vemos|bye|todo bien|bien gracias|muy bien|re bien)\b/i;
-
-    const wordCount = trimmed.split(/\s+/).length;
-    if (
-      wordCount >= 2 &&
-      wordCount <= 10 &&
-      !COMMAND_STARTERS.test(trimmed) &&
-      !CONVERSATIONAL.test(trimmed) &&
-      !/[?¿!¡]/.test(trimmed) // mensajes con signos de pregunta/exclamación NO son títulos
-    ) {
-      // Tiene alguna mayúscula (indica nombre propio / título)
-      const hasUpperCase = /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
-      // No empieza con minúscula genérica (ej: "plantas medicinales")
-      const startsWithUpper = /^[A-ZÁÉÍÓÚÑ\d]/.test(trimmed);
-      if (hasUpperCase && startsWithUpper && !GENERIC_STARTERS.test(trimmed)) {
-        return { title: trimmed, maxItems };
-      }
-    }
-
-    return null;
-  }
-
-
-  /**
-   * Genera y formatea el mensaje de respuesta con el resumen de un documento.
-   */
-  private async buildDocumentSummaryResponse(
-    titleOrId: string | number,
-    maxKeyPoints = 10,
-  ): Promise<string> {
-    try {
-      const result = await this.documentSummaryService.generateDocumentSummary(
-        titleOrId,
-        maxKeyPoints,
-      );
-
-      const lines: string[] = [
-        `📄 **${result.title}**`,
-        result.category ? `📁 Categoría: ${result.category}` : '',
-        `📊 ${result.wordCount.toLocaleString('es-AR')} palabras · ${result.chunkCount} secciones`,
-        ``,
-        `## Resumen`,
-        result.summary,
-        ``,
-        `## Puntos Clave (top ${result.keyPoints.length})`,
-      ];
-
-      result.keyPoints.forEach((point, i) => {
-        lines.push(`${i + 1}. ${point}`);
-      });
-
-      lines.push(``);
-      lines.push(`💡 Podés profundizar con: _"busca en mis documentos <tema>"_`);
-
-      return lines.filter(l => l !== undefined).join('\n');
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      // NotFoundException (documento no encontrado) → mensaje amigable
-      if (msg.includes('No encontré')) {
-        return [
-          `⚠️ ${msg}`,
-          ``,
-          `💡 Tip: usá comillas para el título exacto:`,
-          `   \`resumen de 'Nombre exacto del documento'\``,
-          ``,
-          `O revisá tus documentos con: \`mis documentos\``,
-        ].join('\n');
-      }
-      this.logger.error(`[document-summary] error: ${msg}`);
-      return `⚠️ No pude generar el resumen en este momento. Intentá de nuevo.`;
-    }
-  }
-
-  async findRelevantSkills(query: string) {
-    return this.skillRegistry.findRelevant(query, 5);
-  }
-
-  async listTools() {
-    return this.toolRegistry.getEnabledTools();
-  }
-
-  // ── Session Summary ─────────────────────────────────────────────────────────
 
   private async updateSessionSummaryIfNeeded(sessionId: string): Promise<void> {
     const messages = await this.conversationRepo.getBySession(sessionId, 100);
@@ -2007,9 +645,29 @@ export class JarvisService {
       });
       await this.sessionSummaryRepo.upsert(sessionId, response.content);
       this.logger.log(`Resumen de sesión actualizado: ${sessionId}`);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.warn(`No se pudo generar resumen: ${error.message}`);
     }
+  }
+
+  async getIdentity() {
+    return this.jarvisIdentity.getIdentity();
+  }
+
+  async getCapabilities() {
+    return this.capabilitiesService.getCapabilities();
+  }
+
+  async listSkills() {
+    return this.skillRegistry.getAllSkills();
+  }
+
+  async findRelevantSkills(query: string) {
+    return this.skillRegistry.findRelevant(query, 5);
+  }
+
+  async listTools() {
+    return this.toolRegistry.getEnabledTools();
   }
 
   // ── Memoria ─────────────────────────────────────────────────────────────────
@@ -2046,91 +704,6 @@ export class JarvisService {
 
   async searchDocuments(query: string) {
     return this.documentRepo.searchDocuments(query);
-  }
-
-  /**
-   * Detecta si el usuario está pidiendo un resumen por categoría y extrae la categoría.
-   * Ejemplos:
-   * - "resumen sobre plantas medicinales" → plantas_medicinales
-   * - "qué dicen mis documentos de medicina" → medicina
-   * - "información sobre desarrollo" → desarrollo
-   * - "tenemos información en documentos sobre tecnología?" → tecnologia
-   * - "hay algo de agricultura en mis PDFs?" → agricultura
-   */
-  private detectCategorySummaryRequest(message: string): { isRequest: boolean; category?: string; query?: string } {
-    const normalized = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-    // Patrones para detectar resumen por categoría
-    const patterns = [
-      // "resumen sobre X", "información sobre X"
-      /(?:resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
-      
-      // "documentos sobre X", "PDFs de X"
-      /(?:documentos?|pdfs?|archivos?)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
-      
-      // "busca en X", "mostrame de X"
-      /(?:busca|buscar|mostrame|muestra)\s+(?:en|de)\s+([a-z_\s]+)/i,
-      
-      // "tenemos/hay/existe información EN documentos SOBRE X"
-      /(?:tenemos|hay|existe|tenes)\s+(?:algo|informacion|info|datos?|contenido)?\s*(?:en|de)?\s*(?:mis|los|tus)?\s*(?:documentos?|pdfs?|archivos?|biblioteca)?\s+(?:sobre|de|acerca de|en)\s+([a-z_\s]+)/i,
-      
-      // "mis documentos de X", "en mis PDFs de X"
-      /(?:mis|los|tus)\s+(?:documentos?|pdfs?|archivos?)\s+(?:de|sobre)\s+([a-z_\s]+)/i,
-      
-      // "que tengo sobre X", "que hay de X"
-      /(?:que|cual)\s+(?:tengo|hay|existe|tenes|tenemos)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
-      
-      // "según mis documentos de X"
-      /(?:segun|en base a)\s+(?:mis|los)?\s*(?:documentos?|pdfs?)\s+(?:de|sobre)\s+([a-z_\s]+)/i,
-    ];
-
-    for (const pattern of patterns) {
-      const match = normalized.match(pattern);
-      if (match && match[1]) {
-        let categoryRaw = match[1].trim();
-        
-        // Remover palabras comunes al final que no son parte de la categoría
-        categoryRaw = categoryRaw
-          .replace(/\s+(en|de|sobre|con|sin|para|por|como|que|cual|donde|cuando|porque).*$/i, '')
-          .trim();
-        
-        // Normalizar la categoría detectada
-        const category = categoryRaw
-          .replace(/\s+/g, '_')
-          .replace(/[^a-z_]/g, '');
-
-        // Validar que la categoría no sea demasiado corta o una palabra común
-        if (category.length < 3 || ['mis', 'los', 'tus', 'una', 'ese', 'esto', 'eso'].includes(category)) {
-          continue;
-        }
-
-        // Extraer query específica si existe (ej: "resumen de plantas medicinales sobre propiedades")
-        const queryMatch = message.match(/(?:sobre|de|con)\s+([a-z\s]+)$/i);
-        const query = queryMatch && queryMatch[1].length > 3 ? queryMatch[1].trim() : undefined;
-
-        this.logger.log(`[category-detection] detectado: "${category}" de mensaje: "${message.slice(0, 60)}..."`);
-        return { isRequest: true, category, query };
-      }
-    }
-
-    return { isRequest: false };
-  }
-
-  /**
-   * Detecta si el usuario está pidiendo un resumen de un documento específico.
-   * Ejemplos:
-   * - "resumen de 'Manual de Plantas Medicinales'"
-   * - "resumen del documento TypeScript Handbook"
-   * - "dame los 10 puntos clave de 'Guía de NestJS'"
-   * - "puntos clave del PDF sobre agricultura"
-   */
-  private detectDocumentSummaryRequest(message: string): { isRequest: boolean; title?: string; maxKeyPoints?: number } {
-    // Reutilizar la misma lógica robusta de extractDocumentSummaryRequest
-    const extracted = this.extractDocumentSummaryRequest(message);
-    if (extracted) {
-      return { isRequest: true, title: extracted.title, maxKeyPoints: extracted.maxItems };
-    }
-    return { isRequest: false };
   }
 
   // ── Perfil ──────────────────────────────────────────────────────────────────
@@ -2200,4 +773,3 @@ export class JarvisService {
     return this.browserTool.search(query, limit);
   }
 }
-

@@ -28,7 +28,7 @@ export class TaskReminderService {
       const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
       if (byNumber) {
         const index = parseInt(byNumber[1], 10) - 1;
-        const tasks = await this.taskRepo.findPendingTasks(sessionId);
+        const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
         if (tasks[index]) {
           await this.taskRepo.deleteTask(tasks[index].id);
           return `🗑️ Se eliminó el pendiente: ${tasks[index].objective}`;
@@ -39,7 +39,7 @@ export class TaskReminderService {
       // Borrar por nombre: extraer qué viene después del comando de borrado
       const target = this.extractDeleteTarget(original);
       if (target) {
-        const tasks = await this.taskRepo.findPendingTasks(sessionId);
+        const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
         const match = tasks.find((task) =>
           task.objective.toLowerCase().includes(target.toLowerCase()),
         );
@@ -58,79 +58,10 @@ export class TaskReminderService {
       return '';
     }
 
-    // ── 2. LISTAR ───────────────────────────────────────────────────────────────
-    const listIntent = /\b(lista|listar|mostrar|ver|show|cuáles|cuales|tengo|dime|decime)\b/i.test(normalized);
-    if (listIntent && /\b(pendientes|tareas|recordatorios)\b/i.test(normalized)) {
-      const tasks = await this.taskRepo.findPendingTasks(sessionId);
-      if (!tasks.length) return 'No tenés pendientes guardados.';
-      const formatted = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
-      return `📋 Tus pendientes:\n${formatted}`;
-    }
-
-    // ── 3. EDITAR ────────────────────────────────────────────────────────────────
-    // "cambia el 2 a llamar al médico"
-    // "edita el pendiente comprar por comprar leche"
-    // "renombra el 1 a pagar factura"
-    const editIntent = /\b(editar|edita|edito|cambiar|cambia|cambio|modificar|modifica|modifico|renombrar|renombrá|actualizar|actualiza|actualizá|corregir|corregí)\b/i.test(normalized);
-    if (editIntent && /\b(pendiente|tarea|el|la|los)\b/i.test(normalized)) {
-      // Editar por número: "cambia el 2 a pagar la factura"
-      const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
-      if (byNumber) {
-        const index = parseInt(byNumber[1], 10) - 1;
-        const tasks = await this.taskRepo.findPendingTasks(sessionId);
-        if (!tasks[index]) return `No encontré un pendiente con ese número.`;
-
-        const newObjective = this.extractEditNewValue(original);
-        if (newObjective && newObjective.length > 2) {
-          await this.taskRepo.updateTaskObjective(tasks[index].id, newObjective);
-          return `✏️ Pendiente actualizado:\n  Antes: ${tasks[index].objective}\n  Ahora: ${newObjective}`;
-        }
-        return `No entendí el nuevo texto. Usá: "cambia el ${index + 1} a <nuevo texto>"`;
-      }
-
-      // Editar por nombre: "cambia comprar por comprar leche"
-      const { from, to } = this.extractEditFromTo(original);
-      if (from && to) {
-        const tasks = await this.taskRepo.findPendingTasks(sessionId);
-        const match = tasks.find((t) => t.objective.toLowerCase().includes(from.toLowerCase()));
-        if (match) {
-          await this.taskRepo.updateTaskObjective(match.id, to);
-          return `✏️ Pendiente actualizado:\n  Antes: ${match.objective}\n  Ahora: ${to}`;
-        }
-        if (tasks.length > 0) {
-          const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
-          return `No encontré "${from}". Tus pendientes:\n${list}\n\nPodés editar por número: "cambia el 2 a <nuevo texto>"`;
-        }
-        return `No encontré ese pendiente.`;
-      }
-
-      // Sin suficiente info — mostrar ayuda
-      const tasks = await this.taskRepo.findPendingTasks(sessionId);
-      if (tasks.length > 0) {
-        const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
-        return `¿Cuál querés editar?\n${list}\n\nEjemplos:\n- "cambia el 2 a llamar al médico"\n- "edita comprar por comprar leche"`;
-      }
-      return 'No tenés pendientes para editar.';
-    }
-
-    // ── 4. MARCAR COMO COMPLETADO ───────────────────────────────────────────────
-    const completeIntent = /\b(completar|completé|completé|hice|hice el|ya hice|terminé|terminé|listo|marcar como|marcar)\b/i.test(normalized);
-    if (completeIntent && /\b(pendiente|tarea)\b/i.test(normalized)) {
-      const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
-      if (byNumber) {
-        const index = parseInt(byNumber[1], 10) - 1;
-        const tasks = await this.taskRepo.findPendingTasks(sessionId);
-        if (tasks[index]) {
-          await this.taskRepo.updateTaskStatus(tasks[index].id, 'completed');
-          return `✅ Pendiente completado: ${tasks[index].objective}`;
-        }
-      }
-    }
-
-    // ── 4. CREAR — solo si el mensaje tiene intención clara de agregar algo nuevo ──
+    // ── 2. CREAR — solo si el mensaje tiene intención clara de agregar algo nuevo ──
     // Patrones explícitos de creación: "agregar X a mis pendientes", "nuevo pendiente: X"
     const explicitCreate =
-      /\b(agregar?|añadir?|anotar?|apuntar?|guardar?|incluir?|agendar?|agregá|anotá|apuntá)\b/i.test(normalized) &&
+      /\b(agregar?|añadir?|anotar?|apuntar?|guardar?|incluir?|agendar?|agregá|anotá|apuntá|crear?|crea)\b/i.test(normalized) &&
       /\b(pendiente|pendientes|lista|tarea|tareas|recordatorio)\b/i.test(normalized);
 
     const implicitCreate =
@@ -151,6 +82,75 @@ export class TaskReminderService {
         });
         this.logger.log(`Pendiente persistido: ${objective}`);
         return `✅ Pendiente guardado: ${task.objective}\n\nPara ver tu lista decí "lista de pendientes". Para borrarlo: "borra el pendiente ${objective}".`;
+      }
+    }
+
+    // ── 3. LISTAR ───────────────────────────────────────────────────────────────
+    const listIntent = /\b(lista|listar|mostrar|ver|show|cuáles|cuales|tengo|dime|decime)\b/i.test(normalized);
+    if (listIntent && /\b(pendientes|tareas|recordatorios)\b/i.test(normalized)) {
+      const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
+      if (!tasks.length) return 'No tenés pendientes guardados.';
+      const formatted = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
+      return `📋 Tus pendientes:\n${formatted}`;
+    }
+
+    // ── 4. EDITAR ────────────────────────────────────────────────────────────────
+    // "cambia el 2 a llamar al médico"
+    // "edita el pendiente comprar por comprar leche"
+    // "renombra el 1 a pagar factura"
+    const editIntent = /\b(editar|edita|edito|cambiar|cambia|cambio|modificar|modifica|modifico|renombrar|renombrá|actualizar|actualiza|actualizá|corregir|corregí)\b/i.test(normalized);
+    if (editIntent && /\b(pendiente|tarea|el|la|los)\b/i.test(normalized)) {
+      // Editar por número: "cambia el 2 a pagar la factura"
+      const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
+      if (byNumber) {
+        const index = parseInt(byNumber[1], 10) - 1;
+        const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
+        if (!tasks[index]) return `No encontré un pendiente con ese número.`;
+
+        const newObjective = this.extractEditNewValue(original);
+        if (newObjective && newObjective.length > 2) {
+          await this.taskRepo.updateTaskObjective(tasks[index].id, newObjective);
+          return `✏️ Pendiente actualizado:\n  Antes: ${tasks[index].objective}\n  Ahora: ${newObjective}`;
+        }
+        return `No entendí el nuevo texto. Usá: "cambia el ${index + 1} a <nuevo texto>"`;
+      }
+
+      // Editar por nombre: "cambia comprar por comprar leche"
+      const { from, to } = this.extractEditFromTo(original);
+      if (from && to) {
+        const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
+        const match = tasks.find((t) => t.objective.toLowerCase().includes(from.toLowerCase()));
+        if (match) {
+          await this.taskRepo.updateTaskObjective(match.id, to);
+          return `✏️ Pendiente actualizado:\n  Antes: ${match.objective}\n  Ahora: ${to}`;
+        }
+        if (tasks.length > 0) {
+          const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
+          return `No encontré "${from}". Tus pendientes:\n${list}\n\nPodés editar por número: "cambia el 2 a <nuevo texto>"`;
+        }
+        return `No encontré ese pendiente.`;
+      }
+
+      // Sin suficiente info — mostrar ayuda
+      const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
+      if (tasks.length > 0) {
+        const list = tasks.map((t, i) => `${i + 1}. ${t.objective}`).join('\n');
+        return `¿Cuál querés editar?\n${list}\n\nEjemplos:\n- "cambia el 2 a llamar al médico"\n- "edita comprar por comprar leche"`;
+      }
+      return 'No tenés pendientes para editar.';
+    }
+
+    // ── 5. MARCAR COMO COMPLETADO ───────────────────────────────────────────────
+    const completeIntent = /\b(completar|completé|completé|hice|hice el|ya hice|terminé|terminé|listo|marcar como|marcar)\b/i.test(normalized);
+    if (completeIntent && /\b(pendiente|tarea)\b/i.test(normalized)) {
+      const byNumber = normalized.match(/\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/);
+      if (byNumber) {
+        const index = parseInt(byNumber[1], 10) - 1;
+        const tasks = (await this.taskRepo.findPendingTasks(sessionId)) || [];
+        if (tasks[index]) {
+          await this.taskRepo.updateTaskStatus(tasks[index].id, 'completed');
+          return `✅ Pendiente completado: ${tasks[index].objective}`;
+        }
       }
     }
 
@@ -230,7 +230,7 @@ export class TaskReminderService {
     result = result.replace(/^(?:nuevo\s+)?(?:pendiente|tarea|recordatorio)\s*[:\-]?\s*/i, '').trim();
 
     // Quitar la parte "a mis pendientes / en la lista / etc." que puede estar al final o al inicio
-    result = result.replace(/\s+(?:a\s+)?(?:mis?|la|tus?)\s+(?:lista\s+de\s+)?(?:pendientes|tareas|recordatorios)[\s\S]*$/i, '').trim();
+    result = result.replace(/\s+(?:a\s+)?(?:mis?|la|tus?)\s+(?:lista\s+de\s+)?(?:pendientes|tareas|recordatorios)$/i, '').trim();
     result = result.replace(/^(?:a\s+)?(?:mis?|la|tus?)\s+(?:lista\s+de\s+)?(?:pendientes|tareas|recordatorios)\s*/i, '').trim();
     result = result.replace(/^(?:en\s+)?(?:la|mi)\s+lista(?:\s+de\s+pendientes)?\s*/i, '').trim();
 

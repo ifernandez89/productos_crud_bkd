@@ -1,0 +1,755 @@
+{
+  "metadata": {
+    "nombre": "Base inicial normalizada de plantas medicinales",
+    "version": 3,
+    "nota": "Generada a partir del PDF Acción Terapéutica y Herbario 7. Dataset para Next.js."
+  },
+  "plantas": [
+    {
+      "nombre": "Aguaribay",
+      "slug": "aguaribay",
+      "acciones": [
+        "Antiparasitaria",
+        "Digestiva",
+        "Expectorante",
+        "Repelente"
+      ]
+    },
+    {
+      "nombre": "Ajo",
+      "slug": "ajo",
+      "acciones": [
+        "Antibiótica",
+        "Antiparasitaria",
+        "Cariostático",
+        "Estimulante inmune"
+      ]
+    },
+    {
+      "nombre": "Amor Seco",
+      "slug": "amor-seco",
+      "acciones": [
+        "Adaptógena",
+        "Digestiva",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Artemisa Annua",
+      "slug": "artemisa-annua",
+      "acciones": [
+        "Antimalárica",
+        "Antiparasitaria",
+        "Digestiva",
+        "Estimulante inmune",
+        "Reguladora ciclo menstrual"
+      ]
+    },
+    {
+      "nombre": "Caléndula",
+      "slug": "calendula",
+      "acciones": [
+        "Antibiótica",
+        "Antiviral",
+        "Cicatrizante",
+        "Digestiva",
+        "Desinflamante",
+        "Protectora UV",
+        "Reguladora ciclo menstrual"
+      ]
+    },
+    {
+      "nombre": "Cardo Mariano",
+      "slug": "cardo-mariano",
+      "acciones": [
+        "Antialérgica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Hepatoprotectora"
+      ]
+    },
+    {
+      "nombre": "Cebolla",
+      "slug": "cebolla",
+      "acciones": [
+        "Antibiótica",
+        "Antifúngica",
+        "Desinflamante",
+        "Diurética",
+        "Expectorante"
+      ]
+    },
+    {
+      "nombre": "Cedrón",
+      "slug": "cedron",
+      "acciones": [
+        "Digestiva",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Ceibo",
+      "slug": "ceibo",
+      "acciones": [
+        "Antitumoral",
+        "Astringente",
+        "Cicatrizante",
+        "Desinflamante",
+        "Expectorante",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Chañar",
+      "slug": "chanar",
+      "acciones": [
+        "Antibiótica",
+        "Antiespasmódica",
+        "Antifúngica",
+        "Antitusiva",
+        "Desinflamante",
+        "Emoliente",
+        "Expectorante"
+      ]
+    },
+    {
+      "nombre": "Cola de Caballo",
+      "slug": "cola-de-caballo",
+      "acciones": [
+        "Astringente",
+        "Cicatrizante",
+        "Diurética",
+        "Hipotensor",
+        "Remineralizante"
+      ]
+    },
+    {
+      "nombre": "Cúrcuma",
+      "slug": "curcuma",
+      "acciones": [
+        "Antibiótica",
+        "Desinflamante",
+        "Estimulante inmune"
+      ]
+    },
+    {
+      "nombre": "Diente de León",
+      "slug": "diente-de-leon",
+      "acciones": [
+        "Depurativa",
+        "Digestiva",
+        "Diurética",
+        "Hepatoprotectora",
+        "Hipoglucemiante"
+      ]
+    },
+    {
+      "nombre": "Equinácea",
+      "slug": "equinacea",
+      "acciones": [
+        "Antiviral",
+        "Desinflamante",
+        "Estimulante inmune"
+      ]
+    },
+    {
+      "nombre": "Escoba Dura",
+      "slug": "escoba-dura",
+      "acciones": [
+        "Adaptógena",
+        "Desinflamante",
+        "Emoliente"
+      ]
+    },
+    {
+      "nombre": "Lapacho",
+      "slug": "lapacho",
+      "acciones": [
+        "Antibiótica",
+        "Antifúngica",
+        "Astringente",
+        "Desinflamante"
+      ]
+    },
+    {
+      "nombre": "Laurel",
+      "slug": "laurel",
+      "acciones": [
+        "Antioxidante",
+        "Desinflamante",
+        "Digestiva",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Lavanda",
+      "slug": "lavanda",
+      "acciones": [
+        "Antiespasmódica",
+        "Antiséptica",
+        "Cicatrizante",
+        "Digestiva",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Llantén",
+      "slug": "llanten",
+      "acciones": [
+        "Antibiótica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Digestiva",
+        "Emoliente",
+        "Expectorante",
+        "Laxante"
+      ]
+    },
+    {
+      "nombre": "Marrubio",
+      "slug": "marrubio",
+      "acciones": [
+        "Digestiva",
+        "Emoliente",
+        "Expectorante"
+      ]
+    },
+    {
+      "nombre": "Melisa",
+      "slug": "melisa",
+      "acciones": [
+        "Digestiva",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Menta",
+      "slug": "menta",
+      "acciones": [
+        "Antibiótica",
+        "Desinflamante",
+        "Digestiva",
+        "Expectorante",
+        "Relajante"
+      ]
+    },
+    {
+      "nombre": "Ortiga",
+      "slug": "ortiga",
+      "acciones": [
+        "Antioxidante",
+        "Diurética",
+        "Desinflamante",
+        "Hepatoprotectora",
+        "Hipoglucemiante"
+      ]
+    },
+    {
+      "nombre": "Paico",
+      "slug": "paico",
+      "acciones": [
+        "Antianémica",
+        "Antibiótica",
+        "Antiparasitaria",
+        "Digestiva",
+        "Desinflamante"
+      ]
+    },
+    {
+      "nombre": "Pezuña de Vaca",
+      "slug": "pezuna-de-vaca",
+      "acciones": [
+        "Antibiótica",
+        "Antitusiva",
+        "Desinflamante",
+        "Fungicida",
+        "Hipoglucemiante"
+      ]
+    },
+    {
+      "nombre": "Ruda",
+      "slug": "ruda",
+      "acciones": [
+        "Antiespasmódica",
+        "Antiparasitaria",
+        "Carminativa",
+        "Desinflamante",
+        "Reguladora ciclo menstrual"
+      ]
+    },
+    {
+      "nombre": "Vara de Oro",
+      "slug": "vara-de-oro",
+      "acciones": [
+        "Antibiótica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Vinca",
+      "slug": "vinca",
+      "acciones": [
+        "Antitumoral",
+        "Hipoglucemiante",
+        "Tonificante"
+      ]
+    },
+    {
+      "nombre": "Caa Piquí",
+      "slug": "caa-piqui",
+      "nombreCientifico": "Stella media",
+      "familia": "Caryophyllaceae",
+      "acciones": [
+        "Demulcente",
+        "Remineralizante",
+        "Diurética",
+        "Expectorante"
+      ],
+      "sistemas": [
+        "Urinario",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Tos",
+        "Congestión respiratoria"
+      ],
+      "descripcion": "Herbácea comestible. Parte usada: planta entera. Utilizada tradicionalmente como demulcente en crudo, remineralizante, diurética y expectorante.",
+      "precauciones": [],
+      "imagenes": [],
+      "fuentes": [
+        "Herbario 7"
+      ]
+    },
+    {
+      "nombre": "Tala de Indio",
+      "slug": "tala-de-indio",
+      "nombreCientifico": "Holmbergia tweedii",
+      "familia": "Amaranthaceae",
+      "acciones": [
+        "Nutritiva",
+        "Alternativa (Sal vegetal)"
+      ],
+      "sistemas": [
+        "Nutricional"
+      ],
+      "afecciones": [
+        "Deficiencias minerales",
+        "Sustitución de sodio"
+      ],
+      "descripcion": "Arbusto nativo. Parte usada: parte aérea. Utilizada históricamente por pueblos originarios como sal vegetal. Cuenta con frutos carnosos comestibles.",
+      "precauciones": [],
+      "imagenes": [],
+      "fuentes": [
+        "Herbario 7"
+      ]
+    },
+    {
+      "nombre": "Palo Amarillo / Niño Rupá",
+      "slug": "palo-amarillo-nino-rupa",
+      "nombreCientifico": "Aloysia gratissima",
+      "familia": "Verbenaceae",
+      "acciones": [
+        "Antidepresiva",
+        "Antidiarreica",
+        "Antitusiva"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Estrés",
+        "Depresión",
+        "Resfríos",
+        "Empachos",
+        "Diarrea"
+      ],
+      "descripcion": "Arbusto. Parte usada: hojas. Utilizado tradicionalmente por sus marcadas propiedades antidepresivas, reguladoras del aparato digestivo (combate empachos y diarreas) y respiratorio.",
+      "precauciones": [],
+      "imagenes": [],
+      "fuentes": [
+        "Herbario 7"
+      ]
+    },
+    {
+      "nombre": "Ajenjo Dulce",
+      "slug": "ajenjo-dulce",
+      "acciones": [
+        "Antiparasitaria",
+        "Antimalárica",
+        "Digestiva"
+      ]
+    },
+    {
+      "nombre": "Alcanfor",
+      "slug": "alcanfor",
+      "acciones": [
+        "Antiespasmódica",
+        "Analgésica",
+        "Antifúngica"
+      ]
+    },
+    {
+      "nombre": "Altamisa",
+      "slug": "altamisa",
+      "acciones": [
+        "Digestiva tónica",
+        "Co-antiparasitaria",
+        "Febrífuga"
+      ]
+    },
+    {
+      "nombre": "Artemisa Vulgaris",
+      "slug": "artemisa-vulgaris",
+      "acciones": [
+        "Emenagoga",
+        "Digestiva",
+        "Antiespasmódica"
+      ]
+    },
+    {
+      "nombre": "Carqueja",
+      "slug": "carqueja",
+      "acciones": [
+        "Hepatoprotectora",
+        "Digestiva",
+        "Depurativa"
+      ]
+    },
+    {
+      "nombre": "Catay",
+      "slug": "catay",
+      "acciones": [
+        "Cicatrizante",
+        "Hemostática",
+        "Antiinflamatoria"
+      ]
+    },
+    {
+      "nombre": "Cerraja",
+      "slug": "cerraja",
+      "acciones": [
+        "Depurativa",
+        "Hepática",
+        "Laxante suave"
+      ]
+    },
+    {
+      "nombre": "Cucúrbita",
+      "slug": "cucurbita",
+      "acciones": [
+        "Antiparasitaria",
+        "Diurética",
+        "Emoliente"
+      ]
+    },
+    {
+      "nombre": "Curupí",
+      "slug": "curupi",
+      "acciones": [
+        "Cicatrizante",
+        "Regenerativa"
+      ]
+    },
+    {
+      "nombre": "Curu Caá",
+      "slug": "curu-caa",
+      "acciones": [
+        "Antiinflamatoria",
+        "Antirreumática"
+      ]
+    },
+    {
+      "nombre": "Doctorcito",
+      "slug": "doctorcito",
+      "acciones": [
+        "Digestiva",
+        "Hepatoprotectora",
+        "Antiespasmódica"
+      ]
+    },
+    {
+      "nombre": "Heliotropo",
+      "slug": "heliotropo",
+      "acciones": [
+        "Cicatrizante",
+        "Antiséptica"
+      ]
+    },
+    {
+      "nombre": "Malva",
+      "slug": "malva",
+      "acciones": [
+        "Demulcente",
+        "Antiinflamatoria",
+        "Emoliente"
+      ]
+    },
+    {
+      "nombre": "Malvisco",
+      "slug": "malvisco",
+      "acciones": [
+        "Demulcente",
+        "Expectorante",
+        "Antiinflamatoria"
+      ]
+    },
+    {
+      "nombre": "Mburucuyá / Pasionaria",
+      "slug": "mburucuya-pasionaria",
+      "acciones": [
+        "Sedante",
+        "Ansiolítica",
+        "Antitusiva",
+        "Antiespasmódica"
+      ]
+    },
+    {
+      "nombre": "Níspero",
+      "slug": "nispero",
+      "acciones": [
+        "Antitusiva",
+        "Mucolítica",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Oreja de Ratón",
+      "slug": "oreja-de-raton",
+      "acciones": [
+        "Diurética",
+        "Depurativa",
+        "Digestiva"
+      ]
+    },
+    {
+      "nombre": "Salvia de Isla",
+      "slug": "salvia-de-isla",
+      "acciones": [
+        "Digestiva",
+        "Carminativa",
+        "Expectorante"
+      ]
+    },
+    {
+      "nombre": "Salvia Guaranítica",
+      "slug": "salvia-guaranitica",
+      "acciones": [
+        "Sedante suave",
+        "Digestiva",
+        "Analgésica"
+      ]
+    },
+    {
+      "nombre": "Salvia Morada",
+      "slug": "salvia-morada",
+      "acciones": [
+        "Carminativa",
+        "Antiparasitaria",
+        "Antiséptica",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Santa Lucía",
+      "slug": "santa-lucia",
+      "acciones": [
+        "Descongestiva ocular",
+        "Antiinflamatoria"
+      ]
+    },
+    {
+      "nombre": "Sen de Campo",
+      "slug": "sen-de-campo",
+      "acciones": [
+        "Laxante",
+        "Purgante",
+        "Depurativa"
+      ]
+    },
+    {
+      "nombre": "Suico",
+      "slug": "suico",
+      "acciones": [
+        "Digestiva",
+        "Carminativa",
+        "Antiespasmódica"
+      ]
+    },
+    {
+      "nombre": "Taco de Reina",
+      "slug": "taco-de-reina",
+      "acciones": [
+        "Antimicrobiana",
+        "Expectorante",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Tala",
+      "slug": "tala",
+      "acciones": [
+        "Antiséptica",
+        "Descongestiva",
+        "Digestiva"
+      ]
+    },
+    {
+      "nombre": "Uña de Gato",
+      "slug": "uña-de-gato",
+      "acciones": [
+        "Inmunomoduladora",
+        "Antiinflamatoria",
+        "Antídoto"
+      ]
+    },
+    {
+      "nombre": "Yerba Carnicera",
+      "slug": "yerba-carnicera",
+      "acciones": [
+        "Cicatrizante",
+        "Diurética",
+        "Antiulcerosa",
+        "Digestiva"
+      ]
+    },
+    {
+      "nombre": "Yuyo Colorado",
+      "slug": "yuyo-colorado",
+      "acciones": [
+        "Nutritiva",
+        "Depurativa",
+        "Diurética"
+      ]
+    },
+    {
+      "nombre": "Zarzaparrilla",
+      "slug": "zarzaparrilla",
+      "acciones": [
+        "Depurativa",
+        "Diurética",
+        "Sudorífica"
+      ]
+    },
+    {
+      "nombre": "Ñangapirí",
+      "slug": "ñangapiri",
+      "acciones": [
+        "Febrífuga",
+        "Antidiarreica",
+        "Hipotensora"
+      ]
+    },
+    {
+      "nombre": "Sarandí Blanco",
+      "slug": "sarandi-blanco",
+      "acciones": [
+        "Febrífuga",
+        "Tónica",
+        "Antiséptica",
+        "Cicatrizante"
+      ]
+    },
+    {
+      "nombre": "Guaycurú",
+      "slug": "guaycuru",
+      "acciones": [
+        "Astringente",
+        "Antidisentérica",
+        "Hipotensora"
+      ]
+    },
+    {
+      "nombre": "Marcelo (o Marcelita)",
+      "slug": "marcela-marcelita",
+      "acciones": [
+        "Digestiva",
+        "Antiinflamatoria",
+        "Hepatoprotectora"
+      ]
+    },
+    {
+      "nombre": "Sangre de Drago (o Sangre de Grado)",
+      "slug": "sangre-de-drago",
+      "acciones": [
+        "Cicatrizante",
+        "Antiulcerosa",
+        "Antiviral"
+      ]
+    },
+    {
+      "nombre": "Ubajay",
+      "slug": "ubajay",
+      "acciones": [
+        "Diurética",
+        "Depurativa"
+      ]
+    },
+    {
+      "nombre": "Jacarandá",
+      "slug": "jacaranda",
+      "acciones": [
+        "Purificadora",
+        "Antiséptica"
+      ]
+    },
+    {
+      "nombre": "Totora",
+      "slug": "totora",
+      "acciones": [
+        "Nutritiva",
+        "Reconstituyente"
+      ]
+    },
+    {
+      "nombre": "Sauco",
+      "slug": "sauco",
+      "acciones": [
+        "Febrífuga",
+        "Antiinflamatoria",
+        "Antidiarreica",
+        "Depurativa"
+      ]
+    },
+    {
+      "nombre": "Ambay",
+      "slug": "ambay",
+      "acciones": [
+        "Antitusiva",
+        "Expectorante",
+        "Espasmolítica"
+      ]
+    },
+    {
+      "nombre": "Anacahuita",
+      "slug": "anacahuita",
+      "acciones": [
+        "Expectorante",
+        "Pectoral",
+        "Antiséptica"
+      ]
+    },
+    {
+      "nombre": "Tuna",
+      "slug": "tuna",
+      "acciones": [
+        "Emoliente",
+        "Cicatrizante",
+        "Antiinflamatoria"
+      ]
+    },
+    {
+      "nombre": "Sauce",
+      "slug": "sauce",
+      "acciones": [
+        "Analgésica",
+        "Antirreumática",
+        "Antiséptica"
+      ]
+    }
+  ]
+}

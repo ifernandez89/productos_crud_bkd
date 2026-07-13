@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Local JSON Knowledge Base (2026-07-13)
+
+- **📁 Carpeta `src/jarvis/knowledge`**: Soporte para cargar dinámicamente cualquier base de datos en formato JSON de conocimiento local.
+- **🧠 `JarvisKnowledgeService`**: Nuevo servicio que escanea y lee de forma dinámica los archivos JSON:
+  - Soporta consultas generales para listar el contenido registrado (ej. "qué plantas medicinales tenemos registradas?").
+  - Extrae y formatea en tiempo real los datos estructurados (tratamientos, oraciones, descripción, precauciones, acciones) de cualquier elemento mencionado en la consulta del usuario (ej. "para qué sirve el cedrón?", "cómo curar la abichadura?").
+- **🔧 Integración en `JarvisService`**: Intercepta comandos de listado de conocimiento al principio del ciclo de query y añade automáticamente la información estructurada preseleccionada y ya resumida en el contexto del LLM (`buildJarvisContext`) para ofrecer respuestas precisas.
+
 ### Added — Google Workspace + YouTube Integration (2026-07-12)
 
 **📅 Google Calendar (ampliado):**
@@ -1699,3 +1707,79 @@ pm install -g ngrok.
 A d d e d   n e w   f e a t u r e :   F i x   f o r   d e v   s e r v e r   s t a r t u p 
  
  
+
+---
+
+## [0.5.0] - 2026-07-13
+
+### Added — Execution Engine + Knowledge Evolution
+
+#### Execution Engine (`src/jarvis/planner/execution-engine.service.ts`)
+- Nuevo `ExecutionEngine` que conecta el `PlannerService` con las herramientas reales.
+- Ejecuta planes multi-paso de forma secuencial, acumulando el output de cada paso como contexto para el siguiente.
+- **8 tipos de pasos implementados:**
+  - `search` — búsqueda web via `BrowserTool.search()`
+  - `scrape` — scrapear URL específica via `BrowserTool.fetch()`
+  - `read_memory` — consultar memorias relevantes via `MemoryRepository`
+  - `read_docs` — consultar documentos RAG via `DocumentRepository`
+  - `summarize` — resumir contexto acumulado con LLM (temperature=0.2)
+  - `deduplicate` — eliminar oraciones repetidas por similitud Jaccard (umbral 70%)
+  - `save` — guardar resultado en `DocumentIngestService` (Knowledge Library)
+  - `respond` — generar respuesta final al usuario con LLM
+- Si un paso falla, continúa con el siguiente siempre que haya contexto previo.
+- `PlannerService` actualizado: ahora el LLM genera el `type` de cada paso junto con la descripción.
+- Nuevo método `createAndExecute()` en `PlannerService`: crea el plan Y lo ejecuta, retornando `ExecutionResult` con `answer`, `stepsCompleted`, `stepsFailed`, `savedToKnowledge`.
+- Inferencia automática del tipo de paso desde la descripción cuando el LLM no lo provee (`inferStepType()`).
+- `ExecutionEngine` registrado en `JarvisModule`.
+
+**Nuevo endpoint:**
+- `POST /jarbees/planner/execute` — objetivo → plan → ejecución → respuesta final
+
+#### Knowledge Evolution (`src/jarvis/memory/knowledge-evolution.service.ts`)
+- Nuevo `KnowledgeEvolutionService`: el diferencial real de JarBees frente a cualquier chatbot.
+- **Snapshot automático:** después de cada respuesta, `extractAndSave()` corre en background analizando el intercambio con el LLM (temperature=0.1, max 150 tokens) para extraer `{ topic, conclusion, tags }`.
+- **Narración de evolución:** `getEvolution(topic, days)` recupera todos los snapshots de un tema, los ordena cronológicamente y genera una narración natural con el LLM (temperatura=0.4).
+- Deduplicación por similitud Jaccard — evita guardar dos veces el mismo hecho.
+- Conectado en `saveAndObserve()` del `JarvisService` — se activa en todas las respuestas automáticamente.
+- `KnowledgeEvolutionService` registrado en `JarvisModule`.
+
+**Nuevos endpoints:**
+- `GET /jarbees/evolution?topic=Qwen&days=180` — línea de tiempo + narración LLM
+- `GET /jarbees/evolution/topics` — todos los temas registrados con frecuencia
+
+**Nuevo modelo de DB:**
+- `TopicSnapshot` — `topic`, `conclusion`, `tags String[]`, `sessionId`, `createdAt`
+- Índices en `topic`, `createdAt`, `sessionId`
+
+**Ejemplo de uso:**
+```
+GET /jarbees/evolution?topic=Qwen&days=180
+
+{
+  "topic": "Qwen",
+  "firstMentioned": "01 ene. 2026",
+  "lastMentioned": "13 jul. 2026",
+  "totalMentions": 12,
+  "narrative": "Hace 6 meses preferías llama3.2:3b por velocidad.
+                En marzo descubriste que qwen3:4b era superior para código.
+                Ahora lo usás como experto técnico con temperature=0.2..."
+}
+```
+
+### Fixed — Circular dependency en `AichatModule` (tokens undefined en runtime)
+- `LLAMA_MODEL_TOKEN` y `QWEN_MODEL_TOKEN` se importaban desde `aichat.module.ts` en `aichat.service.ts`, creando un ciclo: módulo → service → módulo.
+- En modo watch (`ts-node`), el ciclo hacía que los tokens llegaran como `undefined`, NestJS no resolvía el índice [4] y lanzaba `EADDRINUSE` al intentar reiniciar.
+- Solución: tokens extraídos a `src/aichat/aichat.tokens.ts`, el módulo los re-exporta para compatibilidad.
+
+### Fixed — Conflicto de nombre de clase entre modelos Ollama
+- Ambas implementaciones de Ollama se llamaban `OllamaModelService`.
+- NestJS usa el nombre de la clase como identificador interno en `useClass` — una pisaba a la otra.
+- Solución: segunda clase renombrada a `OllamaQwenModelService`.
+
+### Fixed — Tests de specs (`aichat.controller.spec.ts`, `assistant-tools.service.spec.ts`)
+- `controller.update()` y `controller.remove()` eliminados del controller → tests marcados como skip.
+- `AssistantToolsService` ahora requiere `BrowserToolService` en su constructor — test actualizado con mock.
+
+### Changed — `JARBEES_ARCHITECTURE.md` reescrito completamente
+- Documento anterior describía el estado de hace varios meses.
+- Nuevo documento refleja el estado actual real: 17 modelos en DB, Execution Engine, Knowledge Evolution, Browser con Playwright completo, IntentRouter con 10 intents, 30+ fuentes locales, todos los endpoints, cobertura por módulo (~72%), limitaciones conocidas y próximos pasos.

@@ -47,6 +47,10 @@ import { KnowledgeTestService } from './library/knowledge-test.service';
 import { GoogleGmailService } from './tools/google/google-gmail.service';
 import { GoogleDriveService } from './tools/google/google-drive.service';
 import { YouTubeService } from './tools/google/youtube.service';
+import { JarvisKnowledgeService } from './knowledge/jarvis-knowledge.service';
+import { JarvisCommandService } from './commands/jarvis-command.service';
+import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
+import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -96,7 +100,20 @@ import { YouTubeService } from './tools/google/youtube.service';
     DocumentSummaryService,
     DocumentCompareService,
     KnowledgeTestService,
+    JarvisKnowledgeService,
+    JarvisCommandService,
+    JarvisWebSearchService,
+    JarvisPromptBuilderService,
   ],
-  exports: [JarvisService, FeedbackRepository, ContentCacheService, RssIngestService],
+  exports: [
+    JarvisService,
+    FeedbackRepository,
+    ContentCacheService,
+    RssIngestService,
+    JarvisKnowledgeService,
+    JarvisCommandService,
+    JarvisWebSearchService,
+    JarvisPromptBuilderService,
+  ],
 })
 export class JarvisModule {}

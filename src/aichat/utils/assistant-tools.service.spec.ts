@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { AssistantToolsService } from './assistant-tools.service';
-import { BrowserToolService } from '../tools/browser/browser-tool.service';
+import { BrowserToolService } from '../../jarvis/tools/browser/browser-tool.service';
 
 jest.mock('axios');
 
