@@ -413,6 +413,16 @@ Los comportamientos de internet y RAG ahora se almacenan en las preferencias del
 
 Este mecanismo permite ajustar el comportamiento del asistente de forma consistente entre sesiones.
 
+### 11.4 Resiliencia de embeddings y fallback textual (nuevo)
+
+El pipeline de RAG fue reforzado para que no dependa exclusivamente de un único modelo de embeddings. Cuando Ollama responde con `404` o `400` por falta del modelo solicitado, Jarvis ahora:
+
+- intenta automáticamente modelos alternativos de embeddings,
+- conserva el flujo de recuperación aunque el embedding no esté disponible,
+- cae de forma segura a la búsqueda textual por contenido cuando la búsqueda semántica no puede ejecutarse.
+
+Este cambio mejora la estabilidad general del sistema y reduce los fallos de respuesta cuando la instalación local de Ollama no incluye el modelo esperado.
+
 **RssIngestService** — procesa feeds RSS:
 - Limpia HTML con Cheerio
 - Ingesta artículo por artículo al pipeline

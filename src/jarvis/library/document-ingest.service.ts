@@ -188,34 +188,49 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
     }
   }
 
-  // ── Chunking deslizante ─────────────────────────────────────────────────────
+  // ── Chunking y embeddings ───────────────────────────────────────────────────
 
   private async buildAndSaveChunks(documentId: number, content: string): Promise<number> {
     const chunks = this.splitIntoChunks(content);
+    const BATCH_SIZE = 5; // procesar 5 chunks en paralelo — balance entre velocidad y carga de Ollama
     let saved = 0;
 
+    // 1. Crear todos los chunks en BD primero (operación de BD rápida)
+    const savedChunks: { id: number; content: string }[] = [];
     for (const [i, chunkContent] of chunks.entries()) {
       const safeContent = this.sanitizeText(chunkContent);
       if (!safeContent) continue;
 
-      // 1. Crear el chunk en BD
       const chunk = await this.documentRepo.createChunk({
         documentId,
         content: safeContent,
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
-
-      // 2. Generar embedding y guardarlo como vector nativo en pgvector
-      try {
-        const vec = await this.embeddingsService.generateEmbedding(safeContent);
-        await this.documentRepo.saveChunkEmbedding(chunk.id, vec);
-      } catch (err: any) {
-        // Embedding falla → chunk queda sin vector, la búsqueda textual sigue funcionando
-        this.logger.warn(`[ingest] chunk ${i} sin embedding: ${err.message}`);
-      }
-
+      savedChunks.push({ id: chunk.id, content: safeContent });
       saved++;
     }
+
+    // 2. Generar embeddings en lotes paralelos y persistirlos en pgvector
+    //    Los embeddings se generan UNA SOLA VEZ aquí — nunca al momento de buscar
+    this.logger.log(`[ingest] generando embeddings para ${savedChunks.length} chunks (lotes de ${BATCH_SIZE})...`);
+
+    for (let i = 0; i < savedChunks.length; i += BATCH_SIZE) {
+      const batch = savedChunks.slice(i, i + BATCH_SIZE);
+
+      await Promise.allSettled(
+        batch.map(async ({ id, content: chunkText }) => {
+          try {
+            const vec = await this.embeddingsService.generateEmbedding(chunkText);
+            await this.documentRepo.saveChunkEmbedding(id, vec);
+          } catch (err: any) {
+            // Fallo silencioso — chunk queda sin embedding, búsqueda textual hace fallback
+            this.logger.warn(`[ingest] chunk id=${id} sin embedding: ${err.message}`);
+          }
+        })
+      );
+    }
+
+    this.logger.log(`[ingest] ${saved} chunks guardados con embeddings para doc id=${documentId}`);
     return saved;
   }
 

@@ -22,6 +22,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **🗄️ Ajustes en Prisma y migraciones**: Se actualizaron el esquema de Prisma y las migraciones asociadas para mantener la compatibilidad con la base de datos y el soporte de pgvector.
 - **🛠️ Scripts auxiliares**: Se añadieron utilidades de parche y soporte para el builder de prompts y la integración de conocimiento.
 
+### Fixed — Resiliencia de embeddings en Ollama (2026-07-13)
+
+- **🧠 `EmbeddingsService`**: Se mejoró el manejo de errores al generar embeddings cuando Ollama devuelve `404` o `400` por falta de modelo.
+- **🔁 Reintentos automáticos**: El sistema ahora prueba modelos alternativos de embeddings (`mxbai-embed-large`, `all-minilm`, etc.) antes de terminar en error.
+- **🛡️ Fallback más robusto**: Si no es posible generar embeddings, el flujo de RAG continúa con búsqueda textual en lugar de romper la experiencia completa.
+- **✅ Prueba añadida**: Se incorporó una prueba de regresión para validar el comportamiento de reintento.
+
 ### Added — Google Workspace + YouTube Integration (2026-07-12)
 
 **📅 Google Calendar (ampliado):**
