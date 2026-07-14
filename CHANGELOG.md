@@ -16,6 +16,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Recuperación RAG más coherente sin sacrificar relevancia
 - **🎯 Rationale**: Con **bge-m3** como modelo de embeddings, no es necesario fragmentar el contenido en chunks pequeños. Los chunks más grandes mantienen mejor coherencia semántica y reducen la latencia de ingesta.
 
+### Docs — Actualización de arquitectura y estado real del sistema (2026-07-14)
+
+- **📝 `JARBEES_ARCHITECTURE.md` actualizado** para reflejar los módulos y servicios realmente importados en `AppModule` y `JarvisModule`, los endpoints expuestos por `JarvisController`, y los capacidades activas de `JarvisService`.
+- **🔧 Correcciones de documentación**:
+  - `DocumentIngestService` usa ahora chunks de **1200 caracteres** con **150 de overlap**.
+  - `pgvector` está activado en la base de datos con campos `vector(1024)` y consultas nativas de similitud.
+  - `SourceRegistry` y `WebHelper` son los componentes activos para búsquedas priorizadas; el módulo `BusinessSourceModule` aún no está importado en el flujo principal de Jarvis.
+  - `VisionService` soporta análisis de imágenes y OCR vía `Qwen2.5-VL`.
+
 ### Added — Local JSON Knowledge Base (2026-07-13)
 
 - **📁 Carpeta `src/jarvis/knowledge`**: Soporte para cargar dinámicamente cualquier base de datos en formato JSON de conocimiento local.

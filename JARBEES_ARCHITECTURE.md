@@ -358,13 +358,12 @@ El orquestador puede cargar skills de razonamiento modular desde `skills/` para 
 - teoría de decisiones
 - método científico
 
-### BusinessSourceService
-Catálogo de **30+ fuentes locales de Paraná, Entre Ríos**:
-- Farmacias (Farmacity, Villegas, Cuyo, Magna)
-- Hospitales (San Martín, La Baxada, La Entrerriana, Mederi, Rawson)
-- Supermercados (La Anónima, Carrefour, DIA, VEA)
-- Restaurantes, panaderías, electrónica, computación
-- Cada fuente con: tags semánticas, TTL, prioridad, trustScore, scrapingStrategy
+### SourceRegistry y búsquedas priorizadas
+Jarvis usa `SourceRegistry` y `WebHelper` para priorizar fuentes confiables por categoría cuando necesita búsquedas web o scraping dirigido.
+- `SourceRegistry` mantiene un catálogo de fuentes tipadas por dominio y categoría.
+- `WebHelper` genera URLs de búsqueda especializadas y scrapea páginas con selectores definidos por fuente.
+- `JarvisWebSearchService` usa esta capa para enriquecer consultas de noticias, gobierno local, deportes y tecnología.
+- Hay un módulo adicional `src/jarvis/library/business-source.module.ts` con `BusinessSourceService` y `SitemapCrawlerService`, pero todavía no está importado como dependencia principal de `JarvisModule`.
 
 ---
 
@@ -378,9 +377,9 @@ POST /jarbees/library/document/url  ← scraping de URL
 
 **DocumentIngestService** — pipeline completo:
 1. Extrae texto (texto plano / PDF / web)
-2. Divide en chunks: párrafos primero, ventana deslizante para párrafos largos (800 chars, 10% overlap)
+2. Divide en chunks: párrafos primero, ventana deslizante para párrafos largos (1200 chars, 150 chars overlap)
 3. Genera embeddings via `EmbeddingsService` (nomic-embed-text via Ollama)
-4. Guarda chunks con `embeddingId` en PostgreSQL
+4. Guarda chunks con `embeddingId` en PostgreSQL y persiste embeddings nativos en `pgvector`
 
 ### 11.1 Biblioteca local JSON (nuevo)
 
@@ -544,7 +543,7 @@ Calendar         █████████░  90%  ✅  Google Calendar + fer
 Tasks/Planner    ████████░░  80%  ✅  Planner + Execution Engine funcional
 Research         ██████░░░░  60%  🟡  RSS + BusinessSources, sin búsqueda web real-time
 Programming      ███████░░░  75%  ✅  qwen3:4b + SkillRegistry + ModelRouter
-Vision           ░░░░░░░░░░   5%  🔴  Solo upload Base64, sin modelo multimodal
+Vision           ████░░░░░░  40%  🟡  Soporte inicial de análisis de imágenes con `VisionService` y OCR vía Qwen2.5-VL
 Automation       ██████░░░░  65%  ✅  Crons 8AM + 3AM funcionando
 Local Files      █████░░░░░  55%  🟡  PDF + texto, sin watcher de carpeta
 GitHub           ░░░░░░░░░░   0%  🔴  Schema preparado, sin implementación
@@ -560,7 +559,7 @@ Cobertura total  ~78%
 
 | Limitación | Estado | Alternativa |
 |------------|--------|-------------|
-| **pgvector** | Schema preparado, embeddings guardados como JSON string | Búsqueda LIKE funcional hasta activarlo |
+| **pgvector** | Activo en `Chunk.embedding` y `MemoryChunk.embedding` con `vector(1024)` en PostgreSQL | Búsqueda semántica nativa ya soportada con `<=>` en consultas raw SQL |
 | **Google OAuth** | Requiere tarjeta en Google Cloud | TaskReminderService interno en PostgreSQL |
 | **Vision / OCR** | Sin modelo multimodal | `POST /upload/image` retorna Base64 |
 | **GitHub** | Solo tipo en KnowledgeSource | Manual via ingesta de texto |
