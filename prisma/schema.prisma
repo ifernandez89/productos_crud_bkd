@@ -100,8 +100,8 @@ model MemoryChunk {
   id          Int                        @id @default(autoincrement())
   memoryId    Int
   content     String
-  embeddingId String?                    // legacy: referencia a vector store externo
-  embedding   Unsupported("vector(768)")? // pgvector: búsqueda semántica nativa
+  embeddingId String?                     // legacy: referencia a vector store externo
+  embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
   memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@index([memoryId])
@@ -209,12 +209,12 @@ model Document {
 // Fragmentos embeddables para búsqueda semántica con pgvector
 
 model Chunk {
-  id          Int                        @id @default(autoincrement())
+  id          Int                         @id @default(autoincrement())
   documentId  Int
   content     String
-  embeddingId String?                    // legacy: referencia a vector store externo
-  embedding   Unsupported("vector(768)")? // pgvector: búsqueda semántica nativa
-  metadata    String?                    // JSON serializado: { page, section, language, etc }
+  embeddingId String?                     // legacy: referencia a vector store externo
+  embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
+  metadata    String?                     // JSON serializado: { page, section, language, etc }
   document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])

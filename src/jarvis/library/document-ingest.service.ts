@@ -192,30 +192,31 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
 
   private async buildAndSaveChunks(documentId: number, content: string): Promise<number> {
     const chunks = this.splitIntoChunks(content);
+    let saved = 0;
+
     for (const [i, chunkContent] of chunks.entries()) {
-      // Sanitizar el chunk antes de guardarlo — evita errores de encoding en PostgreSQL
       const safeContent = this.sanitizeText(chunkContent);
-      if (!safeContent) continue; // skip chunks vacíos tras sanitización
+      if (!safeContent) continue;
 
-      let embeddingStr: string | null = null;
-      try {
-        const vec = await this.embeddingsService.generateEmbedding(safeContent);
-        embeddingStr = JSON.stringify(vec);
-      } catch (err) {
-        this.logger.warn(`No se pudo generar el embedding para chunk ${i}: ${err.message}`);
-      }
-
+      // 1. Crear el chunk en BD
       const chunk = await this.documentRepo.createChunk({
         documentId,
         content: safeContent,
-        embeddingId: embeddingStr,
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
-      if (embeddingStr) {
-        await this.documentRepo.saveChunkEmbedding(chunk.id, JSON.parse(embeddingStr));
+
+      // 2. Generar embedding y guardarlo como vector nativo en pgvector
+      try {
+        const vec = await this.embeddingsService.generateEmbedding(safeContent);
+        await this.documentRepo.saveChunkEmbedding(chunk.id, vec);
+      } catch (err: any) {
+        // Embedding falla → chunk queda sin vector, la búsqueda textual sigue funcionando
+        this.logger.warn(`[ingest] chunk ${i} sin embedding: ${err.message}`);
       }
+
+      saved++;
     }
-    return chunks.length;
+    return saved;
   }
 
   private splitIntoChunks(text: string): string[] {
