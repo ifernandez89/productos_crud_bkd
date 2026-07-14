@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Security — Quick fixes (2026-07-14)
+
+- **🛡️ H-i-t-L para endpoints destructivos**: El endpoint `DELETE /jarbees/library/document/:id` ahora requiere confirmación humana (`?confirm=true` o header `x-human-confirmation: yes`) o la variable de entorno `SKIP_HITL=true` para permitirse en entornos de integración. Esto evita borrados accidentales o inducidos por prompts maliciosos.
+- **📋 Auditoría**: Se agregó un logger de auditoría que escribe eventos a `logs/security_audit.log` para solicitudes y éxitos de operaciones críticas (por ahora: borrado de documentos).
+- **🔎 Validación de embeddings**: Las funciones que usan embeddings validan la dimensión esperada mediante la variable `EMBEDDING_DIM` (por defecto `1024`) y rechazan vectores con dimensiones o valores inválidos.
+
+### Security — CI checks and automation (2026-07-14)
+
+- **🔁 CI security scan**: Añadido script `scripts/check_security_patterns.sh` y `npm run check:security` para ejecutar en CI. Busca patrones peligrosos como `$executeRaw`, `exec(`, `spawn(`, `child_process` y `::vector`.
+- **📌 Goal**: Detectar merges que introduzcan raw SQL/execution code without review.
+
+### Automation — CI pipeline (2026-07-14)
+
+- **✅ GitHub Actions**: Añadido workflow `.github/workflows/security-scan.yml` que ejecuta `npm run check:security` en `pull_request` y `push` a `main`/`master`.
+
+
 ### Optimized — RAG Chunking Strategy (2026-07-14)
 
 - **📦 Parámetros de chunking optimizados**: Actualización de `CHUNK_SIZE` de 800 a **1200 caracteres** y `CHUNK_OVERLAP` de 80 a **150 caracteres** en `DocumentIngestService`.

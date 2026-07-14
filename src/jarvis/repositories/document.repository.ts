@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PgvectorService } from './pgvector.service';
 import { Document, Chunk } from '@prisma/client';
 
 export interface CreateDocumentData {
@@ -19,7 +20,7 @@ export interface CreateChunkData {
 
 @Injectable()
 export class DocumentRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly pgvector: PgvectorService) {}
 
   async createDocument(data: CreateDocumentData): Promise<Document> {
     return this.prisma.document.create({
@@ -45,12 +46,7 @@ export class DocumentRepository {
   }
 
   async saveChunkEmbedding(chunkId: number, vector: number[]): Promise<void> {
-    const vectorString = `[${vector.map((value) => Number(value).toPrecision(15)).join(',')}]`;
-    await this.prisma.$executeRaw`
-      UPDATE "Chunk"
-      SET "embedding" = ${vectorString}::vector
-      WHERE "id" = ${chunkId}
-    `;
+    return this.pgvector.saveChunkEmbedding(chunkId, vector);
   }
 
   async findDocuments(category?: string): Promise<Document[]> {
@@ -142,46 +138,7 @@ export class DocumentRepository {
   }
 
   async searchChunksSemantic(embedding: number[], limit = 10): Promise<(Chunk & { document: Document })[]> {
-    const vectorString = `[${embedding.map((value) => Number(value).toPrecision(15)).join(',')}]`;
-    const rows = await this.prisma.$queryRaw<Array<{
-      id: number;
-      documentId: number;
-      content: string;
-      metadata: string | null;
-      embeddingId: string | null;
-      sourceId: number | null;
-      title: string;
-      contentDoc: string;
-      category: string | null;
-      source: string | null;
-      timesUsed: number;
-      lastUsed: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-      similarity: number;
-    }>>`
-      SELECT
-        c.id,
-        c."documentId",
-        c.content,
-        c.metadata,
-        c."embeddingId",
-        d."sourceId",
-        d.title,
-        d.content AS "contentDoc",
-        d.category,
-        d.source,
-        d."timesUsed",
-        d."lastUsed",
-        d."createdAt",
-        d."updatedAt",
-        1 - (c.embedding <=> ${vectorString}::vector) AS similarity
-      FROM "Chunk" c
-      JOIN "Document" d ON d.id = c."documentId"
-      WHERE c.embedding IS NOT NULL
-      ORDER BY c.embedding <=> ${vectorString}::vector
-      LIMIT ${limit};
-    `;
+    const rows = (await this.pgvector.searchChunksSemantic(embedding, limit)) as any[];
 
     return rows.map((row) => ({
       id: row.id,
@@ -213,47 +170,7 @@ export class DocumentRepository {
     limit = 10
   ): Promise<(Chunk & { document: Document })[]> {
     if (documentIds.length === 0) return [];
-    
-    const vectorString = `[${embedding.map((value) => Number(value).toPrecision(15)).join(',')}]`;
-    const rows = await this.prisma.$queryRaw<Array<{
-      id: number;
-      documentId: number;
-      content: string;
-      metadata: string | null;
-      embeddingId: string | null;
-      sourceId: number | null;
-      title: string;
-      contentDoc: string;
-      category: string | null;
-      source: string | null;
-      timesUsed: number;
-      lastUsed: Date | null;
-      createdAt: Date;
-      updatedAt: Date;
-      similarity: number;
-    }>>`
-      SELECT
-        c.id,
-        c."documentId",
-        c.content,
-        c.metadata,
-        c."embeddingId",
-        d."sourceId",
-        d.title,
-        d.content AS "contentDoc",
-        d.category,
-        d.source,
-        d."timesUsed",
-        d."lastUsed",
-        d."createdAt",
-        d."updatedAt",
-        1 - (c.embedding <=> ${vectorString}::vector) AS similarity
-      FROM "Chunk" c
-      JOIN "Document" d ON d.id = c."documentId"
-      WHERE c.embedding IS NOT NULL AND c."documentId" = ANY(${documentIds})
-      ORDER BY c.embedding <=> ${vectorString}::vector
-      LIMIT ${limit};
-    `;
+    const rows = (await this.pgvector.searchChunksSemanticInDocuments(embedding, documentIds, limit)) as any[];
 
     return rows.map((row) => ({
       id: row.id,

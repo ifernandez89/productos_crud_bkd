@@ -12,6 +12,7 @@ import {
   UploadedFiles,
   UseInterceptors,
   BadRequestException,
+  Headers,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -29,6 +30,7 @@ import { VisionService } from './tools/vision/vision.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
+import { AuditService } from './security/audit.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -49,6 +51,7 @@ export class JarvisController {
     private readonly categorySummaryService: CategorySummaryService,
     private readonly documentSummaryService: DocumentSummaryService,
     private readonly knowledgeTestService: KnowledgeTestService,
+    private readonly auditService: AuditService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -312,8 +315,22 @@ export class JarvisController {
   @Public()
   @Delete('library/document/:id')
   @ApiOperation({ summary: 'Eliminar un documento' })
-  async deleteDocument(@Param('id', ParseIntPipe) id: number) {
+  async deleteDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('confirm') confirm?: string,
+    @Headers('x-human-confirmation') humanConfirmation?: string,
+  ) {
+    const humanOk = (confirm === 'true') || (humanConfirmation === 'yes') || (process.env.SKIP_HITL === 'true');
+    if (!humanOk) {
+      throw new BadRequestException('Operación destructiva requiere confirmación humana: enviar ?confirm=true o header x-human-confirmation: yes');
+    }
+
+    // Audit before performing destructive action
+    await this.auditService.log('deleteDocument.request', { id, by: 'api', confirmVia: confirm ? 'query' : (humanConfirmation ? 'header' : 'none') });
+
     await this.documentRepo.deleteDocument(id);
+
+    await this.auditService.log('deleteDocument.success', { id, by: 'api' });
     return { success: true };
   }
 

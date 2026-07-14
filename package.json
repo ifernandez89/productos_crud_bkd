@@ -22,6 +22,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "migrate:embeddings": "ts-node scripts/migrate-embeddings.ts",
     "test:e2e": "jest --config ./test/jest-e2e.json"
+      ,"check:security": "node ./scripts/check_security_patterns.js"
   },
   "dependencies": {
     "@aikidosec/safe-chain": "^1.5.12",

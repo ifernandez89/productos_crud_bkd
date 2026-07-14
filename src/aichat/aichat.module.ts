@@ -12,6 +12,7 @@ import { ModelRouterService } from './utils/model-router.service';
 import { BrowserToolService } from '../jarvis/tools/browser/browser-tool.service';
 
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
+import { SafeExecService } from '../jarvis/security/safe-exec.service';
 
 // Re-export para compatibilidad con código externo que importe desde el módulo
 export { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN };
@@ -38,6 +39,8 @@ export { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN };
     BrowserToolService,
     AssistantToolsService,
     ModelRouterService,
+    // Safe exec wrapper for running bounded python processes
+    SafeExecService,
   ],
   exports: [AichatService],
 })

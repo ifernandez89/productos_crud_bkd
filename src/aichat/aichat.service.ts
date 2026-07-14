@@ -7,7 +7,7 @@ import { OllamaModelService, StructuredPrompt } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { ModelRouterService } from './utils/model-router.service';
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
-import { spawn } from 'child_process';
+import { SafeExecService } from '../jarvis/security/safe-exec.service';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import axios from 'axios';
@@ -50,6 +50,7 @@ export class AichatService {
     private readonly modelRouter: ModelRouterService,
     @Inject(LLAMA_MODEL_TOKEN)
     private readonly ollamaModel: OllamaModelService,
+    private readonly safeExecService: SafeExecService,
     @Optional()
     @Inject(QWEN_MODEL_TOKEN)
     private readonly qwenModel?: OllamaModelService,
@@ -450,9 +451,6 @@ export class AichatService {
       try {
         this.logger.log('Hierarchical Reasoning Model');
         this.logger.log(`Pregunta recibida: ${pregunta}`);
-        const pythonExecutable =
-          process.platform === 'win32' ? 'python' : 'python3';
-
         const scriptPath = path.join(
           process.cwd(),
           'src',
@@ -467,51 +465,20 @@ export class AichatService {
           );
         }
         this.logger.log('Script encontrado, procediendo a ejecutar...');
-        const controller = new AbortController();
-        const timeoutHandle = setTimeout(() => controller.abort(), 30000);
-
-        const pythonProcess = spawn(
-          pythonExecutable,
-          [scriptPath, `"${pregunta.replace(/"/g, '\\"')}"`],
-          {
-            shell: true,
-            signal: controller.signal,
-            env: {
-              ...process.env,
-              PYTHONUTF8: '1',
-              PYTHONIOENCODING: 'utf-8',
-            },
-          },
+        const { stdout, stderr, code } = await this.safeExecService.runPythonScript(
+          scriptPath,
+          [pregunta],
+          30000,
         );
-        this.logger.log(`Proceso Python iniciado: ${pythonProcess.pid}`);
-        let output = '';
-        let errorOutput = '';
-
-        pythonProcess.stdout.on('data', (data) => (output += data.toString()));
-        pythonProcess.stderr.on(
-          'data',
-          (data) => (errorOutput += data.toString()),
-        );
-        this.logger.log('Capturando salida del proceso...');
-        const exitCode = await new Promise<number>((resolve, reject) => {
-          pythonProcess.on('close', (code) => {
-            clearTimeout(timeoutHandle);
-            resolve(code || 0);
-          });
-          pythonProcess.on('error', (err) => {
-            clearTimeout(timeoutHandle);
-            reject(err);
-          });
-        });
-        this.logger.log(`Proceso Python finalizado con código: ${exitCode}`);
-        if (exitCode !== 0) {
+        this.logger.log(`Proceso Python finalizado con código: ${code}`);
+        if (code !== 0) {
           throw new HttpException(
-            `Error en Python (${exitCode}): ${errorOutput || 'Sin detalles'}`,
+            `Error en Python (${code}): ${stderr || 'Sin detalles'}`,
             HttpStatus.INTERNAL_SERVER_ERROR,
           );
         }
 
-        const result = JSON.parse(output);
+        const result = JSON.parse(stdout);
         if (!result?.response) {
           throw new Error('Formato de respuesta inválido');
         }

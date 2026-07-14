@@ -44,6 +44,7 @@ import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
 import { DocumentCompareService } from './library/document-compare.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
+import { PgvectorService } from './repositories/pgvector.service';
 import { GoogleGmailService } from './tools/google/google-gmail.service';
 import { GoogleDriveService } from './tools/google/google-drive.service';
 import { YouTubeService } from './tools/google/youtube.service';
@@ -52,6 +53,7 @@ import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
+import { AuditService } from './security/audit.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -101,11 +103,13 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
     DocumentSummaryService,
     DocumentCompareService,
     KnowledgeTestService,
+    PgvectorService,
     JarvisKnowledgeService,
     CorpusSelectorService,
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
+    AuditService,
   ],
   exports: [
     JarvisService,
