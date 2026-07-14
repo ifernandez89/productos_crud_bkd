@@ -6,6 +6,7 @@ import { BrowserToolService } from '../tools/browser/browser-tool.service';
 import { DocumentIngestService } from '../library/document-ingest.service';
 import { MemoryRepository } from '../repositories/memory.repository';
 import { DocumentRepository } from '../repositories/document.repository';
+import { EmbeddingsService } from '../library/embeddings.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,7 @@ export class ExecutionEngine {
     private readonly memoryRepo: MemoryRepository,
     private readonly documentRepo: DocumentRepository,
     @Inject(OllamaProvider) private readonly llm: ILLMProvider,
+    private readonly embeddingsService: EmbeddingsService,
   ) {}
 
   /**
@@ -504,7 +506,14 @@ export class ExecutionEngine {
 
   private async executeReadDocs(step: ExecutionStep, objective: string): Promise<StepOutput> {
     const query = step.input.query || objective;
-    const chunks = await this.documentRepo.searchChunks(query, 5);
+    let chunks = [] as any[];
+    try {
+      const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
+      chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 5);
+    } catch (err: any) {
+      this.logger.warn(`[planner:executeReadDocs] Fallback a búsqueda textual: ${err.message}`);
+      chunks = await this.documentRepo.searchChunks(query, 5);
+    }
 
     if (chunks.length === 0) {
       return { content: 'Sin documentos relevantes en la biblioteca.' };

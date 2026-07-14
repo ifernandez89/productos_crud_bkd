@@ -14,6 +14,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Extrae y formatea en tiempo real los datos estructurados (tratamientos, oraciones, descripción, precauciones, acciones) de cualquier elemento mencionado en la consulta del usuario (ej. "para qué sirve el cedrón?", "cómo curar la abichadura?").
 - **🔧 Integración en `JarvisService`**: Intercepta comandos de listado de conocimiento al principio del ciclo de query y añade automáticamente la información estructurada preseleccionada y ya resumida en el contexto del LLM (`buildJarvisContext`) para ofrecer respuestas precisas.
 
+### Changed — Refactor de prompt builder, ejecución y esquema de datos (2026-07-13)
+
+- **🧩 Mejoras en el pipeline de prompts de Jarvis**: Se ajustó el flujo de construcción del prompt, la preparación del contexto y la ejecución para mejorar la coherencia de las respuestas y la integración con la base de conocimiento local.
+- **⚙️ Optimización del motor de ejecución**: Se refinó el servicio de ejecución del planner para manejar mejor los pasos de respuesta, errores y continuidad del flujo conversacional.
+- **📚 Compatibilidad con la biblioteca y pruebas de conocimiento**: Se actualizaron los servicios de ingesta, pruebas RAG y repositorio documental para soportar de manera más robusta la recuperación y validación de documentos.
+- **🗄️ Ajustes en Prisma y migraciones**: Se actualizaron el esquema de Prisma y las migraciones asociadas para mantener la compatibilidad con la base de datos y el soporte de pgvector.
+- **🛠️ Scripts auxiliares**: Se añadieron utilidades de parche y soporte para el builder de prompts y la integración de conocimiento.
+
 ### Added — Google Workspace + YouTube Integration (2026-07-12)
 
 **📅 Google Calendar (ampliado):**

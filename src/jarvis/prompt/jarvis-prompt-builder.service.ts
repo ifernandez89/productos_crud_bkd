@@ -10,6 +10,7 @@ import { MemoryRepository } from '../repositories/memory.repository';
 import { CategorySummaryService } from '../library/category-summary.service';
 import { DocumentSummaryService } from '../library/document-summary.service';
 import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
+import { EmbeddingsService } from '../library/embeddings.service';
 
 @Injectable()
 export class JarvisPromptBuilderService {
@@ -27,6 +28,7 @@ export class JarvisPromptBuilderService {
     private readonly categorySummaryService: CategorySummaryService,
     private readonly documentSummaryService: DocumentSummaryService,
     private readonly jarvisKnowledge: JarvisKnowledgeService,
+    private readonly embeddingsService: EmbeddingsService,
   ) {}
 
   async buildJarvisContext(
@@ -195,7 +197,14 @@ export class JarvisPromptBuilderService {
           }
           
           if (!categorySummary.isRequest) {
-            const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+            let chunks = [] as any[];
+            try {
+              const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
+              chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+            } catch (err: any) {
+              this.logger.warn(`[rag:semantic] Fallback a búsqueda textual: ${err.message}`);
+              chunks = await this.documentRepo.searchChunks(userMessage, 3);
+            }
             if (chunks.length > 0) {
               usedDocs = true;
               const docText = chunks

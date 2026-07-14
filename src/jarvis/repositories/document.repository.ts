@@ -44,6 +44,15 @@ export class DocumentRepository {
     });
   }
 
+  async saveChunkEmbedding(chunkId: number, vector: number[]): Promise<void> {
+    const vectorString = `[${vector.map((value) => Number(value).toPrecision(15)).join(',')}]`;
+    await this.prisma.$executeRaw`
+      UPDATE "Chunk"
+      SET "embedding" = ${vectorString}::vector
+      WHERE "id" = ${chunkId}
+    `;
+  }
+
   async findDocuments(category?: string): Promise<Document[]> {
     return this.prisma.document.findMany({
       where:   category ? { category } : undefined,
@@ -130,6 +139,69 @@ export class DocumentRepository {
     }
 
     return chunks;
+  }
+
+  async searchChunksSemantic(embedding: number[], limit = 10): Promise<(Chunk & { document: Document })[]> {
+    const vectorString = `[${embedding.map((value) => Number(value).toPrecision(15)).join(',')}]`;
+    const rows = await this.prisma.$queryRaw<Array<{
+      id: number;
+      documentId: number;
+      content: string;
+      metadata: string | null;
+      embeddingId: string | null;
+      sourceId: number | null;
+      title: string;
+      contentDoc: string;
+      category: string | null;
+      source: string | null;
+      timesUsed: number;
+      lastUsed: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
+      similarity: number;
+    }>>`
+      SELECT
+        c.id,
+        c."documentId",
+        c.content,
+        c.metadata,
+        c."embeddingId",
+        d."sourceId",
+        d.title,
+        d.content AS "contentDoc",
+        d.category,
+        d.source,
+        d."timesUsed",
+        d."lastUsed",
+        d."createdAt",
+        d."updatedAt",
+        1 - (c.embedding <=> ${vectorString}::vector) AS similarity
+      FROM "Chunk" c
+      JOIN "Document" d ON d.id = c."documentId"
+      WHERE c.embedding IS NOT NULL
+      ORDER BY c.embedding <=> ${vectorString}::vector
+      LIMIT ${limit};
+    `;
+
+    return rows.map((row) => ({
+      id: row.id,
+      documentId: row.documentId,
+      content: row.content,
+      metadata: row.metadata,
+      embeddingId: row.embeddingId,
+      document: {
+        id: row.documentId,
+        sourceId: row.sourceId,
+        title: row.title,
+        content: row.contentDoc,
+        category: row.category,
+        source: row.source,
+        timesUsed: row.timesUsed,
+        lastUsed: row.lastUsed,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      },
+    }));
   }
 
   /**

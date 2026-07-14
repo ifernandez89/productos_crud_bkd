@@ -118,6 +118,25 @@ Mensaje del usuario
 | `SITE_SEARCH` | "Noticias en elonce" | BrowserTool con site: |
 | `REPEAT` | "Repetí eso" | ConversationRepository.getLastAssistantMessage() |
 
+### 4.1 Ampliación reciente del router (julio 2026)
+
+El router ya no solo clasifica comandos simples: ahora funciona como un orquestador híbrido para múltiples superficies de interacción. El flujo actual combina:
+
+- clasificación rápida por reglas y keywords,
+- routing a servicios especializados como Google Calendar, Gmail, Drive y YouTube,
+- activación de skills cognitivas cuando la consulta requiere razonamiento modular,
+- selección de modo de búsqueda persistente: `OFFLINE`, `LOCAL_FIRST`, `HYBRID` o `WEB_FIRST`.
+
+**Intents añadidos recientemente:**
+
+| Intent | Ejemplo | Destino |
+|--------|---------|---------|
+| `GMAIL` | "mis emails", "busca en mi correo" | `GoogleGmailService` |
+| `DRIVE` | "mis archivos de Drive", "sincronizá Drive" | `GoogleDriveService` |
+| `YOUTUBE` | "busca un video de NestJS" | `YouTubeService` |
+
+Esta evolución permite que Jarvis responda tanto desde memoria y RAG local como desde servicios externos, respetando el contexto del usuario y el modo de ejecución elegido.
+
 ---
 
 ## 5. Execution Engine *(nuevo)*
@@ -157,6 +176,15 @@ Respuesta + savedToKnowledge: true
 | `respond` | Generar respuesta final al usuario |
 
 El engine acumula el output de cada paso como contexto para el siguiente. Si un paso falla, continúa con el siguiente siempre que haya contexto acumulado.
+
+### 5.1 Refactor reciente del pipeline (julio 2026)
+
+El pipeline de prompt y ejecución fue reorganizado para reducir fricción entre el planner, la selección de contexto y la respuesta final. Los cambios más importantes son:
+
+- centralización de la construcción del contexto de Jarvis,
+- mejor separación entre planificación, ejecución y generación de respuesta,
+- soporte para contexto pre-cargado desde RAG y conocimiento local,
+- manejo más robusto de pasos fallidos y continuidad del flujo.
 
 ---
 
@@ -312,6 +340,24 @@ API deportiva → DuckDuckGo → scraping Playwright → respuesta LLM
 - `getUpcomingEvents()` — agenda de los próximos días
 - `getPendingTasks()` — tareas pendientes de Google Tasks
 
+### Google Workspace + YouTube (nuevo)
+Jarvis amplió su capa de herramientas con integración nativa para Google Workspace y YouTube:
+
+- **Google Calendar**: agenda diaria, eventos por rango, detección de conflictos y creación de reuniones con Meet.
+- **Gmail**: correos importantes, correos del día, búsqueda por texto y redacción de borradores.
+- **Google Drive**: búsqueda de archivos, listado reciente y sincronización de documentos a la biblioteca RAG.
+- **YouTube**: búsqueda de videos, extracción de metadata y soporte para URLs de video.
+
+Los permisos OAuth fueron extendidos para cubrir `gmail.readonly`, `gmail.compose`, `drive.readonly`, `drive.file` y `userinfo.email`.
+
+### Skills cognitivas (nuevo)
+El orquestador puede cargar skills de razonamiento modular desde `skills/` para reforzar respuestas complejas. Estas skills no cambian el núcleo, sino que enriquecen el contexto del LLM cuando la consulta lo requiere:
+
+- epistemología
+- lógica formal
+- teoría de decisiones
+- método científico
+
 ### BusinessSourceService
 Catálogo de **30+ fuentes locales de Paraná, Entre Ríos**:
 - Farmacias (Farmacity, Villegas, Cuyo, Magna)
@@ -335,6 +381,37 @@ POST /jarbees/library/document/url  ← scraping de URL
 2. Divide en chunks: párrafos primero, ventana deslizante para párrafos largos (800 chars, 10% overlap)
 3. Genera embeddings via `EmbeddingsService` (nomic-embed-text via Ollama)
 4. Guarda chunks con `embeddingId` en PostgreSQL
+
+### 11.1 Biblioteca local JSON (nuevo)
+
+Además del pipeline tradicional de documentos, Jarvis puede leer conocimiento local desde archivos JSON ubicados en `src/jarvis/knowledge`. Este modo es útil para bases de conocimiento estáticas que deben responderse de forma directa y estructurada.
+
+**JarvisKnowledgeService**:
+- escanea automáticamente archivos JSON locales,
+- lista contenido registrado por categoría o tema,
+- extrae campos estructurados como descripción, tratamientos, precauciones y acciones,
+- permite responder consultas del tipo “qué plantas medicinales tenemos registradas” o “para qué sirve el cedrón”.
+
+### 11.2 Diagnóstico y validación RAG (nuevo)
+
+Se incorporó un módulo especializado para medir y depurar la calidad del conocimiento recuperado:
+
+- **KnowledgeTestService**: ejecuta pruebas automáticas sobre la biblioteca, evaluando recuperación de documentos y calidad de respuesta.
+- **Probe de chunks**: permite inspeccionar qué fragmentos específicos recupera el RAG para una consulta.
+- **Diagnóstico de biblioteca**: reporta cobertura, top categorías, documentos sin chunks y alertas de calidad.
+
+Esto convierte al sistema en algo mucho más observable y facilita la mejora continua del RAG sin depender solo de prueba manual.
+
+### 11.3 Modos de búsqueda persistentes (nuevo)
+
+Los comportamientos de internet y RAG ahora se almacenan en las preferencias del usuario. Los modos disponibles son:
+
+- `OFFLINE`: desactiva internet y los fallbacks web.
+- `LOCAL_FIRST`: prioriza documentos locales y conocimiento del modelo antes de salir a la web.
+- `HYBRID`: mezcla local + web según la naturaleza de la consulta.
+- `WEB_FIRST`: busca en internet primero para enriquecer la respuesta.
+
+Este mecanismo permite ajustar el comportamiento del asistente de forma consistente entre sesiones.
 
 **RssIngestService** — procesa feeds RSS:
 - Limpia HTML con Cheerio
@@ -416,6 +493,9 @@ Cada respuesta genera un `AgentRun` con:
 | DELETE | `/jarbees/library/document/:id` | Eliminar documento |
 | GET | `/jarbees/library/stats` | Stats de la biblioteca |
 | POST/GET | `/jarbees/library/collection` | CRUD de colecciones |
+| GET | `/jarbees/library/diagnostic` | Diagnóstico del estado del conocimiento y la biblioteca |
+| POST | `/jarbees/library/knowledge-test` | Pruebas automáticas de recuperación RAG |
+| POST | `/jarbees/library/probe` | Inspección detallada de chunks recuperados |
 
 ### Browser
 | Método | Ruta | Descripción |
@@ -461,7 +541,7 @@ GitHub           ░░░░░░░░░░   0%  🔴  Schema preparado, si
 Ollama           █████████░  90%  ✅  Dos modelos + embeddings + Model Router
 OpenRouter       ████████░░  80%  ✅  Mistral-7B, intercambiable vía flag
 ─────────────────────────────────────
-Cobertura total  ~72%
+Cobertura total  ~78%
 ```
 
 ---

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DocumentRepository } from '../repositories/document.repository';
 import { OllamaProvider } from '../llm/ollama.provider';
+import { EmbeddingsService } from './embeddings.service';
 
 // ── Tipos de resultado ────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ export class KnowledgeTestService {
   constructor(
     private readonly documentRepo: DocumentRepository,
     private readonly ollamaProvider: OllamaProvider,
+    private readonly embeddingsService: EmbeddingsService,
   ) {}
 
   // ── Diagnóstico de biblioteca ──────────────────────────────────────────────
@@ -181,7 +183,14 @@ export class KnowledgeTestService {
   async probeRag(query: string, limit = 8): Promise<ChunkProbeResult> {
     this.logger.log(`[knowledge-test:probe] query="${query}"`);
 
-    const chunks = await this.documentRepo.searchChunks(query, limit);
+    let chunks = [] as any[];
+    try {
+      const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
+      chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, limit);
+    } catch (err: any) {
+      this.logger.warn(`[knowledge-test:probe] Fallback a búsqueda textual: ${err.message}`);
+      chunks = await this.documentRepo.searchChunks(query, limit);
+    }
 
     const uniqueDocs = new Set(chunks.map(c => c.documentId)).size;
 
@@ -297,7 +306,14 @@ export class KnowledgeTestService {
     this.logger.log(`[knowledge-test:single] pregunta generada: "${testQuestion}"`);
 
     // Ejecutar búsqueda RAG
-    const chunks = await this.documentRepo.searchChunks(testQuestion, 5);
+    let chunks = [] as any[];
+    try {
+      const queryEmbedding = await this.embeddingsService.generateEmbedding(testQuestion);
+      chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 5);
+    } catch (err: any) {
+      this.logger.warn(`[knowledge-test:single] Fallback a búsqueda textual: ${err.message}`);
+      chunks = await this.documentRepo.searchChunks(testQuestion, 5);
+    }
 
     const retrievedChunks = chunks.map((c, idx) => ({
       rank: idx + 1,

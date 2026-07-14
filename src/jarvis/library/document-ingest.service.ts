@@ -205,12 +205,15 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
         this.logger.warn(`No se pudo generar el embedding para chunk ${i}: ${err.message}`);
       }
 
-      await this.documentRepo.createChunk({
+      const chunk = await this.documentRepo.createChunk({
         documentId,
         content: safeContent,
         embeddingId: embeddingStr,
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
+      if (embeddingStr) {
+        await this.documentRepo.saveChunkEmbedding(chunk.id, JSON.parse(embeddingStr));
+      }
     }
     return chunks.length;
   }

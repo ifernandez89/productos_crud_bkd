@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -94,13 +94,14 @@ model Memory {
 }
 
 // ── 2.1) CHUNKS DE MEMORIA CON EMBEDDINGS ────────────────────────────────────
-// Búsqueda semántica en vez de LIKE
+// Búsqueda semántica con pgvector
 
 model MemoryChunk {
-  id          Int     @id @default(autoincrement())
+  id          Int                        @id @default(autoincrement())
   memoryId    Int
   content     String
-  embeddingId String? // referencia a vector store o futuro: embedding vector(768)
+  embeddingId String?                    // legacy: referencia a vector store externo
+  embedding   Unsupported("vector(768)")? // pgvector: búsqueda semántica nativa
   memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@index([memoryId])
@@ -205,15 +206,15 @@ model Document {
 }
 
 // ── 5) CHUNKS VECTORIALES ─────────────────────────────────────────────────────
-// Fragmentos embeddables para búsqueda semántica
-// TODO: agregar `embedding vector(768)` cuando se active pgvector
+// Fragmentos embeddables para búsqueda semántica con pgvector
 
 model Chunk {
-  id          Int      @id @default(autoincrement())
+  id          Int                        @id @default(autoincrement())
   documentId  Int
   content     String
-  embeddingId String?  // referencia a vector store externo (si no usamos pgvector)
-  metadata    String?  // JSON serializado: { page, section, language, etc }
+  embeddingId String?                    // legacy: referencia a vector store externo
+  embedding   Unsupported("vector(768)")? // pgvector: búsqueda semántica nativa
+  metadata    String?                    // JSON serializado: { page, section, language, etc }
   document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])

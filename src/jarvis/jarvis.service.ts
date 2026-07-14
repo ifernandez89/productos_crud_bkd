@@ -31,6 +31,7 @@ import { JarvisKnowledgeService } from './knowledge/jarvis-knowledge.service';
 import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
+import { EmbeddingsService } from './library/embeddings.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -77,6 +78,7 @@ export class JarvisService {
     private readonly jarvisCommand: JarvisCommandService,
     private readonly jarvisWebSearch: JarvisWebSearchService,
     private readonly jarvisPromptBuilder: JarvisPromptBuilderService,
+    private readonly embeddingsService: EmbeddingsService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -147,7 +149,14 @@ export class JarvisService {
       let hasRagHits = false;
 
       if (useDocuments) {
-        const chunks = await this.documentRepo.searchChunks(userMessage, 3);
+        let chunks = [] as any[];
+        try {
+          const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
+          chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+        } catch (err: any) {
+          this.logger.warn(`[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`);
+          chunks = await this.documentRepo.searchChunks(userMessage, 3);
+        }
         if (chunks.length > 0) {
           hasRagHits = true;
           prefetchedRagContext = `### DOCUMENTOS\n` + chunks
