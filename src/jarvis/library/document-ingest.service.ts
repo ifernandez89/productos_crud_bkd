@@ -23,8 +23,8 @@ export interface IngestResult {
 export class DocumentIngestService {
   private readonly logger = new Logger(DocumentIngestService.name);
 
-  private readonly CHUNK_SIZE    = 800;
-  private readonly CHUNK_OVERLAP = 80;
+  private readonly CHUNK_SIZE    = 1200;
+  private readonly CHUNK_OVERLAP = 150;
 
   constructor(
     private readonly documentRepo: DocumentRepository,

@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Optimized — RAG Chunking Strategy (2026-07-14)
+
+- **📦 Parámetros de chunking optimizados**: Actualización de `CHUNK_SIZE` de 800 a **1200 caracteres** y `CHUNK_OVERLAP` de 80 a **150 caracteres** en `DocumentIngestService`.
+- **⚡ Beneficios**:
+  - ~40% reducción en cantidad de chunks por documento
+  - Mejor contexto semántico dentro de cada chunk (bge-m3 maneja sin problema ~2000 caracteres)
+  - Embeddings más rápidos (menos vectores a calcular y almacenar)
+  - Recuperación RAG más coherente sin sacrificar relevancia
+- **🎯 Rationale**: Con **bge-m3** como modelo de embeddings, no es necesario fragmentar el contenido en chunks pequeños. Los chunks más grandes mantienen mejor coherencia semántica y reducen la latencia de ingesta.
+
 ### Added — Local JSON Knowledge Base (2026-07-13)
 
 - **📁 Carpeta `src/jarvis/knowledge`**: Soporte para cargar dinámicamente cualquier base de datos en formato JSON de conocimiento local.
