@@ -111,71 +111,24 @@
       ]
     },
     {
-      "id": "lib-00-espacio-sagrado-version-nov2017-pdf",
-      "titulo": "Espacio Sagrado (Versión Nov 2017)",
-      "archivo": "00 ESPACIO SAGRADO version nov2017.pdf",
+      "id": "lib-angeles-arrien-las-cuatro-sendas-del-cha",
+      "titulo": "Angeles Arrien Las Cuatro Sendas del Chaman",
+      "archivo": "Angeles Arrien Las Cuatro Sendas del Chaman.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Tradición Chamánica",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "chamanismo",
-        "espiritualidad",
-        "ritos"
+        "Otros"
       ],
       "conceptosClave": [
-        "espacio sagrado",
-        "direcciones",
-        "vientos",
-        "apus",
-        "madre tierra",
-        "pachamama"
+        "angeles arrien las cuatro sendas del chaman"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Espacio Sagrado (Versión Nov 2017)\" de Tradición Chamánica registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Angeles Arrien Las Cuatro Sendas del Chaman\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "chamán",
-        "energía",
-        "iniciación",
-        "ritos",
-        "medicina",
-        "sagrado"
-      ]
-    },
-    {
-      "id": "lib-12-tintes-naturales-maya-mesoamerica-etn",
-      "titulo": "Tintes Naturales Maya y Mesoamérica: Etnobotánica, Códices y Artesanía",
-      "archivo": "12_tintes_naturales_maya_mesoamerica_etnobotanica_codice_artesania_prehispanico_colonial_tzutujil_mam.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Etnobotánica Maya",
-      "idioma": "es",
-      "categorias": [
-        "etnobotánica",
-        "códices",
-        "artesanía",
-        "cultura maya",
-        "mesoamérica"
-      ],
-      "conceptosClave": [
-        "tintes naturales",
-        "plantas tintóreas",
-        "prehispánico",
-        "colonial",
-        "tzutujil",
-        "mam"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Tintes Naturales Maya y Mesoamérica: Etnobotánica, Códices y Artesanía\" de Etnobotánica Maya registrado en la biblioteca local.",
-      "tags": [
-        "maya",
-        "plantas",
-        "tintes",
-        "colores",
-        "códice",
-        "historia"
+        "biblioteca"
       ]
     },
     {
@@ -213,419 +166,381 @@
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-1-arquetiposeinc",
-      "titulo": "Arquetipos E Inconsciente Colectivo",
-      "archivo": "Carl Gustav Jung Libros/1_ArquetiposEInconscienteColectivo.pdf",
+      "id": "lib-aventuras-fuera-del-cuerpo-buhlman-willi",
+      "titulo": "aventuras fuera del cuerpo buhlman william",
+      "archivo": "aventuras-fuera-del-cuerpo-buhlman-william.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "aventuras fuera del cuerpo buhlman william"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"aventuras fuera del cuerpo buhlman william\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-1-lapsicologiade",
-      "titulo": "La Psicologia De La Transferencia",
-      "archivo": "Carl Gustav Jung Libros/1_LaPsicologiaDeLaTransferencia.pdf",
+      "id": "lib-biodescodificacion-pdf",
+      "titulo": "Biodescodificacion",
+      "archivo": "Biodescodificacion.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "biodescodificacion"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"La Psicologia De La Transferencia\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Biodescodificacion\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-2-arquetiposeinc",
-      "titulo": "Arquetipos E Inconsciente Colectivo",
-      "archivo": "Carl Gustav Jung Libros/2_ArquetiposEInconscienteColectivo.pdf",
+      "id": "lib-carl-gustav-jung-arquetipos-ei-inconscie",
+      "titulo": "Arquetipos EI inconsciente Colectivo 1",
+      "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "arquetipos ei inconsciente colectivo 1"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-2-lapsicologiade",
-      "titulo": "La Psicologia De La Transferencia",
-      "archivo": "Carl Gustav Jung Libros/2_LaPsicologiaDeLaTransferencia.pdf",
+      "id": "lib-carl-gustav-jung-arquetipos-ei-inconscie",
+      "titulo": "Arquetipos EI inconsciente Colectivo 2",
+      "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "arquetipos ei inconsciente colectivo 2"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"La Psicologia De La Transferencia\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-3-arquetiposeinc",
-      "titulo": "Arquetipos E Inconsciente Colectivo",
-      "archivo": "Carl Gustav Jung Libros/3_ArquetiposEInconscienteColectivo.pdf",
+      "id": "lib-carl-gustav-jung-arquetipos-ei-inconscie",
+      "titulo": "Arquetipos EI inconsciente Colectivo 3",
+      "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-3.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "arquetipos ei inconsciente colectivo 3"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 3\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-el-hombre-y-sus-",
-      "titulo": "El hombre y sus simbolos- Carl  Gustav  Jung",
-      "archivo": "Carl Gustav Jung Libros/El hombre y sus simbolos-Carl Gustav Jung.pdf",
+      "id": "lib-carl-gustav-jung-conflictos-del-alma-inf",
+      "titulo": "Conflictos Del Alma Infantil",
+      "archivo": "Carl Gustav Jung/Conflictos Del Alma Infantil.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "conflictos del alma infantil"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"El hombre y sus simbolos- Carl  Gustav  Jung\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Conflictos Del Alma Infantil\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungc-g-los-comp",
-      "titulo": "Jung C. G. -  Los  Complejos y el  Inconsciente",
-      "archivo": "Carl Gustav Jung Libros/JungC.G. - Los Complejos y el Inconsciente.pdf",
+      "id": "lib-carl-gustav-jung-el-hombre-y-sus-simbolo",
+      "titulo": "El hombre y sus simbolos",
+      "archivo": "Carl Gustav Jung/El hombre y sus simbolos.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "el hombre y sus simbolos"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung C. G. -  Los  Complejos y el  Inconsciente\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"El hombre y sus simbolos\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcarlconflict",
-      "titulo": "Jung Carl Conflictos Del Alma Infantil",
-      "archivo": "Carl Gustav Jung Libros/JungCarlConflictosDelAlmaInfantil.PDF",
+      "id": "lib-carl-gustav-jung-energetica-psiquica-y-e",
+      "titulo": "Energetica Psiquica y Esencia Del Sueño",
+      "archivo": "Carl Gustav Jung/Energetica Psiquica y Esencia Del Sueño.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "energetica psiquica y esencia del sueño"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung Carl Conflictos Del Alma Infantil\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Energetica Psiquica y Esencia Del Sueño\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcarlgustavla",
-      "titulo": "Jung Carl Gustav La Interpretacion De La Naturaleza Y La Psique",
-      "archivo": "Carl Gustav Jung Libros/JungCarlGustavLaInterpretacionDeLaNaturalezaYLaPsique.PDF",
+      "id": "lib-carl-gustav-jung-la-interpretacion-de-la",
+      "titulo": "La Interpretacion De La Naturaleza Y La Psique",
+      "archivo": "Carl Gustav Jung/La Interpretacion De La Naturaleza Y La Psique.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "la interpretacion de la naturaleza y la psique"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung Carl Gustav La Interpretacion De La Naturaleza Y La Psique\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"La Interpretacion De La Naturaleza Y La Psique\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcarlgustavre",
-      "titulo": "Jung Carl Gustav Recuerdos Sueos Pensamientos",
-      "archivo": "Carl Gustav Jung Libros/JungCarlGustavRecuerdosSueosPensamientos.PDF",
+      "id": "lib-carl-gustav-jung-la-psicologia-de-la-tra",
+      "titulo": "La Psicologia De La Transferencia 1",
+      "archivo": "Carl Gustav Jung/La Psicologia De La Transferencia-1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "la psicologia de la transferencia 1"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung Carl Gustav Recuerdos Sueos Pensamientos\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"La Psicologia De La Transferencia 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcarlgustavti",
-      "titulo": "Jung Carl Gustav Tipos Psicologicos Tomo1",
-      "archivo": "Carl Gustav Jung Libros/JungCarlGustavTiposPsicologicosTomo1.pdf",
+      "id": "lib-carl-gustav-jung-la-psicologia-de-la-tra",
+      "titulo": "La Psicologia De La Transferencia 2",
+      "archivo": "Carl Gustav Jung/La Psicologia De La Transferencia-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "la psicologia de la transferencia 2"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung Carl Gustav Tipos Psicologicos Tomo1\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"La Psicologia De La Transferencia 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcarlgustavti",
-      "titulo": "Jung Carl Gustav Tipos Psicologicos Tomo2",
-      "archivo": "Carl Gustav Jung Libros/JungCarlGustavTiposPsicologicosTomo2.PDF",
+      "id": "lib-carl-gustav-jung-los-complejos-y-el-inco",
+      "titulo": "Los Complejos y el Inconsciente",
+      "archivo": "Carl Gustav Jung/Los Complejos y el Inconsciente.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "los complejos y el inconsciente"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung Carl Gustav Tipos Psicologicos Tomo2\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Los Complejos y el Inconsciente\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
       ]
     },
     {
-      "id": "lib-carl-gustav-jung-libros-jungcgenergetica",
-      "titulo": "Jung C G Energetica Psiquicay Esencia Del Sueno",
-      "archivo": "Carl Gustav Jung Libros/JungCGEnergeticaPsiquicayEsenciaDelSueno.pdf",
+      "id": "lib-carl-gustav-jung-recuerdos-sue-os-pensam",
+      "titulo": "Recuerdos Sueños Pensamientos",
+      "archivo": "Carl Gustav Jung/Recuerdos Sueños Pensamientos.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Carl Gustav Jung",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "psicología analítica",
-        "arquetipos",
-        "inconsciente"
+        "Otros"
       ],
       "conceptosClave": [
-        "arquetipos",
-        "sombra",
-        "ánima",
-        "ánimus",
-        "inconsciente colectivo",
-        "sí-mismo",
-        "persona"
+        "recuerdos sueños pensamientos"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Jung C G Energetica Psiquicay Esencia Del Sueno\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Recuerdos Sueños Pensamientos\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "Jung",
-        "psicología",
-        "inconsciente",
-        "arquetipo"
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-tipos-psicologicos-tomo",
+      "titulo": "Tipos Psicologicos   Tomo 1",
+      "archivo": "Carl Gustav Jung/Tipos Psicologicos - Tomo 1.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "tipos psicologicos   tomo 1"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Tipos Psicologicos   Tomo 1\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-tipos-psicologicos-tomo",
+      "titulo": "Tipos Psicologicos   Tomo 2",
+      "archivo": "Carl Gustav Jung/Tipos Psicologicos - Tomo 2.PDF",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "tipos psicologicos   tomo 2"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Tipos Psicologicos   Tomo 2\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-carta-astral-ignacio-gabriel-fernandez-p",
+      "titulo": "Carta astral Ignacio Gabriel Fernandez",
+      "archivo": "Carta astral Ignacio Gabriel Fernandez.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "carta astral ignacio gabriel fernandez"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Carta astral Ignacio Gabriel Fernandez\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-charles-fort-el-libro-de-los-condenados-",
+      "titulo": "Charles Fort  El Libro de los Condenados",
+      "archivo": "Charles Fort  El Libro de los Condenados.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "charles fort  el libro de los condenados"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Charles Fort  El Libro de los Condenados\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-cosmetica-natural-pdf",
+      "titulo": "COSMETICA NATURAL",
+      "archivo": "COSMETICA-NATURAL.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "cosmetica natural"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"COSMETICA NATURAL\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -696,36 +611,45 @@
       ]
     },
     {
-      "id": "lib-diccionario-de-biodescodificacion-pdf",
-      "titulo": "Diccionario de Biodescodificación",
-      "archivo": "DICCIONARIO de Biodescodificacion.pdf",
+      "id": "lib-curso-b-sico-autodefensa-ps-quica-1-de-2",
+      "titulo": "Curso Básico AutoDefensa Psíquica (1 de 2)",
+      "archivo": "Curso Básico AutoDefensa Psíquica (1 de 2).pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Joan Marc Vilanova Pujó",
+      "autor": "Desconocido",
       "idioma": "es",
       "categorias": [
-        "biodescodificación",
-        "bioneuroemoción",
-        "salud holística",
-        "psicosomática"
+        "Otros"
       ],
       "conceptosClave": [
-        "síntoma",
-        "conflicto biológico",
-        "emociones ocultas",
-        "descodificación",
-        "inconsciente"
+        "curso básico autodefensa psíquica (1 de 2)"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"Diccionario de Biodescodificación\" de Joan Marc Vilanova Pujó registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Curso Básico AutoDefensa Psíquica (1 de 2)\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "salud",
-        "biodescodificación",
-        "emociones",
-        "enfermedad",
-        "síntomas",
-        "diccionario"
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-curso-b-sico-autodefensa-ps-quica-2-de-2",
+      "titulo": "Curso Básico AutoDefensa Psíquica (2 de 2)",
+      "archivo": "Curso Básico AutoDefensa Psíquica (2 de 2).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "curso básico autodefensa psíquica (2 de 2)"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso Básico AutoDefensa Psíquica (2 de 2)\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -759,6 +683,69 @@
         "esoterismo",
         "cosmos",
         "filosofía"
+      ]
+    },
+    {
+      "id": "lib-el-uso-magico-del-tabaco-en-un-contexto-",
+      "titulo": "El Uso Magico Del Tabaco En Un Contexto Urbano Lima",
+      "archivo": "El Uso Magico Del Tabaco En Un Contexto Urbano Lima.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el uso magico del tabaco en un contexto urbano lima"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Uso Magico Del Tabaco En Un Contexto Urbano Lima\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-eliphas-levi-claves-mayores-y-claviculas",
+      "titulo": "Eliphas Levi   Claves mayores y claviculas de Salomon",
+      "archivo": "Eliphas Levi - Claves mayores y claviculas de Salomon.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "eliphas levi   claves mayores y claviculas de salomon"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Eliphas Levi   Claves mayores y claviculas de Salomon\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-el-monte-nos-da-comida-pdf",
+      "titulo": "El monte nos da comida",
+      "archivo": "El_monte_nos_da_comida.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el monte nos da comida"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El monte nos da comida\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -1909,6 +1896,111 @@
       ]
     },
     {
+      "id": "lib-existen-los-hechizos-y-maleficios-pdf",
+      "titulo": "Existen los Hechizos y Maleficios",
+      "archivo": "Existen los Hechizos y Maleficios.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "existen los hechizos y maleficios"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Existen los Hechizos y Maleficios\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-fundamentos-racionales-de-la-astrolog-a-",
+      "titulo": "Fundamentos Racionales de la Astrología",
+      "archivo": "Fundamentos Racionales de la Astrología.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "fundamentos racionales de la astrología"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Fundamentos Racionales de la Astrología\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-hacking-taller-attacking-ad-pdf",
+      "titulo": "Hacking Taller Attacking AD",
+      "archivo": "Hacking-Taller-Attacking-AD.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "hacking taller attacking ad"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Hacking Taller Attacking AD\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-hermes-el-kybalion-pdf",
+      "titulo": "Hermes El Kybalion",
+      "archivo": "Hermes_El-Kybalion.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "hermes el kybalion"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Hermes El Kybalion\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-hierbas-info-pap-s-alan-pdf",
+      "titulo": "Hierbas info papás Alan",
+      "archivo": "Hierbas info papás Alan.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "hierbas info papás alan"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Hierbas info papás Alan\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
       "id": "lib-icaros-pdf",
       "titulo": "Ícaros: Cantos Sagrados del Amazonas",
       "archivo": "icaros.pdf",
@@ -1975,6 +2067,636 @@
         "artesanía",
         "inta",
         "lana"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-cantos-de-ign",
+      "titulo": "Cantos de ignorancia iluminada Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Cantos-de-ignorancia-iluminada-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "cantos de ignorancia iluminada jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Cantos de ignorancia iluminada Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-curaciones-ch",
+      "titulo": "Curaciones Chamanicas",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Curaciones-Chamanicas.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "curaciones chamanicas"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curaciones Chamanicas\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-el-cerebro-co",
+      "titulo": "El Cerebro Consciente Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/El-Cerebro-Consciente-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el cerebro consciente jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Cerebro Consciente Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-el-poder-cura",
+      "titulo": "El poder curativo de la mente Tulku Thondup",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/El-poder-curativo-de-la-mente-Tulku-Thondup.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el poder curativo de la mente tulku thondup"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El poder curativo de la mente Tulku Thondup\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-el-potencial-",
+      "titulo": "El Potencial Transferido Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/El-Potencial-Transferido-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el potencial transferido jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Potencial Transferido Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-el-sabor-de-l",
+      "titulo": "El Sabor de la Iluminacion 1994",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/El-Sabor-de-la-Iluminacion 1994.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el sabor de la iluminacion 1994"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Sabor de la Iluminacion 1994\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-el-vehiculo-d",
+      "titulo": "El Vehiculo de las Transformaciones",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/El-Vehiculo-de-las-Transformaciones.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "el vehiculo de las transformaciones"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Vehiculo de las Transformaciones\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-fluir-en-el-s",
+      "titulo": "Fluir en El sin yo by Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Fluir-en-El-sin-yo-by-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "fluir en el sin yo by jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Fluir en El sin yo by Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-conquista-",
+      "titulo": "La conquista del templo Jacobo Grinberg",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-conquista-del-templo-Jacobo-Grinberg.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la conquista del templo jacobo grinberg"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La conquista del templo Jacobo Grinberg\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-construcci",
+      "titulo": "La Construccion de La Realidad Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-Construccion-de-La-Realidad-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la construccion de la realidad jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Construccion de La Realidad Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-experienci",
+      "titulo": "La Experiencia interna",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-Experiencia-interna.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la experiencia interna"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Experiencia interna\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-fuerza-cre",
+      "titulo": "La Fuerza Creativa del Amor",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-Fuerza-Creativa-del-Amor.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la fuerza creativa del amor"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Fuerza Creativa del Amor\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-fuerza-vit",
+      "titulo": "La fuerza vital del cielo anterior",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-fuerza-vital-del-cielo-anterior.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la fuerza vital del cielo anterior"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La fuerza vital del cielo anterior\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-percepcion",
+      "titulo": "La percepcion de la realidad",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-percepcion-de-la-realidad.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la percepcion de la realidad"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La percepcion de la realidad\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-real-tecno",
+      "titulo": "La Real Tecnologia Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-Real-Tecnologia-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la real tecnologia jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Real Tecnologia Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-la-teoria-sin",
+      "titulo": "La teoria sintergica Jacobo Grinberg zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/La-teoria-sintergica-Jacobo-Grinberg-zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la teoria sintergica jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La teoria sintergica Jacobo Grinberg zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-las-manifesta",
+      "titulo": "Las Manifestaciones Del Ser Pachita",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Las-Manifestaciones-Del-Ser-Pachita.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "las manifestaciones del ser pachita"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Las Manifestaciones Del Ser Pachita\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-El-Cerebro-y-los-Chamanes-Vol-5-2.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico el cerebro y los chamanes vol 5 2"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico PACHITA Vol 3",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-PACHITA-Vol-3.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico pachita vol 3"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico PACHITA Vol 3\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico Vol 1",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-1.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico vol 1"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 1\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico Vol 2",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-2.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico vol 2"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 2\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico Vol 4",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-4.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico vol 4"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 4\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico Vol 6",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-6.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico vol 6"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 6\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
+      "titulo": "Los Chamanes de Mexico Vol 7",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-7.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los chamanes de mexico vol 7"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 7\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-los-cristales",
+      "titulo": "Los Cristales de la Galaxia Jacobo Grinberg",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Cristales-de-la-Galaxia_Jacobo-Grinberg.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "los cristales de la galaxia jacobo grinberg"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Cristales de la Galaxia Jacobo Grinberg\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-mas-alla-de-l",
+      "titulo": "Mas Alla de los Lenguajes",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Mas-Alla-de-los-Lenguajes.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "mas alla de los lenguajes"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Mas Alla de los Lenguajes\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-meditacion-au",
+      "titulo": "MEDITACION AUTOALUSIVA Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/MEDITACION-AUTOALUSIVA-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "meditacion autoalusiva jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"MEDITACION AUTOALUSIVA Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-misticismo-in",
+      "titulo": "Misticismo indigena by Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Misticismo indigena-by-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "misticismo indigena by jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Misticismo indigena by Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-jacobo-grinberg-zylberbaum-retorno-a-la-",
+      "titulo": "Retorno a la Luz Jacobo Grinberg Zylberbaum",
+      "archivo": "Jacobo-Grinberg-Zylberbaum/Retorno-a-la-Luz-Jacobo-Grinberg-Zylberbaum.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "retorno a la luz jacobo grinberg zylberbaum"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Retorno a la Luz Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-la-historia-del-tiempo-pdf",
+      "titulo": "LA HISTORIA DEL TIEMPO",
+      "archivo": "LA HISTORIA DEL TIEMPO.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "la historia del tiempo"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"LA HISTORIA DEL TIEMPO\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -2045,6 +2767,27 @@
       ]
     },
     {
+      "id": "lib-las-mareas-del-inconsciente-docx-pdf",
+      "titulo": "las mareas del inconsciente.docx",
+      "archivo": "las mareas del inconsciente.docx.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "las mareas del inconsciente.docx"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"las mareas del inconsciente.docx\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
       "id": "lib-libro-teoamoxtli-libro-de-esencia-divina",
       "titulo": "Teoamoxtli: Libro de Esencia Divina",
       "archivo": "Libro - Teoamoxtli (Libro de Esencia Divina).pdf",
@@ -2074,6 +2817,237 @@
         "sagrado",
         "esencia",
         "dioses"
+      ]
+    },
+    {
+      "id": "lib-lista-completa-de-patentes-de-nikola-tes",
+      "titulo": "lista completa de patentes de  nikola tesla",
+      "archivo": "lista_completa_de_patentes_de _nikola_tesla.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "lista completa de patentes de  nikola tesla"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"lista completa de patentes de  nikola tesla\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-malezas-comestibles-del-cono-sur-pdf",
+      "titulo": "Malezas Comestibles Del Cono Sur",
+      "archivo": "Malezas Comestibles Del Cono Sur.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "malezas comestibles del cono sur"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Malezas Comestibles Del Cono Sur\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-manual-sanaciones-populares-pdf",
+      "titulo": "MANUAL SANACIONES POPULARES",
+      "archivo": "MANUAL SANACIONES POPULARES.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "manual sanaciones populares"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"MANUAL SANACIONES POPULARES\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-mas-alla-del-ego-walsh-pdf",
+      "titulo": "Mas alla del ego Walsh",
+      "archivo": "Mas-alla-del-ego_Walsh.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "mas alla del ego walsh"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Mas alla del ego Walsh\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-munay-ki-apunte-pdf",
+      "titulo": "Munay Ki   Apunte",
+      "archivo": "Munay Ki - Apunte.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "munay ki   apunte"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Munay Ki   Apunte\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-munay-ki-espacio-sagrado-pdf",
+      "titulo": "Munay Ki   ESPACIO SAGRADO",
+      "archivo": "Munay Ki - ESPACIO SAGRADO.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "munay ki   espacio sagrado"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Munay Ki   ESPACIO SAGRADO\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-munay-ki-pdf",
+      "titulo": "Munay ki",
+      "archivo": "Munay ki.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "munay ki"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Munay ki\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-nikola-tesla-illustrated-autobiography-p",
+      "titulo": "Nikola Tesla   Illustrated Autobiography",
+      "archivo": "Nikola Tesla - Illustrated Autobiography.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "nikola tesla   illustrated autobiography"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Nikola Tesla   Illustrated Autobiography\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-oracion-docx-pdf",
+      "titulo": "Oracion.docx",
+      "archivo": "Oracion.docx.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "oracion.docx"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Oracion.docx\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-pim-van-lommel-consciencia-mas-alla-de-l",
+      "titulo": "pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte",
+      "archivo": "pim-van-lommel-consciencia-mas-alla-de-la-vida-la-ciencia-de-la-experiencia-cercana-a-la-muerte.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-plantas-medicinales-del-nordeste-argenti",
+      "titulo": "Plantas medicinales del nordeste argentino incupo",
+      "archivo": "Plantas medicinales del nordeste argentino incupo.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "plantas medicinales del nordeste argentino incupo"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Plantas medicinales del nordeste argentino incupo\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -2113,6 +3087,90 @@
       ]
     },
     {
+      "id": "lib-shamans-priests-and-witches-a-cross-cult",
+      "titulo": "Shamans Priests and Witches A Cross Cultural Study of Magico Religious Practitioners",
+      "archivo": "Shamans-Priests-and-Witches-A-Cross-Cultural-Study-of-Magico-Religious-Practitioners.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "shamans priests and witches a cross cultural study of magico religious practitioners"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Shamans Priests and Witches A Cross Cultural Study of Magico Religious Practitioners\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-significado-de-las-22-letras-del-alfabet",
+      "titulo": "SIGNIFICADO DE LAS 22 LETRAS DEL ALFABETO HEBREO",
+      "archivo": "SIGNIFICADO_DE_LAS_22_LETRAS_DEL_ALFABETO HEBREO.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "significado de las 22 letras del alfabeto hebreo"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"SIGNIFICADO DE LAS 22 LETRAS DEL ALFABETO HEBREO\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-telektonon-pdf",
+      "titulo": "telektonon",
+      "archivo": "telektonon.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "telektonon"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"telektonon\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-telektonon-manual-pdf",
+      "titulo": "telektonon manual",
+      "archivo": "telektonon_manual.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "telektonon manual"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"telektonon manual\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
       "id": "lib-tesla-energia-libre-pdf",
       "titulo": "Nikola Tesla: Energía Libre y Antigravedad",
       "archivo": "Tesla, Energia libre.pdf",
@@ -2143,6 +3201,27 @@
         "física",
         "inventos",
         "ciencia"
+      ]
+    },
+    {
+      "id": "lib-tintes-naturales-maya-mesoamerica-etnobo",
+      "titulo": "tintes naturales maya mesoamerica etnobotanica codice artesania prehispanico colonial tzutujil",
+      "archivo": "tintes_naturales_maya_mesoamerica_etnobotanica_codice_artesania_prehispanico_colonial_tzutujil.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "tintes naturales maya mesoamerica etnobotanica codice artesania prehispanico colonial tzutujil"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"tintes naturales maya mesoamerica etnobotanica codice artesania prehispanico colonial tzutujil\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
       ]
     },
     {
@@ -2210,133 +3289,6 @@
         "serpiente",
         "relatos",
         "ayahuasca"
-      ]
-    },
-    {
-      "id": "lib-afr-curso-b-sico-autodefensa-ps-quica-1-",
-      "titulo": "Curso Básico de Autodefensa Psíquica (Parte 1)",
-      "archivo": "[AFR] Curso Básico AutoDefensa Psíquica (1 de 2).pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Al Filo de la Realidad",
-      "idioma": "es",
-      "categorias": [
-        "autodefensa psíquica",
-        "esoterismo",
-        "protección energética"
-      ],
-      "conceptosClave": [
-        "ataque psíquico",
-        "larvas astrales",
-        "protección",
-        "visualización",
-        "campo áurico"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Curso Básico de Autodefensa Psíquica (Parte 1)\" de Al Filo de la Realidad registrado en la biblioteca local.",
-      "tags": [
-        "protección",
-        "energía",
-        "autodefensa",
-        "larvas",
-        "aura",
-        "psíquico"
-      ]
-    },
-    {
-      "id": "lib-afr-curso-b-sico-autodefensa-ps-quica-2-",
-      "titulo": "Curso Básico de Autodefensa Psíquica (Parte 2)",
-      "archivo": "[AFR] Curso Básico AutoDefensa Psíquica (2 de 2).pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Al Filo de la Realidad",
-      "idioma": "es",
-      "categorias": [
-        "autodefensa psíquica",
-        "esoterismo",
-        "protección energética"
-      ],
-      "conceptosClave": [
-        "formas de pensamiento",
-        "limpieza energética",
-        "amuletos",
-        "rituales",
-        "protección"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Curso Básico de Autodefensa Psíquica (Parte 2)\" de Al Filo de la Realidad registrado en la biblioteca local.",
-      "tags": [
-        "protección",
-        "energía",
-        "limpieza",
-        "amuletos",
-        "rituales",
-        "defensa"
-      ]
-    },
-    {
-      "id": "lib-afr-existen-los-hechizos-y-maleficios-pd",
-      "titulo": "Existen los Hechizos y Maleficios",
-      "archivo": "[AFR] Existen los Hechizos y Maleficios.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Al Filo de la Realidad",
-      "idioma": "es",
-      "categorias": [
-        "esoterismo",
-        "hechicería",
-        "creencias populares"
-      ],
-      "conceptosClave": [
-        "hechizos",
-        "maleficios",
-        "magia negra",
-        "supersticiones",
-        "creencias"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Existen los Hechizos y Maleficios\" de Al Filo de la Realidad registrado en la biblioteca local.",
-      "tags": [
-        "hechizos",
-        "magia",
-        "superstición",
-        "creencia",
-        "esoterismo"
-      ]
-    },
-    {
-      "id": "lib-afr-fundamentos-racionales-de-la-astrolo",
-      "titulo": "Fundamentos Racionales de la Astrología",
-      "archivo": "[AFR] Fundamentos Racionales de la Astrología.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Al Filo de la Realidad",
-      "idioma": "es",
-      "categorias": [
-        "astrología",
-        "ciencia",
-        "cosmobiología"
-      ],
-      "conceptosClave": [
-        "influencia astral",
-        "cartas natales",
-        "astrología racional",
-        "efectos cósmicos",
-        "horóscopo"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Fundamentos Racionales de la Astrología\" de Al Filo de la Realidad registrado en la biblioteca local.",
-      "tags": [
-        "astrología",
-        "planetas",
-        "ciencia",
-        "astros",
-        "racional",
-        "estrellas"
       ]
     }
   ],

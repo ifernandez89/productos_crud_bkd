@@ -1,0 +1,191 @@
+﻿--- .gitignore ---
+# compiled output
+/dist
+/node_modules
+/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# temp directory
+.temp
+.tmp
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+
+prisma/dev.db
+--- scanner output ---
+[scanner] Escaneando biblioteca en: C:\Projects\productos_crud_bkd\docs\libros
+[scanner] Encontrados 126 archivos en total.
+[scanner] Cargado ├¡ndice existente con 129 documentos.
+[scanner] Manteniendo existente: Angeles Arrien Las Cuatro Sendas del Chaman.pdf (Angeles Arrien Las Cuatro Sendas del Chaman)
+[scanner] Manteniendo existente: Arthur-E-Powell-The-Etheric-Double-The-Health-Aura-of-Man.pdf (The Etheric Double: The Health Aura of Man)
+[scanner] Manteniendo existente: aventuras-fuera-del-cuerpo-buhlman-william.pdf (aventuras fuera del cuerpo buhlman william)
+[scanner] Manteniendo existente: Biodescodificacion.pdf (Biodescodificacion)
+[scanner] Manteniendo existente: Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-1.pdf (Arquetipos EI inconsciente Colectivo 1)
+[scanner] Manteniendo existente: Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-2.pdf (Arquetipos EI inconsciente Colectivo 2)
+[scanner] Manteniendo existente: Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-3.pdf (Arquetipos EI inconsciente Colectivo 3)
+[scanner] Manteniendo existente: Carl Gustav Jung/Conflictos Del Alma Infantil.PDF (Conflictos Del Alma Infantil)
+[scanner] Manteniendo existente: Carl Gustav Jung/El hombre y sus simbolos.pdf (El hombre y sus simbolos)
+[scanner] Manteniendo existente: Carl Gustav Jung/Energetica Psiquica y Esencia Del Sue├▒o.pdf (Energetica Psiquica y Esencia Del Sue├▒o)
+[scanner] Manteniendo existente: Carl Gustav Jung/La Interpretacion De La Naturaleza Y La Psique.PDF (La Interpretacion De La Naturaleza Y La Psique)
+[scanner] Manteniendo existente: Carl Gustav Jung/La Psicologia De La Transferencia-1.pdf (La Psicologia De La Transferencia 1)
+[scanner] Manteniendo existente: Carl Gustav Jung/La Psicologia De La Transferencia-2.pdf (La Psicologia De La Transferencia 2)
+[scanner] Manteniendo existente: Carl Gustav Jung/Los Complejos y el Inconsciente.pdf (Los Complejos y el Inconsciente)
+[scanner] Manteniendo existente: Carl Gustav Jung/Recuerdos Sue├▒os Pensamientos.PDF (Recuerdos Sue├▒os Pensamientos)
+[scanner] Manteniendo existente: Carl Gustav Jung/Tipos Psicologicos - Tomo 1.pdf (Tipos Psicologicos   Tomo 1)
+[scanner] Manteniendo existente: Carl Gustav Jung/Tipos Psicologicos - Tomo 2.PDF (Tipos Psicologicos   Tomo 2)
+[scanner] Manteniendo existente: Carta astral Ignacio Gabriel Fernandez.pdf (Carta astral Ignacio Gabriel Fernandez)
+[scanner] Manteniendo existente: Charles Fort  El Libro de los Condenados.pdf (Charles Fort  El Libro de los Condenados)
+[scanner] Manteniendo existente: COSMETICA-NATURAL.pdf (COSMETICA NATURAL)
+[scanner] Manteniendo existente: cromoterapia.pdf (Cromoterapia: Curaci├│n por los Colores)
+[scanner] Manteniendo existente: Cuarenta_dos_secciones_Sutra.pdf (El Sutra de las Cuarenta y Dos Secciones)
+[scanner] Manteniendo existente: Curso B├ísico AutoDefensa Ps├¡quica (1 de 2).pdf (Curso B├ísico AutoDefensa Ps├¡quica (1 de 2))
+[scanner] Manteniendo existente: Curso B├ísico AutoDefensa Ps├¡quica (2 de 2).pdf (Curso B├ísico AutoDefensa Ps├¡quica (2 de 2))
+[scanner] Manteniendo existente: doctrina_secreta.pdf (La Doctrina Secreta)
+[scanner] Manteniendo existente: El Uso Magico Del Tabaco En Un Contexto Urbano Lima.pdf (El Uso Magico Del Tabaco En Un Contexto Urbano Lima)
+[scanner] Manteniendo existente: Eliphas Levi - Claves mayores y claviculas de Salomon.pdf (Eliphas Levi   Claves mayores y claviculas de Salomon)
+[scanner] Manteniendo existente: El_monte_nos_da_comida.pdf (El monte nos da comida)
+[scanner] Manteniendo existente: esoterismo practico/Dispuesto - Chilam IX.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n )
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 01.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 1)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 02.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 2)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 03.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 3)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 04.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 4)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 05.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 5)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 06.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 6)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 07.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 7)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 08.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 8)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 09.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 9)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 10.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 10)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 11.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 11)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 12.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 12)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 13 - Revista Al Filo de la Realidad N┬║ 136.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 13)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 13.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 13)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 14.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 14)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 15.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 15)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 16.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 16)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 17.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 17)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 18.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 18)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 19.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 19)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 20.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 20)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 21.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 21)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 22.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 22)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 23.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 23)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 24.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 24)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 25.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 25)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 26.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 26)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 27.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 27)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 28.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 28)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 29.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 29)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 30.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 30)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 31.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 31)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 32.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 32)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 33.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 33)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 34.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 34)
+[scanner] Manteniendo existente: esoterismo practico/[AFR] Curso de Esoterismo Pr├íctico - Lecci├│n N┬║ 35.pdf (Curso de Esoterismo Pr├íctico - Lecci├│n 35)
+[scanner] Manteniendo existente: Existen los Hechizos y Maleficios.pdf (Existen los Hechizos y Maleficios)
+[scanner] Manteniendo existente: Fundamentos Racionales de la Astrolog├¡a.pdf (Fundamentos Racionales de la Astrolog├¡a)
+[scanner] Manteniendo existente: Hacking-Taller-Attacking-AD.pdf (Hacking Taller Attacking AD)
+[scanner] Manteniendo existente: Hermes_El-Kybalion.pdf (Hermes El Kybalion)
+[scanner] Manteniendo existente: Hierbas info pap├ís Alan.pdf (Hierbas info pap├ís Alan)
+[scanner] Manteniendo existente: icaros.pdf (├ìcaros: Cantos Sagrados del Amazonas)
+[scanner] Manteniendo existente: inta_libro_tintes_naturales_de_plantas_nativas_colores_de_la_patagonia.pdf (Tintes Naturales de Plantas Nativas: Colores de la Patagonia)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Cantos-de-ignorancia-iluminada-Jacobo-Grinberg-Zylberbaum.pdf (Cantos de ignorancia iluminada Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Curaciones-Chamanicas.pdf (Curaciones Chamanicas)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/El-Cerebro-Consciente-Jacobo-Grinberg-Zylberbaum.pdf (El Cerebro Consciente Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/El-poder-curativo-de-la-mente-Tulku-Thondup.pdf (El poder curativo de la mente Tulku Thondup)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/El-Potencial-Transferido-Jacobo-Grinberg-Zylberbaum.pdf (El Potencial Transferido Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/El-Sabor-de-la-Iluminacion 1994.pdf (El Sabor de la Iluminacion 1994)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/El-Vehiculo-de-las-Transformaciones.pdf (El Vehiculo de las Transformaciones)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Fluir-en-El-sin-yo-by-Jacobo-Grinberg-Zylberbaum.pdf (Fluir en El sin yo by Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-conquista-del-templo-Jacobo-Grinberg.pdf (La conquista del templo Jacobo Grinberg)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-Construccion-de-La-Realidad-Jacobo-Grinberg-Zylberbaum.pdf (La Construccion de La Realidad Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-Experiencia-interna.pdf (La Experiencia interna)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-Fuerza-Creativa-del-Amor.pdf (La Fuerza Creativa del Amor)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-fuerza-vital-del-cielo-anterior.pdf (La fuerza vital del cielo anterior)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-percepcion-de-la-realidad.pdf (La percepcion de la realidad)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-Real-Tecnologia-Jacobo-Grinberg-Zylberbaum.pdf (La Real Tecnologia Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/La-teoria-sintergica-Jacobo-Grinberg-zylberbaum.pdf (La teoria sintergica Jacobo Grinberg zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Las-Manifestaciones-Del-Ser-Pachita.pdf (Las Manifestaciones Del Ser Pachita)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-El-Cerebro-y-los-Chamanes-Vol-5-2.pdf (Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-PACHITA-Vol-3.pdf (Los Chamanes de Mexico PACHITA Vol 3)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-1.pdf (Los Chamanes de Mexico Vol 1)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-2.pdf (Los Chamanes de Mexico Vol 2)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-4.pdf (Los Chamanes de Mexico Vol 4)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-6.pdf (Los Chamanes de Mexico Vol 6)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-7.pdf (Los Chamanes de Mexico Vol 7)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Los-Cristales-de-la-Galaxia_Jacobo-Grinberg.pdf (Los Cristales de la Galaxia Jacobo Grinberg)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Mas-Alla-de-los-Lenguajes.pdf (Mas Alla de los Lenguajes)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/MEDITACION-AUTOALUSIVA-Jacobo-Grinberg-Zylberbaum.pdf (MEDITACION AUTOALUSIVA Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Misticismo indigena-by-Jacobo-Grinberg-Zylberbaum.pdf (Misticismo indigena by Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: Jacobo-Grinberg-Zylberbaum/Retorno-a-la-Luz-Jacobo-Grinberg-Zylberbaum.pdf (Retorno a la Luz Jacobo Grinberg Zylberbaum)
+[scanner] Manteniendo existente: LA HISTORIA DEL TIEMPO.pdf (LA HISTORIA DEL TIEMPO)
+[scanner] Manteniendo existente: La v├¡a del tarot, Alejandro Jodorowsky.pdf (La V├¡a del Tarot)
+[scanner] Manteniendo existente: la-cocina-vegetariana-de-hare-krisna 1984.pdf (La Cocina Vegetariana de Hare Krishna)
+[scanner] Manteniendo existente: las mareas del inconsciente.docx.pdf (las mareas del inconsciente.docx)
+[scanner] Manteniendo existente: Libro - Teoamoxtli (Libro de Esencia Divina).pdf (Teoamoxtli: Libro de Esencia Divina)
+[scanner] Manteniendo existente: lista_completa_de_patentes_de _nikola_tesla.pdf (lista completa de patentes de  nikola tesla)
+[scanner] Manteniendo existente: Malezas Comestibles Del Cono Sur.pdf (Malezas Comestibles Del Cono Sur)
+[scanner] Manteniendo existente: MANUAL SANACIONES POPULARES.pdf (MANUAL SANACIONES POPULARES)
+[scanner] Manteniendo existente: Mas-alla-del-ego_Walsh.pdf (Mas alla del ego Walsh)
+[scanner] Manteniendo existente: Munay Ki - Apunte.pdf (Munay Ki   Apunte)
+[scanner] Manteniendo existente: Munay Ki - ESPACIO SAGRADO.pdf (Munay Ki   ESPACIO SAGRADO)
+[scanner] Manteniendo existente: Munay ki.pdf (Munay ki)
+[scanner] Manteniendo existente: Nikola Tesla - Illustrated Autobiography.pdf (Nikola Tesla   Illustrated Autobiography)
+[scanner] Manteniendo existente: Oracion.docx.pdf (Oracion.docx)
+[scanner] Manteniendo existente: pim-van-lommel-consciencia-mas-alla-de-la-vida-la-ciencia-de-la-experiencia-cercana-a-la-muerte.pdf (pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte)
+[scanner] Manteniendo existente: Plantas medicinales del nordeste argentino incupo.pdf (Plantas medicinales del nordeste argentino incupo)
+[scanner] Manteniendo existente: popol_vuh.pdf (Popol Vuh: El Libro Sagrado de los Mayas)
+[scanner] Manteniendo existente: Shamans-Priests-and-Witches-A-Cross-Cultural-Study-of-Magico-Religious-Practitioners.pdf (Shamans Priests and Witches A Cross Cultural Study of Magico Religious Practitioners)
+[scanner] Manteniendo existente: SIGNIFICADO_DE_LAS_22_LETRAS_DEL_ALFABETO HEBREO.pdf (SIGNIFICADO DE LAS 22 LETRAS DEL ALFABETO HEBREO)
+[scanner] Manteniendo existente: telektonon.pdf (telektonon)
+[scanner] Manteniendo existente: telektonon_manual.pdf (telektonon manual)
+[scanner] Manteniendo existente: Tesla, Energia libre.pdf (Nikola Tesla: Energ├¡a Libre y Antigravedad)
+[scanner] Manteniendo existente: tintes_naturales_maya_mesoamerica_etnobotanica_codice_artesania_prehispanico_colonial_tzutujil.pdf (tintes naturales maya mesoamerica etnobotanica codice artesania prehispanico colonial tzutujil)
+[scanner] Manteniendo existente: Un ensue├▒o entre serpientes y jaguares (parte 1).pdf (Un Ensue├▒o entre Serpientes y Jaguares (Parte 1))
+[scanner] Manteniendo existente: Un ensue├▒o entre serpientes y jaguares (parte 2).pdf (Un Ensue├▒o entre Serpientes y Jaguares (Parte 2))
+[scanner] Sincronizaci├│n terminada. Guardado en: C:\Projects\productos_crud_bkd\src\jarvis\knowledge\library-index.json. Total documentos en ├¡ndice: 129
