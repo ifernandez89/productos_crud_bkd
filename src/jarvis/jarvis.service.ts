@@ -32,6 +32,8 @@ import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 import { EmbeddingsService } from './library/embeddings.service';
+import { CorpusSelectorService } from './knowledge/corpus-selector.service';
+import { DocumentIngestService } from './library/document-ingest.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -79,6 +81,8 @@ export class JarvisService {
     private readonly jarvisWebSearch: JarvisWebSearchService,
     private readonly jarvisPromptBuilder: JarvisPromptBuilderService,
     private readonly embeddingsService: EmbeddingsService,
+    private readonly corpusSelector: CorpusSelectorService,
+    private readonly ingestService: DocumentIngestService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -151,12 +155,67 @@ export class JarvisService {
       if (useDocuments) {
         let chunks = [] as any[];
         try {
+          // 1. Consultar el índice de la biblioteca para encontrar documentos relevantes
+          const matches = this.corpusSelector.findRelevantDocuments(userMessage, 3);
+          const targetDocIds: number[] = [];
+
+          if (matches.length > 0) {
+            this.logger.log(`[rag] Corpus Selector detectó ${matches.length} documentos relevantes.`);
+            for (const match of matches) {
+              const doc = match.document;
+              try {
+                if (doc.embeddings !== 'ready') {
+                  const dbId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+                  targetDocIds.push(dbId);
+                } else {
+                  // Verificar existencia real en base de datos
+                  const existing = await this.documentRepo.searchDocumentsByTitle(doc.titulo, 1);
+                  if (existing.length > 0) {
+                    targetDocIds.push(existing[0].id);
+                  } else {
+                    this.logger.warn(`[rag] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`);
+                    const dbId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+                    targetDocIds.push(dbId);
+                  }
+                }
+              } catch (err: any) {
+                this.logger.error(`[rag] Error en lazy loading de "${doc.titulo}": ${err.message}`);
+              }
+            }
+          }
+
+          // 2. Ejecutar la búsqueda semántica
           const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
-          chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+          
+          if (targetDocIds.length > 0) {
+            this.logger.log(`[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')}`);
+            chunks = await this.documentRepo.searchChunksSemanticInDocuments(queryEmbedding, targetDocIds, 3);
+          } else {
+            // Fallback: búsqueda global si no hay coincidencia en el índice estructural
+            this.logger.log(`[rag] Sin coincidencias en el índice. Ejecutando búsqueda global.`);
+            chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+          }
         } catch (err: any) {
           this.logger.warn(`[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`);
-          chunks = await this.documentRepo.searchChunks(userMessage, 3);
+          try {
+            // Re-obtener los IDs de destino si existieron
+            const matches = this.corpusSelector.findRelevantDocuments(userMessage, 3);
+            const targetDocIds: number[] = [];
+            for (const match of matches) {
+              const existing = await this.documentRepo.searchDocumentsByTitle(match.document.titulo, 1);
+              if (existing.length > 0) targetDocIds.push(existing[0].id);
+            }
+
+            if (targetDocIds.length > 0) {
+              chunks = await this.documentRepo.searchChunksInDocuments(userMessage, targetDocIds, 3);
+            } else {
+              chunks = await this.documentRepo.searchChunks(userMessage, 3);
+            }
+          } catch (fallbackErr: any) {
+            this.logger.error(`[rag:fallback] Error en búsqueda textual fallback: ${fallbackErr.message}`);
+          }
         }
+
         if (chunks.length > 0) {
           hasRagHits = true;
           prefetchedRagContext = `### DOCUMENTOS\n` + chunks

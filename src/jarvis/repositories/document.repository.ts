@@ -73,11 +73,11 @@ export class DocumentRepository {
       where: {
         OR: [
           ...terms.flatMap((term) => [
-            { title:   { contains: term, mode: 'insensitive' as const } },
-            { content: { contains: term, mode: 'insensitive' as const } },
+            { title:   { contains: term } },
+            { content: { contains: term } },
           ]),
           ...termsWithHyphens.map((term) => ({
-            title: { contains: term, mode: 'insensitive' as const },
+            title: { contains: term },
           })),
         ],
       },
@@ -102,11 +102,11 @@ export class DocumentRepository {
         OR: [
           // términos con espacios
           ...terms.map((term) => ({
-            title: { contains: term, mode: 'insensitive' as const },
+            title: { contains: term },
           })),
           // variantes con guión
           ...termsWithHyphens.map((term) => ({
-            title: { contains: term, mode: 'insensitive' as const },
+            title: { contains: term },
           })),
         ],
       },
@@ -202,6 +202,111 @@ export class DocumentRepository {
         updatedAt: row.updatedAt,
       },
     }));
+  }
+
+  /**
+   * Busca chunks semánticamente acotado a un conjunto de documentos específicos.
+   */
+  async searchChunksSemanticInDocuments(
+    embedding: number[], 
+    documentIds: number[], 
+    limit = 10
+  ): Promise<(Chunk & { document: Document })[]> {
+    if (documentIds.length === 0) return [];
+    
+    const vectorString = `[${embedding.map((value) => Number(value).toPrecision(15)).join(',')}]`;
+    const rows = await this.prisma.$queryRaw<Array<{
+      id: number;
+      documentId: number;
+      content: string;
+      metadata: string | null;
+      embeddingId: string | null;
+      sourceId: number | null;
+      title: string;
+      contentDoc: string;
+      category: string | null;
+      source: string | null;
+      timesUsed: number;
+      lastUsed: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
+      similarity: number;
+    }>>`
+      SELECT
+        c.id,
+        c."documentId",
+        c.content,
+        c.metadata,
+        c."embeddingId",
+        d."sourceId",
+        d.title,
+        d.content AS "contentDoc",
+        d.category,
+        d.source,
+        d."timesUsed",
+        d."lastUsed",
+        d."createdAt",
+        d."updatedAt",
+        1 - (c.embedding <=> ${vectorString}::vector) AS similarity
+      FROM "Chunk" c
+      JOIN "Document" d ON d.id = c."documentId"
+      WHERE c.embedding IS NOT NULL AND c."documentId" = ANY(${documentIds})
+      ORDER BY c.embedding <=> ${vectorString}::vector
+      LIMIT ${limit};
+    `;
+
+    return rows.map((row) => ({
+      id: row.id,
+      documentId: row.documentId,
+      content: row.content,
+      metadata: row.metadata,
+      embeddingId: row.embeddingId,
+      document: {
+        id: row.documentId,
+        sourceId: row.sourceId,
+        title: row.title,
+        content: row.contentDoc,
+        category: row.category,
+        source: row.source,
+        timesUsed: row.timesUsed,
+        lastUsed: row.lastUsed,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      },
+    }));
+  }
+
+  /**
+   * Busca chunks de forma textual filtrando por un conjunto de documentos específicos.
+   */
+  async searchChunksInDocuments(
+    query: string, 
+    documentIds: number[], 
+    limit = 10
+  ): Promise<(Chunk & { document: Document })[]> {
+    if (documentIds.length === 0) return [];
+    
+    const terms = query.toLowerCase().split(/\s+/).filter((t) => t.length >= 4);
+    if (terms.length === 0) return [];
+
+    const chunks = await this.prisma.chunk.findMany({
+      where: {
+        AND: [
+          {
+            OR: terms.map((term) => ({
+              content: { contains: term },
+            })),
+          },
+          {
+            documentId: { in: documentIds },
+          },
+        ],
+      },
+      include: { document: true },
+      take: limit,
+    }) as (Chunk & { document: Document })[];
+
+    return chunks;
   }
 
   /**

@@ -1,0 +1,2398 @@
+{
+  "metadata": {
+    "version": 1,
+    "descripcion": "Índice de biblioteca personal de JarBees. Contiene metadatos de todos los documentos disponibles. Los embeddings se generan bajo demanda (lazy loading) solo cuando el usuario consulta un tema relacionado.",
+    "nota": "Agregar manualmente cada entrada cuando se incorpore un nuevo PDF o documento. NO incluir el contenido — solo metadatos para el Corpus Selector."
+  },
+  "documentos": [
+    {
+      "id": "munay-ki-001",
+      "titulo": "Los Nueve Ritos del Munay-Ki",
+      "archivo": "munay_ki_completo.md",
+      "tipo": "libro",
+      "formato": "markdown",
+      "autor": "Tradición Q'ero / Alberto Villoldo",
+      "idioma": "es",
+      "categorias": [
+        "chamanismo",
+        "cosmovisión andina",
+        "rituales",
+        "espiritualidad"
+      ],
+      "conceptosClave": [
+        "ritos de iniciación",
+        "campo energético luminoso",
+        "homo luminous",
+        "Munay-Ki",
+        "Q'ero",
+        "arquetipos andinos",
+        "Pachamama",
+        "despacho",
+        "karpay"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Los nueve ritos de iniciación de la tradición chamánica andina Q'ero que transmiten semillas de conciencia para transformar el campo energético humano.",
+      "tags": [
+        "chamán",
+        "andes",
+        "Perú",
+        "iniciación",
+        "energía",
+        "sanación",
+        "cosmovisión"
+      ]
+    },
+    {
+      "id": "plantas-medicinales-001",
+      "titulo": "Herbario y Plantas Medicinales",
+      "archivo": "plantas_medicinales.json",
+      "tipo": "referencia",
+      "formato": "json",
+      "autor": "Recopilación propia",
+      "idioma": "es",
+      "categorias": [
+        "plantas medicinales",
+        "herboristería",
+        "medicina natural",
+        "fitoterapia"
+      ],
+      "conceptosClave": [
+        "acción terapéutica",
+        "herbario",
+        "plantas curativas",
+        "fitoterapia",
+        "medicina tradicional"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Base de datos de plantas medicinales con sus acciones terapéuticas, sistemas corporales que benefician y afecciones que tratan.",
+      "tags": [
+        "plantas",
+        "hierbas",
+        "remedios naturales",
+        "botánica",
+        "medicina herbaria"
+      ]
+    },
+    {
+      "id": "sanaciones-populares-001",
+      "titulo": "Sanaciones Populares y Oraciones Curativas",
+      "archivo": "sanaciones_populares.json",
+      "tipo": "referencia",
+      "formato": "json",
+      "autor": "Tradición popular regional",
+      "idioma": "es",
+      "categorias": [
+        "medicina popular",
+        "oraciones curativas",
+        "sanaciones tradicionales",
+        "folklore médico"
+      ],
+      "conceptosClave": [
+        "culebrilla",
+        "ojeo",
+        "empacho",
+        "mal de ojo",
+        "abichadura",
+        "susto",
+        "oraciones de sanación"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Recopilación de curas populares tradicionales de Entre Ríos y la región, incluyendo oraciones específicas y tratamientos para afecciones como culebrilla, ojeo, empacho y más.",
+      "tags": [
+        "curanderismo",
+        "medicina popular",
+        "Entre Ríos",
+        "oraciones",
+        "folklore",
+        "tradición"
+      ]
+    },
+    {
+      "id": "lib-00-espacio-sagrado-version-nov2017-pdf",
+      "titulo": "Espacio Sagrado (Versión Nov 2017)",
+      "archivo": "00 ESPACIO SAGRADO version nov2017.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Chamánica",
+      "idioma": "es",
+      "categorias": [
+        "chamanismo",
+        "espiritualidad",
+        "ritos"
+      ],
+      "conceptosClave": [
+        "espacio sagrado",
+        "direcciones",
+        "vientos",
+        "apus",
+        "madre tierra",
+        "pachamama"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Espacio Sagrado (Versión Nov 2017)\" de Tradición Chamánica registrado en la biblioteca local.",
+      "tags": [
+        "chamán",
+        "energía",
+        "iniciación",
+        "ritos",
+        "medicina",
+        "sagrado"
+      ]
+    },
+    {
+      "id": "lib-12-tintes-naturales-maya-mesoamerica-etn",
+      "titulo": "Tintes Naturales Maya y Mesoamérica: Etnobotánica, Códices y Artesanía",
+      "archivo": "12_tintes_naturales_maya_mesoamerica_etnobotanica_codice_artesania_prehispanico_colonial_tzutujil_mam.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Etnobotánica Maya",
+      "idioma": "es",
+      "categorias": [
+        "etnobotánica",
+        "códices",
+        "artesanía",
+        "cultura maya",
+        "mesoamérica"
+      ],
+      "conceptosClave": [
+        "tintes naturales",
+        "plantas tintóreas",
+        "prehispánico",
+        "colonial",
+        "tzutujil",
+        "mam"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Tintes Naturales Maya y Mesoamérica: Etnobotánica, Códices y Artesanía\" de Etnobotánica Maya registrado en la biblioteca local.",
+      "tags": [
+        "maya",
+        "plantas",
+        "tintes",
+        "colores",
+        "códice",
+        "historia"
+      ]
+    },
+    {
+      "id": "lib-arthur-e-powell-the-etheric-double-the-h",
+      "titulo": "The Etheric Double: The Health Aura of Man",
+      "archivo": "Arthur-E-Powell-The-Etheric-Double-The-Health-Aura-of-Man.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Arthur E. Powell",
+      "idioma": "es",
+      "categorias": [
+        "teosofía",
+        "cuerpo etérico",
+        "esoterismo",
+        "aura"
+      ],
+      "conceptosClave": [
+        "etheric double",
+        "prana",
+        "chakras",
+        "health aura",
+        "teosofía",
+        "cuerpo sutil"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"The Etheric Double: The Health Aura of Man\" de Arthur E. Powell registrado en la biblioteca local.",
+      "tags": [
+        "teosofía",
+        "energía",
+        "aura",
+        "prana",
+        "espíritu",
+        "sutil"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-1-arquetiposeinc",
+      "titulo": "Arquetipos E Inconsciente Colectivo",
+      "archivo": "Carl Gustav Jung Libros/1_ArquetiposEInconscienteColectivo.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-1-lapsicologiade",
+      "titulo": "La Psicologia De La Transferencia",
+      "archivo": "Carl Gustav Jung Libros/1_LaPsicologiaDeLaTransferencia.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Psicologia De La Transferencia\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-2-arquetiposeinc",
+      "titulo": "Arquetipos E Inconsciente Colectivo",
+      "archivo": "Carl Gustav Jung Libros/2_ArquetiposEInconscienteColectivo.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-2-lapsicologiade",
+      "titulo": "La Psicologia De La Transferencia",
+      "archivo": "Carl Gustav Jung Libros/2_LaPsicologiaDeLaTransferencia.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Psicologia De La Transferencia\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-3-arquetiposeinc",
+      "titulo": "Arquetipos E Inconsciente Colectivo",
+      "archivo": "Carl Gustav Jung Libros/3_ArquetiposEInconscienteColectivo.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Arquetipos E Inconsciente Colectivo\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-el-hombre-y-sus-",
+      "titulo": "El hombre y sus simbolos- Carl  Gustav  Jung",
+      "archivo": "Carl Gustav Jung Libros/El hombre y sus simbolos-Carl Gustav Jung.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El hombre y sus simbolos- Carl  Gustav  Jung\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungc-g-los-comp",
+      "titulo": "Jung C. G. -  Los  Complejos y el  Inconsciente",
+      "archivo": "Carl Gustav Jung Libros/JungC.G. - Los Complejos y el Inconsciente.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung C. G. -  Los  Complejos y el  Inconsciente\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcarlconflict",
+      "titulo": "Jung Carl Conflictos Del Alma Infantil",
+      "archivo": "Carl Gustav Jung Libros/JungCarlConflictosDelAlmaInfantil.PDF",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung Carl Conflictos Del Alma Infantil\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcarlgustavla",
+      "titulo": "Jung Carl Gustav La Interpretacion De La Naturaleza Y La Psique",
+      "archivo": "Carl Gustav Jung Libros/JungCarlGustavLaInterpretacionDeLaNaturalezaYLaPsique.PDF",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung Carl Gustav La Interpretacion De La Naturaleza Y La Psique\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcarlgustavre",
+      "titulo": "Jung Carl Gustav Recuerdos Sueos Pensamientos",
+      "archivo": "Carl Gustav Jung Libros/JungCarlGustavRecuerdosSueosPensamientos.PDF",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung Carl Gustav Recuerdos Sueos Pensamientos\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcarlgustavti",
+      "titulo": "Jung Carl Gustav Tipos Psicologicos Tomo1",
+      "archivo": "Carl Gustav Jung Libros/JungCarlGustavTiposPsicologicosTomo1.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung Carl Gustav Tipos Psicologicos Tomo1\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcarlgustavti",
+      "titulo": "Jung Carl Gustav Tipos Psicologicos Tomo2",
+      "archivo": "Carl Gustav Jung Libros/JungCarlGustavTiposPsicologicosTomo2.PDF",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung Carl Gustav Tipos Psicologicos Tomo2\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-libros-jungcgenergetica",
+      "titulo": "Jung C G Energetica Psiquicay Esencia Del Sueno",
+      "archivo": "Carl Gustav Jung Libros/JungCGEnergeticaPsiquicayEsenciaDelSueno.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Jung C G Energetica Psiquicay Esencia Del Sueno\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-cromoterapia-pdf",
+      "titulo": "Cromoterapia: Curación por los Colores",
+      "archivo": "cromoterapia.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Medicina Alternativa",
+      "idioma": "es",
+      "categorias": [
+        "cromoterapia",
+        "terapia de color",
+        "salud holística",
+        "vibraciones"
+      ],
+      "conceptosClave": [
+        "chakras",
+        "colores",
+        "espectro luminoso",
+        "sanación energética",
+        "vibración"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Cromoterapia: Curación por los Colores\" de Medicina Alternativa registrado en la biblioteca local.",
+      "tags": [
+        "cromoterapia",
+        "colores",
+        "sanación",
+        "salud",
+        "chakras",
+        "terapia"
+      ]
+    },
+    {
+      "id": "lib-cuarenta-dos-secciones-sutra-pdf",
+      "titulo": "El Sutra de las Cuarenta y Dos Secciones",
+      "archivo": "Cuarenta_dos_secciones_Sutra.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Buda Gautama (Traducción)",
+      "idioma": "es",
+      "categorias": [
+        "budismo",
+        "sutras",
+        "espiritualidad",
+        "filosofía oriental"
+      ],
+      "conceptosClave": [
+        "sutra",
+        "dharma",
+        "desapego",
+        "iluminación",
+        "buda",
+        "deseo"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Sutra de las Cuarenta y Dos Secciones\" de Buda Gautama (Traducción) registrado en la biblioteca local.",
+      "tags": [
+        "budismo",
+        "buda",
+        "meditación",
+        "filosofía",
+        "iluminación",
+        "sutra"
+      ]
+    },
+    {
+      "id": "lib-diccionario-de-biodescodificacion-pdf",
+      "titulo": "Diccionario de Biodescodificación",
+      "archivo": "DICCIONARIO de Biodescodificacion.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Joan Marc Vilanova Pujó",
+      "idioma": "es",
+      "categorias": [
+        "biodescodificación",
+        "bioneuroemoción",
+        "salud holística",
+        "psicosomática"
+      ],
+      "conceptosClave": [
+        "síntoma",
+        "conflicto biológico",
+        "emociones ocultas",
+        "descodificación",
+        "inconsciente"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Diccionario de Biodescodificación\" de Joan Marc Vilanova Pujó registrado en la biblioteca local.",
+      "tags": [
+        "salud",
+        "biodescodificación",
+        "emociones",
+        "enfermedad",
+        "síntomas",
+        "diccionario"
+      ]
+    },
+    {
+      "id": "lib-doctrina-secreta-pdf",
+      "titulo": "La Doctrina Secreta",
+      "archivo": "doctrina_secreta.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Helena Petrovna Blavatsky",
+      "idioma": "es",
+      "categorias": [
+        "teosofía",
+        "esoterismo",
+        "ocultismo",
+        "origen del cosmos"
+      ],
+      "conceptosClave": [
+        "teosofía",
+        "blavatsky",
+        "estancias de dzyan",
+        "evolución cósmica",
+        "razas raíz"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Doctrina Secreta\" de Helena Petrovna Blavatsky registrado en la biblioteca local.",
+      "tags": [
+        "teosofía",
+        "blavatsky",
+        "ocultismo",
+        "esoterismo",
+        "cosmos",
+        "filosofía"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-dispuesto-chilam-ix-",
+      "titulo": "Curso de Esoterismo Práctico - Lección ",
+      "archivo": "esoterismo practico/Dispuesto - Chilam IX.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección "
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección \" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 1",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 01.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 1"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 1\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 2",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 02.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 2"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 2\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 3",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 03.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 3"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 3\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 4",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 04.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 4"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 4\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 5",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 05.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 5"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 5\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 6",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 06.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 6"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 6\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 7",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 07.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 7"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 7\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 8",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 08.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 8"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 8\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 9",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 09.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 9"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 9\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 10",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 10.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 10"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 10\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 11",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 11.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 11"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 11\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 12",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 12.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 12"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 12\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 13",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 13 - Revista Al Filo de la Realidad Nº 136.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 13"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 13\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 13",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 13.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 13"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 13\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 14",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 14.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 14"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 14\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 15",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 15.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 15"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 15\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 16",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 16.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 16"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 16\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 17",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 17.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 17"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 17\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 18",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 18.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 18"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 18\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 19",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 19.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 19"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 19\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 20",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 20.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 20"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 20\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 21",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 21.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 21"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 21\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 22",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 22.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 22"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 22\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 23",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 23.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 23"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 23\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 24",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 24.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 24"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 24\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 25",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 25.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 25"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 25\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 26",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 26.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 26"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 26\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 27",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 27.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 27"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 27\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 28",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 28.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 28"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 28\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 29",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 29.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 29"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 29\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 30",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 30.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 30"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 30\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 31",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 31.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 31"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 31\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 32",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 32.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 32"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 32\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 33",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 33.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 33"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 33\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 34",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 34.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 34"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 34\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-esoterismo-practico-afr-curso-de-esoteri",
+      "titulo": "Curso de Esoterismo Práctico - Lección 35",
+      "archivo": "esoterismo practico/[AFR] Curso de Esoterismo Práctico - Lección Nº 35.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "magia práctica",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "esoterismo",
+        "magia",
+        "astral",
+        "autodefensa",
+        "lección 35"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso de Esoterismo Práctico - Lección 35\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "esoterismo",
+        "curso",
+        "lección",
+        "magia",
+        "ocultismo"
+      ]
+    },
+    {
+      "id": "lib-icaros-pdf",
+      "titulo": "Ícaros: Cantos Sagrados del Amazonas",
+      "archivo": "icaros.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Amazónica",
+      "idioma": "es",
+      "categorias": [
+        "chamanismo",
+        "ícaros",
+        "medicina amazónica",
+        "ayahuasca"
+      ],
+      "conceptosClave": [
+        "ícaros",
+        "shipibo-conibo",
+        "cantos medicinales",
+        "plantas maestras",
+        "curanderismo",
+        "ceremonias"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Ícaros: Cantos Sagrados del Amazonas\" de Tradición Amazónica registrado en la biblioteca local.",
+      "tags": [
+        "ícaros",
+        "chamanismo",
+        "shipibo",
+        "cantos",
+        "ayahuasca",
+        "medicina"
+      ]
+    },
+    {
+      "id": "lib-inta-libro-tintes-naturales-de-plantas-n",
+      "titulo": "Tintes Naturales de Plantas Nativas: Colores de la Patagonia",
+      "archivo": "inta_libro_tintes_naturales_de_plantas_nativas_colores_de_la_patagonia.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "INTA",
+      "idioma": "es",
+      "categorias": [
+        "etnobotánica",
+        "tintes naturales",
+        "plantas nativas",
+        "patagonia",
+        "artesanía"
+      ],
+      "conceptosClave": [
+        "lana",
+        "mordiente",
+        "plantas tintóreas",
+        "recetas de teñido",
+        "patagonia",
+        "tinción"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Tintes Naturales de Plantas Nativas: Colores de la Patagonia\" de INTA registrado en la biblioteca local.",
+      "tags": [
+        "patagonia",
+        "plantas",
+        "tintes",
+        "artesanía",
+        "inta",
+        "lana"
+      ]
+    },
+    {
+      "id": "lib-la-v-a-del-tarot-alejandro-jodorowsky-pd",
+      "titulo": "La Vía del Tarot",
+      "archivo": "La vía del tarot, Alejandro Jodorowsky.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Alejandro Jodorowsky & Marianne Costa",
+      "idioma": "es",
+      "categorias": [
+        "tarot",
+        "arcanos",
+        "simbolismo",
+        "psicomagia"
+      ],
+      "conceptosClave": [
+        "arcanos mayores",
+        "arcanos menores",
+        "tiradas",
+        "lectura de tarot",
+        "simbología"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Vía del Tarot\" de Alejandro Jodorowsky & Marianne Costa registrado en la biblioteca local.",
+      "tags": [
+        "tarot",
+        "esoterismo",
+        "jodorowsky",
+        "símbolos",
+        "arcanos",
+        "cartas"
+      ]
+    },
+    {
+      "id": "lib-la-cocina-vegetariana-de-hare-krisna-198",
+      "titulo": "La Cocina Vegetariana de Hare Krishna",
+      "archivo": "la-cocina-vegetariana-de-hare-krisna 1984.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Adiraja Dasa",
+      "idioma": "es",
+      "categorias": [
+        "cocina vegetariana",
+        "hare krishna",
+        "alimentación consciente",
+        "ayurveda"
+      ],
+      "conceptosClave": [
+        "recetas vegetarianas",
+        "prashadam",
+        "especias",
+        "cocina védica",
+        "ghee",
+        "krishna"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"La Cocina Vegetariana de Hare Krishna\" de Adiraja Dasa registrado en la biblioteca local.",
+      "tags": [
+        "cocina",
+        "vegetariana",
+        "krishna",
+        "recetas",
+        "ayurveda",
+        "consciente"
+      ]
+    },
+    {
+      "id": "lib-libro-teoamoxtli-libro-de-esencia-divina",
+      "titulo": "Teoamoxtli: Libro de Esencia Divina",
+      "archivo": "Libro - Teoamoxtli (Libro de Esencia Divina).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Tolteca",
+      "idioma": "es",
+      "categorias": [
+        "toltequidad",
+        "espiritualidad ancestral",
+        "méxico prehispánico"
+      ],
+      "conceptosClave": [
+        "teoamoxtli",
+        "esencia divina",
+        "nahuatl",
+        "toltecas",
+        "sabiduría"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Teoamoxtli: Libro de Esencia Divina\" de Tradición Tolteca registrado en la biblioteca local.",
+      "tags": [
+        "tolteca",
+        "méxico",
+        "prehispánico",
+        "sagrado",
+        "esencia",
+        "dioses"
+      ]
+    },
+    {
+      "id": "lib-popol-vuh-pdf",
+      "titulo": "Popol Vuh: El Libro Sagrado de los Mayas",
+      "archivo": "popol_vuh.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición K'iche'",
+      "idioma": "es",
+      "categorias": [
+        "mitología",
+        "cultura maya",
+        "cosmovisión",
+        "literatura clásica"
+      ],
+      "conceptosClave": [
+        "popol vuh",
+        "quiché",
+        "creación",
+        "hunahpú",
+        "ixbalanqué",
+        "inframundo",
+        "xibalbá",
+        "dioses"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Popol Vuh: El Libro Sagrado de los Mayas\" de Tradición K'iche' registrado en la biblioteca local.",
+      "tags": [
+        "maya",
+        "mitología",
+        "quiché",
+        "historia",
+        "sagrado",
+        "literatura"
+      ]
+    },
+    {
+      "id": "lib-tesla-energia-libre-pdf",
+      "titulo": "Nikola Tesla: Energía Libre y Antigravedad",
+      "archivo": "Tesla, Energia libre.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Nikola Tesla / Recopilación",
+      "idioma": "es",
+      "categorias": [
+        "física",
+        "energía libre",
+        "electromagnetismo",
+        "patentes"
+      ],
+      "conceptosClave": [
+        "energía libre",
+        "bobina de tesla",
+        "corriente alterna",
+        "antigravedad",
+        "patentes"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Nikola Tesla: Energía Libre y Antigravedad\" de Nikola Tesla / Recopilación registrado en la biblioteca local.",
+      "tags": [
+        "tesla",
+        "electricidad",
+        "energía",
+        "física",
+        "inventos",
+        "ciencia"
+      ]
+    },
+    {
+      "id": "lib-un-ensue-o-entre-serpientes-y-jaguares-p",
+      "titulo": "Un Ensueño entre Serpientes y Jaguares (Parte 1)",
+      "archivo": "Un ensueño entre serpientes y jaguares (parte 1).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Chamánica / Relatos",
+      "idioma": "es",
+      "categorias": [
+        "chamanismo",
+        "ensueño",
+        "plantas maestras",
+        "relatos"
+      ],
+      "conceptosClave": [
+        "ensueño",
+        "serpiente",
+        "jaguar",
+        "curanderismo",
+        "viaje astral",
+        "plantas sagradas"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Un Ensueño entre Serpientes y Jaguares (Parte 1)\" de Tradición Chamánica / Relatos registrado en la biblioteca local.",
+      "tags": [
+        "ensueño",
+        "chamanismo",
+        "jaguar",
+        "serpiente",
+        "relatos",
+        "astral"
+      ]
+    },
+    {
+      "id": "lib-un-ensue-o-entre-serpientes-y-jaguares-p",
+      "titulo": "Un Ensueño entre Serpientes y Jaguares (Parte 2)",
+      "archivo": "Un ensueño entre serpientes y jaguares (parte 2).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Chamánica / Relatos",
+      "idioma": "es",
+      "categorias": [
+        "chamanismo",
+        "ensueño",
+        "plantas maestras",
+        "relatos"
+      ],
+      "conceptosClave": [
+        "ensueño",
+        "serpiente",
+        "jaguar",
+        "viaje chamánico",
+        "curación"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Un Ensueño entre Serpientes y Jaguares (Parte 2)\" de Tradición Chamánica / Relatos registrado en la biblioteca local.",
+      "tags": [
+        "ensueño",
+        "chamanismo",
+        "jaguar",
+        "serpiente",
+        "relatos",
+        "ayahuasca"
+      ]
+    },
+    {
+      "id": "lib-afr-curso-b-sico-autodefensa-ps-quica-1-",
+      "titulo": "Curso Básico de Autodefensa Psíquica (Parte 1)",
+      "archivo": "[AFR] Curso Básico AutoDefensa Psíquica (1 de 2).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "autodefensa psíquica",
+        "esoterismo",
+        "protección energética"
+      ],
+      "conceptosClave": [
+        "ataque psíquico",
+        "larvas astrales",
+        "protección",
+        "visualización",
+        "campo áurico"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso Básico de Autodefensa Psíquica (Parte 1)\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "protección",
+        "energía",
+        "autodefensa",
+        "larvas",
+        "aura",
+        "psíquico"
+      ]
+    },
+    {
+      "id": "lib-afr-curso-b-sico-autodefensa-ps-quica-2-",
+      "titulo": "Curso Básico de Autodefensa Psíquica (Parte 2)",
+      "archivo": "[AFR] Curso Básico AutoDefensa Psíquica (2 de 2).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "autodefensa psíquica",
+        "esoterismo",
+        "protección energética"
+      ],
+      "conceptosClave": [
+        "formas de pensamiento",
+        "limpieza energética",
+        "amuletos",
+        "rituales",
+        "protección"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Curso Básico de Autodefensa Psíquica (Parte 2)\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "protección",
+        "energía",
+        "limpieza",
+        "amuletos",
+        "rituales",
+        "defensa"
+      ]
+    },
+    {
+      "id": "lib-afr-existen-los-hechizos-y-maleficios-pd",
+      "titulo": "Existen los Hechizos y Maleficios",
+      "archivo": "[AFR] Existen los Hechizos y Maleficios.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "esoterismo",
+        "hechicería",
+        "creencias populares"
+      ],
+      "conceptosClave": [
+        "hechizos",
+        "maleficios",
+        "magia negra",
+        "supersticiones",
+        "creencias"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Existen los Hechizos y Maleficios\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "hechizos",
+        "magia",
+        "superstición",
+        "creencia",
+        "esoterismo"
+      ]
+    },
+    {
+      "id": "lib-afr-fundamentos-racionales-de-la-astrolo",
+      "titulo": "Fundamentos Racionales de la Astrología",
+      "archivo": "[AFR] Fundamentos Racionales de la Astrología.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Al Filo de la Realidad",
+      "idioma": "es",
+      "categorias": [
+        "astrología",
+        "ciencia",
+        "cosmobiología"
+      ],
+      "conceptosClave": [
+        "influencia astral",
+        "cartas natales",
+        "astrología racional",
+        "efectos cósmicos",
+        "horóscopo"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Fundamentos Racionales de la Astrología\" de Al Filo de la Realidad registrado en la biblioteca local.",
+      "tags": [
+        "astrología",
+        "planetas",
+        "ciencia",
+        "astros",
+        "racional",
+        "estrellas"
+      ]
+    }
+  ],
+  "pendientesPorAgregar": [
+    {
+      "sugerencia": "Agregar aquí los PDFs que incorpores en casa con su estructura completa",
+      "ejemploEstructura": {
+        "id": "jung-aion-001",
+        "titulo": "Aion: Contribuciones al Simbolismo del Sí-mismo",
+        "archivo": "aion.pdf",
+        "tipo": "libro",
+        "formato": "pdf",
+        "autor": "Carl Gustav Jung",
+        "idioma": "es",
+        "categorias": [
+          "psicología analítica",
+          "arquetipos",
+          "inconsciente"
+        ],
+        "conceptosClave": [
+          "sí-mismo",
+          "sombra",
+          "persona",
+          "ánima",
+          "ánimus",
+          "Self",
+          "individuación"
+        ],
+        "capitulos": [
+          {
+            "numero": 1,
+            "titulo": "El Ego",
+            "paginas": "1-20"
+          },
+          {
+            "numero": 2,
+            "titulo": "La Sombra",
+            "paginas": "21-45"
+          },
+          {
+            "numero": 3,
+            "titulo": "La Syzygia: Ánima y Ánimus",
+            "paginas": "46-80"
+          }
+        ],
+        "embeddings": "pending",
+        "descripcionBreve": "Estudio de Jung sobre el arquetipo del Sí-mismo y su simbolismo en la tradición alquímica y gnóstica.",
+        "tags": [
+          "Jung",
+          "psicología",
+          "arquetipo",
+          "inconsciente colectivo",
+          "alquimia",
+          "gnosis"
+        ]
+      }
+    }
+  ]
+}

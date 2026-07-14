@@ -48,6 +48,7 @@ import { GoogleGmailService } from './tools/google/google-gmail.service';
 import { GoogleDriveService } from './tools/google/google-drive.service';
 import { YouTubeService } from './tools/google/youtube.service';
 import { JarvisKnowledgeService } from './knowledge/jarvis-knowledge.service';
+import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
@@ -101,6 +102,7 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
     DocumentCompareService,
     KnowledgeTestService,
     JarvisKnowledgeService,
+    CorpusSelectorService,
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
@@ -111,6 +113,7 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
     ContentCacheService,
     RssIngestService,
     JarvisKnowledgeService,
+    CorpusSelectorService,
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
