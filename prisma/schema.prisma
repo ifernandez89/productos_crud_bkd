@@ -191,6 +191,7 @@ model Document {
   content     String
   category    String?              // "tech", "personal", "reference", "api-doc"
   source      String?              // legacy: URL, file path, manual
+  status      String               @default("not_indexed") // "not_indexed" | "indexing" | "ready"
   timesUsed   Int                  @default(0)  // cuántas veces fue recuperado
   lastUsed    DateTime?            // última vez que se usó en RAG
   createdAt   DateTime             @default(now())
@@ -200,6 +201,7 @@ model Document {
   collections CollectionDocument[]
 
   @@index([category])
+  @@index([status])
   @@index([sourceId])
   @@index([timesUsed])
   @@index([lastUsed])

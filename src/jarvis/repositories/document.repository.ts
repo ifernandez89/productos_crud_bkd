@@ -9,6 +9,7 @@ export interface CreateDocumentData {
   category?: string;
   source?: string;
   sourceId?: number;
+  status?: 'not_indexed' | 'indexing' | 'ready';
 }
 
 export interface CreateChunkData {
@@ -30,8 +31,13 @@ export class DocumentRepository {
         category: data.category,
         source:   data.source,
         sourceId: data.sourceId,
+        status:   data.status ?? 'not_indexed',
       },
     });
+  }
+
+  async updateDocumentStatus(id: number, status: 'not_indexed' | 'indexing' | 'ready'): Promise<void> {
+    await this.prisma.document.update({ where: { id }, data: { status } });
   }
 
   async createChunk(data: CreateChunkData): Promise<Chunk> {
@@ -117,6 +123,7 @@ export class DocumentRepository {
 
     const chunks = await this.prisma.chunk.findMany({
       where: {
+        document: { status: 'ready' },   // solo documentos completamente indexados
         OR: terms.map((term) => ({
           content: { contains: term },
         })),
@@ -125,7 +132,6 @@ export class DocumentRepository {
       take: limit,
     }) as (Chunk & { document: Document })[];
 
-    // Actualizar tracking de uso en documentos recuperados
     const docIds = [...new Set(chunks.map((c) => c.documentId))];
     if (docIds.length > 0) {
       await this.prisma.document.updateMany({
@@ -153,6 +159,7 @@ export class DocumentRepository {
         content: row.contentDoc,
         category: row.category,
         source: row.source,
+        status: row.status,
         timesUsed: row.timesUsed,
         lastUsed: row.lastUsed,
         createdAt: row.createdAt,
@@ -185,6 +192,7 @@ export class DocumentRepository {
         content: row.contentDoc,
         category: row.category,
         source: row.source,
+        status: row.status,
         timesUsed: row.timesUsed,
         lastUsed: row.lastUsed,
         createdAt: row.createdAt,
@@ -217,6 +225,9 @@ export class DocumentRepository {
           {
             documentId: { in: documentIds },
           },
+          {
+            document: { status: 'ready' },
+          },
         ],
       },
       include: { document: true },
@@ -236,6 +247,7 @@ export class DocumentRepository {
       where: {
         document: {
           category: { equals: category },
+          status:   'ready',
         },
       },
       include: { document: true },
@@ -281,6 +293,7 @@ export class DocumentRepository {
           {
             document: {
               category: { equals: category },
+              status:   'ready',
             },
           },
         ],

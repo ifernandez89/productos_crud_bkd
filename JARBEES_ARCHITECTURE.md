@@ -69,7 +69,7 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 | Modelo | Propósito |
 |--------|-----------|
 | `KnowledgeSource` | Fuentes tipadas: `pdf`, `markdown`, `web`, `rss`, `github`, `api` |
-| `Document` | Documentos ingestados con título, contenido, categoría |
+| `Document` | Documentos ingestados con título, contenido, categoría y status (`not_indexed`, `indexing`, `ready`) |
 | `Chunk` | Fragmentos embeddables con `embeddingId` |
 | `Collection` + `CollectionDocument` | Agrupación temática de documentos |
 
@@ -375,11 +375,13 @@ POST /jarbees/library/document/pdf  ← PDF (extracción con pdf-parse)
 POST /jarbees/library/document/url  ← scraping de URL
 ```
 
-**DocumentIngestService** — pipeline completo:
-1. Extrae texto (texto plano / PDF / web)
-2. Divide en chunks: párrafos primero, ventana deslizante para párrafos largos (1200 chars, 150 chars overlap)
-3. Genera embeddings via `EmbeddingsService` (nomic-embed-text via Ollama)
-4. Guarda chunks con `embeddingId` en PostgreSQL y persiste embeddings nativos en `pgvector`
+**DocumentIngestService** — pipeline completo y asíncrono:
+1. **Creación e Inicialización**: Crea el registro `Document` con estado inicial `indexing`.
+2. **Extracción y Fragmentación**: Extrae el texto y lo divide en chunks utilizando párrafos o ventanas deslizantes (1200 chars, 150 chars overlap).
+3. **Retorno Desacoplado**: Retorna inmediatamente la respuesta de la API al usuario sin esperar la generación de los embeddings vectoriales.
+4. **Generación Asíncrona con Concurrencia Controlada (Límite = 3)**: Procesa los chunks en segundo plano a través de una cola de trabajadores con un límite de 3 peticiones en paralelo a `EmbeddingsService` (evitando la saturación y rate limits de Ollama).
+5. **Finalización**: Una vez que todos los chunks del documento se guardan en la base de datos y sus embeddings se persisten en `pgvector`, el estado de la indexación pasa a `ready`.
+6. **Filtrado RAG**: El motor de recuperación RAG (búsqueda semántica y textual en `DocumentRepository` y `PgvectorService`) filtra las consultas para consultar únicamente chunks de documentos en estado `ready`.
 
 ### 11.1 Biblioteca local JSON (nuevo)
 

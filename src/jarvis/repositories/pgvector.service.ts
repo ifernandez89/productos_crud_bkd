@@ -49,6 +49,7 @@ export class PgvectorService {
         d.content AS "contentDoc",
         d.category,
         d.source,
+        d.status,
         d."timesUsed",
         d."lastUsed",
         d."createdAt",
@@ -57,6 +58,7 @@ export class PgvectorService {
       FROM "Chunk" c
       JOIN "Document" d ON d.id = c."documentId"
       WHERE c.embedding IS NOT NULL
+        AND d.status = 'ready'
       ORDER BY c.embedding <=> ${vectorString}::vector
       LIMIT ${limit};
     `;
@@ -79,6 +81,7 @@ export class PgvectorService {
         d.content AS "contentDoc",
         d.category,
         d.source,
+        d.status,
         d."timesUsed",
         d."lastUsed",
         d."createdAt",
@@ -86,7 +89,9 @@ export class PgvectorService {
         1 - (c.embedding <=> ${vectorString}::vector) AS similarity
       FROM "Chunk" c
       JOIN "Document" d ON d.id = c."documentId"
-      WHERE c.embedding IS NOT NULL AND c."documentId" = ANY(${documentIds})
+      WHERE c.embedding IS NOT NULL
+        AND d.status = 'ready'
+        AND c."documentId" = ANY(${documentIds})
       ORDER BY c.embedding <=> ${vectorString}::vector
       LIMIT ${limit};
     `;
