@@ -220,8 +220,8 @@ describe('JarvisCommandService', () => {
     const result = await service.handleCommand('mis documentos', 'session-1', 123);
 
     expect(result.handled).toBe(true);
-    expect(result.response).toContain('Aventuras fuera del cuerpo');
-    expect(result.response).not.toContain('buhlman william');
+    expect(result.response).toContain('aventuras fuera del cuerpo buhlman william');
+    expect(result.response).toContain('William Buhlman');
   });
 
   it('loads Jung and Grinberg entries from the library index JSON so authors and categories are discoverable', async () => {

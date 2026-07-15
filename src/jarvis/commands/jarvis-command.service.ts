@@ -541,8 +541,8 @@ export class JarvisCommandService {
         lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
         for (const doc of items) {
           const estado = doc.embeddings === 'ready' ? 'indexado' : doc.embeddings === 'processing' ? 'procesando' : 'disponible';
-          const cleanTitle = this.cleanLibraryTitle(doc.titulo, doc.autor);
-          lines.push(`  • ${cleanTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
+          const displayTitle = doc.titulo?.trim() || doc.archivo?.trim() || 'Sin título';
+          lines.push(`  • ${displayTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
         }
         lines.push(``);
       }
@@ -587,59 +587,6 @@ export class JarvisCommandService {
     lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
 
     return lines.join('\n');
-  }
-
-  private cleanLibraryTitle(title: string | undefined, author: string | undefined): string {
-    const rawTitle = (title ?? '').toString().trim();
-    if (!rawTitle) return 'Sin título';
-
-    const normalizedTitle = rawTitle
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    const authorTokens = (author ?? '')
-      .toString()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((token) => token.toLowerCase());
-
-    const titleTokens = normalizedTitle.split(/\s+/).filter(Boolean);
-
-    if (authorTokens.length > 0) {
-      const trimmedTokens = [...titleTokens];
-      while (trimmedTokens.length > 0) {
-        const lastToken = trimmedTokens[trimmedTokens.length - 1].toLowerCase();
-        if (!authorTokens.includes(lastToken)) break;
-        trimmedTokens.pop();
-      }
-
-      const cleaned = trimmedTokens.join(' ').trim();
-      if (cleaned) {
-        return this.formatDisplayTitle(cleaned);
-      }
-    }
-
-    return this.formatDisplayTitle(normalizedTitle);
-  }
-
-  private formatDisplayTitle(value: string): string {
-    const normalized = value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    if (!normalized) return 'Sin título';
-
-    const words = normalized.split(/\s+/);
-    const firstWord = words[0] ? words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase() : '';
-    const restWords = words.slice(1).map((word) => word.toLowerCase()).join(' ');
-
-    return [firstWord, restWords].filter(Boolean).join(' ');
   }
 
   private extractDocumentSummaryRequest(message: string): { title: string; maxItems: number } | null {
