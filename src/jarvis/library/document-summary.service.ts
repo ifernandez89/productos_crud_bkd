@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { DocumentRepository } from '../repositories/document.repository';
 import { OllamaProvider } from '../llm/ollama.provider';
+import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
+import { DocumentIngestService } from './document-ingest.service';
 
 export interface DocumentSummaryResult {
   documentId: number;
@@ -32,6 +34,8 @@ export class DocumentSummaryService {
   constructor(
     private readonly documentRepo: DocumentRepository,
     private readonly ollamaProvider: OllamaProvider,
+    private readonly corpusSelector: CorpusSelectorService,
+    private readonly ingestService: DocumentIngestService,
   ) {}
 
   /**
@@ -53,13 +57,14 @@ export class DocumentSummaryService {
       // Buscar candidatos cercanos para sugerir al usuario
       const suggestions = await this.documentRepo.searchDocuments(
         typeof titleOrId === 'string' ? titleOrId : String(titleOrId),
-        3,
+        15,
       );
 
+      const uniqueTitles = Array.from(new Set(suggestions.map(d => d.title))).slice(0, 3);
       let message = `❌ No encontré ningún documento con el título "${titleOrId}".`;
 
-      if (suggestions.length > 0) {
-        message += `\n\n¿Quizás quisiste decir?\n${suggestions.map(d => `  • *${d.title}*`).join('\n')}`;
+      if (uniqueTitles.length > 0) {
+        message += `\n\n¿Quizás quisiste decir?\n${uniqueTitles.map(t => `  • *${t}*`).join('\n')}`;
         message += `\n\nUsá el título exacto o escribí \`mis documentos\` para ver todos.`;
       } else {
         message += `\n\nEscribí \`mis documentos\` para ver los títulos disponibles.`;
@@ -121,6 +126,33 @@ export class DocumentSummaryService {
    * 4. Primer candidato de búsqueda full-text (fallback)
    */
   private async findDocumentByTitle(title: string): Promise<any | null> {
+    // 0. Consultar el índice de la biblioteca (Corpus Selector) para buscar el documento y lazy-loadearlo si es necesario
+    const indexMatches = this.corpusSelector.findRelevantDocuments(title, 1);
+    if (indexMatches.length > 0) {
+      const match = indexMatches[0];
+      if (match.score >= 1.5) {
+        const doc = match.document;
+        this.logger.log(`[document-summary:search] Encontrado en índice: "${doc.titulo}" (score=${match.score}). Verificando en DB...`);
+        try {
+          let dbDocId: number;
+          if (doc.embeddings !== 'ready') {
+            dbDocId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+          } else {
+            const existing = await this.documentRepo.searchDocumentsByTitle(doc.titulo, 1);
+            if (existing.length > 0) {
+              dbDocId = existing[0].id;
+            } else {
+              this.logger.warn(`[document-summary:search] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`);
+              dbDocId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+            }
+          }
+          return this.documentRepo.getDocumentWithChunks(dbDocId);
+        } catch (err: any) {
+          this.logger.error(`[document-summary:search] Error en lazy loading de "${doc.titulo}": ${err.message}`);
+        }
+      }
+    }
+
     const normalize = (s: string) =>
       s
         .normalize('NFD')
@@ -134,7 +166,7 @@ export class DocumentSummaryService {
       .split(/\s+/)
       .filter(w => w.length > 2);
 
-    this.logger.log(`[document-summary:search] buscando: "${normalizedSearch}" (${searchWords.length} palabras)`);
+    this.logger.log(`[document-summary:search] buscando en DB: "${normalizedSearch}" (${searchWords.length} palabras)`);
 
     // 1. Buscar candidatos — primero solo por título (más preciso), luego full-text
     let candidates = await this.documentRepo.searchDocumentsByTitle(normalizedSearch);

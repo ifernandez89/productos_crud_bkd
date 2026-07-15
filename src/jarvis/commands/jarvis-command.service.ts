@@ -458,9 +458,35 @@ export class JarvisCommandService {
       const authorField = this.normalizeText(doc.autor ?? '');
       const titleField = this.normalizeText(doc.titulo ?? '');
       const fileField = this.normalizeText(doc.archivo ?? '');
-      return authorField.includes(normalizedAuthor)
-        || titleField.includes(normalizedAuthor)
-        || fileField.includes(normalizedAuthor);
+      
+      // 1. Coincidencia exacta o substring
+      if (
+        authorField.includes(normalizedAuthor) ||
+        titleField.includes(normalizedAuthor) ||
+        fileField.includes(normalizedAuthor)
+      ) {
+        return true;
+      }
+
+      // 2. Fuzzy matching para el nombre del autor (ej: 'grindberg' -> 'grinberg')
+      const queryWords = normalizedAuthor.split(/[\s\-]+/g).filter(w => w.length > 2);
+      const docAuthorWords = authorField.split(/[\s\-]+/g).filter(w => w.length > 2);
+
+      if (queryWords.length > 0 && docAuthorWords.length > 0) {
+        // Todas las palabras largas buscadas deben matchear de forma fuzzy con alguna palabra del autor del doc
+        const isClose = queryWords.every((qw) => {
+          return docAuthorWords.some((dw) => {
+            if (dw.includes(qw) || qw.includes(dw)) return true;
+            const dist = this.levenshtein(qw, dw);
+            // Si la palabra es larga, tolerar distancia de 2; si es corta, distancia de 1
+            const maxDist = qw.length >= 6 ? 2 : 1;
+            return dist <= maxDist;
+          });
+        });
+        if (isClose) return true;
+      }
+
+      return false;
     });
 
     if (matches.length > 0) {
@@ -476,6 +502,27 @@ export class JarvisCommandService {
     }
 
     return `📚 No encontré libros asociados al autor "${author}" en la biblioteca actual.`;
+  }
+
+  private levenshtein(a: string, b: string): number {
+    const tmp: number[][] = [];
+    let i, j;
+    for (i = 0; i <= a.length; i++) {
+      tmp[i] = [i];
+    }
+    for (j = 0; j <= b.length; j++) {
+      tmp[0][j] = j;
+    }
+    for (i = 1; i <= a.length; i++) {
+      for (j = 1; j <= b.length; j++) {
+        tmp[i][j] = Math.min(
+          tmp[i - 1][j] + 1,
+          tmp[i][j - 1] + 1,
+          tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+      }
+    }
+    return tmp[a.length][b.length];
   }
 
   private normalizeText(value: string): string {
