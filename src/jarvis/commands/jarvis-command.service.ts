@@ -133,7 +133,7 @@ export class JarvisCommandService {
     }
 
     // 7. RESUMEN DE DOCUMENTO INDIVIDUAL
-    const docSummaryRequest = this.extractDocumentSummaryRequest(userMessage);
+    const docSummaryRequest = await this.extractDocumentSummaryRequest(userMessage);
     if (docSummaryRequest) {
       const summaryMsg = await this.buildDocumentSummaryResponse(
         docSummaryRequest.title,
@@ -589,66 +589,64 @@ export class JarvisCommandService {
     return lines.join('\n');
   }
 
-  private extractDocumentSummaryRequest(message: string): { title: string; maxItems: number } | null {
+  private async extractDocumentSummaryRequest(message: string): Promise<{ title: string; maxItems: number } | null> {
     const trimmed = message.trim();
     const normalized = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
     const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
     const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
 
-    const quotedMatch = trimmed.match(
-      /(?:resumen|puntos\s*clave|items?\s*(?:mas|más)?\s*(?:relevantes?|importantes?)?|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))[\s\S]*?['""]([^'""]{3,})['""]?/i,
-    );
-    if (quotedMatch?.[1]?.trim()) {
-      return { title: quotedMatch[1].trim(), maxItems };
+    const ACTION_PREFIXES = /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
+    const CONNECTORS = /^\s*(?:de(?:l)?|sobre|acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo)\s+/i;
+    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
+    const GREETINGS = /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
+
+    let title = trimmed;
+    let match;
+    while ((match = title.match(GREETINGS))) {
+      title = title.substring(match[0].length).trim();
     }
 
-    const docTypeMatch = trimmed.match(
-      /(?:resumen|puntos\s*clave|dame\s*(?:los?|un(?:os?)?)\s*(?:\d+\s*)?(?:puntos?|items?))\s*(?:de(?:l)?\s*(?:libro|pdf|documento|doc|archivo))\s+([A-ZÁÉÍÓÚÑ][\w\s\-\.]{3,80})/i,
-    );
-    if (docTypeMatch?.[1]?.trim()) {
-      return { title: docTypeMatch[1].trim(), maxItems };
+    const actionMatch = title.match(ACTION_PREFIXES);
+    if (!actionMatch) {
+      return null;
     }
 
-    const withPrepMatch = trimmed.match(
-      /^(?:resumen|puntos\s*clave|lo\s*(?:mas|más)?\s*importante)\s+(?:de(?:l)?|sobre)\s+(.{3,80})/i,
-    );
-    if (withPrepMatch?.[1]?.trim()) {
-      const title = withPrepMatch[1].trim();
-      if (!GENERIC_STARTERS.test(title)) {
+    title = title.substring(actionMatch[0].length).trim();
+    const connMatch = title.match(CONNECTORS);
+    if (connMatch) {
+      title = title.substring(connMatch[0].length).trim();
+    }
+    title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
+
+    if (title.length >= 2) {
+      const titleLower = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (GENERIC_STARTERS.test(titleLower)) {
+        const hasDoc = await this.dbOrIndexHasDocument(title);
+        if (hasDoc) return { title, maxItems };
+      } else {
         return { title, maxItems };
-      }
-    }
-
-    const directMatch = trimmed.match(
-      /^resumen\s+(?!(?:de(?:l)?|sobre|los|las|un|una|el|la|mis|tus|sus|me|nos|les|le|ya|si|no|por|en|para|con|sin|que)\s)(.{4,80})/i,
-    );
-    if (directMatch?.[1]?.trim()) {
-      const title = directMatch[1].trim();
-      const words = title.split(/\s+/);
-      if (words.length >= 2) {
-        return { title, maxItems };
-      }
-    }
-
-    const COMMAND_STARTERS = /^(?:busca|buscame|buscá|dame|dime|mostrame|muestra|explica|explicame|describe|describime|analiza|que dice|que dicen|qué dice|qué dicen|cuanto|cuánto|cuando|cuándo|donde|dónde|como|cómo|por qué|porque|cual|cuál|tiene|hay|existe)\b/i;
-    const CONVERSATIONAL = /^(?:hola|buenas|buenos|buen|hey|hi|hello|saludos|que tal|qué tal|como estas|cómo estás|como anda|cómo va|que onda|qué onda|gracias|de nada|ok|dale|si|no|claro|perfecto|genial|excelente|entendido|listo|chau|adios|hasta|nos vemos|bye|todo bien|bien gracias|muy bien|re bien)\b/i;
-    const wordCount = trimmed.split(/\s+/).length;
-    if (
-      wordCount >= 2 &&
-      wordCount <= 10 &&
-      !COMMAND_STARTERS.test(trimmed) &&
-      !CONVERSATIONAL.test(trimmed) &&
-      !/[?¿!¡]/.test(trimmed)
-    ) {
-      const hasUpperCase = /[A-ZÁÉÍÓÚÑ]/.test(trimmed);
-      const startsWithUpper = /^[A-ZÁÉÍÓÚÑ\d]/.test(trimmed);
-      if (hasUpperCase && startsWithUpper && !GENERIC_STARTERS.test(trimmed)) {
-        return { title: trimmed, maxItems };
       }
     }
 
     return null;
+  }
+
+  private async dbOrIndexHasDocument(title: string): Promise<boolean> {
+    const index = this.corpusSelector.getIndex();
+    if (index && index.documentos) {
+      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const inIndex = index.documentos.some(doc => {
+        const normDocTitle = doc.titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      });
+      if (inIndex) return true;
+    }
+    try {
+      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 1);
+      return candidates.length > 0;
+    } catch {
+      return false;
+    }
   }
 
   private async buildDocumentSummaryResponse(
@@ -720,6 +718,8 @@ export class JarvisCommandService {
       `                           \`información sobre desarrollo\``,
       `  Resumen de documento  →  \`resumen de '<título>'\``,
       `                           \`resumen de 'Manual de Plantas'\``,
+      `                           \`describe 'La Vía del Tarot'\``,
+      `                           \`explicame 'El Kybalion'\``,
       `                           \`puntos clave de 'TypeScript Handbook'\``,
       `                           \`dame 10 items de 'Guía de NestJS'\``,
       `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
