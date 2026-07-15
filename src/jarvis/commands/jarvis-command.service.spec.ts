@@ -127,6 +127,103 @@ describe('JarvisCommandService', () => {
     expect(result.response).toContain('Autor de prueba');
   });
 
+  it('returns the books associated with a specific author when the user sends the author name', async () => {
+    const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
+    const raw = fs.readFileSync(indexPath, 'utf8');
+    const index = JSON.parse(raw);
+    const docs = index.documentos as Array<Record<string, any>>;
+    const targetDoc = docs.find((doc) => /hermes trismegisto/i.test(doc.autor ?? ''));
+
+    expect(targetDoc).toBeDefined();
+
+    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const documentRepo = {
+      getMostRecentDocuments: jest.fn().mockResolvedValue([]),
+    } as any;
+    const userProfileRepo = {} as any;
+    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const categorySummaryService = {} as any;
+    const documentSummaryService = {} as any;
+    const documentCompareService = {} as any;
+    const knowledgeTestService = {} as any;
+    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const corpusSelector = {
+      getIndex: jest.fn().mockReturnValue(index),
+    } as any;
+
+    const service = new JarvisCommandService(
+      conversationRepo,
+      documentRepo,
+      userProfileRepo,
+      agentRunRepo,
+      categorySummaryService,
+      documentSummaryService,
+      documentCompareService,
+      knowledgeTestService,
+      jarvisKnowledge,
+      corpusSelector,
+    );
+
+    const result = await service.handleCommand('Hermes Trismegisto', 'session-1', 123);
+
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain(targetDoc!.titulo);
+    expect(result.response).toContain('Hermes Trismegisto');
+  });
+
+  it('shows cleaned titles in mis documentos instead of the noisy author suffixes', async () => {
+    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const documentRepo = { getMostRecentDocuments: jest.fn().mockResolvedValue([]) } as any;
+    const userProfileRepo = {} as any;
+    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const categorySummaryService = {} as any;
+    const documentSummaryService = {} as any;
+    const documentCompareService = {} as any;
+    const knowledgeTestService = {} as any;
+    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const corpusSelector = {
+      getIndex: jest.fn().mockReturnValue({
+        metadata: { version: 1, descripcion: '', nota: '' },
+        documentos: [
+          {
+            id: 'book-1',
+            titulo: 'aventuras fuera del cuerpo buhlman william',
+            archivo: 'aventuras-fuera-del-cuerpo-buhlman-william.pdf',
+            tipo: 'libro',
+            formato: 'pdf',
+            autor: 'William Buhlman',
+            idioma: 'es',
+            categorias: ['espiritualidad'],
+            conceptosClave: ['aventuras fuera del cuerpo'],
+            capitulos: [],
+            embeddings: 'ready',
+            descripcionBreve: 'test',
+            tags: ['test'],
+          },
+        ],
+      }),
+    } as any;
+
+    const service = new JarvisCommandService(
+      conversationRepo,
+      documentRepo,
+      userProfileRepo,
+      agentRunRepo,
+      categorySummaryService,
+      documentSummaryService,
+      documentCompareService,
+      knowledgeTestService,
+      jarvisKnowledge,
+      corpusSelector,
+    );
+
+    const result = await service.handleCommand('mis documentos', 'session-1', 123);
+
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('Aventuras fuera del cuerpo');
+    expect(result.response).not.toContain('buhlman william');
+  });
+
   it('loads Jung and Grinberg entries from the library index JSON so authors and categories are discoverable', async () => {
     const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
     const raw = fs.readFileSync(indexPath, 'utf8');

@@ -172,7 +172,7 @@
     },
     {
       "id": "lib-aventuras-fuera-del-cuerpo-buhlman-willi",
-      "titulo": "aventuras fuera del cuerpo buhlman william",
+      "titulo": "Aventuras fuera del cuerpo",
       "archivo": "aventuras-fuera-del-cuerpo-buhlman-william.pdf",
       "tipo": "libro",
       "formato": "pdf",
@@ -186,14 +186,16 @@
         "espiritualidad"
       ],
       "conceptosClave": [
-        "aventuras fuera del cuerpo buhlman william"
+        "aventuras fuera del cuerpo",
+        "viaje astral"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Libro \"aventuras fuera del cuerpo buhlman william\" de Desconocido registrado en la biblioteca local.",
+      "descripcionBreve": "Libro \"Aventuras fuera del cuerpo\" de William Buhlman registrado en la biblioteca local.",
       "tags": [
         "biblioteca",
-        "buhlman william"
+        "william buhlman",
+        "aventuras fuera del cuerpo"
       ]
     },
     {

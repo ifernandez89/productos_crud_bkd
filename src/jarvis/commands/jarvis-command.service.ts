@@ -122,7 +122,17 @@ export class JarvisCommandService {
       return { handled: true, response: authorsMsg };
     }
 
-    // 6. RESUMEN DE DOCUMENTO INDIVIDUAL
+    // 6. LIBROS POR AUTOR
+    const authorBooksRequest = this.extractAuthorBooksRequest(userMessage);
+    if (authorBooksRequest) {
+      const authorBooksMsg = await this.buildAuthorBooksMessage(authorBooksRequest.author);
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: authorBooksMsg, metadata: { source: 'library_author_books', author: authorBooksRequest.author } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: authorBooksMsg, toolsUsed: ['library_author_books'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return { handled: true, response: authorBooksMsg };
+    }
+
+    // 7. RESUMEN DE DOCUMENTO INDIVIDUAL
     const docSummaryRequest = this.extractDocumentSummaryRequest(userMessage);
     if (docSummaryRequest) {
       const summaryMsg = await this.buildDocumentSummaryResponse(
@@ -411,7 +421,70 @@ export class JarvisCommandService {
 
     return lines.join('\n');
   }
+  private extractAuthorBooksRequest(message: string): { author: string } | null {
+    const trimmed = message.trim();
+    if (!trimmed) return null;
 
+    if (/^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs)|mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay)|mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(trimmed)) {
+      return null;
+    }
+
+    const explicitMatch = trimmed.match(/^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i);
+    if (explicitMatch?.[1]?.trim()) {
+      return { author: explicitMatch[1].trim() };
+    }
+
+    const simpleAuthor = trimmed.match(/^([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s.\-]{2,80})$/u);
+    if (simpleAuthor?.[1]) {
+      const candidate = simpleAuthor[1].trim();
+      if (/^(?:resumen|puntos|compara|comparar|relaciona|relacionar|busca|dame|muestra|mostrame|explica|analiza|describe|diagnostico|test|probe|configurar|modo|eliminar|borrar|repetir|repite|hola|help|ayuda)/i.test(candidate)) {
+        return null;
+      }
+      const words = candidate.split(/\s+/).filter(Boolean);
+      if (words.length >= 2) {
+        return { author: candidate };
+      }
+    }
+
+    return null;
+  }
+
+  private async buildAuthorBooksMessage(author: string): Promise<string> {
+    const index = this.corpusSelector?.getIndex?.();
+    const docsFromIndex = index?.documentos ?? [];
+    const normalizedAuthor = this.normalizeText(author);
+
+    const matches = docsFromIndex.filter((doc) => {
+      const authorField = this.normalizeText(doc.autor ?? '');
+      const titleField = this.normalizeText(doc.titulo ?? '');
+      const fileField = this.normalizeText(doc.archivo ?? '');
+      return authorField.includes(normalizedAuthor)
+        || titleField.includes(normalizedAuthor)
+        || fileField.includes(normalizedAuthor);
+    });
+
+    if (matches.length > 0) {
+      const lines = [`📚 **Libros de ${author}** (${matches.length})`, ``];
+      for (const doc of matches) {
+        const formato = (doc.formato ?? 'pdf').toString().toUpperCase();
+        lines.push(`  • ${doc.titulo} — ${doc.autor ?? 'Sin autor'} [${formato}]`);
+      }
+      lines.push(``);
+      lines.push(`💡 Podés pedir:`);
+      lines.push(`  \`resumen de '${matches[0].titulo}'\``);
+      return lines.join('\n');
+    }
+
+    return `📚 No encontré libros asociados al autor "${author}" en la biblioteca actual.`;
+  }
+
+  private normalizeText(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
   private extractCompareRequest(message: string): { titleA: string; titleB: string } | null {
     const patterns = [
       /resumen\s+(?:de\s+)?['"]([^'"]{3,})['"]\s+(?:relaciona(?:do)?\s+(?:con)?|vs\.?|versus)\s+['"]([^'"]{3,})['"]/i,
@@ -468,7 +541,8 @@ export class JarvisCommandService {
         lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
         for (const doc of items) {
           const estado = doc.embeddings === 'ready' ? 'indexado' : doc.embeddings === 'processing' ? 'procesando' : 'disponible';
-          lines.push(`  • ${doc.titulo} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
+          const cleanTitle = this.cleanLibraryTitle(doc.titulo, doc.autor);
+          lines.push(`  • ${cleanTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
         }
         lines.push(``);
       }
@@ -513,6 +587,59 @@ export class JarvisCommandService {
     lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
 
     return lines.join('\n');
+  }
+
+  private cleanLibraryTitle(title: string | undefined, author: string | undefined): string {
+    const rawTitle = (title ?? '').toString().trim();
+    if (!rawTitle) return 'Sin título';
+
+    const normalizedTitle = rawTitle
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const authorTokens = (author ?? '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((token) => token.toLowerCase());
+
+    const titleTokens = normalizedTitle.split(/\s+/).filter(Boolean);
+
+    if (authorTokens.length > 0) {
+      const trimmedTokens = [...titleTokens];
+      while (trimmedTokens.length > 0) {
+        const lastToken = trimmedTokens[trimmedTokens.length - 1].toLowerCase();
+        if (!authorTokens.includes(lastToken)) break;
+        trimmedTokens.pop();
+      }
+
+      const cleaned = trimmedTokens.join(' ').trim();
+      if (cleaned) {
+        return this.formatDisplayTitle(cleaned);
+      }
+    }
+
+    return this.formatDisplayTitle(normalizedTitle);
+  }
+
+  private formatDisplayTitle(value: string): string {
+    const normalized = value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!normalized) return 'Sin título';
+
+    const words = normalized.split(/\s+/);
+    const firstWord = words[0] ? words[0].charAt(0).toUpperCase() + words[0].slice(1).toLowerCase() : '';
+    const restWords = words.slice(1).map((word) => word.toLowerCase()).join(' ');
+
+    return [firstWord, restWords].filter(Boolean).join(' ');
   }
 
   private extractDocumentSummaryRequest(message: string): { title: string; maxItems: number } | null {
