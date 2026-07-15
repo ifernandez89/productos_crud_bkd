@@ -116,10 +116,14 @@
       "archivo": "Angeles Arrien Las Cuatro Sendas del Chaman.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Ángeles Arrien",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "esoterismo",
+        "sabiduría andina",
+        "cosmovisión"
       ],
       "conceptosClave": [
         "angeles arrien las cuatro sendas del chaman"
@@ -128,7 +132,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Angeles Arrien Las Cuatro Sendas del Chaman\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "angeles arrien"
       ]
     },
     {
@@ -171,10 +176,14 @@
       "archivo": "aventuras-fuera-del-cuerpo-buhlman-william.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "William Buhlman",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "experiencia extracorporal",
+        "consciencia",
+        "viaje astral",
+        "espiritualidad"
       ],
       "conceptosClave": [
         "aventuras fuera del cuerpo buhlman william"
@@ -183,7 +192,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"aventuras fuera del cuerpo buhlman william\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "buhlman william"
       ]
     },
     {
@@ -213,19 +223,31 @@
       "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "arquetipos ei inconsciente colectivo 1"
+        "arquetipos ei inconsciente colectivo 1",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -234,19 +256,31 @@
       "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "arquetipos ei inconsciente colectivo 2"
+        "arquetipos ei inconsciente colectivo 2",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -255,19 +289,31 @@
       "archivo": "Carl Gustav Jung/Arquetipos EI inconsciente Colectivo-3.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "arquetipos ei inconsciente colectivo 3"
+        "arquetipos ei inconsciente colectivo 3",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 3\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -276,19 +322,31 @@
       "archivo": "Carl Gustav Jung/Conflictos Del Alma Infantil.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "conflictos del alma infantil"
+        "conflictos del alma infantil",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Conflictos Del Alma Infantil\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -297,19 +355,31 @@
       "archivo": "Carl Gustav Jung/El hombre y sus simbolos.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "el hombre y sus simbolos"
+        "el hombre y sus simbolos",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"El hombre y sus simbolos\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -318,19 +388,31 @@
       "archivo": "Carl Gustav Jung/Energetica Psiquica y Esencia Del Sueño.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "energetica psiquica y esencia del sueño"
+        "energetica psiquica y esencia del sueño",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Energetica Psiquica y Esencia Del Sueño\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -339,19 +421,31 @@
       "archivo": "Carl Gustav Jung/La Interpretacion De La Naturaleza Y La Psique.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "la interpretacion de la naturaleza y la psique"
+        "la interpretacion de la naturaleza y la psique",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Interpretacion De La Naturaleza Y La Psique\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -360,19 +454,31 @@
       "archivo": "Carl Gustav Jung/La Psicologia De La Transferencia-1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "la psicologia de la transferencia 1"
+        "la psicologia de la transferencia 1",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Psicologia De La Transferencia 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -381,19 +487,31 @@
       "archivo": "Carl Gustav Jung/La Psicologia De La Transferencia-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "la psicologia de la transferencia 2"
+        "la psicologia de la transferencia 2",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Psicologia De La Transferencia 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -402,19 +520,31 @@
       "archivo": "Carl Gustav Jung/Los Complejos y el Inconsciente.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "los complejos y el inconsciente"
+        "los complejos y el inconsciente",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Complejos y el Inconsciente\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -423,19 +553,31 @@
       "archivo": "Carl Gustav Jung/Recuerdos Sueños Pensamientos.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "recuerdos sueños pensamientos"
+        "recuerdos sueños pensamientos",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Recuerdos Sueños Pensamientos\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -444,19 +586,31 @@
       "archivo": "Carl Gustav Jung/Tipos Psicologicos - Tomo 1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "tipos psicologicos   tomo 1"
+        "tipos psicologicos   tomo 1",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Tipos Psicologicos   Tomo 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -465,19 +619,31 @@
       "archivo": "Carl Gustav Jung/Tipos Psicologicos - Tomo 2.PDF",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Carl Gustav Jung",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "psicología analítica",
+        "psicología",
+        "arquetipos",
+        "inconsciente",
+        "símbolos"
       ],
       "conceptosClave": [
-        "tipos psicologicos   tomo 2"
+        "tipos psicologicos   tomo 2",
+        "jung",
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente colectivo"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Tipos Psicologicos   Tomo 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "jung",
+        "psicología",
+        "arquetipos"
       ]
     },
     {
@@ -486,10 +652,14 @@
       "archivo": "Carta astral Ignacio Gabriel Fernandez.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Gustavo Fernández",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "astrología",
+        "carta astral",
+        "psicología",
+        "esoterismo"
       ],
       "conceptosClave": [
         "carta astral ignacio gabriel fernandez"
@@ -498,7 +668,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Carta astral Ignacio Gabriel Fernandez\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "gustavo fernandez"
       ]
     },
     {
@@ -507,10 +678,14 @@
       "archivo": "Charles Fort  El Libro de los Condenados.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Charles Fort",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "parapsicología",
+        "fenómenos inexplicables",
+        "ciencia",
+        "curiosidades"
       ],
       "conceptosClave": [
         "charles fort  el libro de los condenados"
@@ -519,7 +694,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Charles Fort  El Libro de los Condenados\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "charles fort"
       ]
     },
     {
@@ -712,10 +888,14 @@
       "archivo": "Eliphas Levi - Claves mayores y claviculas de Salomon.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Eliphas Lévi",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "ocultismo",
+        "tarot",
+        "magia",
+        "esoterismo"
       ],
       "conceptosClave": [
         "eliphas levi   claves mayores y claviculas de salomon"
@@ -724,7 +904,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Eliphas Levi   Claves mayores y claviculas de Salomon\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "eliphas levi"
       ]
     },
     {
@@ -1964,10 +2145,14 @@
       "archivo": "Hermes_El-Kybalion.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Hermes Trismegisto",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "hermetismo",
+        "esoterismo",
+        "alquimia",
+        "filosofía"
       ],
       "conceptosClave": [
         "hermes el kybalion"
@@ -1976,7 +2161,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Hermes El Kybalion\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "hermes"
       ]
     },
     {
@@ -2023,7 +2209,7 @@
         "ceremonias"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Ícaros: Cantos Sagrados del Amazonas\" de Tradición Amazónica registrado en la biblioteca local.",
       "tags": [
         "ícaros",
@@ -2075,19 +2261,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Cantos-de-ignorancia-iluminada-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "cantos de ignorancia iluminada jacobo grinberg zylberbaum"
+        "cantos de ignorancia iluminada jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Cantos de ignorancia iluminada Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2096,19 +2294,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Curaciones-Chamanicas.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "curaciones chamanicas"
+        "curaciones chamanicas",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Curaciones Chamanicas\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2117,19 +2327,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/El-Cerebro-Consciente-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "el cerebro consciente jacobo grinberg zylberbaum"
+        "el cerebro consciente jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Cerebro Consciente Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2138,19 +2360,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/El-poder-curativo-de-la-mente-Tulku-Thondup.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "el poder curativo de la mente tulku thondup"
+        "el poder curativo de la mente tulku thondup",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"El poder curativo de la mente Tulku Thondup\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2159,19 +2393,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/El-Potencial-Transferido-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "el potencial transferido jacobo grinberg zylberbaum"
+        "el potencial transferido jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Potencial Transferido Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2180,19 +2426,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/El-Sabor-de-la-Iluminacion 1994.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "el sabor de la iluminacion 1994"
+        "el sabor de la iluminacion 1994",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"El Sabor de la Iluminacion 1994\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2201,19 +2459,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/El-Vehiculo-de-las-Transformaciones.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "el vehiculo de las transformaciones"
+        "el vehiculo de las transformaciones",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"El Vehiculo de las Transformaciones\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2222,19 +2492,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Fluir-en-El-sin-yo-by-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "fluir en el sin yo by jacobo grinberg zylberbaum"
+        "fluir en el sin yo by jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Fluir en El sin yo by Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2243,19 +2525,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-conquista-del-templo-Jacobo-Grinberg.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la conquista del templo jacobo grinberg"
+        "la conquista del templo jacobo grinberg",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La conquista del templo Jacobo Grinberg\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2264,19 +2558,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-Construccion-de-La-Realidad-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la construccion de la realidad jacobo grinberg zylberbaum"
+        "la construccion de la realidad jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Construccion de La Realidad Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2285,19 +2591,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-Experiencia-interna.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la experiencia interna"
+        "la experiencia interna",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Experiencia interna\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2306,19 +2624,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-Fuerza-Creativa-del-Amor.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la fuerza creativa del amor"
+        "la fuerza creativa del amor",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Fuerza Creativa del Amor\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2327,19 +2657,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-fuerza-vital-del-cielo-anterior.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la fuerza vital del cielo anterior"
+        "la fuerza vital del cielo anterior",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La fuerza vital del cielo anterior\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2348,19 +2690,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-percepcion-de-la-realidad.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la percepcion de la realidad"
+        "la percepcion de la realidad",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La percepcion de la realidad\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2369,19 +2723,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-Real-Tecnologia-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la real tecnologia jacobo grinberg zylberbaum"
+        "la real tecnologia jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La Real Tecnologia Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2390,19 +2756,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/La-teoria-sintergica-Jacobo-Grinberg-zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "la teoria sintergica jacobo grinberg zylberbaum"
+        "la teoria sintergica jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"La teoria sintergica Jacobo Grinberg zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2411,19 +2789,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Las-Manifestaciones-Del-Ser-Pachita.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "las manifestaciones del ser pachita"
+        "las manifestaciones del ser pachita",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Las Manifestaciones Del Ser Pachita\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2432,19 +2822,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-El-Cerebro-y-los-Chamanes-Vol-5-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico el cerebro y los chamanes vol 5 2"
+        "los chamanes de mexico el cerebro y los chamanes vol 5 2",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2453,19 +2855,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-PACHITA-Vol-3.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico pachita vol 3"
+        "los chamanes de mexico pachita vol 3",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico PACHITA Vol 3\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2474,19 +2888,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-1.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico vol 1"
+        "los chamanes de mexico vol 1",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 1\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2495,19 +2921,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-2.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico vol 2"
+        "los chamanes de mexico vol 2",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 2\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2516,19 +2954,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-4.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico vol 4"
+        "los chamanes de mexico vol 4",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 4\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2537,19 +2987,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-6.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico vol 6"
+        "los chamanes de mexico vol 6",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 6\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2558,19 +3020,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-7.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los chamanes de mexico vol 7"
+        "los chamanes de mexico vol 7",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 7\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2579,19 +3053,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Cristales-de-la-Galaxia_Jacobo-Grinberg.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "los cristales de la galaxia jacobo grinberg"
+        "los cristales de la galaxia jacobo grinberg",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Los Cristales de la Galaxia Jacobo Grinberg\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2600,19 +3086,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Mas-Alla-de-los-Lenguajes.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "mas alla de los lenguajes"
+        "mas alla de los lenguajes",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Mas Alla de los Lenguajes\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2621,19 +3119,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/MEDITACION-AUTOALUSIVA-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "meditacion autoalusiva jacobo grinberg zylberbaum"
+        "meditacion autoalusiva jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"MEDITACION AUTOALUSIVA Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2642,19 +3152,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Misticismo indigena-by-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "misticismo indigena by jacobo grinberg zylberbaum"
+        "misticismo indigena by jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Misticismo indigena by Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2663,19 +3185,31 @@
       "archivo": "Jacobo-Grinberg-Zylberbaum/Retorno-a-la-Luz-Jacobo-Grinberg-Zylberbaum.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Jacobo Grinberg Zylberbaum",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "chamanismo",
+        "psicología",
+        "espiritualidad",
+        "medicina chamánica",
+        "misticismo"
       ],
       "conceptosClave": [
-        "retorno a la luz jacobo grinberg zylberbaum"
+        "retorno a la luz jacobo grinberg zylberbaum",
+        "jacobo grinberg",
+        "chamanismo",
+        "experiencia interna",
+        "consciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Retorno a la Luz Jacobo Grinberg Zylberbaum\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "grinberg",
+        "chamanismo",
+        "consciencia"
       ]
     },
     {
@@ -2705,13 +3239,14 @@
       "archivo": "La vía del tarot, Alejandro Jodorowsky.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Alejandro Jodorowsky & Marianne Costa",
+      "autor": "Alejandro Jodorowsky",
       "idioma": "es",
       "categorias": [
         "tarot",
         "arcanos",
         "simbolismo",
-        "psicomagia"
+        "psicomagia",
+        "esoterismo"
       ],
       "conceptosClave": [
         "arcanos mayores",
@@ -2729,7 +3264,8 @@
         "jodorowsky",
         "símbolos",
         "arcanos",
-        "cartas"
+        "cartas",
+        "alejandro jodorowsky"
       ]
     },
     {
@@ -2738,7 +3274,7 @@
       "archivo": "la-cocina-vegetariana-de-hare-krisna 1984.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Adiraja Dasa",
+      "autor": "Hare Krishna / Adiraja Dasa",
       "idioma": "es",
       "categorias": [
         "cocina vegetariana",
@@ -2763,7 +3299,8 @@
         "krishna",
         "recetas",
         "ayurveda",
-        "consciente"
+        "consciente",
+        "hare krishna"
       ]
     },
     {
@@ -2825,19 +3362,31 @@
       "archivo": "lista_completa_de_patentes_de _nikola_tesla.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Nikola Tesla",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "física",
+        "ciencia",
+        "inventos",
+        "electricidad",
+        "patentes"
       ],
       "conceptosClave": [
-        "lista completa de patentes de  nikola tesla"
+        "lista completa de patentes de  nikola tesla",
+        "tesla",
+        "electricidad",
+        "patentes",
+        "ciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"lista completa de patentes de  nikola tesla\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "tesla",
+        "ciencia",
+        "inventos"
       ]
     },
     {
@@ -2972,19 +3521,31 @@
       "archivo": "Nikola Tesla - Illustrated Autobiography.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Nikola Tesla",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "física",
+        "ciencia",
+        "inventos",
+        "electricidad",
+        "patentes"
       ],
       "conceptosClave": [
-        "nikola tesla   illustrated autobiography"
+        "nikola tesla   illustrated autobiography",
+        "tesla",
+        "electricidad",
+        "patentes",
+        "ciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Nikola Tesla   Illustrated Autobiography\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "tesla",
+        "ciencia",
+        "inventos"
       ]
     },
     {
@@ -3035,10 +3596,14 @@
       "archivo": "Plantas medicinales del nordeste argentino incupo.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "INCUPO",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "Otros",
+        "plantas medicinales",
+        "fitoterapia",
+        "medicina natural",
+        "etnobotánica"
       ],
       "conceptosClave": [
         "plantas medicinales del nordeste argentino incupo"
@@ -3047,7 +3612,8 @@
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Plantas medicinales del nordeste argentino incupo\" de Desconocido registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "biblioteca",
+        "incupo"
       ]
     },
     {
@@ -3176,20 +3742,26 @@
       "archivo": "Tesla, Energia libre.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Nikola Tesla / Recopilación",
+      "autor": "Nikola Tesla",
       "idioma": "es",
       "categorias": [
         "física",
         "energía libre",
         "electromagnetismo",
-        "patentes"
+        "patentes",
+        "ciencia",
+        "inventos",
+        "electricidad"
       ],
       "conceptosClave": [
         "energía libre",
         "bobina de tesla",
         "corriente alterna",
         "antigravedad",
-        "patentes"
+        "patentes",
+        "tesla",
+        "electricidad",
+        "ciencia"
       ],
       "capitulos": [],
       "embeddings": "pending",
@@ -3247,7 +3819,7 @@
         "plantas sagradas"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Un Ensueño entre Serpientes y Jaguares (Parte 1)\" de Tradición Chamánica / Relatos registrado en la biblioteca local.",
       "tags": [
         "ensueño",
@@ -3280,7 +3852,7 @@
         "curación"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Un Ensueño entre Serpientes y Jaguares (Parte 2)\" de Tradición Chamánica / Relatos registrado en la biblioteca local.",
       "tags": [
         "ensueño",

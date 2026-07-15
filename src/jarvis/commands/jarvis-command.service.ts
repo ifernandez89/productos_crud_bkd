@@ -8,6 +8,7 @@ import { DocumentSummaryService } from '../library/document-summary.service';
 import { DocumentCompareService } from '../library/document-compare.service';
 import { KnowledgeTestService } from '../library/knowledge-test.service';
 import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
+import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class JarvisCommandService {
     private readonly documentCompareService: DocumentCompareService,
     private readonly knowledgeTestService: KnowledgeTestService,
     private readonly jarvisKnowledge: JarvisKnowledgeService,
+    private readonly corpusSelector: CorpusSelectorService,
   ) {}
 
   /**
@@ -109,6 +111,15 @@ export class JarvisCommandService {
       await this.conversationRepo.create({ sessionId, role: 'assistant', content: catMsg, metadata: { source: 'library_categories' } });
       await this.agentRunRepo.create({ sessionId, question: userMessage, answer: catMsg, toolsUsed: ['library_categories'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
       return { handled: true, response: catMsg };
+    }
+
+    // 5b. AUTORES — lista de autores de la biblioteca
+    if (/^(mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(trimmedMessage)) {
+      const authorsMsg = await this.buildAuthorsMessage();
+      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+      await this.conversationRepo.create({ sessionId, role: 'assistant', content: authorsMsg, metadata: { source: 'library_authors' } });
+      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: authorsMsg, toolsUsed: ['library_authors'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      return { handled: true, response: authorsMsg };
     }
 
     // 6. RESUMEN DE DOCUMENTO INDIVIDUAL
@@ -288,6 +299,39 @@ export class JarvisCommandService {
   }
 
   private async buildCategoriesMessage(): Promise<string> {
+    const index = this.corpusSelector?.getIndex?.();
+    const docsFromIndex = index?.documentos ?? [];
+
+    if (docsFromIndex.length > 0) {
+      const categoryMap = new Map<string, number>();
+      for (const doc of docsFromIndex) {
+        for (const category of doc.categorias ?? []) {
+          const normalized = category.trim();
+          if (!normalized) continue;
+          categoryMap.set(normalized, (categoryMap.get(normalized) ?? 0) + 1);
+        }
+      }
+
+      if (categoryMap.size > 0) {
+        const lines = [
+          `📁 **Tus categorías** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`,
+          ``,
+        ];
+
+        for (const [name, count] of Array.from(categoryMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
+          lines.push(`  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+          lines.push(`     → \`resumen sobre ${name}\``);
+        }
+
+        lines.push(``);
+        lines.push(`💡 Podés pedir:`);
+        lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
+        lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
+
+        return lines.join('\n');
+      }
+    }
+
     const stats = await this.documentRepo.getLibraryStats();
     if (stats.totalDocs === 0) {
       return `📁 No tenés categorías aún — tu biblioteca está vacía.\n\nSubí un PDF y la categoría se detecta automáticamente.`;
@@ -309,6 +353,61 @@ export class JarvisCommandService {
     lines.push(`💡 Podés pedir:`);
     lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
     lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
+
+    return lines.join('\n');
+  }
+
+  private async buildAuthorsMessage(): Promise<string> {
+    const index = this.corpusSelector?.getIndex?.();
+    const docsFromIndex = index?.documentos ?? [];
+
+    if (docsFromIndex.length > 0) {
+      const authorMap = new Map<string, number>();
+      for (const doc of docsFromIndex) {
+        const author = (doc.autor ?? '').trim();
+        if (!author) continue;
+        authorMap.set(author, (authorMap.get(author) ?? 0) + 1);
+      }
+
+      if (authorMap.size > 0) {
+        const lines = [
+          `✍️ **Tus autores** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`,
+          ``,
+        ];
+
+        for (const [name, count] of Array.from(authorMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
+          lines.push(`  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+        }
+
+        lines.push(``);
+        lines.push(`💡 Podés pedir:`);
+        lines.push(`  \`resumen de '<autor>'\`  —  ver una vista general de los documentos de ese autor`);
+        lines.push(`  \`mis documentos\`       —  ver todos los títulos organizados`);
+
+        return lines.join('\n');
+      }
+    }
+
+    const docs = await this.documentRepo.getMostRecentDocuments(50);
+    if (!docs || docs.length === 0) {
+      return `✍️ No encontré autores en la biblioteca todavía.`;
+    }
+
+    const authorMap = new Map<string, number>();
+    for (const doc of docs) {
+      const author = ((doc as any).author ?? (doc as any).autor ?? '').toString().trim();
+      if (!author) continue;
+      authorMap.set(author, (authorMap.get(author) ?? 0) + 1);
+    }
+
+    if (authorMap.size === 0) {
+      return `✍️ No encontré autores en la biblioteca todavía.`;
+    }
+
+    const lines = [`✍️ **Tus autores** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
+    for (const [name, count] of Array.from(authorMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
+      lines.push(`  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+    }
 
     return lines.join('\n');
   }
@@ -352,6 +451,37 @@ export class JarvisCommandService {
   }
 
   private async buildLibraryMessage(): Promise<string> {
+    const index = this.corpusSelector?.getIndex?.();
+    const docsFromIndex = index?.documentos ?? [];
+
+    if (docsFromIndex.length > 0) {
+      const byCategory = new Map<string, typeof docsFromIndex>();
+      for (const doc of docsFromIndex) {
+        const cat = doc.categorias?.[0] ?? 'sin categoría';
+        if (!byCategory.has(cat)) byCategory.set(cat, []);
+        byCategory.get(cat)!.push(doc);
+      }
+
+      const lines: string[] = [`📚 **Tus documentos escaneados** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`, ``];
+
+      for (const [category, items] of byCategory.entries()) {
+        lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
+        for (const doc of items) {
+          const estado = doc.embeddings === 'ready' ? 'indexado' : doc.embeddings === 'processing' ? 'procesando' : 'disponible';
+          lines.push(`  • ${doc.titulo} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
+        }
+        lines.push(``);
+      }
+
+      lines.push(`💡 Podés preguntar:`);
+      lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
+      lines.push(`  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``);
+      lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
+      lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
+
+      return lines.join('\n');
+    }
+
     const docs = await this.documentRepo.getMostRecentDocuments(50);
     if (!docs || docs.length === 0) {
       return `📚 Tu biblioteca está vacía.\n\nSubí un PDF desde el chat para empezar a construirla.`;
@@ -509,6 +639,7 @@ export class JarvisCommandService {
       ``,
       `**BIBLIOTECA / DOCUMENTOS / PDFs**`,
       `  Ver documentos        →  \`mis documentos\`  /  \`biblioteca\``,
+      `  Ver autores           →  \`mis autores\``,
       `  Resumen por categoría →  \`resumen sobre <tema>\``,
       `                           \`resumen sobre plantas medicinales\``,
       `                           \`qué dicen mis PDFs de medicina\``,
