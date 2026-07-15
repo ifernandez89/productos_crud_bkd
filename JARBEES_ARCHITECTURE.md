@@ -1,32 +1,35 @@
 # JarBees — Arquitectura del Sistema
-**Última actualización:** Julio 2026  
-**Stack:** NestJS 10 · PostgreSQL · Prisma 6 · Ollama · Playwright · TypeScript
+**Última revisión:** Julio 2026  
+**Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
+**Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
 
 ---
 
 ## 1. Filosofía de diseño
 
-JarBees no es un chatbot. Es un **Sistema Operativo Personal** construido sobre capas de memoria, conocimiento y ejecución:
+JarBees no es un chatbot. Es un **Sistema Operativo Personal** construido sobre capas de memoria, conocimiento, ejecución y observabilidad:
 
 ```
 Usuario
   ↓
-Intent Router          ← clasifica la intención antes de cualquier acción
+JarvisController (/api/jarbees)
   ↓
-Execution Engine       ← ejecuta planes multi-paso
+JarvisService (orquestador principal)
   ↓
-Tools Layer            ← Browser · Calendar · Sports · Astrology · Math · Weather · ...
+IntentRouter + Planner + ExecutionEngine
   ↓
-Knowledge Layer        ← RAG · Embeddings · Business Sources · RSS
+Tools Layer (AssistantTools · Google Workspace · Browser · Astrology · Sports · Tasks)
   ↓
-Memory Layer           ← Memoria permanente · Extracción automática · Knowledge Evolution
+Knowledge Layer (RAG local · embeddings · documentos · fuentes web)
   ↓
-LLM Provider           ← Ollama (local) o OpenRouter (externo) — intercambiables
+Memory Layer (memorias · resumen de sesión · knowledge evolution)
+  ↓
+LLM Provider (Ollama / OpenRouter)
   ↓
 Respuesta
 ```
 
-El LLM es un **componente reemplazable**. La inteligencia real está en las capas anteriores.
+El LLM es un **componente reemplazable**. La inteligencia real está en las capas anteriores, especialmente en el router, la memoria y la biblioteca de conocimiento.
 
 ---
 
@@ -47,33 +50,35 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 
 ---
 
-## 3. Base de datos — 17 modelos activos
+## 3. Base de datos — modelos principales del esquema actual
 
-### Legacy (compatibilidad)
+El esquema de Prisma está orientado a PostgreSQL y contiene los modelos que el runtime de Jarvis usa en la práctica. No todos forman parte de la misma capa, pero todos son relevantes para el sistema real.
+
+### Compatibilidad legacy
 | Modelo | Propósito |
 |--------|-----------|
 | `Product` | CRUD de productos original |
 | `Pregunta` | Historial legacy del chatbot |
 
-### Jarvis — Sistema de memoria
+### Memoria y conversaciones
 | Modelo | Propósito |
 |--------|-----------|
-| `UserProfile` | Perfil adaptativo: timezone, país, idioma, preferencias JSON |
-| `Memory` | Hechos persistentes en lenguaje natural. "Ignacio trabaja con NestJS" |
-| `MemoryChunk` | Fragmentos de memoria embeddables (preparado para pgvector) |
-| `ConversationMessage` | Historial multi-sesión por `sessionId` UUID |
-| `SessionSummary` | Resumen progresivo cada 10 mensajes — evita contexto gigante |
-| **`TopicSnapshot`** | **Snapshots de evolución del conocimiento — base de Knowledge Evolution** |
+| `UserProfile` | Perfil adaptativo: timezone, país, idioma y preferencias JSON |
+| `UserCredential` | Tokens OAuth para Google Calendar, Gmail, Drive, etc. |
+| `Memory` | Hechos persistentes en lenguaje natural |
+| `MemoryChunk` | Fragmentos de memoria con soporte de embeddings |
+| `ConversationMessage` | Historial multi-sesión por `sessionId` |
+| `SessionSummary` | Resumen progresivo para evitar contexto gigante |
 
-### Jarvis — Conocimiento RAG
+### Conocimiento y RAG
 | Modelo | Propósito |
 |--------|-----------|
-| `KnowledgeSource` | Fuentes tipadas: `pdf`, `markdown`, `web`, `rss`, `github`, `api` |
-| `Document` | Documentos ingestados con título, contenido, categoría |
-| `Chunk` | Fragmentos embeddables con `embeddingId` |
+| `KnowledgeSource` | Fuentes tipadas (`pdf`, `markdown`, `web`, `rss`, `github`, `api`) |
+| `Document` | Documentos ingestados con contenido y categoría |
+| `Chunk` | Fragmentos embeddables con `embeddingId` y metadata |
 | `Collection` + `CollectionDocument` | Agrupación temática de documentos |
 
-### Jarvis — Ejecución y observabilidad
+### Planner, herramientas y observabilidad
 | Modelo | Propósito |
 |--------|-----------|
 | `Task` + `TaskStep` | Planner: objetivo → pasos ejecutables con status |
@@ -81,10 +86,10 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 | `Tool` | Registro dinámico de herramientas habilitadas |
 | `AgentRun` | Observabilidad: latencia, modelo, herramientas, éxito/fallo |
 
-### Web cache (ContentCacheService)
+### Web acquisition y cache
 | Modelo | Propósito |
 |--------|-----------|
-| `Source` | Fuentes web registradas con TTL |
+| `Source` | Fuentes web registradas con TTL y prioridad |
 | `ScrapedPage` + `ScrapedContent` | Caché de páginas con expiración |
 | `Query` | Analytics de consultas y cache hits |
 
@@ -460,76 +465,78 @@ Cada respuesta genera un `AgentRun` con:
 
 ---
 
-## 14. Endpoints REST completos (`/api/jarbees/*`)
+## 14. Endpoints REST completos
+
+Todos los endpoints reales del controlador de Jarvis quedan bajo el prefijo global `/api`, por lo que la ruta completa es `/api/jarbees/...`.
 
 ### Core
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/jarbees/session` | Obtener o crear sessionId persistente |
-| GET | `/jarbees/history` | Historial de mensajes de una sesión |
-| POST | `/jarbees/query` | Consulta principal |
-| POST | `/jarbees/feedback` | Registrar feedback (score 1-5) |
+| GET | `/api/jarbees/session` | Obtener o crear `sessionId` persistente |
+| GET | `/api/jarbees/history` | Historial de mensajes de una sesión |
+| POST | `/api/jarbees/query` | Consulta principal |
+| POST | `/api/jarbees/feedback` | Registrar feedback (score 1-5) |
 
 ### Planner + Execution Engine
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/jarbees/planner` | Crear plan (sin ejecutar) |
-| POST | `/jarbees/planner/execute` | Crear plan Y ejecutarlo — retorna respuesta final |
+| POST | `/api/jarbees/planner` | Crear plan (sin ejecutar) |
+| POST | `/api/jarbees/planner/execute` | Crear plan y ejecutarlo |
 
 ### Memoria
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/jarbees/memory` | Guardar hecho permanente |
-| GET | `/jarbees/memory` | Listar todas las memorias |
-| GET | `/jarbees/memory/:id` | Recuperar memoria por ID |
+| POST | `/api/jarbees/memory` | Guardar hecho permanente |
+| GET | `/api/jarbees/memory` | Listar memorias |
+| GET | `/api/jarbees/memory/:id` | Recuperar memoria por ID |
 
 ### Knowledge Evolution
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/jarbees/evolution?topic=X&days=180` | Evolución de un tema |
-| GET | `/jarbees/evolution/topics` | Listar todos los temas registrados |
+| GET | `/api/jarbees/evolution?topic=X&days=180` | Evolución de un tema |
+| GET | `/api/jarbees/evolution/topics` | Listar temas registrados |
 
 ### Biblioteca
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/jarbees/library/document` | Ingestar texto/markdown |
-| POST | `/jarbees/library/document/pdf` | Subir PDF |
-| POST | `/jarbees/library/document/url` | Ingestar desde URL |
-| GET | `/jarbees/library/document` | Listar documentos |
-| GET | `/jarbees/library/document/search?q=` | Buscar en documentos |
-| GET | `/jarbees/library/document/recent` | Más recientes |
-| GET | `/jarbees/library/document/:id` | Documento con chunks |
-| DELETE | `/jarbees/library/document/:id` | Eliminar documento |
-| GET | `/jarbees/library/stats` | Stats de la biblioteca |
-| POST/GET | `/jarbees/library/collection` | CRUD de colecciones |
-| GET | `/jarbees/library/diagnostic` | Diagnóstico del estado del conocimiento y la biblioteca |
-| POST | `/jarbees/library/knowledge-test` | Pruebas automáticas de recuperación RAG |
-| POST | `/jarbees/library/probe` | Inspección detallada de chunks recuperados |
+| POST | `/api/jarbees/library/document` | Ingestar texto/markdown |
+| POST | `/api/jarbees/library/document/pdf` | Subir PDF |
+| POST | `/api/jarbees/library/document/url` | Ingestar desde URL |
+| GET | `/api/jarbees/library/document` | Listar documentos |
+| GET | `/api/jarbees/library/document/search?q=` | Buscar documentos |
+| GET | `/api/jarbees/library/document/recent` | Más recientes |
+| GET | `/api/jarbees/library/document/:id` | Documento con chunks |
+| DELETE | `/api/jarbees/library/document/:id` | Eliminar documento |
+| GET | `/api/jarbees/library/stats` | Stats de la biblioteca |
+| POST/GET | `/api/jarbees/library/collection` | CRUD de colecciones |
+| GET | `/api/jarbees/library/diagnostic` | Diagnóstico del conocimiento |
+| POST | `/api/jarbees/library/knowledge-test` | Pruebas automáticas de RAG |
+| POST | `/api/jarbees/library/probe` | Inspección detallada de chunks |
 
 ### Browser
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| POST | `/jarbees/browser/fetch` | Scrapear URL (axios → Playwright) |
-| POST | `/jarbees/browser/navigate` | Navegar con Playwright + screenshot |
-| POST | `/jarbees/browser/search` | Buscar en Google via Playwright |
-| POST | `/jarbees/investigate` | Investigar URL → ingestar a Knowledge |
+| POST | `/api/jarbees/browser/fetch` | Scrapear URL |
+| POST | `/api/jarbees/browser/navigate` | Navegar con Playwright |
+| POST | `/api/jarbees/browser/search` | Buscar en Google |
+| POST | `/api/jarbees/investigate` | Investigar URL e ingestar conocimiento |
 
 ### Perfil y Config
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET/PATCH | `/jarbees/profile` | Perfil del usuario |
-| GET | `/jarbees/identity` | Identidad de JarBees |
-| GET | `/jarbees/capabilities` | Capacidades activas |
-| GET | `/jarbees/skills` | Skills cargadas |
-| GET | `/jarbees/skills/relevant?q=` | Skills relevantes para query |
-| GET | `/jarbees/tools` | Tools habilitadas |
+| GET/PATCH | `/api/jarbees/profile` | Perfil del usuario |
+| GET | `/api/jarbees/identity` | Identidad de JarBees |
+| GET | `/api/jarbees/capabilities` | Capacidades activas |
+| GET | `/api/jarbees/skills` | Skills cargadas |
+| GET | `/api/jarbees/skills/relevant?q=` | Skills relevantes para query |
+| GET | `/api/jarbees/tools` | Tools habilitadas |
 
 ### Observabilidad
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/jarbees/dashboard` | Stats globales del sistema |
-| GET | `/jarbees/observability/stats` | Métricas de AgentRun |
-| GET | `/jarbees/observability/runs` | Runs recientes |
+| GET | `/api/jarbees/dashboard` | Stats globales del sistema |
+| GET | `/api/jarbees/observability/stats` | Métricas de `AgentRun` |
+| GET | `/api/jarbees/observability/runs` | Runs recientes |
 
 ---
 
@@ -559,12 +566,12 @@ Cobertura total  ~78%
 
 | Limitación | Estado | Alternativa |
 |------------|--------|-------------|
-| **pgvector** | Activo en `Chunk.embedding` y `MemoryChunk.embedding` con `vector(1024)` en PostgreSQL | Búsqueda semántica nativa ya soportada con `<=>` en consultas raw SQL |
-| **Google OAuth** | Requiere tarjeta en Google Cloud | TaskReminderService interno en PostgreSQL |
-| **Vision / OCR** | Sin modelo multimodal | `POST /upload/image` retorna Base64 |
-| **GitHub** | Solo tipo en KnowledgeSource | Manual via ingesta de texto |
-| **Anti-bot scraping** | Cloudflare/Twitter bloquean | RSS como alternativa |
-| **Embeddings semánticos** | Generados pero no buscados semánticamente | Búsqueda textual LIKE |
+| **pgvector** | La base ya está preparada en el schema con `vector(1024)` para `Chunk` y `MemoryChunk` | La búsqueda semántica nativa está preparada, pero la ejecución real depende del soporte del motor PostgreSQL y de los fallbacks textuales cuando el embedding no está disponible |
+| **Google OAuth** | Requiere tarjeta en Google Cloud para algunas integraciones | `TaskReminderService` interno en PostgreSQL y otras rutas pueden seguir operando con datos locales |
+| **Vision / OCR** | Sin modelo multimodal en producción | `POST /upload/image` devuelve Base64 para consumo externo |
+| **GitHub** | Solo tipado en `KnowledgeSource` | Ingesta manual vía texto/PDF/URL |
+| **Anti-bot scraping** | Cloudflare/Twitter bloquean | RSS y fuentes priorizadas como alternativa |
+| **Embeddings semánticos** | Se generan y se usan en la librería RAG | Si falla la generación o el embedding, el sistema cae a búsqueda textual |
 
 ---
 
