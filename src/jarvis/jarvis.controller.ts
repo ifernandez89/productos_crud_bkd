@@ -287,6 +287,13 @@ export class JarvisController {
   }
 
   @Public()
+  @Get('library/index')
+  @ApiOperation({ summary: 'Obtener el índice completo de la biblioteca (library-index.json)' })
+  getLibraryIndex() {
+    return this.jarvisService.getLibraryIndex();
+  }
+
+  @Public()
   @Get('library/document/search')
   @ApiOperation({ summary: 'Buscar en documentos' })
   async searchDocuments(@Query('q') query: string) {
