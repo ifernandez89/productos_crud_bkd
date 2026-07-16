@@ -121,6 +121,9 @@ import { AuditService } from './security/audit.service';
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
+    OllamaProvider,
+    OpenRouterProvider,
+    AstrologyTool,
   ],
 })
 export class JarvisModule {}

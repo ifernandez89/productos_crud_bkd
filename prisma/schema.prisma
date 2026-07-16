@@ -443,3 +443,38 @@ model TopicSnapshot {
   @@index([createdAt])
   @@index([sessionId])
 }
+
+// ── 14) BALANCE ENERGÉTICO (JarBees v2.1) ────────────────────────────────────
+// Registro histórico del balance de energía del usuario en 7 dimensiones.
+
+model BalanceSession {
+  id                  Int             @id @default(autoincrement())
+  createdAt           DateTime        @default(now())
+  completedAt         DateTime?
+  type                String          @default("manual") // "manual" | "periodic"
+  astrologicalContext Json?           // natal chart and transits context
+  summary             String?
+  scoreGeneral        Float?
+  nextRecommendedAt   DateTime?
+  answers             BalanceAnswer[]
+  reports             BalanceReport[]
+}
+
+model BalanceAnswer {
+  id         Int            @id @default(autoincrement())
+  sessionId  Int
+  question   String
+  answer     String
+  metadata   Json?
+  session    BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model BalanceReport {
+  id                 Int            @id @default(autoincrement())
+  sessionId          Int
+  analysis           String         // JSON text containing strengths, blind spot, etc.
+  recommendations    String         // JSON text containing focus action, reflection questions, seed
+  energyDistribution Json           // JSON score map: {"expansion": X, "disciplina": Y, ...}
+  createdAt          DateTime       @default(now())
+  session            BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
