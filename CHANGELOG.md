@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Optimized — Asynchronous Ingestion & Controlled Concurrency (2026-07-15)
+
+- **🔄 Ingestion State Machine**: Added `status` field to the `Document` model (`not_indexed` → `indexing` → `ready`). Documents default to `not_indexed` and transition to `indexing` during parsing.
+- **⚡ Decoupled Ingestion Pipeline**: Ingestion methods (`ingestText`, `ingestPdf`, `ingestUrl`) no longer block user responses while generating embeddings. The embedding processing runs asynchronously.
+- **🚦 Concurrency Controlled Embedding Queue**: Implemented a worker pool pattern for embedding generation with a strict limit of 3 concurrent requests, avoiding API rate limits and fixing TypeScript compilation issues.
+- **🔍 RAG Status Filtering**: Updated textual and semantic search queries to only query documents in the `ready` state, preventing incomplete or partially indexed documents from showing up in RAG searches.
+
 ### Security — Quick fixes (2026-07-14)
 
 - **🛡️ H-i-t-L para endpoints destructivos**: El endpoint `DELETE /jarbees/library/document/:id` ahora requiere confirmación humana (`?confirm=true` o header `x-human-confirmation: yes`) o la variable de entorno `SKIP_HITL=true` para permitirse en entornos de integración. Esto evita borrados accidentales o inducidos por prompts maliciosos.

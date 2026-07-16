@@ -46,16 +46,20 @@ export class DocumentIngestService {
     const cleanContent = this.sanitizeText(content);
     
     const detectedCategory = category ?? await this.detectCategory(cleanTitle, cleanContent);
-    const doc = await this.documentRepo.createDocument({ 
-      title: cleanTitle, 
-      content: cleanContent, 
-      category: detectedCategory, 
-      source 
+    const doc = await this.documentRepo.createDocument({
+      title: cleanTitle,
+      content: cleanContent,
+      category: detectedCategory,
+      source,
+      status: 'indexing',
     });
-    const chunks = await this.buildAndSaveChunks(doc.id, cleanContent);
 
-    this.logger.log(`[library] ingestado "${cleanTitle}" — categoría: ${detectedCategory} — ${chunks} chunks`);
-    return { documentId: doc.id, title: cleanTitle, chunks, category: detectedCategory };
+    const savedChunks = await this.buildAndSaveChunks(doc.id, cleanContent);
+    this.processDocumentEmbeddings(doc.id, savedChunks)
+      .catch((err) => this.logger.warn(`[ingest:text] Error procesando embeddings para docId=${doc.id}: ${err?.message ?? err}`));
+
+    this.logger.log(`[library] ingestado "${cleanTitle}" — categoría: ${detectedCategory} — ${savedChunks.length} chunks`);
+    return { documentId: doc.id, title: cleanTitle, chunks: savedChunks.length, category: detectedCategory };
   }
 
   // ── Ingesta desde buffer de PDF ─────────────────────────────────────────────
@@ -92,26 +96,30 @@ export class DocumentIngestService {
     // Limpiar el título también (quitando extensiones y caracteres problemáticos)
     const cleanTitle = this.sanitizeTitle(title);
     const detectedCategory = category ?? await this.detectCategory(cleanTitle, text);
-    
+
     const doc = await this.documentRepo.createDocument({
       title: cleanTitle,
-      content:  text,
+      content: text,
       category: detectedCategory,
       source,
+      status: 'indexing',
     });
 
-    const chunks = await this.buildAndSaveChunks(doc.id, text);
-    this.logger.log(`[library] PDF "${cleanTitle}" ingestado — categoría: ${detectedCategory} — ${chunks} chunks`);
+    const savedChunks = await this.buildAndSaveChunks(doc.id, text);
+    this.logger.log(`[library] PDF "${cleanTitle}" ingestado — categoría: ${detectedCategory} — ${savedChunks.length} chunks`);
 
     // Enriquecimiento en background — no bloquea la respuesta al usuario
     this.enrichmentService.enrich(doc.id, cleanTitle, text).catch((err) => {
       this.logger.warn(`[enrichment] error background en "${cleanTitle}": ${err?.message ?? err}`);
     });
 
+    this.processDocumentEmbeddings(doc.id, savedChunks)
+      .catch((err) => this.logger.warn(`[ingest:pdf] Error procesando embeddings para docId=${doc.id}: ${err?.message ?? err}`));
+
     // Generar respuesta con el contenido del PDF
     const answer = await this.answerFromText(text, cleanTitle, question);
 
-    return { documentId: doc.id, title: cleanTitle, chunks, category: detectedCategory, answer };
+    return { documentId: doc.id, title: cleanTitle, chunks: savedChunks.length, category: detectedCategory, answer };
   }
 
   // ── Ingesta desde URL (Scraping) ─────────────────────────────────────────────
@@ -190,13 +198,10 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
 
   // ── Chunking y embeddings ───────────────────────────────────────────────────
 
-  private async buildAndSaveChunks(documentId: number, content: string): Promise<number> {
+  private async buildAndSaveChunks(documentId: number, content: string): Promise<Array<{ id: number; content: string }>> {
     const chunks = this.splitIntoChunks(content);
-    const BATCH_SIZE = 5; // procesar 5 chunks en paralelo — balance entre velocidad y carga de Ollama
-    let saved = 0;
-
-    // 1. Crear todos los chunks en BD primero (operación de BD rápida)
     const savedChunks: { id: number; content: string }[] = [];
+
     for (const [i, chunkContent] of chunks.entries()) {
       const safeContent = this.sanitizeText(chunkContent);
       if (!safeContent) continue;
@@ -207,31 +212,49 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
         metadata: { chunkIndex: i, totalChunks: chunks.length },
       });
       savedChunks.push({ id: chunk.id, content: safeContent });
-      saved++;
     }
 
-    // 2. Generar embeddings en lotes paralelos y persistirlos en pgvector
-    //    Los embeddings se generan UNA SOLA VEZ aquí — nunca al momento de buscar
-    this.logger.log(`[ingest] generando embeddings para ${savedChunks.length} chunks (lotes de ${BATCH_SIZE})...`);
+    this.logger.log(`[ingest] ${savedChunks.length} chunks guardados para doc id=${documentId}`);
+    return savedChunks;
+  }
 
-    for (let i = 0; i < savedChunks.length; i += BATCH_SIZE) {
-      const batch = savedChunks.slice(i, i + BATCH_SIZE);
-
-      await Promise.allSettled(
-        batch.map(async ({ id, content: chunkText }) => {
-          try {
-            const vec = await this.embeddingsService.generateEmbedding(chunkText);
-            await this.documentRepo.saveChunkEmbedding(id, vec);
-          } catch (err: any) {
-            // Fallo silencioso — chunk queda sin embedding, búsqueda textual hace fallback
-            this.logger.warn(`[ingest] chunk id=${id} sin embedding: ${err.message}`);
-          }
-        })
-      );
+  private async processDocumentEmbeddings(
+    documentId: number,
+    chunks: Array<{ id: number; content: string }>,
+  ): Promise<void> {
+    if (chunks.length === 0) {
+      await this.documentRepo.updateDocumentStatus(documentId, 'ready');
+      this.logger.log(`[ingest] docId=${documentId} marcado READY sin chunks`);
+      return;
     }
 
-    this.logger.log(`[ingest] ${saved} chunks guardados con embeddings para doc id=${documentId}`);
-    return saved;
+    const failed: number[] = [];
+    const limit = 3;
+    let index = 0;
+
+    const worker = async () => {
+      while (index < chunks.length) {
+        const chunk = chunks[index++];
+        try {
+          const vector = await this.embeddingsService.generateEmbedding(chunk.content);
+          await this.documentRepo.saveChunkEmbedding(chunk.id, vector);
+        } catch (err: any) {
+          failed.push(chunk.id);
+          this.logger.warn(`[ingest] chunk id=${chunk.id} embedding failed: ${err?.message ?? err}`);
+        }
+      }
+    };
+
+    // Lanzar trabajadores en paralelo con límite de concurrencia de 3
+    const workers = Array.from(
+      { length: Math.min(limit, chunks.length) },
+      () => worker(),
+    );
+
+    await Promise.all(workers);
+
+    await this.documentRepo.updateDocumentStatus(documentId, 'ready');
+    this.logger.log(`[ingest] docId=${documentId} marcado READY — chunks=${chunks.length} — failedEmbeddings=${failed.length}`);
   }
 
   private splitIntoChunks(text: string): string[] {

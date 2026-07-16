@@ -10,6 +10,7 @@ import { JarvisModule } from './jarvis/jarvis.module';
 import { GoogleModule } from './google/google.module';
 import { JobsModule } from './jobs/jobs.module';
 import { AuthModule } from './auth/auth.module';
+import { BalanceModule } from './modules/balance/balance.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -27,6 +28,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     GoogleModule,
     JobsModule,
     AuthModule,
+    BalanceModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

@@ -270,7 +270,7 @@ export class CorpusSelectorService {
       .replace(/[\u0300-\u036f]/g, '') // quitar tildes
       .toLowerCase()
       .split(/[^a-z0-9áéíóúüñ]+/)
-      .filter((t) => t.length >= 3)
+      .filter((t) => t.length >= 3 || /^\d+$/.test(t))
       .filter((t) => !STOPWORDS.has(t));
   }
 

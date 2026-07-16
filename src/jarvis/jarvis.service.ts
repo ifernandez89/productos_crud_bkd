@@ -186,7 +186,7 @@ export class JarvisService {
 
           // 2. Ejecutar la búsqueda semántica
           const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
-          
+
           if (targetDocIds.length > 0) {
             this.logger.log(`[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')}`);
             chunks = await this.documentRepo.searchChunksSemanticInDocuments(queryEmbedding, targetDocIds, 3);
@@ -840,4 +840,9 @@ export class JarvisService {
   async webSearch(query: string, limit = 5) {
     return this.browserTool.search(query, limit);
   }
+
+  getLibraryIndex() {
+    return this.corpusSelector.getIndex();
+  }
 }
+

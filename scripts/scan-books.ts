@@ -11,6 +11,62 @@ interface BookMetadata {
 }
 
 const META_MAP: Record<string, BookMetadata> = {
+  'Freud, Sigmund. - Obras completas.pdf': {
+    titulo: 'Obras Completas',
+    autor: 'Sigmund Freud',
+    categorias: ['psicoanálisis', 'psicología', 'inconsciente', 'ensayo'],
+    conceptosClave: ['psicoanálisis', 'inconsciente', 'sueños', 'represión', 'complejo de edipo', 'pulsión', 'ego', 'ello', 'superyó'],
+    tags: ['freud', 'sigmund', 'psicoanálisis', 'psicología', 'inconsciente', 'sexualidad', 'yo', 'ello', 'superyó']
+  },
+  'Herbarium — Libro completo — Herbarium.pdf': {
+    titulo: 'Herbarium: Libro Completo de Plantas Curativas',
+    autor: 'Tradición Herbolaria',
+    categorias: ['plantas medicinales', 'herboristería', 'fitoterapia', 'botánica'],
+    conceptosClave: ['plantas medicinales', 'herbolaria', 'remedios caseros', 'infusiones', 'tinturas', 'recetas naturales', 'fitoterapia'],
+    tags: ['herbario', 'plantas', 'hierbas', 'remedios', 'botánica', 'fitoterapia', 'curativo', 'natural']
+  },
+  'Jose Arguelles - El-Factor-Maya.pdf': {
+    titulo: 'El Factor Maya: Un camino más allá de la tecnología',
+    autor: 'José Argüelles',
+    categorias: ['cosmovisión maya', 'astrología', 'tiempo y calendario', 'espiritualidad'],
+    conceptosClave: ['factor maya', 'calendario maya', 'tzolkin', 'frecuencia de tiempo', 'sincronario', 'evolución galáctica', 'soles', 'baktun'],
+    tags: ['maya', 'calendario', 'tiempo', 'argüelles', 'astrología', 'galáctico', 'sincronicidad']
+  },
+  'Keter - Mario Javier Sabán.pdf': {
+    titulo: 'Keter: El éxtasis de la nada',
+    autor: 'Mario Javier Sabán',
+    categorias: ['cábala', 'misticismo judío', 'teología', 'filosofía'],
+    conceptosClave: ['keter', 'sefirot', 'árbol de la vida', 'nada mística', 'ein sof', 'corona', 'misticismo', 'saban', 'cábala'],
+    tags: ['cábala', 'sabán', 'keter', 'sefirot', 'árbol de la vida', 'misticismo', 'nada', 'corona', 'judaísmo']
+  },
+  'Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf': {
+    titulo: 'Los Secretos de Dios: Sefer Atzilut',
+    autor: 'Mario Javier Sabán',
+    categorias: ['cábala', 'misticismo judío', 'teología', 'filosofía'],
+    conceptosClave: ['sefer atzilut', 'mundo de la emanación', 'sefirot', 'árbol de la vida', 'teosofía hebrea', 'secretos de dios', 'saban'],
+    tags: ['cábala', 'sabán', 'atzilut', 'sefirot', 'misticismo', 'dios', 'emanación', 'secretos']
+  },
+  'Pigna,_Felipe_-_Los_Mitos_De_La_Historia_Argentina_1.pdf': {
+    titulo: 'Los Mitos de la Historia Argentina 1',
+    autor: 'Felipe Pigna',
+    categorias: ['historia argentina', 'mitos históricos', 'ensayo histórico', 'política'],
+    conceptosClave: ['historia argentina', 'mitos', 'próceres', 'revolución de mayo', 'colonia', 'independencia', 'pigna'],
+    tags: ['pigna', 'historia', 'argentina', 'mitos', 'próceres', 'revolución', 'independencia', 'mayo']
+  },
+  'Pigna_Felipe_-_Los_Mitos_De_La_Historia_Argentina_2.pdf': {
+    titulo: 'Los Mitos de la Historia Argentina 2',
+    autor: 'Felipe Pigna',
+    categorias: ['historia argentina', 'mitos históricos', 'ensayo histórico', 'política'],
+    conceptosClave: ['guerra civil', 'sarmiento', 'mitre', 'rosas', 'generación del 80', 'organización nacional', 'pigna'],
+    tags: ['pigna', 'historia', 'argentina', 'mitos', 'siglo XIX', 'rosas', 'sarmiento', 'mitre', 'civil']
+  },
+  'Wilson-Colin-El-Mensaje-Oculto-De-La-Esfinge.pdf': {
+    titulo: 'El Mensaje Oculto de la Esfinge',
+    autor: 'Colin Wilson',
+    categorias: ['arqueología misteriosa', 'egiptología', 'misterios antiguos', 'civilizaciones perdidas'],
+    conceptosClave: ['esfinge de giza', 'egipto', 'edad de la esfinge', 'atlántida', 'origen de la civilización', 'geología de giza', 'wilson'],
+    tags: ['wilson', 'esfinge', 'egipto', 'misterios', 'civilización', 'atlántida', 'giza', 'arqueología']
+  },
   '00 ESPACIO SAGRADO version nov2017.pdf': {
     titulo: 'Espacio Sagrado (Versión Nov 2017)',
     autor: 'Tradición Chamánica',
@@ -225,95 +281,114 @@ function run() {
     // Normalizar separadores de ruta a barras diagonales
     const normFile = relFile.replace(/\\/g, '/');
 
-    // Verificar si ya existe en el mapa
-    let docEntry = existingDocsMap.get(normFile);
+    // Verificar si ya existe en el mapa para heredar el estado de embeddings e ID
+    const existingEntry = existingDocsMap.get(normFile);
+    const safeEmbeddings = existingEntry ? existingEntry.embeddings : 'pending';
+    const safeCapitulos = existingEntry ? (existingEntry.capitulos ?? []) : [];
+    
+    // Generar o actualizar la entrada
+    const fileNameOnly = path.basename(normFile);
+    let metadata: BookMetadata = {
+      titulo: '',
+      autor: '',
+      categorias: [],
+      conceptosClave: [],
+      tags: []
+    };
 
-    if (docEntry) {
-      // Conservar el existente pero agregarlo a los actualizados
-      updatedDocumentos.push(docEntry);
-      console.log(`[scanner] Manteniendo existente: ${normFile} (${docEntry.titulo})`);
+    // Heurística de detección según carpetas o mapeo estático
+    if (META_MAP[fileNameOnly]) {
+      metadata = META_MAP[fileNameOnly];
+    } else if (normFile.includes('Carl Gustav Jung/')) {
+      // Autocompletar libros de Jung
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/^\d+_/, '') // quitar "1_", "2_"
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Carl Gustav Jung',
+        categorias: ['psicología analítica', 'arquetipos', 'inconsciente'],
+        conceptosClave: ['arquetipos', 'sombra', 'ánima', 'ánimus', 'inconsciente colectivo', 'sí-mismo', 'persona'],
+        tags: ['Jung', 'psicología', 'inconsciente', 'arquetipo']
+      };
+    } else if (normFile.includes('Jacobo-Grinberg-Zylberbaum/')) {
+      // Autocompletar libros de Jacobo Grinberg
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/-Jacobo-Grinberg-Zylberbaum/i, '')
+        .replace(/-by-Jacobo-Grinberg-Zylberbaum/i, '')
+        .replace(/_Jacobo-Grinberg/i, '')
+        .replace(/-Jacobo-Grinberg/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Jacobo Grinberg-Zylberbaum',
+        categorias: ['teoría sintérgica', 'chamanismo', 'conciencia', 'neurofisiología'],
+        conceptosClave: ['teoría sintérgica', 'sintérgica', 'chamanismo', 'Pachita', 'potencial transferido', 'meditación autoalusiva', 'el cerebro consciente', 'experiencia interna'],
+        tags: ['Grinberg', 'chamanismo', 'conciencia', 'sintérgica', 'neurofisiología']
+      };
+    } else if (normFile.includes('esoterismo practico/')) {
+      // Autocompletar curso esoterismo
+      const matchLeccion = fileNameOnly.match(/Lección Nº\s*(\d+)/i);
+      const leccionNum = matchLeccion ? parseInt(matchLeccion[1], 10) : '';
+      const title = `Curso de Esoterismo Práctico - Lección ${leccionNum}`;
+      metadata = {
+        titulo: title,
+        autor: 'Al Filo de la Realidad',
+        categorias: ['esoterismo', 'magia práctica', 'ocultismo'],
+        conceptosClave: ['esoterismo', 'magia', 'astral', 'autodefensa', 'lección ' + leccionNum],
+        tags: ['esoterismo', 'curso', 'lección', 'magia', 'ocultismo']
+      };
     } else {
-      // Generar una nueva entrada
-      const fileNameOnly = path.basename(normFile);
-      let metadata: BookMetadata = {
-        titulo: '',
-        autor: '',
-        categorias: [],
-        conceptosClave: [],
-        tags: []
+      // Fallback genérico
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Desconocido',
+        categorias: ['Otros'],
+        conceptosClave: [cleanTitle.toLowerCase()],
+        tags: ['biblioteca']
       };
+    }
 
-      // Heurística de detección según carpetas o mapeo estático
-      if (META_MAP[fileNameOnly]) {
-        metadata = META_MAP[fileNameOnly];
-      } else if (normFile.includes('Carl Gustav Jung Libros/')) {
-        // Autocompletar libros de Jung
-        const cleanTitle = fileNameOnly
-          .replace(/^\d+_/, '') // quitar "1_", "2_"
-          .replace('.pdf', '')
-          .replace('.PDF', '')
-          .replace(/([A-Z])/g, ' $1')
-          .trim();
-        metadata = {
-          titulo: cleanTitle,
-          autor: 'Carl Gustav Jung',
-          categorias: ['psicología analítica', 'arquetipos', 'inconsciente'],
-          conceptosClave: ['arquetipos', 'sombra', 'ánima', 'ánimus', 'inconsciente colectivo', 'sí-mismo', 'persona'],
-          tags: ['Jung', 'psicología', 'inconsciente', 'arquetipo']
-        };
-      } else if (normFile.includes('esoterismo practico/')) {
-        // Autocompletar curso esoterismo
-        const matchLeccion = fileNameOnly.match(/Lección Nº\s*(\d+)/i);
-        const leccionNum = matchLeccion ? parseInt(matchLeccion[1], 10) : '';
-        const title = `Curso de Esoterismo Práctico - Lección ${leccionNum}`;
-        metadata = {
-          titulo: title,
-          autor: 'Al Filo de la Realidad',
-          categorias: ['esoterismo', 'magia práctica', 'ocultismo'],
-          conceptosClave: ['esoterismo', 'magia', 'astral', 'autodefensa', 'lección ' + leccionNum],
-          tags: ['esoterismo', 'curso', 'lección', 'magia', 'ocultismo']
-        };
-      } else {
-        // Fallback genérico
-        const cleanTitle = fileNameOnly
-          .replace(/\.pdf$/i, '')
-          .replace(/[-_]+/g, ' ')
-          .trim();
-        metadata = {
-          titulo: cleanTitle,
-          autor: 'Desconocido',
-          categorias: ['Otros'],
-          conceptosClave: [cleanTitle.toLowerCase()],
-          tags: ['biblioteca']
-        };
-      }
+    // Crear el ID
+    const safeId = existingEntry ? existingEntry.id : `lib-${normFile
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 40)}`;
 
-      // Crear el ID
-      const safeId = normFile
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '')
-        .slice(0, 40);
+    const docEntry = {
+      id: safeId,
+      titulo: metadata.titulo,
+      archivo: normFile,
+      tipo: 'libro',
+      formato: path.extname(fileNameOnly).replace('.', '').toLowerCase(),
+      autor: metadata.autor,
+      idioma: 'es',
+      categorias: metadata.categorias,
+      conceptosClave: metadata.conceptosClave,
+      capitulos: safeCapitulos,
+      embeddings: safeEmbeddings,
+      descripcionBreve: `Libro "${metadata.titulo}" de ${metadata.autor} registrado en la biblioteca local.`,
+      tags: metadata.tags
+    };
 
-      docEntry = {
-        id: `lib-${safeId}`,
-        titulo: metadata.titulo,
-        archivo: normFile,
-        tipo: 'libro',
-        formato: path.extname(fileNameOnly).replace('.', '').toLowerCase(),
-        autor: metadata.autor,
-        idioma: 'es',
-        categorias: metadata.categorias,
-        conceptosClave: metadata.conceptosClave,
-        capitulos: [],
-        embeddings: 'pending',
-        descripcionBreve: `Libro "${metadata.titulo}" de ${metadata.autor} registrado en la biblioteca local.`,
-        tags: metadata.tags
-      };
-
-      updatedDocumentos.push(docEntry);
-      console.log(`[scanner] Agregado nuevo: ${normFile} → ${docEntry.titulo}`);
+    updatedDocumentos.push(docEntry);
+    if (existingEntry) {
+      console.log(`[scanner] Sincronizado existente: ${normFile} → ${docEntry.titulo} (autor: ${docEntry.autor})`);
+    } else {
+      console.log(`[scanner] Agregado nuevo: ${normFile} → ${docEntry.titulo} (autor: ${docEntry.autor})`);
     }
   }
 
