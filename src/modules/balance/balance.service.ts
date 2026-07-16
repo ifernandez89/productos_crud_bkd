@@ -206,6 +206,7 @@ export class BalanceService {
     return {
       sessionId: latestSession.id,
       completedAt: latestSession.completedAt,
+      nextRecommendedAt: latestSession.nextRecommendedAt,
       type: latestSession.type,
       scoreGeneral: latestSession.scoreGeneral,
       summary: latestSession.summary,
