@@ -18,6 +18,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **🌓 Análisis Sensible al Ciclo**: Se actualizó el motor de análisis en `BalanceAnalysisService` para que el reporte final interprete las respuestas del usuario bajo la temática del ciclo actual.
 - **🛡️ Validación de Respuestas Mínimas**: Se incluyó una validación que requiere al menos 5 preguntas respondidas para poder ejecutar el análisis de finalización de balance.
 
+### Fixed — Coincidencia Falsa de Documentos por Título (2026-07-16)
+
+- **🔍 Búsqueda Exacta de Título**: Se implementó el método `findDocumentByExactTitle` en `DocumentRepository` para realizar búsquedas insensibles a mayúsculas sobre títulos exactos.
+- **🎯 Resolución de Falsos Matchings**: Se reemplazó el uso de la búsqueda difusa de términos `searchDocumentsByTitle` (que generaba coincidencia parcial errónea debido a preposiciones comunes como "del", "de", "los") por la coincidencia exacta al comprobar la existencia de un documento en la biblioteca de base de datos durante búsquedas RAG o lazy loading.
+- **🛡️ Validación Precisa de Candidatos**: Se agregó validación de sobrelapado estricto en la extracción de solicitudes de resumen para que las queries que incluyan palabras genéricas no generen falsos positivos.
+
 ### Added & Optimized — Asynchronous Ingestion & Controlled Concurrency (2026-07-15)
 
 - **🔄 Ingestion State Machine**: Added `status` field to the `Document` model (`not_indexed` → `indexing` → `ready`). Documents default to `not_indexed` and transition to `indexing` during parsing.

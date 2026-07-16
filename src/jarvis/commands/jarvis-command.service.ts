@@ -689,8 +689,15 @@ export class JarvisCommandService {
       if (inIndex) return true;
     }
     try {
-      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 1);
-      return candidates.length > 0;
+      const existing = await this.documentRepo.findDocumentByExactTitle(title);
+      if (existing) return true;
+
+      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 3);
+      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      return candidates.some(doc => {
+        const normDocTitle = doc.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      });
     } catch {
       return false;
     }

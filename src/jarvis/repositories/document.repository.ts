@@ -89,6 +89,22 @@ export class DocumentRepository {
   }
 
   /**
+   * Busca un documento por coincidencia exacta de título (case-insensitive).
+   * Útil para comprobar existencia precisa al cargar/buscar documentos del índice.
+   */
+  async findDocumentByExactTitle(title: string): Promise<Document | null> {
+    const normalized = title.trim();
+    return this.prisma.document.findFirst({
+      where: {
+        title: {
+          equals: normalized,
+          mode: 'insensitive',
+        },
+      },
+    });
+  }
+
+  /**
    * Busca SOLO por título, ignorando el contenido.
    * Más confiable para encontrar un documento por nombre cuando hay muchos docs.
    */

@@ -326,15 +326,15 @@ export class CorpusSelectorService {
   ): Promise<number> {
     this.logger.log(`[lazy-load] Iniciando carga perezosa para: "${doc.titulo}" (${doc.archivo})`);
     
-    // 1. Verificar si ya existe en la base de datos (por título)
-    const existing = await documentRepo.searchDocumentsByTitle(doc.titulo, 1);
-    if (existing.length > 0) {
-      this.logger.log(`[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing[0].id}.`);
+    // 1. Verificar si ya existe en la base de datos (por título exacto)
+    const existing = await documentRepo.findDocumentByExactTitle(doc.titulo);
+    if (existing) {
+      this.logger.log(`[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id}.`);
       
       // Actualizar el índice JSON
       doc.embeddings = 'ready';
       this.saveIndexToDisk();
-      return existing[0].id;
+      return existing.id;
     }
 
     // 2. Localizar el archivo en el sistema de archivos

@@ -138,9 +138,9 @@ export class DocumentSummaryService {
           if (doc.embeddings !== 'ready') {
             dbDocId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
           } else {
-            const existing = await this.documentRepo.searchDocumentsByTitle(doc.titulo, 1);
-            if (existing.length > 0) {
-              dbDocId = existing[0].id;
+            const existing = await this.documentRepo.findDocumentByExactTitle(doc.titulo);
+            if (existing) {
+              dbDocId = existing.id;
             } else {
               this.logger.warn(`[document-summary:search] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`);
               dbDocId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);

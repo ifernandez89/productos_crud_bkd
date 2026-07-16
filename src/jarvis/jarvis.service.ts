@@ -169,9 +169,9 @@ export class JarvisService {
                   targetDocIds.push(dbId);
                 } else {
                   // Verificar existencia real en base de datos
-                  const existing = await this.documentRepo.searchDocumentsByTitle(doc.titulo, 1);
-                  if (existing.length > 0) {
-                    targetDocIds.push(existing[0].id);
+                  const existing = await this.documentRepo.findDocumentByExactTitle(doc.titulo);
+                  if (existing) {
+                    targetDocIds.push(existing.id);
                   } else {
                     this.logger.warn(`[rag] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`);
                     const dbId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
@@ -202,8 +202,8 @@ export class JarvisService {
             const matches = this.corpusSelector.findRelevantDocuments(userMessage, 3);
             const targetDocIds: number[] = [];
             for (const match of matches) {
-              const existing = await this.documentRepo.searchDocumentsByTitle(match.document.titulo, 1);
-              if (existing.length > 0) targetDocIds.push(existing[0].id);
+              const existing = await this.documentRepo.findDocumentByExactTitle(match.document.titulo);
+              if (existing) targetDocIds.push(existing.id);
             }
 
             if (targetDocIds.length > 0) {
