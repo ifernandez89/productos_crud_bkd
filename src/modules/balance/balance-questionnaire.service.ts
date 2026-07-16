@@ -32,7 +32,7 @@ export class BalanceQuestionnaireService {
   }
 
   /**
-   * Genera 20 preguntas dinámicas basadas en IA y las persiste en la sesión.
+   * Genera 22 preguntas dinámicas basadas en IA y las persiste en la sesión.
    * También calcula y guarda el contexto astrológico del momento.
    */
   async generateAndSetup(sessionId: number): Promise<any[]> {
@@ -134,7 +134,7 @@ export class BalanceQuestionnaireService {
       : '';
 
     return `
-Generá un cuestionario de exactamente 20 preguntas de situaciones cotidianas para evaluar cómo distribuye el usuario su energía actualmente.
+Generá un cuestionario de exactamente 22 preguntas de situaciones cotidianas para evaluar cómo distribuye el usuario su energía actualmente.
 El cuestionario debe medir de manera indirecta las siguientes 7 dimensiones (no menciones los nombres de las dimensiones en las preguntas):
 1. expansión (búsqueda de nuevas ideas, proyectos, generosidad, explorar horizontes)
 2. disciplina (límites, rutinas, orden, constancia, decir que no)
@@ -146,10 +146,23 @@ El cuestionario debe medir de manera indirecta las siguientes 7 dimensiones (no 
 
 Instrucciones críticas de estilo y contenido:
 - Escribí las preguntas en español con el modismo argentino ("vos", por ejemplo: "solés", "hacés", "tenés", "sentís").
-- Usá situaciones de la vida cotidiana muy comunes (el trabajo, la mañana, las relaciones, el manejo de pendientes, etc.).
 - No menciones las dimensiones explícitamente en el texto de las preguntas.
-- Distribuí las preguntas equitativamente entre las 7 dimensiones (aproximadamente 3 preguntas por dimensión).
+- Distribuí las preguntas de forma equitativa: cada una de las 7 dimensiones debe recibir exactamente 3 preguntas, excepto una dimensión elegida al azar que tendrá 4 preguntas, sumando un total exacto de 22 preguntas.
 - La pregunta debe invitar a la reflexión personal o ser una situación donde el usuario elija cómo actúa usualmente.
+- **EVITÁ LA REPETICIÓN ESTRUCTURAL**: No empieces todas las preguntas con la misma frase (como "¿Qué hacés si...", "Cómo reaccionás cuando..."). Variá el comienzo de las oraciones. Por ejemplo, alterná entre:
+  - "Imaginate que estás..."
+  - "Te ofrecen un..."
+  - "¿Cómo solés manejar..."
+  - "Cuando te enfrentás a..."
+  - "Si tuvieras que elegir entre..."
+  - "En tu día a día, ¿cuánto tiempo le dedicás a..."
+- **VARIEDAD DE ESCENARIOS**: Usá situaciones muy variadas de la vida real. No hables solo de trabajo de oficina. Variá entre:
+  - Manejo de tareas del hogar y espacio físico (orden del escritorio, limpieza, mudanzas).
+  - Finanzas y proyectos (ahorrar, comprar algo importante, iniciar un hobbie).
+  - Conversaciones difíciles y límites con amigos, pareja o familia.
+  - Gestión de la energía física y descanso (despertarse cansado, hacer ejercicio, comer).
+  - Aprendizaje y estudio (leer un libro difícil, tomar un curso, aplicar una teoría).
+  - Proactividad vs. Reactividad (esperar indicaciones, tomar la iniciativa).
 ${avoidSection}
 
 Devolvé la respuesta ÚNICAMENTE como un JSON array de objetos con el siguiente formato exacto, sin texto explicativo antes o después, sin bloques de código markdown (\`\`\`json):
