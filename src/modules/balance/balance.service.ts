@@ -45,7 +45,7 @@ export class BalanceService {
   }
 
   /**
-   * Responde una pregunta específica dentro de una sesión
+   * Responde una pregunta específica dentro de una sesión y genera la siguiente si corresponde
    */
   async submitAnswer(sessionId: number, questionId: number, answer: string): Promise<any> {
     this.logger.log(`[balance-service] Guardando respuesta para sesión ${sessionId}, pregunta ID ${questionId}`);
@@ -68,9 +68,65 @@ export class BalanceService {
       data: { answer },
     });
 
+    // Obtener todas las preguntas/respuestas de la sesión actual hasta el momento
+    const allAnswers = await this.prisma.balanceAnswer.findMany({
+      where: { sessionId },
+      orderBy: { id: 'asc' },
+    });
+
+    const MAX_QUESTIONS = 10;
+    const answeredCount = allAnswers.filter((a) => a.answer && a.answer.trim().length > 0).length;
+
+    // Si aún quedan preguntas por hacer en la entrevista
+    if (allAnswers.length < MAX_QUESTIONS) {
+      let nextQuestionText = '';
+      let metadata: any = {};
+
+      if (allAnswers.length === 1) {
+        // Pregunta 2 de Capa 1 (fija)
+        nextQuestionText = '¿Qué ocupó la mayor parte de tu energía mental durante estos días?';
+        metadata = { layer: 1, step: 2, dimension: 'general' };
+      } else if (allAnswers.length === 2) {
+        // Pregunta 3 de Capa 1 (fija)
+        nextQuestionText = '¿Qué sentís que descuidaste más?';
+        metadata = { layer: 1, step: 3, dimension: 'general' };
+      } else {
+        // A partir de la pregunta 4 en adelante (Capa 2: exploración adaptativa y dimensional)
+        const nextQuestionData = await this.questionnaireService.generateNextQuestion(sessionId, allAnswers);
+        nextQuestionText = nextQuestionData.question;
+        metadata = {
+          layer: 2,
+          step: allAnswers.length + 1,
+          dimension: nextQuestionData.dimension,
+          reasoning: nextQuestionData.reasoning,
+        };
+      }
+
+      // Crear y guardar la siguiente pregunta en la base de datos
+      const nextAnswer = await this.prisma.balanceAnswer.create({
+        data: {
+          sessionId,
+          question: nextQuestionText,
+          answer: '',
+          metadata,
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Respuesta guardada con éxito',
+        questionId: updated.id,
+        nextQuestion: {
+          id: nextAnswer.id,
+          question: nextAnswer.question,
+        },
+      };
+    }
+
+    // Si ya llegamos al límite de preguntas
     return {
       success: true,
-      message: 'Respuesta guardada con éxito',
+      message: 'Preguntas completadas. Ya podés finalizar la entrevista.',
       questionId: updated.id,
     };
   }
@@ -95,9 +151,11 @@ export class BalanceService {
       throw new BadRequestException(`La sesión con ID ${sessionId} ya fue completada anteriormente.`);
     }
 
-    const unanswered = session.answers.filter((a) => !a.answer || a.answer.trim().length === 0);
-    if (unanswered.length > 0) {
-      this.logger.warn(`[balance-service] Finalizando sesión con ${unanswered.length} preguntas sin responder`);
+    const answeredAnswers = session.answers.filter((a) => a.answer && a.answer.trim().length > 0);
+    if (answeredAnswers.length < 5) {
+      throw new BadRequestException(
+        `Para generar un balance preciso, debés responder al menos 5 preguntas (respondiste ${answeredAnswers.length}).`
+      );
     }
 
     // 2. Obtener reportes anteriores para el análisis comparativo e histórico
@@ -114,10 +172,10 @@ export class BalanceService {
       take: 5,
     });
 
-    // 3. Generar análisis por IA
+    // 3. Generar análisis por IA utilizando solo las preguntas con respuestas válidas
     const rawAnalysis = await this.analysisService.generateAnalysis(
       sessionId,
-      session.answers,
+      answeredAnswers,
       session.astrologicalContext,
       previousReports,
     );

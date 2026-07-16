@@ -32,31 +32,145 @@ export class BalanceQuestionnaireService {
   }
 
   /**
-   * Genera 22 preguntas dinámicas basadas en IA y las persiste en la sesión.
+   * Determina el ciclo actual basado en la cantidad de sesiones de balance ya completadas
+   * por el usuario, y configura la primera pregunta de la entrevista adaptativa.
    * También calcula y guarda el contexto astrológico del momento.
    */
   async generateAndSetup(sessionId: number): Promise<any[]> {
-    this.logger.log(`[balance-questionnaire] Iniciando generación de preguntas para sesión ${sessionId}`);
+    this.logger.log(`[balance-questionnaire] Iniciando entrevista adaptativa para sesión ${sessionId}`);
 
-    // 1. Obtener preguntas de la última sesión completada para evitar duplicados
-    const previousAnswers = await this.prisma.balanceAnswer.findMany({
+    // 1. Obtener la cantidad de sesiones de balance ya completadas
+    const completedCount = await this.prisma.balanceSession.count({
       where: {
-        session: {
-          completedAt: { not: null },
+        completedAt: { not: null },
+      },
+    });
+
+    // Determinar el ciclo (1 a 4)
+    const cycle = (completedCount % 4) + 1;
+    const cycleThemes = {
+      1: { theme: 'mapa_general', name: '¿Dónde está yendo tu energía?' },
+      2: { theme: 'bloqueos', name: '¿Qué está bloqueando tu energía?' },
+      3: { theme: 'crecimiento', name: '¿Qué merece crecer?' },
+      4: { theme: 'cierre', name: '¿Qué necesita cerrarse?' },
+    };
+    const currentCycle = cycleThemes[cycle] || cycleThemes[1];
+
+    // 2. Calcular el contexto astrológico actual
+    const today = new Date();
+    const skyData = this.astrologyTool.getTodaySkyData(today);
+    const planetaryPositions = this.astrologyTool.getPlanetaryPositions(today);
+    const astrologicalContext = {
+      calculatedAt: today.toISOString(),
+      skyData,
+      planetaryPositions,
+      cycle,
+      cycleTheme: currentCycle.theme,
+      cycleName: currentCycle.name,
+    };
+
+    // 3. Guardar el contexto astrológico y de ciclo en la sesión
+    await this.prisma.balanceSession.update({
+      where: { id: sessionId },
+      data: {
+        astrologicalContext,
+      },
+    });
+
+    // 4. Crear la primera pregunta (Capa 1: Estado General)
+    const firstQuestionText = 'Si tuvieras que describir estas últimas dos semanas con una sola palabra, ¿cuál sería? ¿Por qué?';
+    const firstAnswer = await this.prisma.balanceAnswer.create({
+      data: {
+        sessionId,
+        question: firstQuestionText,
+        answer: '',
+        metadata: {
+          layer: 1,
+          step: 1,
+          dimension: 'general',
         },
       },
-      orderBy: {
-        id: 'desc',
-      },
-      take: 40,
     });
-    const previousQuestions = previousAnswers.map((a) => a.question);
 
-    // 2. Generar preguntas usando el LLM
+    // 5. Retornar las preguntas creadas (que en este caso es solo la primera)
+    return [
+      {
+        id: firstAnswer.id,
+        question: firstAnswer.question,
+      },
+    ];
+  }
+
+  /**
+   * Genera la siguiente pregunta (adaptativa) basada en el historial de la conversación y el ciclo actual.
+   */
+  async generateNextQuestion(sessionId: number, allAnswers: any[]): Promise<any> {
+    const session = await this.prisma.balanceSession.findUnique({
+      where: { id: sessionId },
+    });
+    if (!session) {
+      throw new BadRequestException(`No se encontró la sesión de balance con ID ${sessionId}`);
+    }
+
+    const astrologicalContext = (session.astrologicalContext as any) || {};
+    const cycle = astrologicalContext.cycle || 1;
+    const cycleName = astrologicalContext.cycleName || '¿Dónde está yendo tu energía?';
+
+    const formattedHistory = allAnswers
+      .map((a, index) => {
+        const dim = a.metadata && typeof a.metadata === 'object' ? (a.metadata as any).dimension : 'desconocida';
+        return `Pregunta ${index + 1} (Dimensión: ${dim}): ${a.question}\nRespuesta ${index + 1}: ${a.answer || '(Sin respuesta)'}`;
+      })
+      .join('\n\n');
+
     const llm = this.getLLMProvider();
-    const prompt = this.buildPrompt(previousQuestions);
+    const prompt = `
+Vos sos un mentor empático, un terapeuta transpersonal y coach ontológico especializado en la integración de la psicología profunda, arquetipos de energía y el Árbol de la Vida.
+Estás llevando a cabo una **entrevista adaptativa** para descubrir cómo el usuario distribuye su energía psíquica durante las últimas semanas.
 
-    let content = '';
+CRÍTICO: No menciones nunca conceptos de la Kabbalah (como Sefirot, Chesed, Gevurah, Tiferet, etc.) ni tampoco los nombres de las 7 dimensiones internas dentro de la pregunta. Todo esto debe ser interno para vos.
+
+El ciclo actual de esta entrevista es:
+Ciclo ${cycle}: "${cycleName}"
+
+Las 7 dimensiones internas que evaluamos a lo largo del tiempo son:
+1. expansión (corresponde a Chesed: crecimiento, nuevas ideas, generosidad, explorar, optimismo)
+2. disciplina (corresponde a Gevurah: orden, límites, decir que no, enfoque, estructura)
+3. armonía (corresponde a Tiferet: equilibrio emocional, paz, mediación, centramiento, relaciones)
+4. perseverancia (corresponde a Netzach: constancia, resistencia, terminar lo empezado, resiliencia)
+5. análisis (corresponde a Hod: estudio, lógica, comprensión profunda, estructuración mental)
+6. integración (corresponde a Yesod: asimilar aprendizajes, conectar teoría con práctica, coherencia interna)
+7. manifestación (corresponde a Malkhut: acción concreta, realización material, bajar ideas a la tierra)
+
+Aquí está la conversación que tuviste con el usuario hasta el momento:
+${formattedHistory}
+
+Tu objetivo es decidir y formular la SIGUIENTE pregunta (Pregunta número ${allAnswers.length + 1}).
+
+Pautas para formular la pregunta:
+1. **Enfoque Adaptativo**:
+   - Analizá la última respuesta del usuario. Si detectás contradicciones, incoherencias o algo profundo e inesperado, **profundizá en eso** en lugar de cambiar abruptamente de tema. Por ejemplo, si el usuario expresa conflicto o evasión en un área, formula una pregunta directa y compasiva para explorar ese punto (ej: "¿Qué estabas evitando construir mientras investigabas?" o "¿Qué era más incómodo: terminarlo o aceptar que todavía podía mejorar?").
+   - Si no hay contradicciones obvias, seleccioná una de las 7 dimensiones que todavía no haya sido explorada a fondo en las preguntas previas y formula una pregunta al respecto.
+2. **Ángulo del Ciclo**:
+   - Asegurate de que la pregunta esté alineada con el ciclo actual:
+     - Ciclo 1 (¿Dónde está yendo tu energía?): Foco en la distribución actual y hacia dónde fluye de manera natural.
+     - Ciclo 2 (¿Qué está bloqueando tu energía?): Foco en resistencias, miedos, límites y lo que frena al usuario.
+     - Ciclo 3 (¿Qué merece crecer?): Foco en el potencial de expansión, sueños, áreas que se quieren desarrollar.
+     - Ciclo 4 (¿Qué necesita cerrarse?): Foco en la finalización, la manifestación concreta y el desapego/cierre.
+3. **Estilo**:
+   - Formulá la pregunta en español, usando el modismo argentino ("vos", "solés", "hacés", "tenés", "sentís").
+   - Que sea situacional, abierta y profunda. Evitá preguntas binarias (de sí/no).
+   - Indagá tanto en emociones como en acciones. Preguntá por la atención (¿en qué pensás en momentos cotidianos?) y por fugas/ganancias de energía.
+   - Variá los escenarios (no hables solo de trabajo: incluí descanso, relaciones, tareas cotidianas, etc.).
+
+Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato exacto, sin bloques de código markdown (\`\`\`json) ni texto explicativo antes o después:
+{
+  "question": "Escribí acá la siguiente pregunta profunda y adaptativa",
+  "dimension": "especificá qué dimensión evalúa principalmente (expansion, disciplina, armonia, perseverancia, analisis, integracion, manifestacion, o general)",
+  "reasoning": "Breve explicación técnica de por qué elegiste esta pregunta"
+}
+`;
+
     try {
       const response = await llm.generate({
         messages: [
@@ -70,141 +184,44 @@ export class BalanceQuestionnaireService {
           },
         ],
         temperature: 0.8,
-        maxTokens: 2000,
+        maxTokens: 1000,
       });
-      content = response.content;
+
+      const parsed = this.parseNextQuestion(response.content);
+      if (!parsed || !parsed.question) {
+        throw new Error('Formato de pregunta generado inválido.');
+      }
+      return parsed;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Error llamando al LLM para generar cuestionario: ${msg}`);
-      throw new BadRequestException('No se pudo generar el cuestionario con IA. Por favor, verificá que el LLM esté disponible.');
+      this.logger.error(`Error generando pregunta adaptativa: ${msg}`);
+      // Fallback si falla el LLM: seleccionar una dimensión al azar
+      const dimensions = ['expansion', 'disciplina', 'armonia', 'perseverancia', 'analisis', 'integracion', 'manifestacion'];
+      const randomDim = dimensions[Math.floor(Math.random() * dimensions.length)];
+      return {
+        question: '¿Cómo sentís tu nivel de energía hoy y qué creés que podrías hacer para equilibrarlo?',
+        dimension: randomDim,
+        reasoning: 'Fallback debido a error en la llamada al LLM',
+      };
     }
-
-    // 3. Parsear las preguntas generadas
-    const questions = this.parseQuestions(content);
-    if (questions.length === 0) {
-      throw new BadRequestException('La IA no devolvió un formato de preguntas válido.');
-    }
-
-    // 4. Calcular el contexto astrológico actual
-    const today = new Date();
-    const skyData = this.astrologyTool.getTodaySkyData(today);
-    const planetaryPositions = this.astrologyTool.getPlanetaryPositions(today);
-    const astrologicalContext = {
-      calculatedAt: today.toISOString(),
-      skyData,
-      planetaryPositions,
-    };
-
-    // 5. Guardar el contexto astrológico en la sesión
-    await this.prisma.balanceSession.update({
-      where: { id: sessionId },
-      data: {
-        astrologicalContext,
-      },
-    });
-
-    // 6. Persistir las preguntas en la base de datos
-    const answersData = questions.map((q) => ({
-      sessionId,
-      question: q.question,
-      answer: '',
-      metadata: { dimension: q.dimension },
-    }));
-
-    await this.prisma.balanceAnswer.createMany({
-      data: answersData,
-    });
-
-    // 7. Retornar las preguntas creadas
-    return this.prisma.balanceAnswer.findMany({
-      where: { sessionId },
-      select: {
-        id: true,
-        question: true,
-      },
-    });
-  }
-
-  /**
-   * Construye el prompt para la IA
-   */
-  private buildPrompt(previousQuestions: string[]): string {
-    const avoidSection = previousQuestions.length > 0
-      ? `\nEVITÁ hacer preguntas iguales o muy similares a las siguientes que ya se hicieron en cuestionarios anteriores:\n${previousQuestions.map((q) => `- ${q}`).join('\n')}\n`
-      : '';
-
-    return `
-Generá un cuestionario de exactamente 22 preguntas de situaciones cotidianas para evaluar cómo distribuye el usuario su energía actualmente.
-El cuestionario debe medir de manera indirecta las siguientes 7 dimensiones (no menciones los nombres de las dimensiones en las preguntas):
-1. expansión (búsqueda de nuevas ideas, proyectos, generosidad, explorar horizontes)
-2. disciplina (límites, rutinas, orden, constancia, decir que no)
-3. armonía (equilibrio emocional, relaciones sanas, mediación, centramiento)
-4. perseverancia (resistencia ante dificultades, terminar lo empezado, paciencia)
-5. análisis (comprensión profunda, lógica, relacionar conceptos, estudiar)
-6. integración (conectar teoría con práctica, asimilación del aprendizaje, coherencia interna)
-7. manifestación (acción concreta, materialización de proyectos, llevar las ideas a la realidad física)
-
-Instrucciones críticas de estilo y contenido:
-- Escribí las preguntas en español con el modismo argentino ("vos", por ejemplo: "solés", "hacés", "tenés", "sentís").
-- No menciones las dimensiones explícitamente en el texto de las preguntas.
-- Distribuí las preguntas de forma equitativa: cada una de las 7 dimensiones debe recibir exactamente 3 preguntas, excepto una dimensión elegida al azar que tendrá 4 preguntas, sumando un total exacto de 22 preguntas.
-- La pregunta debe invitar a la reflexión personal o ser una situación donde el usuario elija cómo actúa usualmente.
-- **EVITÁ LA REPETICIÓN ESTRUCTURAL**: No empieces todas las preguntas con la misma frase (como "¿Qué hacés si...", "Cómo reaccionás cuando..."). Variá el comienzo de las oraciones. Por ejemplo, alterná entre:
-  - "Imaginate que estás..."
-  - "Te ofrecen un..."
-  - "¿Cómo solés manejar..."
-  - "Cuando te enfrentás a..."
-  - "Si tuvieras que elegir entre..."
-  - "En tu día a día, ¿cuánto tiempo le dedicás a..."
-- **VARIEDAD DE ESCENARIOS**: Usá situaciones muy variadas de la vida real. No hables solo de trabajo de oficina. Variá entre:
-  - Manejo de tareas del hogar y espacio físico (orden del escritorio, limpieza, mudanzas).
-  - Finanzas y proyectos (ahorrar, comprar algo importante, iniciar un hobbie).
-  - Conversaciones difíciles y límites con amigos, pareja o familia.
-  - Gestión de la energía física y descanso (despertarse cansado, hacer ejercicio, comer).
-  - Aprendizaje y estudio (leer un libro difícil, tomar un curso, aplicar una teoría).
-  - Proactividad vs. Reactividad (esperar indicaciones, tomar la iniciativa).
-${avoidSection}
-
-Devolvé la respuesta ÚNICAMENTE como un JSON array de objetos con el siguiente formato exacto, sin texto explicativo antes o después, sin bloques de código markdown (\`\`\`json):
-[
-  {
-    "question": "¿Qué hacés cuando tenés que arrancar un proyecto que te entusiasma pero requiere muchas tareas aburridas?",
-    "dimension": "perseverancia"
-  },
-  {
-    "question": "Si alguien te pide un favor que te quita mucho tiempo de tus prioridades, ¿cómo reaccionás?",
-    "dimension": "disciplina"
-  }
-]
-`;
   }
 
   /**
    * Limpia y parsea la respuesta JSON de la IA de manera robusta
    */
-  private parseQuestions(rawContent: string): GeneratedQuestion[] {
+  private parseNextQuestion(rawContent: string): any {
     try {
-      // Remover bloques de código markdown si los hay
       let clean = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
-      
-      // Buscar el inicio y fin del array JSON por si hay texto extra
-      const startIndex = clean.indexOf('[');
-      const endIndex = clean.lastIndexOf(']');
+      const startIndex = clean.indexOf('{');
+      const endIndex = clean.lastIndexOf('}');
       if (startIndex !== -1 && endIndex !== -1) {
         clean = clean.substring(startIndex, endIndex + 1);
       }
-
-      const parsed = JSON.parse(clean);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item: any) => ({
-          question: String(item.question || item.pregunta || '').trim(),
-          dimension: String(item.dimension || '').toLowerCase().trim(),
-        })).filter((q) => q.question.length > 0 && q.dimension.length > 0);
-      }
+      return JSON.parse(clean);
     } catch (err) {
-      this.logger.warn(`Fallo al parsear JSON de preguntas: ${err}`);
-      this.logger.debug(`Contenido crudo: ${rawContent}`);
+      this.logger.warn(`Fallo al parsear JSON de pregunta adaptativa: ${err}`);
+      return null;
     }
-    return [];
   }
 }
+

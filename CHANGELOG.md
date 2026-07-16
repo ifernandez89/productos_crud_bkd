@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Optimized — Entrevista Adaptativa y Ciclos de Balance Energético (2026-07-16)
+
+- **🔄 Entrevista Adaptativa**: Transformación del cuestionario estático de 22 preguntas en una entrevista interactiva paso a paso (turn-by-turn) de 10 preguntas en total.
+- **🌀 Rotación por Ciclos**: Implementación de una estructura de 4 ciclos temáticos basados en el número de sesiones completadas para dar una personalidad y ángulo diferente cada 15 días:
+  - **Ciclo 1**: "¿Dónde está yendo tu energía?" (mapa general)
+  - **Ciclo 2**: "¿Qué está bloqueando tu energía?" (resistencias y límites)
+  - **Ciclo 3**: "¿Qué merece crecer?" (potencial y expansión)
+  - **Ciclo 4**: "¿Qué necesita cerrarse?" (cierre de ciclos y manifestación)
+- **🤖 Preguntas Dinámicas por IA**: A partir del cuarto turno, la IA genera dinámicamente la siguiente pregunta en español con modismo argentino ("vos"), analizando la última respuesta del usuario, detectando contradicciones y profundizando en temas de valor.
+- **🌓 Análisis Sensible al Ciclo**: Se actualizó el motor de análisis en `BalanceAnalysisService` para que el reporte final interprete las respuestas del usuario bajo la temática del ciclo actual.
+- **🛡️ Validación de Respuestas Mínimas**: Se incluyó una validación que requiere al menos 5 preguntas respondidas para poder ejecutar el análisis de finalización de balance.
+
 ### Added & Optimized — Asynchronous Ingestion & Controlled Concurrency (2026-07-15)
 
 - **🔄 Ingestion State Machine**: Added `status` field to the `Document` model (`not_indexed` → `indexing` → `ready`). Documents default to `not_indexed` and transition to `indexing` during parsing.

@@ -105,8 +105,15 @@ export class BalanceAnalysisService {
           .join('\n\n')
       : 'No hay reportes previos.';
 
+    const cycle = astrologicalContext?.cycle || 1;
+    const cycleName = astrologicalContext?.cycleName || '¿Dónde está yendo tu energía?';
+    const cycleTheme = astrologicalContext?.cycleTheme || 'mapa_general';
+
     return `
 Analizá las respuestas de un usuario al cuestionario de Balance Energético. Tu tarea es calcular las puntuaciones de energía del usuario en las 7 dimensiones y generar un reporte profundo, poético e integrado al estilo de "JarBees".
+
+Esta entrevista se realizó bajo el enfoque del **Ciclo ${cycle}: "${cycleName}"** (Temática del ciclo: ${cycleTheme}).
+Tené en cuenta esta perspectiva a la hora de estructurar tu análisis general, el resumen y tus observaciones. Pone especial foco en cómo interactúan las respuestas del usuario con la temática específica de este ciclo (distribución general de la energía, bloqueos y límites, áreas de crecimiento/potencial, o cierres y manifestación respectivamente) y compáralo con el historial si corresponde.
 
 Las 7 dimensiones evaluadas y sus motores internos correspondientes son:
 - expansión (corresponde a Chesed: crecimiento, nuevas ideas, generosidad, explorar, optimismo)
@@ -117,7 +124,7 @@ Las 7 dimensiones evaluadas y sus motores internos correspondientes son:
 - integración (corresponde a Yesod: asimilar aprendizajes, conectar teoría con práctica, coherencia interna)
 - manifestación (corresponde a Malkhut: acción concreta, realización material, bajar ideas a la tierra)
 
-Respuestas del cuestionario:
+Respuestas de la entrevista:
 ${formattedAnswers}
 
 Contexto astrológico actual (transito de hoy):
