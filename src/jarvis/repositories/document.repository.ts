@@ -66,7 +66,7 @@ export class DocumentRepository {
   async searchDocuments(query: string, limit = 5): Promise<Document[]> {
     // Normalizar la query: convertir guiones/underscores a espacios para mejor matching
     const normalizedQuery = query.toLowerCase().replace(/[-_]+/g, ' ').trim();
-    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3);
+    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3 || /^\d+$/.test(t));
     if (terms.length === 0) return [];
 
     const termsWithHyphens = terms.map(t => t.replace(/\s/g, '-'));
@@ -94,7 +94,7 @@ export class DocumentRepository {
    */
   async searchDocumentsByTitle(query: string, limit = 20): Promise<Document[]> {
     const normalizedQuery = query.toLowerCase().replace(/[-_]+/g, ' ').trim();
-    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3);
+    const terms = normalizedQuery.split(/\s+/).filter((t) => t.length >= 3 || /^\d+$/.test(t));
     if (terms.length === 0) return [];
 
     const termsWithHyphens = terms.map(t => t.replace(/\s/g, '-'));

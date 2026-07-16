@@ -164,7 +164,7 @@ export class DocumentSummaryService {
     const normalizedSearch = normalize(title);
     const searchWords = normalizedSearch
       .split(/\s+/)
-      .filter(w => w.length > 2);
+      .filter(w => w.length > 2 || /^\d+$/.test(w));
 
     this.logger.log(`[document-summary:search] buscando en DB: "${normalizedSearch}" (${searchWords.length} palabras)`);
 
@@ -213,7 +213,9 @@ export class DocumentSummaryService {
     // 4. Overlap score
     const scored = candidates
       .map(doc => {
-        const docWords = normalize(doc.title).split(/[\s\-_]+/).filter(w => w.length > 2);
+        const docWords = normalize(doc.title)
+          .split(/[\s\-_]+/)
+          .filter(w => w.length > 2 || /^\d+$/.test(w));
         const hits = searchWords.filter(w => docWords.some(dw => dw.includes(w) || w.includes(dw)));
         const score = searchWords.length > 0 ? hits.length / searchWords.length : 0;
         return { doc, score, hits: hits.length };

@@ -11,6 +11,62 @@ interface BookMetadata {
 }
 
 const META_MAP: Record<string, BookMetadata> = {
+  'Freud, Sigmund. - Obras completas.pdf': {
+    titulo: 'Obras Completas',
+    autor: 'Sigmund Freud',
+    categorias: ['psicoanálisis', 'psicología', 'inconsciente', 'ensayo'],
+    conceptosClave: ['psicoanálisis', 'inconsciente', 'sueños', 'represión', 'complejo de edipo', 'pulsión', 'ego', 'ello', 'superyó'],
+    tags: ['freud', 'sigmund', 'psicoanálisis', 'psicología', 'inconsciente', 'sexualidad', 'yo', 'ello', 'superyó']
+  },
+  'Herbarium — Libro completo — Herbarium.pdf': {
+    titulo: 'Herbarium: Libro Completo de Plantas Curativas',
+    autor: 'Tradición Herbolaria',
+    categorias: ['plantas medicinales', 'herboristería', 'fitoterapia', 'botánica'],
+    conceptosClave: ['plantas medicinales', 'herbolaria', 'remedios caseros', 'infusiones', 'tinturas', 'recetas naturales', 'fitoterapia'],
+    tags: ['herbario', 'plantas', 'hierbas', 'remedios', 'botánica', 'fitoterapia', 'curativo', 'natural']
+  },
+  'Jose Arguelles - El-Factor-Maya.pdf': {
+    titulo: 'El Factor Maya: Un camino más allá de la tecnología',
+    autor: 'José Argüelles',
+    categorias: ['cosmovisión maya', 'astrología', 'tiempo y calendario', 'espiritualidad'],
+    conceptosClave: ['factor maya', 'calendario maya', 'tzolkin', 'frecuencia de tiempo', 'sincronario', 'evolución galáctica', 'soles', 'baktun'],
+    tags: ['maya', 'calendario', 'tiempo', 'argüelles', 'astrología', 'galáctico', 'sincronicidad']
+  },
+  'Keter - Mario Javier Sabán.pdf': {
+    titulo: 'Keter: El éxtasis de la nada',
+    autor: 'Mario Javier Sabán',
+    categorias: ['cábala', 'misticismo judío', 'teología', 'filosofía'],
+    conceptosClave: ['keter', 'sefirot', 'árbol de la vida', 'nada mística', 'ein sof', 'corona', 'misticismo', 'saban', 'cábala'],
+    tags: ['cábala', 'sabán', 'keter', 'sefirot', 'árbol de la vida', 'misticismo', 'nada', 'corona', 'judaísmo']
+  },
+  'Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf': {
+    titulo: 'Los Secretos de Dios: Sefer Atzilut',
+    autor: 'Mario Javier Sabán',
+    categorias: ['cábala', 'misticismo judío', 'teología', 'filosofía'],
+    conceptosClave: ['sefer atzilut', 'mundo de la emanación', 'sefirot', 'árbol de la vida', 'teosofía hebrea', 'secretos de dios', 'saban'],
+    tags: ['cábala', 'sabán', 'atzilut', 'sefirot', 'misticismo', 'dios', 'emanación', 'secretos']
+  },
+  'Pigna,_Felipe_-_Los_Mitos_De_La_Historia_Argentina_1.pdf': {
+    titulo: 'Los Mitos de la Historia Argentina 1',
+    autor: 'Felipe Pigna',
+    categorias: ['historia argentina', 'mitos históricos', 'ensayo histórico', 'política'],
+    conceptosClave: ['historia argentina', 'mitos', 'próceres', 'revolución de mayo', 'colonia', 'independencia', 'pigna'],
+    tags: ['pigna', 'historia', 'argentina', 'mitos', 'próceres', 'revolución', 'independencia', 'mayo']
+  },
+  'Pigna_Felipe_-_Los_Mitos_De_La_Historia_Argentina_2.pdf': {
+    titulo: 'Los Mitos de la Historia Argentina 2',
+    autor: 'Felipe Pigna',
+    categorias: ['historia argentina', 'mitos históricos', 'ensayo histórico', 'política'],
+    conceptosClave: ['guerra civil', 'sarmiento', 'mitre', 'rosas', 'generación del 80', 'organización nacional', 'pigna'],
+    tags: ['pigna', 'historia', 'argentina', 'mitos', 'siglo XIX', 'rosas', 'sarmiento', 'mitre', 'civil']
+  },
+  'Wilson-Colin-El-Mensaje-Oculto-De-La-Esfinge.pdf': {
+    titulo: 'El Mensaje Oculto de la Esfinge',
+    autor: 'Colin Wilson',
+    categorias: ['arqueología misteriosa', 'egiptología', 'misterios antiguos', 'civilizaciones perdidas'],
+    conceptosClave: ['esfinge de giza', 'egipto', 'edad de la esfinge', 'atlántida', 'origen de la civilización', 'geología de giza', 'wilson'],
+    tags: ['wilson', 'esfinge', 'egipto', 'misterios', 'civilización', 'atlántida', 'giza', 'arqueología']
+  },
   '00 ESPACIO SAGRADO version nov2017.pdf': {
     titulo: 'Espacio Sagrado (Versión Nov 2017)',
     autor: 'Tradición Chamánica',

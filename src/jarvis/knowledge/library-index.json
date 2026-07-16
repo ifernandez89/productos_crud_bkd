@@ -2060,6 +2060,46 @@
       ]
     },
     {
+      "id": "lib-freud-sigmund-obras-completas-pdf",
+      "titulo": "Obras Completas",
+      "archivo": "Freud, Sigmund. - Obras completas.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Sigmund Freud",
+      "idioma": "es",
+      "categorias": [
+        "psicoanálisis",
+        "psicología",
+        "inconsciente",
+        "ensayo"
+      ],
+      "conceptosClave": [
+        "psicoanálisis",
+        "inconsciente",
+        "sueños",
+        "represión",
+        "complejo de edipo",
+        "pulsión",
+        "ego",
+        "ello",
+        "superyó"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Obras Completas\" de Sigmund Freud registrado en la biblioteca local.",
+      "tags": [
+        "freud",
+        "sigmund",
+        "psicoanálisis",
+        "psicología",
+        "inconsciente",
+        "sexualidad",
+        "yo",
+        "ello",
+        "superyó"
+      ]
+    },
+    {
       "id": "lib-fundamentos-racionales-de-la-astrolog-a-",
       "titulo": "Fundamentos Racionales de la Astrología",
       "archivo": "Fundamentos Racionales de la Astrología.pdf",
@@ -2099,6 +2139,43 @@
       "descripcionBreve": "Libro \"Hacking Taller Attacking AD\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-herbarium-libro-completo-herbarium-pdf",
+      "titulo": "Herbarium: Libro Completo de Plantas Curativas",
+      "archivo": "Herbarium — Libro completo — Herbarium.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Tradición Herbolaria",
+      "idioma": "es",
+      "categorias": [
+        "plantas medicinales",
+        "herboristería",
+        "fitoterapia",
+        "botánica"
+      ],
+      "conceptosClave": [
+        "plantas medicinales",
+        "herbolaria",
+        "remedios caseros",
+        "infusiones",
+        "tinturas",
+        "recetas naturales",
+        "fitoterapia"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Herbarium: Libro Completo de Plantas Curativas\" de Tradición Herbolaria registrado en la biblioteca local.",
+      "tags": [
+        "herbario",
+        "plantas",
+        "hierbas",
+        "remedios",
+        "botánica",
+        "fitoterapia",
+        "curativo",
+        "natural"
       ]
     },
     {
@@ -3228,6 +3305,83 @@
       ]
     },
     {
+      "id": "lib-jose-arguelles-el-factor-maya-pdf",
+      "titulo": "El Factor Maya: Un camino más allá de la tecnología",
+      "archivo": "Jose Arguelles - El-Factor-Maya.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "José Argüelles",
+      "idioma": "es",
+      "categorias": [
+        "cosmovisión maya",
+        "astrología",
+        "tiempo y calendario",
+        "espiritualidad"
+      ],
+      "conceptosClave": [
+        "factor maya",
+        "calendario maya",
+        "tzolkin",
+        "frecuencia de tiempo",
+        "sincronario",
+        "evolución galáctica",
+        "soles",
+        "baktun"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Factor Maya: Un camino más allá de la tecnología\" de José Argüelles registrado en la biblioteca local.",
+      "tags": [
+        "maya",
+        "calendario",
+        "tiempo",
+        "argüelles",
+        "astrología",
+        "galáctico",
+        "sincronicidad"
+      ]
+    },
+    {
+      "id": "lib-keter-mario-javier-sab-n-pdf",
+      "titulo": "Keter: El éxtasis de la nada",
+      "archivo": "Keter - Mario Javier Sabán.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "teología",
+        "filosofía"
+      ],
+      "conceptosClave": [
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "nada mística",
+        "ein sof",
+        "corona",
+        "misticismo",
+        "saban",
+        "cábala"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "misticismo",
+        "nada",
+        "corona",
+        "judaísmo"
+      ]
+    },
+    {
       "id": "lib-la-historia-del-tiempo-pdf",
       "titulo": "LA HISTORIA DEL TIEMPO",
       "archivo": "LA HISTORIA DEL TIEMPO.pdf",
@@ -3387,6 +3541,43 @@
       "descripcionBreve": "Libro \"lista completa de patentes de nikola tesla\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-los-secretos-de-dios-sefer-atzilut-mario",
+      "titulo": "Los Secretos de Dios: Sefer Atzilut",
+      "archivo": "Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "teología",
+        "filosofía"
+      ],
+      "conceptosClave": [
+        "sefer atzilut",
+        "mundo de la emanación",
+        "sefirot",
+        "árbol de la vida",
+        "teosofía hebrea",
+        "secretos de dios",
+        "saban"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "atzilut",
+        "sefirot",
+        "misticismo",
+        "dios",
+        "emanación",
+        "secretos"
       ]
     },
     {
@@ -3555,6 +3746,81 @@
       "descripcionBreve": "Libro \"Oracion.docx\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-pigna-felipe-los-mitos-de-la-historia-ar",
+      "titulo": "Los Mitos de la Historia Argentina 1",
+      "archivo": "Pigna,_Felipe_-_Los_Mitos_De_La_Historia_Argentina_1.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Felipe Pigna",
+      "idioma": "es",
+      "categorias": [
+        "historia argentina",
+        "mitos históricos",
+        "ensayo histórico",
+        "política"
+      ],
+      "conceptosClave": [
+        "historia argentina",
+        "mitos",
+        "próceres",
+        "revolución de mayo",
+        "colonia",
+        "independencia",
+        "pigna"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Mitos de la Historia Argentina 1\" de Felipe Pigna registrado en la biblioteca local.",
+      "tags": [
+        "pigna",
+        "historia",
+        "argentina",
+        "mitos",
+        "próceres",
+        "revolución",
+        "independencia",
+        "mayo"
+      ]
+    },
+    {
+      "id": "lib-pigna-felipe-los-mitos-de-la-historia-ar",
+      "titulo": "Los Mitos de la Historia Argentina 2",
+      "archivo": "Pigna_Felipe_-_Los_Mitos_De_La_Historia_Argentina_2.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Felipe Pigna",
+      "idioma": "es",
+      "categorias": [
+        "historia argentina",
+        "mitos históricos",
+        "ensayo histórico",
+        "política"
+      ],
+      "conceptosClave": [
+        "guerra civil",
+        "sarmiento",
+        "mitre",
+        "rosas",
+        "generación del 80",
+        "organización nacional",
+        "pigna"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Los Mitos de la Historia Argentina 2\" de Felipe Pigna registrado en la biblioteca local.",
+      "tags": [
+        "pigna",
+        "historia",
+        "argentina",
+        "mitos",
+        "siglo XIX",
+        "rosas",
+        "sarmiento",
+        "mitre",
+        "civil"
       ]
     },
     {
@@ -3838,6 +4104,43 @@
         "serpiente",
         "relatos",
         "ayahuasca"
+      ]
+    },
+    {
+      "id": "lib-wilson-colin-el-mensaje-oculto-de-la-esf",
+      "titulo": "El Mensaje Oculto de la Esfinge",
+      "archivo": "Wilson-Colin-El-Mensaje-Oculto-De-La-Esfinge.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Colin Wilson",
+      "idioma": "es",
+      "categorias": [
+        "arqueología misteriosa",
+        "egiptología",
+        "misterios antiguos",
+        "civilizaciones perdidas"
+      ],
+      "conceptosClave": [
+        "esfinge de giza",
+        "egipto",
+        "edad de la esfinge",
+        "atlántida",
+        "origen de la civilización",
+        "geología de giza",
+        "wilson"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"El Mensaje Oculto de la Esfinge\" de Colin Wilson registrado en la biblioteca local.",
+      "tags": [
+        "wilson",
+        "esfinge",
+        "egipto",
+        "misterios",
+        "civilización",
+        "atlántida",
+        "giza",
+        "arqueología"
       ]
     }
   ],
