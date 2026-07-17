@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Ingesta Jerárquica, Embeddings Perezosos y Compuerta de Seguridad (2026-07-16)
+
+- **📚 Estructura Jerárquica y Parser**: Nuevo parseador `HierarchicalParserService` que divide documentos en Capítulos y Secciones usando Markdown y aplica filtros inteligentes para omitir contenido redundante o ruidoso.
+- **⚡ Ingesta en 5 Fases**: Proceso optimizado con estado `quarantined` inicial, división estructural, cálculo diferido y amortiguado de embeddings (lotes con delay para resiliencia), y resúmenes recursivos MapReduce (capítulo a capítulo y general).
+- **🔍 Búsqueda Híbrida en Dos Capas**: RAG inteligente que busca primero capítulos relevantes y luego chunks locales. Genera embeddings en caliente ("perezosos" u on-demand) para candidatos que aún no han sido vectorizados.
+- **🛡️ ActionExecutionGate**: Compuerta de seguridad que intercepta pasos de agentes en `ExecutionEngine`. Valida parámetros contra lista blanca de herramientas y exige confirmación humana (HITL) para acciones destructivas (`drop`, `delete`, etc.), auditándolas en `logs/security_audit.log`.
+- **🔌 Endpoint de Aprobación**: Ruta `POST /library/document/:id/approve` para liberar documentos en cuarentena hacia el pipeline de indexación.
+
 ### Added & Optimized — Entrevista Adaptativa y Ciclos de Balance Energético (2026-07-16)
 
 - **🔄 Entrevista Adaptativa**: Transformación del cuestionario estático de 22 preguntas en una entrevista interactiva paso a paso (turn-by-turn) de 10 preguntas en total.
@@ -15,6 +23,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Ciclo 3**: "¿Qué merece crecer?" (potencial y expansión)
   - **Ciclo 4**: "¿Qué necesita cerrarse?" (cierre de ciclos y manifestación)
 - **🤖 Preguntas Dinámicas por IA**: A partir del cuarto turno, la IA genera dinámicamente la siguiente pregunta en español con modismo argentino ("vos"), analizando la última respuesta del usuario, detectando contradicciones y profundizando en temas de valor.
+- **🚫 Prevención de Duplicados**: Se introdujeron pautas y restricciones estrictas en el prompt del generador para evitar que la IA formule preguntas con temáticas, enfoques, palabras clave o ideas redundantes o repetidas respecto del historial previo.
 - **🌓 Análisis Sensible al Ciclo**: Se actualizó el motor de análisis en `BalanceAnalysisService` para que el reporte final interprete las respuestas del usuario bajo la temática del ciclo actual.
 - **🛡️ Validación de Respuestas Mínimas**: Se incluyó una validación que requiere al menos 5 preguntas respondidas para poder ejecutar el análisis de finalización de balance.
 

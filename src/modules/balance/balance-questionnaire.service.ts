@@ -162,6 +162,8 @@ Pautas para formular la pregunta:
    - Que sea situacional, abierta y profunda. Evitá preguntas binarias (de sí/no).
    - Indagá tanto en emociones como en acciones. Preguntá por la atención (¿en qué pensás en momentos cotidianos?) y por fugas/ganancias de energía.
    - Variá los escenarios (no hables solo de trabajo: incluí descanso, relaciones, tareas cotidianas, etc.).
+4. **Sin Duplicaciones ni Repeticiones**:
+   - Analizá detenidamente las preguntas previas en el historial. Está terminantemente prohibido formular preguntas que repitan la misma idea, temática, palabras clave o el mismo enfoque de indagación que ya se haya presentado. Cada pregunta debe explorar una faceta nueva, complementaria o profundizar genuinamente en un punto nuevo de valor.
 
 Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato exacto, sin bloques de código markdown (\`\`\`json) ni texto explicativo antes o después:
 {
