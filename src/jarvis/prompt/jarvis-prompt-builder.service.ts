@@ -105,13 +105,14 @@ export class JarvisPromptBuilderService {
       '',
       'Reglas generales:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
-      '2. Usar el contexto provisto (memoria, documentos, web) para fundamentar la respuesta.',
-      '3. No inventar datos. Si no tenés la info, decílo claramente.',
+      '2. PRIORIDAD ABSOLUTA DEL CONTEXTO: Responde únicamente utilizando la información proporcionada en el contexto (Documentos de la Biblioteca Personal/Web/Memoria). Si el contexto no contiene suficiente información para responder a la pregunta, indícalo explícitamente primero. Solo entonces podés complementar con tu conocimiento general de forma clara, honesta y diferenciada (ej: "Según mi conocimiento general y fuera de los documentos provistos...").',
+      '3. PROHIBICIÓN ABSOLUTA DE ALUCINACIONES: Queda terminantemente prohibido inventar o alucinar títulos de libros, autores, capítulos, fechas o datos que no consten explícitamente en el contexto. Si el usuario pregunta por un autor, libro o concepto y no está en los documentos, decí que no se encuentra en la biblioteca personal.',
+      '4. PRESERVACIÓN DEL MARCO INTELECTUAL: No mezcles ni fusiones autores de escuelas diferentes como si compartieran la misma teoría. Si respondes usando fragmentos de distintos autores, sepáralos claramente (ej: "Según Freud...", "Desde la perspectiva teosófica de Powell...").',
       browserContext
-        ? '4. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
-        : '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-      '5. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
-      '6. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
+        ? '5. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
+        : '5. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
+      '6. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
+      '7. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
       '',
       `Timezone: ${identity.timezone}`,
       `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
@@ -232,23 +233,38 @@ export class JarvisPromptBuilderService {
                 await this.embeddingsService.generateEmbedding(userMessage);
               chunks = await this.documentRepo.searchChunksSemantic(
                 queryEmbedding,
-                3,
+                15,
               );
             } catch (err: any) {
               this.logger.warn(
                 `[rag:semantic] Fallback a búsqueda textual: ${err.message}`,
               );
-              chunks = await this.documentRepo.searchChunks(userMessage, 3);
+              chunks = await this.documentRepo.searchChunks(userMessage, 15);
             }
             if (chunks.length > 0) {
               usedDocs = true;
-              const docText = chunks
-                .map(
-                  (c) =>
-                    `[${(c as any).document?.title || 'Doc'}]\n${c.content}`,
-                )
-                .join('\n---\n');
-              contextParts.push(`### DOCUMENTOS\n${docText}`);
+              // Aplicar reranker híbrido
+              const rerankedChunks = this.rerankChunks(chunks, userMessage);
+              
+              const formattedParts = rerankedChunks.map((c) => {
+                const docTitle = c.document?.title || 'Documento';
+                const { author, school } =
+                  this.corpusSelector.getAuthorAndSchoolByTitle(docTitle);
+                return [
+                  `---`,
+                  `DOCUMENTO: "${docTitle}"`,
+                  `AUTOR: ${author}`,
+                  `ESCUELA DE PENSAMIENTO: ${school}`,
+                  `CONTENIDO:`,
+                  c.content,
+                ].join('\n');
+              });
+
+              contextParts.push(
+                `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
+                  `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
+                  formattedParts.join('\n\n'),
+              );
             }
           }
         }
@@ -469,5 +485,40 @@ export class JarvisPromptBuilderService {
     }
 
     return { isRequest: false };
+  }
+
+  private rerankChunks(chunks: any[], query: string): any[] {
+    if (chunks.length <= 1) return chunks;
+
+    const queryTerms = query
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(/[^a-z0-9áéíóúüñ]+/)
+      .filter((t) => t.length >= 3);
+
+    if (queryTerms.length === 0) return chunks;
+
+    const scored = chunks.map((chunk, index) => {
+      const contentLower = chunk.content
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      let matches = 0;
+      for (const term of queryTerms) {
+        if (contentLower.includes(term)) {
+          matches++;
+        }
+      }
+
+      const lexicalScore = matches / queryTerms.length;
+      const semanticScore = 1.0 - index / chunks.length;
+      const score = 0.4 * lexicalScore + 0.6 * semanticScore;
+
+      return { chunk, score };
+    });
+
+    return scored.sort((a, b) => b.score - a.score).map((item) => item.chunk);
   }
 }

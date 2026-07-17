@@ -34,6 +34,108 @@ export interface CorpusMatch {
   needsEmbedding: boolean;
 }
 
+// ── Escuelas de Pensamiento ───────────────────────────────────────────────────
+export const SCHOOLS_OF_THOUGHT: Record<
+  string,
+  { authors: string[]; keywords: string[] }
+> = {
+  psicoanalisis: {
+    authors: [
+      'sigmund freud',
+      'carl gustav jung',
+      'jacques lacan',
+      'freud',
+      'jung',
+      'lacan',
+    ],
+    keywords: [
+      'inconsciente',
+      'sueños',
+      'represión',
+      'complejo de edipo',
+      'pulsión',
+      'ego',
+      'ello',
+      'superyó',
+      'transferencia',
+      'neurosis',
+      'histeria',
+      'psicoanalisis',
+    ],
+  },
+  teosofia: {
+    authors: [
+      'helena blavatsky',
+      'arthur e. powell',
+      'annie besant',
+      'charles leadbeater',
+      'arthur powell',
+      'blavatsky',
+      'powell',
+      'besant',
+      'leadbeater',
+    ],
+    keywords: [
+      'cuerpo astral',
+      'cuerpo mental',
+      'chakras',
+      'karma',
+      'reencarnación',
+      'devachan',
+      'planos astrales',
+      'vehículos de conciencia',
+      'teosofía',
+      'doctrina secreta',
+      'teosofica',
+      'esoterismo',
+    ],
+  },
+  hermetismo: {
+    authors: [
+      'hermes trismegisto',
+      'tres iniciados',
+      'heinrich cornelius agrippa',
+      'agrippa',
+    ],
+    keywords: [
+      'kybalion',
+      'hermetismo',
+      'hermético',
+      'tabla de esmeralda',
+      'correspondencia',
+      'vibración',
+      'polaridad',
+      'ritmo',
+      'causa y efecto',
+      'generación',
+      'alquimia',
+    ],
+  },
+  psicomagia: {
+    authors: ['alejandro jodorowsky', 'jodorowsky'],
+    keywords: [
+      'psicomagia',
+      'arbol genealogico',
+      'actos psicomagicos',
+      'tarot',
+      'jodorowsky',
+      'psicomagico',
+    ],
+  },
+  chamanismo: {
+    authors: ['alberto villoldo', 'angeles arrien', 'villoldo', 'arrien'],
+    keywords: [
+      'chamanismo',
+      'chaman',
+      'munay-ki',
+      'ritos de iniciación',
+      'campo energetico luminoso',
+      'sendas del chaman',
+      'chamanico',
+    ],
+  },
+};
+
 // ── Servicio ──────────────────────────────────────────────────────────────────
 
 /**
@@ -256,6 +358,23 @@ export class CorpusSelectorService {
       }
     }
 
+    // 7. Coincidencia por Escuela de Pensamiento (peso muy alto para recuperar el corpus completo de la corriente)
+    for (const [school, data] of Object.entries(SCHOOLS_OF_THOUGHT)) {
+      const isQueryAboutSchool =
+        queryLower.includes(school) ||
+        data.keywords.some((kw) => queryLower.includes(kw));
+
+      if (isQueryAboutSchool) {
+        const isDocInSchool = data.authors.some((auth) =>
+          doc.autor.toLowerCase().includes(auth),
+        );
+        if (isDocInSchool) {
+          score += 6; // Boost fuerte para priorizar autores de la misma escuela
+          matchedOn.push(`escuela:${school}`);
+        }
+      }
+    }
+
     // Deduplicar matchedOn
     const uniqueMatches = [...new Set(matchedOn)];
 
@@ -265,6 +384,29 @@ export class CorpusSelectorService {
       matchedOn: uniqueMatches,
       needsEmbedding: doc.embeddings !== 'ready',
     };
+  }
+
+  /**
+   * Obtiene el autor y la escuela de pensamiento de un documento por su título exacto.
+   */
+  getAuthorAndSchoolByTitle(title: string): { author: string; school: string } {
+    const doc = this.getIndex().documentos.find(
+      (d) => d.titulo.toLowerCase() === title.toLowerCase(),
+    );
+    if (!doc) {
+      return { author: 'Autor Desconocido', school: 'OTRO' };
+    }
+    const author = doc.autor;
+    const authorLower = author.toLowerCase();
+
+    let school = 'OTRO';
+    for (const [schoolName, data] of Object.entries(SCHOOLS_OF_THOUGHT)) {
+      if (data.authors.some((auth) => authorLower.includes(auth))) {
+        school = schoolName.toUpperCase();
+        break;
+      }
+    }
+    return { author, school };
   }
 
   // ── Utilidades ───────────────────────────────────────────────────────────────
@@ -347,8 +489,18 @@ export class CorpusSelectorService {
     const existing = await documentRepo.findDocumentByExactTitle(doc.titulo);
     if (existing) {
       this.logger.log(
-        `[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id}.`,
+        `[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id} (Status: ${existing.status}).`,
       );
+
+      if (
+        existing.status === 'quarantined' ||
+        existing.status === 'not_indexed'
+      ) {
+        this.logger.log(
+          `[lazy-load] Aprobando e iniciando indexación para el documento existente en cuarentena...`,
+        );
+        await ingestService.approveDocument(existing.id);
+      }
 
       // Actualizar el índice JSON
       doc.embeddings = 'ready';
@@ -392,6 +544,12 @@ export class CorpusSelectorService {
       );
       dbDocId = result.documentId;
     }
+
+    // Auto-aprobar el documento recién ingestado para que comience el pipeline
+    this.logger.log(
+      `[lazy-load] Auto-aprobando nuevo documento ID ${dbDocId} para indexación jerárquica...`,
+    );
+    await ingestService.approveDocument(dbDocId);
 
     // 4. Actualizar el índice en memoria y disco
     doc.embeddings = 'ready';

@@ -269,7 +269,7 @@ export class JarvisService {
             chunks = await this.documentRepo.searchChunksSemanticInDocuments(
               queryEmbedding,
               targetDocIds,
-              3,
+              15,
             );
           } else {
             // Fallback: búsqueda global si no hay coincidencia en el índice estructural
@@ -278,7 +278,7 @@ export class JarvisService {
             );
             chunks = await this.documentRepo.searchChunksSemantic(
               queryEmbedding,
-              3,
+              15,
             );
           }
         } catch (err: any) {
@@ -303,10 +303,10 @@ export class JarvisService {
               chunks = await this.documentRepo.searchChunksInDocuments(
                 userMessage,
                 targetDocIds,
-                3,
+                15,
               );
             } else {
-              chunks = await this.documentRepo.searchChunks(userMessage, 3);
+              chunks = await this.documentRepo.searchChunks(userMessage, 15);
             }
           } catch (fallbackErr: any) {
             this.logger.error(
@@ -317,13 +317,28 @@ export class JarvisService {
 
         if (chunks.length > 0) {
           hasRagHits = true;
+
+          // Aplicar reranker híbrido
+          const rerankedChunks = this.rerankChunks(chunks, userMessage);
+
+          const formattedParts = rerankedChunks.map((c) => {
+            const docTitle = c.document?.title || 'Documento';
+            const { author, school } =
+              this.corpusSelector.getAuthorAndSchoolByTitle(docTitle);
+            return [
+              `---`,
+              `DOCUMENTO: "${docTitle}"`,
+              `AUTOR: ${author}`,
+              `ESCUELA DE PENSAMIENTO: ${school}`,
+              `CONTENIDO:`,
+              c.content,
+            ].join('\n');
+          });
+
           prefetchedRagContext =
-            `### DOCUMENTOS\n` +
-            chunks
-              .map(
-                (c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`,
-              )
-              .join('\n---\n');
+            `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
+            `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
+            formattedParts.join('\n\n');
         }
       }
 
@@ -1074,6 +1089,46 @@ export class JarvisService {
       n.includes('no dispongo de noticias') ||
       (n.includes('lo siento') && n.includes('no'))
     );
+  }
+
+  private rerankChunks(chunks: any[], query: string): any[] {
+    if (chunks.length <= 1) return chunks;
+
+    const queryTerms = query
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .split(/[^a-z0-9áéíóúüñ]+/)
+      .filter((t) => t.length >= 3);
+
+    if (queryTerms.length === 0) return chunks;
+
+    const scored = chunks.map((chunk, index) => {
+      const contentLower = chunk.content
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+      let matches = 0;
+      for (const term of queryTerms) {
+        if (contentLower.includes(term)) {
+          matches++;
+        }
+      }
+
+      // Score léxico normalizado
+      const lexicalScore = matches / queryTerms.length;
+
+      // Score semántico basado en la posición original
+      const semanticScore = 1.0 - index / chunks.length;
+
+      // Peso: 40% léxico, 60% semántico
+      const score = 0.4 * lexicalScore + 0.6 * semanticScore;
+
+      return { chunk, score };
+    });
+
+    return scored.sort((a, b) => b.score - a.score).map((item) => item.chunk);
   }
 
   private async saveAndObserve(
