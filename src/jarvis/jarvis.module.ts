@@ -50,6 +50,7 @@ import { GoogleDriveService } from './tools/google/google-drive.service';
 import { YouTubeService } from './tools/google/youtube.service';
 import { JarvisKnowledgeService } from './knowledge/jarvis-knowledge.service';
 import { CorpusSelectorService } from './knowledge/corpus-selector.service';
+import { EvidenceService } from './knowledge/evidence.service';
 import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
@@ -108,6 +109,7 @@ import { HierarchicalParserService } from './library/hierarchical-parser.service
     PgvectorService,
     JarvisKnowledgeService,
     CorpusSelectorService,
+    EvidenceService,
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
@@ -122,6 +124,7 @@ import { HierarchicalParserService } from './library/hierarchical-parser.service
     RssIngestService,
     JarvisKnowledgeService,
     CorpusSelectorService,
+    EvidenceService,
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,

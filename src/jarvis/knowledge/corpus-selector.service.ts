@@ -474,6 +474,22 @@ export class CorpusSelectorService {
   }
 
   /**
+   * Obtiene una lista única de todos los autores presentes en el índice de la biblioteca.
+   */
+  getAllAuthors(): string[] {
+    const authors = this.getIndex().documentos.map((d) => d.autor);
+    return Array.from(new Set(authors)).filter(Boolean);
+  }
+
+  /**
+   * Obtiene una lista única de todos los conceptos clave definidos en el índice de la biblioteca.
+   */
+  getAllConcepts(): string[] {
+    const concepts = this.getIndex().documentos.flatMap((d) => d.conceptosClave);
+    return Array.from(new Set(concepts)).filter(Boolean);
+  }
+
+  /**
    * Realiza la carga perezosa de un documento (ingesta de PDF o archivo y generación de embeddings).
    */
   async lazyLoadDocument(

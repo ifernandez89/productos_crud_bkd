@@ -34,6 +34,7 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
 import { EmbeddingsService } from './library/embeddings.service';
 import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { DocumentIngestService } from './library/document-ingest.service';
+import { EvidenceService } from './knowledge/evidence.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -84,6 +85,7 @@ export class JarvisService {
     private readonly embeddingsService: EmbeddingsService,
     private readonly corpusSelector: CorpusSelectorService,
     private readonly ingestService: DocumentIngestService,
+    private readonly evidenceService: EvidenceService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -205,6 +207,7 @@ export class JarvisService {
       // ── 6. RAG pre-search ────────────────────────────────────────────────
       let prefetchedRagContext: string | undefined = undefined;
       let hasRagHits = false;
+      let retrievedChunksList: any[] = [];
 
       if (useDocuments) {
         let chunks = [] as any[];
@@ -320,16 +323,28 @@ export class JarvisService {
 
           // Aplicar reranker híbrido
           const rerankedChunks = this.rerankChunks(chunks, userMessage);
+          retrievedChunksList = rerankedChunks;
 
           const formattedParts = rerankedChunks.map((c) => {
             const docTitle = c.document?.title || 'Documento';
-            const { author, school } =
-              this.corpusSelector.getAuthorAndSchoolByTitle(docTitle);
+            const docInIndex = this.corpusSelector.getIndex().documentos.find(
+              (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
+            );
+            
+            const author = docInIndex?.autor || this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
+            const language = docInIndex?.idioma || 'es';
+            const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
+            const category = docInIndex?.categorias?.join(', ') || 'General';
+            const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
+
             return [
               `---`,
               `DOCUMENTO: "${docTitle}"`,
               `AUTOR: ${author}`,
               `ESCUELA DE PENSAMIENTO: ${school}`,
+              `IDIOMA: ${language}`,
+              `CATEGORÍAS: ${category}`,
+              `CONCEPTOS PRINCIPALES: ${concepts}`,
               `CONTENIDO:`,
               c.content,
             ].join('\n');
@@ -651,6 +666,7 @@ export class JarvisService {
             siteSearchCtx,
             prefetchedRagContext,
             mode,
+            retrievedChunksList,
           );
         }
 
@@ -696,6 +712,7 @@ export class JarvisService {
               sportsResult,
               prefetchedRagContext,
               mode,
+              retrievedChunksList,
             );
           }
         }
@@ -754,6 +771,7 @@ export class JarvisService {
               webCtx,
               prefetchedRagContext,
               mode,
+              retrievedChunksList,
             );
           }
 
@@ -813,6 +831,7 @@ export class JarvisService {
             webCtx,
             prefetchedRagContext,
             mode,
+            retrievedChunksList,
           );
         }
       }
@@ -828,6 +847,7 @@ export class JarvisService {
         undefined,
         prefetchedRagContext,
         mode,
+        retrievedChunksList,
       );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
@@ -870,6 +890,7 @@ export class JarvisService {
     webContext?: string,
     prefetchedRagContext?: string,
     mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
+    retrievedChunks: any[] = [],
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
@@ -889,11 +910,11 @@ export class JarvisService {
     const finalSystemPrompt = webContext
       ? systemPrompt
           .replace(
-            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-            '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
+            '7. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
+            '7. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
           )
           .replace(
-            '3. No inventar datos. Si no tenés la info, decilo claramente.',
+            '3. NO agregues autores, no agregues teorías, no agregues conceptos, no agregues libros, no agregues fechas, ni agregues interpretaciones o conocimiento externo al contexto.',
             '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
           )
       : systemPrompt;
@@ -908,6 +929,9 @@ export class JarvisService {
       response.content,
       provider,
     );
+
+    let finalAnswer = responseContent;
+    let confidenceScore = 100;
 
     const isEvasiveResponse =
       !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
@@ -935,11 +959,11 @@ export class JarvisService {
           );
         const sp2Final = sp2
           .replace(
-            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-            '4. TENÉS datos reales de internet en el contexto. Respondé con esos datos. NO digas que no tenés información.',
+            '7. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
+            '7. TENÉS datos reales de internet en el contexto. Respondé con esos datos. NO digas que no tenés información.',
           )
           .replace(
-            '3. No inventar datos. Si no tenés la info, decilo claramente.',
+            '3. NO agregues autores, no agregues teorías, no agregues conceptos, no agregues libros, no agregues fechas, ni agregues interpretaciones o conocimiento externo al contexto.',
             '3. Usá SOLO los datos del contexto web. No inventés nada.',
           );
         const response2 = await provider.generate({
@@ -959,20 +983,35 @@ export class JarvisService {
           toolsUsed,
           response2,
           startTime,
+          100,
         );
         return response2Content;
       }
     }
 
+    if (usedDocs && retrievedChunks.length > 0) {
+      const report = this.evidenceService.verifyResponse(
+        responseContent,
+        retrievedChunks,
+        userMessage,
+      );
+      finalAnswer = responseContent + report.formattedReportMarkdown;
+      confidenceScore = report.confidenceScore;
+      this.logger.log(
+        `[evidence] Respuesta verificada: confianza=${confidenceScore}%, chunks=${report.chunksCount}`,
+      );
+    }
+
     await this.saveAndObserve(
       sessionId,
       userMessage,
-      responseContent,
+      finalAnswer,
       toolsUsed,
       response,
       startTime,
+      confidenceScore,
     );
-    return responseContent;
+    return finalAnswer;
   }
 
   private async respondWithAstrologyPrompt(
@@ -1138,6 +1177,7 @@ export class JarvisService {
     toolsUsed: string[],
     response: any,
     startTime: number,
+    confidenceScore?: number,
   ): Promise<void> {
     await this.conversationRepo.create({
       sessionId,
@@ -1148,6 +1188,7 @@ export class JarvisService {
         model: response.model,
         provider: response.provider,
         latencyMs: response.latencyMs,
+        ...(confidenceScore !== undefined ? { confidenceScore } : {}),
       },
     });
     await this.agentRunRepo.create({

@@ -105,14 +105,16 @@ export class JarvisPromptBuilderService {
       '',
       'Reglas generales:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
-      '2. PRIORIDAD ABSOLUTA DEL CONTEXTO: Responde únicamente utilizando la información proporcionada en el contexto (Documentos de la Biblioteca Personal/Web/Memoria). Si el contexto no contiene suficiente información para responder a la pregunta, indícalo explícitamente primero. Solo entonces podés complementar con tu conocimiento general de forma clara, honesta y diferenciada (ej: "Según mi conocimiento general y fuera de los documentos provistos...").',
-      '3. PROHIBICIÓN ABSOLUTA DE ALUCINACIONES: Queda terminantemente prohibido inventar o alucinar títulos de libros, autores, capítulos, fechas o datos que no consten explícitamente en el contexto. Si el usuario pregunta por un autor, libro o concepto y no está en los documentos, decí que no se encuentra en la biblioteca personal.',
-      '4. PRESERVACIÓN DEL MARCO INTELECTUAL: No mezcles ni fusiones autores de escuelas diferentes como si compartieran la misma teoría. Si respondes usando fragmentos de distintos autores, sepáralos claramente (ej: "Según Freud...", "Desde la perspectiva teosófica de Powell...").',
+      '2. FRONTERA RÍGIDA DE CONOCIMIENTO (Eres JarBees): Tu prioridad absoluta es responder utilizando EXCLUSIVAMENTE el contexto recuperado (Biblioteca Personal/Web/Memoria).',
+      '3. NO agregues autores, no agregues teorías, no agregues conceptos, no agregues libros, no agregues fechas, ni agregues interpretaciones o conocimiento externo al contexto.',
+      '4. Si el contexto no contiene suficiente información para responder con precisión, debes responder exactamente: "No encontré suficiente información en la biblioteca para responder con precisión."',
+      '5. Solo al final de tu respuesta, y ÚNICAMENTE si el usuario lo solicita de manera explícita, puedes complementar con conocimiento general del modelo indicando clara y literalmente la frase: "Conocimiento general del modelo:" seguido de la información.',
+      '6. PRESERVACIÓN DEL MARCO INTELECTUAL: No mezcles ni fusiones autores de escuelas diferentes como si compartieran la misma teoría. Si respondes usando fragmentos de distintos autores, sepáralos claramente (ej: "Según Freud...", "Desde la perspectiva teosófica de Powell...").',
       browserContext
-        ? '5. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
-        : '5. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
-      '6. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
-      '7. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
+        ? '7. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
+        : '7. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
+      '8. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
+      '9. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
       '',
       `Timezone: ${identity.timezone}`,
       `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
@@ -248,13 +250,24 @@ export class JarvisPromptBuilderService {
               
               const formattedParts = rerankedChunks.map((c) => {
                 const docTitle = c.document?.title || 'Documento';
-                const { author, school } =
-                  this.corpusSelector.getAuthorAndSchoolByTitle(docTitle);
+                const docInIndex = this.corpusSelector.getIndex().documentos.find(
+                  (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
+                );
+                
+                const author = docInIndex?.autor || this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
+                const language = docInIndex?.idioma || 'es';
+                const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
+                const category = docInIndex?.categorias?.join(', ') || 'General';
+                const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
+
                 return [
                   `---`,
                   `DOCUMENTO: "${docTitle}"`,
                   `AUTOR: ${author}`,
                   `ESCUELA DE PENSAMIENTO: ${school}`,
+                  `IDIOMA: ${language}`,
+                  `CATEGORÍAS: ${category}`,
+                  `CONCEPTOS PRINCIPALES: ${concepts}`,
                   `CONTENIDO:`,
                   c.content,
                 ].join('\n');
