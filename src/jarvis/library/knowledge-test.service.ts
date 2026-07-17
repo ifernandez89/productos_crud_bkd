@@ -9,8 +9,17 @@ export interface LibraryDiagnostic {
   totalDocs: number;
   totalChunks: number;
   categories: Array<{ name: string; docCount: number }>;
-  topUsed: Array<{ title: string; category: string | null; timesUsed: number; lastUsed: Date | null }>;
-  recentlyAdded: Array<{ title: string; category: string | null; createdAt: Date }>;
+  topUsed: Array<{
+    title: string;
+    category: string | null;
+    timesUsed: number;
+    lastUsed: Date | null;
+  }>;
+  recentlyAdded: Array<{
+    title: string;
+    category: string | null;
+    createdAt: Date;
+  }>;
   avgChunksPerDoc: number;
   docsWithoutChunks: number;
 }
@@ -94,9 +103,10 @@ export class KnowledgeTestService {
       if (!full?.chunks || full.chunks.length === 0) docsWithoutChunks++;
     }
 
-    const avgChunks = stats.totalDocs > 0
-      ? Math.round((stats.totalChunks / stats.totalDocs) * 10) / 10
-      : 0;
+    const avgChunks =
+      stats.totalDocs > 0
+        ? Math.round((stats.totalChunks / stats.totalDocs) * 10) / 10
+        : 0;
 
     return {
       totalDocs: stats.totalDocs,
@@ -139,7 +149,9 @@ export class KnowledgeTestService {
     if (diag.categories.length > 0) {
       lines.push(`📁 **Categorías** (${diag.categories.length} total)`);
       for (const cat of diag.categories.slice(0, 10)) {
-        lines.push(`  • ${cat.name}: ${cat.docCount} doc${cat.docCount !== 1 ? 's' : ''}`);
+        lines.push(
+          `  • ${cat.name}: ${cat.docCount} doc${cat.docCount !== 1 ? 's' : ''}`,
+        );
       }
       lines.push(``);
     }
@@ -150,7 +162,9 @@ export class KnowledgeTestService {
         const last = doc.lastUsed
           ? new Date(doc.lastUsed).toLocaleDateString('es-AR')
           : 'nunca';
-        lines.push(`  • ${doc.title} — ${doc.timesUsed}x consultas (último: ${last})`);
+        lines.push(
+          `  • ${doc.title} — ${doc.timesUsed}x consultas (último: ${last})`,
+        );
       }
       lines.push(``);
     }
@@ -159,17 +173,25 @@ export class KnowledgeTestService {
       lines.push(`🆕 **Últimos documentos agregados**`);
       for (const doc of diag.recentlyAdded) {
         const fecha = new Date(doc.createdAt).toLocaleDateString('es-AR');
-        lines.push(`  • ${doc.title} [${doc.category ?? 'sin cat.'}] — ${fecha}`);
+        lines.push(
+          `  • ${doc.title} [${doc.category ?? 'sin cat.'}] — ${fecha}`,
+        );
       }
       lines.push(``);
     }
 
     lines.push(`💡 **Próximos pasos sugeridos:**`);
     if (diag.docsWithoutChunks > 0) {
-      lines.push(`  1. Re-ingerir los ${diag.docsWithoutChunks} documento(s) sin chunks`);
+      lines.push(
+        `  1. Re-ingerir los ${diag.docsWithoutChunks} documento(s) sin chunks`,
+      );
     }
-    lines.push(`  • Ejecutá \`test de conocimiento\` para validar que el RAG recupera correctamente`);
-    lines.push(`  • Usá \`probe: <pregunta>\` para ver qué chunks recupera el RAG ante una consulta`);
+    lines.push(
+      `  • Ejecutá \`test de conocimiento\` para validar que el RAG recupera correctamente`,
+    );
+    lines.push(
+      `  • Usá \`probe: <pregunta>\` para ver qué chunks recupera el RAG ante una consulta`,
+    );
 
     return lines.join('\n');
   }
@@ -185,14 +207,20 @@ export class KnowledgeTestService {
 
     let chunks = [] as any[];
     try {
-      const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
-      chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, limit);
+      const queryEmbedding =
+        await this.embeddingsService.generateEmbedding(query);
+      chunks = await this.documentRepo.searchChunksSemantic(
+        queryEmbedding,
+        limit,
+      );
     } catch (err: any) {
-      this.logger.warn(`[knowledge-test:probe] Fallback a búsqueda textual: ${err.message}`);
+      this.logger.warn(
+        `[knowledge-test:probe] Fallback a búsqueda textual: ${err.message}`,
+      );
       chunks = await this.documentRepo.searchChunks(query, limit);
     }
 
-    const uniqueDocs = new Set(chunks.map(c => c.documentId)).size;
+    const uniqueDocs = new Set(chunks.map((c) => c.documentId)).size;
 
     return {
       query,
@@ -220,17 +248,25 @@ export class KnowledgeTestService {
 
     if (result.totalFound === 0) {
       lines.push(`⚠️ No se recuperaron chunks para esta consulta.`);
-      lines.push(`Verificá que los documentos estén correctamente indexados con \`diagnóstico biblioteca\`.`);
+      lines.push(
+        `Verificá que los documentos estén correctamente indexados con \`diagnóstico biblioteca\`.`,
+      );
       return lines.join('\n');
     }
 
     for (const chunk of result.retrievedChunks) {
-      lines.push(`**#${chunk.rank} — "${chunk.documentTitle}"** [${chunk.category ?? 'sin cat'}]`);
-      lines.push(`   _${chunk.contentSnippet}${chunk.contentLength > 200 ? '...' : ''}_`);
+      lines.push(
+        `**#${chunk.rank} — "${chunk.documentTitle}"** [${chunk.category ?? 'sin cat'}]`,
+      );
+      lines.push(
+        `   _${chunk.contentSnippet}${chunk.contentLength > 200 ? '...' : ''}_`,
+      );
       lines.push(``);
     }
 
-    lines.push(`💡 Si el documento que esperabas NO aparece → el contenido puede no estar chunkeado o el vocabulario no coincide.`);
+    lines.push(
+      `💡 Si el documento que esperabas NO aparece → el contenido puede no estar chunkeado o el vocabulario no coincide.`,
+    );
     return lines.join('\n');
   }
 
@@ -242,8 +278,12 @@ export class KnowledgeTestService {
    *
    * Esto simula lo que hace el asistente cuando el usuario hace una pregunta real.
    */
-  async runKnowledgeValidation(numTests = 3): Promise<KnowledgeValidationResult> {
-    this.logger.log(`[knowledge-test] iniciando validación con ${numTests} prueba(s)`);
+  async runKnowledgeValidation(
+    numTests = 3,
+  ): Promise<KnowledgeValidationResult> {
+    this.logger.log(
+      `[knowledge-test] iniciando validación con ${numTests} prueba(s)`,
+    );
 
     const allDocs = await this.documentRepo.getMostRecentDocuments(20);
     // Solo docs que tienen chunks
@@ -263,7 +303,8 @@ export class KnowledgeTestService {
         failed: 0,
         passRate: 0,
         tests: [],
-        summary: '⚠️ No hay documentos con chunks para testear. Subí al menos un PDF.',
+        summary:
+          '⚠️ No hay documentos con chunks para testear. Subí al menos un PDF.',
       };
     }
 
@@ -279,7 +320,12 @@ export class KnowledgeTestService {
     }
 
     const passRate = Math.round((passed / actualTests) * 100);
-    const summary = this.buildValidationSummary(tests, passed, actualTests, passRate);
+    const summary = this.buildValidationSummary(
+      tests,
+      passed,
+      actualTests,
+      passRate,
+    );
 
     return {
       totalTests: actualTests,
@@ -293,7 +339,9 @@ export class KnowledgeTestService {
 
   /** Ejecuta un test individual: genera pregunta → busca con RAG → verifica resultado */
   private async runSingleTest(doc: any): Promise<RagProbeResult> {
-    this.logger.log(`[knowledge-test:single] testing "${doc.title}" (${doc.chunks.length} chunks)`);
+    this.logger.log(
+      `[knowledge-test:single] testing "${doc.title}" (${doc.chunks.length} chunks)`,
+    );
 
     // Tomar un chunk de la mitad del documento (evita índice/introducción)
     const midIndex = Math.floor(doc.chunks.length / 2);
@@ -301,17 +349,25 @@ export class KnowledgeTestService {
     const contentSnippet = testChunk.content.slice(0, 600);
 
     // Generar una pregunta de prueba específica usando el LLM
-    const testQuestion = await this.generateTestQuestion(doc.title, contentSnippet);
+    const testQuestion = await this.generateTestQuestion(
+      doc.title,
+      contentSnippet,
+    );
 
-    this.logger.log(`[knowledge-test:single] pregunta generada: "${testQuestion}"`);
+    this.logger.log(
+      `[knowledge-test:single] pregunta generada: "${testQuestion}"`,
+    );
 
     // Ejecutar búsqueda RAG
     let chunks = [] as any[];
     try {
-      const queryEmbedding = await this.embeddingsService.generateEmbedding(testQuestion);
+      const queryEmbedding =
+        await this.embeddingsService.generateEmbedding(testQuestion);
       chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 5);
     } catch (err: any) {
-      this.logger.warn(`[knowledge-test:single] Fallback a búsqueda textual: ${err.message}`);
+      this.logger.warn(
+        `[knowledge-test:single] Fallback a búsqueda textual: ${err.message}`,
+      );
       chunks = await this.documentRepo.searchChunks(testQuestion, 5);
     }
 
@@ -324,11 +380,11 @@ export class KnowledgeTestService {
     }));
 
     const topIsCorrect = retrievedChunks[0]?.isCorrectDoc ?? false;
-    const foundInTop5 = retrievedChunks.some(c => c.isCorrectDoc);
-    const recallAt5 = retrievedChunks.filter(c => c.isCorrectDoc).length;
+    const foundInTop5 = retrievedChunks.some((c) => c.isCorrectDoc);
+    const recallAt5 = retrievedChunks.filter((c) => c.isCorrectDoc).length;
 
     // Test pasa si el documento correcto aparece en top 3
-    const passed = retrievedChunks.slice(0, 3).some(c => c.isCorrectDoc);
+    const passed = retrievedChunks.slice(0, 3).some((c) => c.isCorrectDoc);
 
     return {
       query: testQuestion,
@@ -342,7 +398,10 @@ export class KnowledgeTestService {
   }
 
   /** Genera una pregunta de prueba específica a partir de un fragmento de texto */
-  private async generateTestQuestion(docTitle: string, content: string): Promise<string> {
+  private async generateTestQuestion(
+    docTitle: string,
+    content: string,
+  ): Promise<string> {
     const prompt = `Sos un generador de preguntas de prueba para sistemas RAG.
 Dado el siguiente fragmento de texto de un documento, generá UNA SOLA pregunta específica y concreta que:
 1. Solo pueda responderse leyendo ese texto
@@ -366,7 +425,9 @@ Respondé SOLO con la pregunta, sin introducción ni explicación.`;
         .trim()
         .replace(/^["']|["']$/g, '');
 
-      return question || `¿Qué información contiene el documento "${docTitle}"?`;
+      return (
+        question || `¿Qué información contiene el documento "${docTitle}"?`
+      );
     } catch {
       return `¿Qué información contiene el documento "${docTitle}"?`;
     }
@@ -386,21 +447,37 @@ Respondé SOLO con la pregunta, sin introducción ni explicación.`;
     ];
 
     for (const test of tests) {
-      const statusIcon = test.passed ? '✅' : test.correctDocFoundInTop5 ? '⚠️' : '❌';
+      const statusIcon = test.passed
+        ? '✅'
+        : test.correctDocFoundInTop5
+          ? '⚠️'
+          : '❌';
       lines.push(`${statusIcon} **"${test.expectedDoc}"**`);
-      lines.push(`   _Pregunta:_ "${test.query.slice(0, 100)}${test.query.length > 100 ? '...' : ''}"`);
+      lines.push(
+        `   _Pregunta:_ "${test.query.slice(0, 100)}${test.query.length > 100 ? '...' : ''}"`,
+      );
 
       if (test.passed) {
-        lines.push(`   ✅ El RAG recuperó el documento correcto en los primeros 3 resultados`);
+        lines.push(
+          `   ✅ El RAG recuperó el documento correcto en los primeros 3 resultados`,
+        );
         if (test.topDocIsCorrect) {
-          lines.push(`   🎯 Resultado #1 fue exactamente el documento esperado`);
+          lines.push(
+            `   🎯 Resultado #1 fue exactamente el documento esperado`,
+          );
         }
       } else if (test.correctDocFoundInTop5) {
-        lines.push(`   ⚠️ El doc correcto apareció en posición >3 de 5 (recall parcial)`);
+        lines.push(
+          `   ⚠️ El doc correcto apareció en posición >3 de 5 (recall parcial)`,
+        );
       } else {
-        lines.push(`   ❌ El RAG NO recuperó el documento correcto en los primeros 5 resultados`);
+        lines.push(
+          `   ❌ El RAG NO recuperó el documento correcto en los primeros 5 resultados`,
+        );
         if (test.retrievedChunks[0]) {
-          lines.push(`   📄 En su lugar recuperó: "${test.retrievedChunks[0].documentTitle}"`);
+          lines.push(
+            `   📄 En su lugar recuperó: "${test.retrievedChunks[0].documentTitle}"`,
+          );
         }
       }
 
@@ -411,22 +488,34 @@ Respondé SOLO con la pregunta, sin introducción ni explicación.`;
     // Recomendaciones
     lines.push(`💡 **Interpretación:**`);
     if (passRate === 100) {
-      lines.push(`  El RAG está funcionando perfectamente. Tus documentos están bien indexados.`);
+      lines.push(
+        `  El RAG está funcionando perfectamente. Tus documentos están bien indexados.`,
+      );
     } else if (passRate >= 70) {
-      lines.push(`  El RAG funciona bien en general. Algunos documentos pueden tener chunks cortos o vocabulario ambiguo.`);
+      lines.push(
+        `  El RAG funciona bien en general. Algunos documentos pueden tener chunks cortos o vocabulario ambiguo.`,
+      );
     } else if (passRate >= 40) {
       lines.push(`  El RAG tiene dificultades. Revisá:`);
-      lines.push(`  1. Que los documentos tengan suficiente texto (evitá PDFs de imágenes)`);
-      lines.push(`  2. Que los chunks no sean muy cortos (ver \`diagnóstico biblioteca\`)`);
+      lines.push(
+        `  1. Que los documentos tengan suficiente texto (evitá PDFs de imágenes)`,
+      );
+      lines.push(
+        `  2. Que los chunks no sean muy cortos (ver \`diagnóstico biblioteca\`)`,
+      );
     } else {
       lines.push(`  ⚠️ El RAG tiene problemas serios. Posibles causas:`);
       lines.push(`  - PDFs escaneados sin OCR (sin texto extraíble)`);
       lines.push(`  - Documentos con muy poco contenido`);
-      lines.push(`  - Error en la ingesta (re-subir con \`diagnóstico biblioteca\`)`);
+      lines.push(
+        `  - Error en la ingesta (re-subir con \`diagnóstico biblioteca\`)`,
+      );
     }
 
     lines.push(``);
-    lines.push(`🔍 Usá \`probe: <tu pregunta>\` para inspeccionar qué chunks recupera el RAG ante una consulta específica.`);
+    lines.push(
+      `🔍 Usá \`probe: <tu pregunta>\` para inspeccionar qué chunks recupera el RAG ante una consulta específica.`,
+    );
 
     return lines.join('\n');
   }

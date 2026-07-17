@@ -40,11 +40,15 @@ export class HierarchicalParserService {
    * Parsea un texto completo en capítulos, secciones y chunks.
    */
   parseDocument(title: string, content: string): ParsedChapter[] {
-    this.logger.log(`Iniciando parseo jerárquico para: "${title}" (${content.length} caracteres)`);
+    this.logger.log(
+      `Iniciando parseo jerárquico para: "${title}" (${content.length} caracteres)`,
+    );
 
     // 1. Detectar si el texto tiene formato markdown
     const lines = content.split('\n');
-    const hasMarkdownHeaders = lines.some(line => line.startsWith('# ') || line.startsWith('## '));
+    const hasMarkdownHeaders = lines.some(
+      (line) => line.startsWith('# ') || line.startsWith('## '),
+    );
 
     let chapters: ParsedChapter[] = [];
 
@@ -56,7 +60,9 @@ export class HierarchicalParserService {
 
     // 2. Si no se detectó ninguna estructura jerárquica clara, agrupar todo en un capítulo genérico
     if (chapters.length === 0) {
-      this.logger.log(`Sin estructura jerárquica clara detectada. Creando capítulo y sección única por defecto.`);
+      this.logger.log(
+        `Sin estructura jerárquica clara detectada. Creando capítulo y sección única por defecto.`,
+      );
       const genericChapter: ParsedChapter = {
         title: 'Introducción y Contenido General',
         order: 1,
@@ -64,19 +70,27 @@ export class HierarchicalParserService {
           {
             title: 'Contenido Completo',
             chunks: this.splitIntoChunks(content),
-          }
-        ]
+          },
+        ],
       };
       chapters.push(genericChapter);
     }
 
     // 3. Filtrar secciones de ruido (Zero-Trust/Eficiencia de ingesta)
-    const originalCount = chapters.reduce((acc, c) => acc + c.sections.length, 0);
+    const originalCount = chapters.reduce(
+      (acc, c) => acc + c.sections.length,
+      0,
+    );
     chapters = this.filterNoise(chapters);
-    const filteredCount = chapters.reduce((acc, c) => acc + c.sections.length, 0);
+    const filteredCount = chapters.reduce(
+      (acc, c) => acc + c.sections.length,
+      0,
+    );
 
     if (originalCount !== filteredCount) {
-      this.logger.log(`Filtro de ruido aplicado: se redujeron las secciones de ${originalCount} a ${filteredCount}`);
+      this.logger.log(
+        `Filtro de ruido aplicado: se redujeron las secciones de ${originalCount} a ${filteredCount}`,
+      );
     }
 
     return chapters;
@@ -112,7 +126,7 @@ export class HierarchicalParserService {
           sections: [],
         };
         chapters.push(currentChapter);
-        
+
         // Crear sección por defecto para el capítulo
         currentSection = {
           title: 'Inicio del Capítulo',
@@ -140,7 +154,7 @@ export class HierarchicalParserService {
         currentTextBuffer.push(line);
       }
     }
-    
+
     flushText();
     return chapters;
   }
@@ -154,8 +168,10 @@ export class HierarchicalParserService {
     let currentSection: ParsedSection | null = null;
     let currentTextBuffer: string[] = [];
 
-    const chapterRegex = /^(?:capitulo|chapter|parte|seccion|capítulo)\s+([ivxldcm\d]+)/i;
-    const sectionRegex = /^(?:seccion|subseccion|section|subchapter|subcapitulo)\s+([ivxldcm\d]+)/i;
+    const chapterRegex =
+      /^(?:capitulo|chapter|parte|seccion|capítulo)\s+([ivxldcm\d]+)/i;
+    const sectionRegex =
+      /^(?:seccion|subseccion|section|subchapter|subcapitulo)\s+([ivxldcm\d]+)/i;
 
     const flushText = () => {
       const text = currentTextBuffer.join('\n').trim();
@@ -215,9 +231,11 @@ export class HierarchicalParserService {
    */
   private filterNoise(chapters: ParsedChapter[]): ParsedChapter[] {
     return chapters
-      .map(chapter => {
-        const filteredSections = chapter.sections.filter(section => {
-          const isNoise = this.NOISE_SECTION_PATTERNS.some(pattern => pattern.test(section.title));
+      .map((chapter) => {
+        const filteredSections = chapter.sections.filter((section) => {
+          const isNoise = this.NOISE_SECTION_PATTERNS.some((pattern) =>
+            pattern.test(section.title),
+          );
           return !isNoise;
         });
         return {
@@ -225,7 +243,7 @@ export class HierarchicalParserService {
           sections: filteredSections,
         };
       })
-      .filter(chapter => chapter.sections.length > 0);
+      .filter((chapter) => chapter.sections.length > 0);
   }
 
   /**
@@ -244,7 +262,7 @@ export class HierarchicalParserService {
       if (para.length <= this.CHUNK_SIZE) {
         chunks.push({
           content: para,
-          metadata: { chunkIndex: chunkIndex++ }
+          metadata: { chunkIndex: chunkIndex++ },
         });
       } else {
         let start = 0;
@@ -252,7 +270,7 @@ export class HierarchicalParserService {
           const end = Math.min(start + this.CHUNK_SIZE, para.length);
           chunks.push({
             content: para.slice(start, end).trim(),
-            metadata: { chunkIndex: chunkIndex++ }
+            metadata: { chunkIndex: chunkIndex++ },
           });
           start += this.CHUNK_SIZE - this.CHUNK_OVERLAP;
         }

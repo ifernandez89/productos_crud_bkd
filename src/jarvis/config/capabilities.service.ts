@@ -14,7 +14,11 @@ export interface AssistantCapabilities {
 @Injectable()
 export class CapabilitiesService {
   private readonly logger = new Logger(CapabilitiesService.name);
-  private readonly configPath = path.join(process.cwd(), 'config', 'capabilities.json');
+  private readonly configPath = path.join(
+    process.cwd(),
+    'config',
+    'capabilities.json',
+  );
   private readonly defaultCapabilities: AssistantCapabilities = {
     voice: true,
     memory: true,
@@ -26,7 +30,9 @@ export class CapabilitiesService {
   getCapabilities(): AssistantCapabilities {
     try {
       if (!existsSync(this.configPath)) {
-        this.logger.warn(`No se encontró ${this.configPath}, usando capacidades por defecto.`);
+        this.logger.warn(
+          `No se encontró ${this.configPath}, usando capacidades por defecto.`,
+        );
         return this.defaultCapabilities;
       }
       const raw = readFileSync(this.configPath, 'utf-8');

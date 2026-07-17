@@ -23,7 +23,7 @@ export interface EvolutionReport {
   lastMentioned: string;
   totalMentions: number;
   evolution: EvolutionEntry[];
-  narrative: string;  // narración generada por el LLM
+  narrative: string; // narración generada por el LLM
 }
 
 /**
@@ -71,15 +71,18 @@ export class KnowledgeEvolutionService {
     if (!this.isSignificantExchange(userMessage, assistantReply)) return;
 
     try {
-      const snapshot = await this.extractTopicSnapshot(userMessage, assistantReply);
+      const snapshot = await this.extractTopicSnapshot(
+        userMessage,
+        assistantReply,
+      );
       if (!snapshot) return;
 
       await this.prisma.topicSnapshot.create({
         data: {
-          topic:      snapshot.topic,
+          topic: snapshot.topic,
           conclusion: snapshot.conclusion,
-          tags:       JSON.stringify(snapshot.tags),
-          sessionId:  sessionId,
+          tags: JSON.stringify(snapshot.tags),
+          sessionId: sessionId,
         },
       });
 
@@ -98,15 +101,18 @@ export class KnowledgeEvolutionService {
    * Reconstruye la historia completa de cómo evolucionó un tema.
    * Ejemplo: getEvolution("Qwen") → narración de cómo cambió la opinión sobre Qwen
    */
-  async getEvolution(topic: string, limitDays = 365): Promise<EvolutionReport | null> {
+  async getEvolution(
+    topic: string,
+    limitDays = 365,
+  ): Promise<EvolutionReport | null> {
     const since = new Date();
     since.setDate(since.getDate() - limitDays);
 
     const snapshots = await this.prisma.topicSnapshot.findMany({
       where: {
         OR: [
-          { topic:      { contains: topic } },
-          { tags:       { contains: topic.toLowerCase() } },
+          { topic: { contains: topic } },
+          { tags: { contains: topic.toLowerCase() } },
           { conclusion: { contains: topic } },
         ],
         createdAt: { gte: since },
@@ -115,14 +121,20 @@ export class KnowledgeEvolutionService {
     });
 
     if (snapshots.length === 0) {
-      this.logger.log(`[evolution] sin snapshots para "${topic}" en los últimos ${limitDays} días`);
+      this.logger.log(
+        `[evolution] sin snapshots para "${topic}" en los últimos ${limitDays} días`,
+      );
       return null;
     }
 
     const evolution: EvolutionEntry[] = snapshots.map((s) => ({
-      date:    s.createdAt.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }),
+      date: s.createdAt.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
       summary: s.conclusion,
-      tags:    this.parseTags(s.tags),
+      tags: this.parseTags(s.tags),
     }));
 
     // Generar narración con el LLM
@@ -131,8 +143,8 @@ export class KnowledgeEvolutionService {
     return {
       topic,
       firstMentioned: evolution[0].date,
-      lastMentioned:  evolution[evolution.length - 1].date,
-      totalMentions:  snapshots.length,
+      lastMentioned: evolution[evolution.length - 1].date,
+      totalMentions: snapshots.length,
       evolution,
       narrative,
     };
@@ -141,17 +153,19 @@ export class KnowledgeEvolutionService {
   /**
    * Lista todos los temas registrados con su frecuencia.
    */
-  async listTopics(): Promise<Array<{ topic: string; mentions: number; lastSeen: string }>> {
+  async listTopics(): Promise<
+    Array<{ topic: string; mentions: number; lastSeen: string }>
+  > {
     const grouped = await this.prisma.topicSnapshot.groupBy({
       by: ['topic'],
-      _count:  { id: true },
-      _max:    { createdAt: true },
+      _count: { id: true },
+      _max: { createdAt: true },
       orderBy: { _count: { id: 'desc' } },
-      take:    50,
+      take: 50,
     });
 
     return grouped.map((g) => ({
-      topic:    g.topic,
+      topic: g.topic,
       mentions: g._count.id,
       lastSeen: (g._max.createdAt ?? new Date()).toLocaleDateString('es-AR'),
     }));
@@ -172,9 +186,13 @@ export class KnowledgeEvolutionService {
    * Determina si un intercambio vale la pena guardar.
    * Evita guardar saludos, preguntas triviales o respuestas muy cortas.
    */
-  private isSignificantExchange(userMessage: string, assistantReply: string): boolean {
+  private isSignificantExchange(
+    userMessage: string,
+    assistantReply: string,
+  ): boolean {
     if (assistantReply.split(/\s+/).length < 15) return false;
-    const trivial = /^(hola|gracias|ok|dale|si|no|perfecto|buenas|chau|ciao|de nada)[!?.]*$/i;
+    const trivial =
+      /^(hola|gracias|ok|dale|si|no|perfecto|buenas|chau|ciao|de nada)[!?.]*$/i;
     if (trivial.test(userMessage.trim())) return false;
     return true;
   }
@@ -217,10 +235,12 @@ JarBees: ${assistantReply.slice(0, 500)}`;
       if (!parsed.topic) return null;
 
       return {
-        topic:      parsed.topic,
-        date:       new Date(),
+        topic: parsed.topic,
+        date: new Date(),
         conclusion: parsed.conclusion || assistantReply.slice(0, 200),
-        tags:       Array.isArray(parsed.tags) ? parsed.tags.map((t: string) => t.toLowerCase()) : [],
+        tags: Array.isArray(parsed.tags)
+          ? parsed.tags.map((t: string) => t.toLowerCase())
+          : [],
       };
     } catch {
       return null;

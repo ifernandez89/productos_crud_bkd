@@ -32,24 +32,24 @@ export const winstonConfig: winston.LoggerOptions = {
 
     // ── Archivo combinado (info + debug) — rotación diaria ─────────────────
     new (winston.transports as any).DailyRotateFile({
-      filename:      'logs/app-%DATE%.log',
-      datePattern:   'YYYY-MM-DD',
+      filename: 'logs/app-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
-      maxSize:       '20m',
-      maxFiles:      '14d',      // conserva 14 días
-      level:         'debug',
-      format:        fileFormat,
+      maxSize: '20m',
+      maxFiles: '14d', // conserva 14 días
+      level: 'debug',
+      format: fileFormat,
     }),
 
     // ── Archivo de errores exclusivo ───────────────────────────────────────
     new (winston.transports as any).DailyRotateFile({
-      filename:      'logs/error-%DATE%.log',
-      datePattern:   'YYYY-MM-DD',
+      filename: 'logs/error-%DATE%.log',
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
-      maxSize:       '10m',
-      maxFiles:      '30d',      // errores se conservan 30 días
-      level:         'error',
-      format:        fileFormat,
+      maxSize: '10m',
+      maxFiles: '30d', // errores se conservan 30 días
+      level: 'error',
+      format: fileFormat,
     }),
   ],
 };

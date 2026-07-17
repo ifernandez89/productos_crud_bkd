@@ -9,10 +9,17 @@ export class GoogleAuthService {
 
   constructor(private prisma: PrismaService) {
     const clientId = process.env.GOOGLE_CLIENT_ID || 'PENDING_CLIENT_ID';
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || 'PENDING_CLIENT_SECRET';
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:4000/api/jarbees/google/callback';
+    const clientSecret =
+      process.env.GOOGLE_CLIENT_SECRET || 'PENDING_CLIENT_SECRET';
+    const redirectUri =
+      process.env.GOOGLE_REDIRECT_URI ||
+      'http://localhost:4000/api/jarbees/google/callback';
 
-    this.oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+    this.oauth2Client = new google.auth.OAuth2(
+      clientId,
+      clientSecret,
+      redirectUri,
+    );
   }
 
   /**
@@ -81,9 +88,13 @@ export class GoogleAuthService {
         },
       });
 
-      this.logger.log(`[Google Auth] Tokens actualizados exitosamente en la BD para el usuario ${userProfile.id}`);
+      this.logger.log(
+        `[Google Auth] Tokens actualizados exitosamente en la BD para el usuario ${userProfile.id}`,
+      );
     } catch (error) {
-      this.logger.error(`Error manejando el callback de Google: ${error.message}`);
+      this.logger.error(
+        `Error manejando el callback de Google: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -113,13 +124,14 @@ export class GoogleAuthService {
     });
 
     // Validar y refrescar token si está expirado o expira en menos de 5 min
-    const isExpired = creds.expiryDate && (Date.now() + 5 * 60 * 1000) > Number(creds.expiryDate);
-    
+    const isExpired =
+      creds.expiryDate && Date.now() + 5 * 60 * 1000 > Number(creds.expiryDate);
+
     if (isExpired && creds.refreshToken) {
       this.logger.log(`[Google Auth] Access token expirado, refrescando...`);
       try {
         const { credentials } = await this.oauth2Client.refreshAccessToken();
-        
+
         await this.prisma.userCredential.update({
           where: { id: creds.id },
           data: {
@@ -127,10 +139,12 @@ export class GoogleAuthService {
             expiryDate: credentials.expiry_date,
           },
         });
-        
+
         this.logger.log(`[Google Auth] Access token refrescado.`);
       } catch (err) {
-        this.logger.error(`[Google Auth] Error al refrescar token: ${err.message}`);
+        this.logger.error(
+          `[Google Auth] Error al refrescar token: ${err.message}`,
+        );
         return null;
       }
     }

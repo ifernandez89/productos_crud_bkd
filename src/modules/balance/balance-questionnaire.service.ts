@@ -1,4 +1,9 @@
-import { Injectable, Logger, Inject, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ILLMProvider } from '../../jarvis/llm/llm-provider.interface';
 import { OllamaProvider } from '../../jarvis/llm/ollama.provider';
@@ -18,7 +23,8 @@ export class BalanceQuestionnaireService {
     private readonly prisma: PrismaService,
     private readonly astrologyTool: AstrologyTool,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
-    @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
+    @Inject(OpenRouterProvider)
+    private readonly openRouterProvider: ILLMProvider,
   ) {}
 
   /**
@@ -37,7 +43,9 @@ export class BalanceQuestionnaireService {
    * También calcula y guarda el contexto astrológico del momento.
    */
   async generateAndSetup(sessionId: number): Promise<any[]> {
-    this.logger.log(`[balance-questionnaire] Iniciando entrevista adaptativa para sesión ${sessionId}`);
+    this.logger.log(
+      `[balance-questionnaire] Iniciando entrevista adaptativa para sesión ${sessionId}`,
+    );
 
     // 1. Obtener la cantidad de sesiones de balance ya completadas
     const completedCount = await this.prisma.balanceSession.count({
@@ -78,7 +86,8 @@ export class BalanceQuestionnaireService {
     });
 
     // 4. Crear la primera pregunta (Capa 1: Estado General)
-    const firstQuestionText = 'Si tuvieras que describir estas últimas dos semanas con una sola palabra, ¿cuál sería? ¿Por qué?';
+    const firstQuestionText =
+      'Si tuvieras que describir estas últimas dos semanas con una sola palabra, ¿cuál sería? ¿Por qué?';
     const firstAnswer = await this.prisma.balanceAnswer.create({
       data: {
         sessionId,
@@ -104,21 +113,30 @@ export class BalanceQuestionnaireService {
   /**
    * Genera la siguiente pregunta (adaptativa) basada en el historial de la conversación y el ciclo actual.
    */
-  async generateNextQuestion(sessionId: number, allAnswers: any[]): Promise<any> {
+  async generateNextQuestion(
+    sessionId: number,
+    allAnswers: any[],
+  ): Promise<any> {
     const session = await this.prisma.balanceSession.findUnique({
       where: { id: sessionId },
     });
     if (!session) {
-      throw new BadRequestException(`No se encontró la sesión de balance con ID ${sessionId}`);
+      throw new BadRequestException(
+        `No se encontró la sesión de balance con ID ${sessionId}`,
+      );
     }
 
     const astrologicalContext = (session.astrologicalContext as any) || {};
     const cycle = astrologicalContext.cycle || 1;
-    const cycleName = astrologicalContext.cycleName || '¿Dónde está yendo tu energía?';
+    const cycleName =
+      astrologicalContext.cycleName || '¿Dónde está yendo tu energía?';
 
     const formattedHistory = allAnswers
       .map((a, index) => {
-        const dim = a.metadata && typeof a.metadata === 'object' ? (a.metadata as any).dimension : 'desconocida';
+        const dim =
+          a.metadata && typeof a.metadata === 'object'
+            ? (a.metadata as any).dimension
+            : 'desconocida';
         return `Pregunta ${index + 1} (Dimensión: ${dim}): ${a.question}\nRespuesta ${index + 1}: ${a.answer || '(Sin respuesta)'}`;
       })
       .join('\n\n');
@@ -178,7 +196,8 @@ Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato e
         messages: [
           {
             role: 'system',
-            content: 'Sos un asistente experto en psicología transpersonal, coaching ontológico y dinámicas humanas. Devolvés únicamente JSON estructurado.',
+            content:
+              'Sos un asistente experto en psicología transpersonal, coaching ontológico y dinámicas humanas. Devolvés únicamente JSON estructurado.',
           },
           {
             role: 'user',
@@ -198,10 +217,20 @@ Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato e
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Error generando pregunta adaptativa: ${msg}`);
       // Fallback si falla el LLM: seleccionar una dimensión al azar
-      const dimensions = ['expansion', 'disciplina', 'armonia', 'perseverancia', 'analisis', 'integracion', 'manifestacion'];
-      const randomDim = dimensions[Math.floor(Math.random() * dimensions.length)];
+      const dimensions = [
+        'expansion',
+        'disciplina',
+        'armonia',
+        'perseverancia',
+        'analisis',
+        'integracion',
+        'manifestacion',
+      ];
+      const randomDim =
+        dimensions[Math.floor(Math.random() * dimensions.length)];
       return {
-        question: '¿Cómo sentís tu nivel de energía hoy y qué creés que podrías hacer para equilibrarlo?',
+        question:
+          '¿Cómo sentís tu nivel de energía hoy y qué creés que podrías hacer para equilibrarlo?',
         dimension: randomDim,
         reasoning: 'Fallback debido a error en la llamada al LLM',
       };
@@ -213,7 +242,10 @@ Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato e
    */
   private parseNextQuestion(rawContent: string): any {
     try {
-      let clean = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+      let clean = rawContent
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
       const startIndex = clean.indexOf('{');
       const endIndex = clean.lastIndexOf('}');
       if (startIndex !== -1 && endIndex !== -1) {
@@ -226,4 +258,3 @@ Devolvé la respuesta ÚNICAMENTE como un objeto JSON con el siguiente formato e
     }
   }
 }
-

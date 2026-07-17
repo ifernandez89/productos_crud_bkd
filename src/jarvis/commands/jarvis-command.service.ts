@@ -41,30 +41,53 @@ export class JarvisCommandService {
     const hasSessionId = Boolean(sessionId);
 
     // 1. Local JSON Knowledge list lookup
-    const knowledgeListReply = await this.jarvisKnowledge.handleListCommand(userMessage);
+    const knowledgeListReply =
+      await this.jarvisKnowledge.handleListCommand(userMessage);
     if (knowledgeListReply) {
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: knowledgeListReply, metadata: { source: 'knowledge_list' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: knowledgeListReply, toolsUsed: ['knowledge_list'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: knowledgeListReply,
+        metadata: { source: 'knowledge_list' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: knowledgeListReply,
+        toolsUsed: ['knowledge_list'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: knowledgeListReply };
     }
 
     // 2. CONFIGURACIÓN DE MODO RAG / ONLINE
-    const modeChangeMatch = trimmedMessage.match(/^(?:configurar\s+)?modo\s+(offline|localfirst|local[-_\s]first|hybrid|hibrido|webfirst|web[-_\s]first)$/i);
+    const modeChangeMatch = trimmedMessage.match(
+      /^(?:configurar\s+)?modo\s+(offline|localfirst|local[-_\s]first|hybrid|hibrido|webfirst|web[-_\s]first)$/i,
+    );
     if (modeChangeMatch) {
       const profile = await this.userProfileRepo.getOrCreate();
       let preferences: Record<string, any> = {};
       if (profile.preferences) {
         try {
-          preferences = typeof profile.preferences === 'string'
-            ? JSON.parse(profile.preferences)
-            : (profile.preferences as any);
+          preferences =
+            typeof profile.preferences === 'string'
+              ? JSON.parse(profile.preferences)
+              : (profile.preferences as any);
         } catch (err) {
           // ignore
         }
       }
 
-      let targetMode: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST' = 'LOCAL_FIRST';
+      let targetMode: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST' =
+        'LOCAL_FIRST';
       const m = modeChangeMatch[1].toLowerCase().replace(/[-_\s]/g, '');
       if (m === 'offline') targetMode = 'OFFLINE';
       else if (m === 'localfirst') targetMode = 'LOCAL_FIRST';
@@ -72,109 +95,306 @@ export class JarvisCommandService {
       else if (m === 'webfirst') targetMode = 'WEB_FIRST';
 
       const updatedPrefs = { ...preferences, ragMode: targetMode };
-      await this.userProfileRepo.update(profile.id, { preferences: updatedPrefs });
+      await this.userProfileRepo.update(profile.id, {
+        preferences: updatedPrefs,
+      });
 
       const explanation: Record<string, string> = {
-        OFFLINE: '🔒 **Modo OFFLINE activado**: No consultaré internet bajo ninguna circunstancia. Solo usaré los documentos indexados en la biblioteca y mis conocimientos locales.',
-        LOCAL_FIRST: '🏠 **Modo LOCAL FIRST activado (Recomendado)**: Buscaré primero en tus documentos (RAG) o en mi conocimiento base. Solo iré a internet como último recurso si no encuentro la información.',
-        HYBRID: '⚖️ **Modo HÍBRIDO activado**: Usaré herramientas web automáticas para temas dinámicos (clima, noticias, cotizaciones), y para todo lo demás priorizaré tus documentos y conocimiento local.',
-        WEB_FIRST: '🌐 **Modo WEB FIRST activado**: Buscaré primero en internet para enriquecer todas las respuestas, excepto saludos y comandos simples.',
+        OFFLINE:
+          '🔒 **Modo OFFLINE activado**: No consultaré internet bajo ninguna circunstancia. Solo usaré los documentos indexados en la biblioteca y mis conocimientos locales.',
+        LOCAL_FIRST:
+          '🏠 **Modo LOCAL FIRST activado (Recomendado)**: Buscaré primero en tus documentos (RAG) o en mi conocimiento base. Solo iré a internet como último recurso si no encuentro la información.',
+        HYBRID:
+          '⚖️ **Modo HÍBRIDO activado**: Usaré herramientas web automáticas para temas dinámicos (clima, noticias, cotizaciones), y para todo lo demás priorizaré tus documentos y conocimiento local.',
+        WEB_FIRST:
+          '🌐 **Modo WEB FIRST activado**: Buscaré primero en internet para enriquecer todas las respuestas, excepto saludos y comandos simples.',
       };
 
       const reply = explanation[targetMode];
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: reply, metadata: { source: 'mode_change', mode: targetMode } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: reply, toolsUsed: ['mode_change'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: reply,
+        metadata: { source: 'mode_change', mode: targetMode },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: reply,
+        toolsUsed: ['mode_change'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: reply };
     }
 
     // 3. HELP SHORTCUT — "h", "H", "help", "ayuda" devuelve la guía de comandos
     if (/^(h|help|ayuda)$/i.test(trimmedMessage)) {
       const helpMsg = this.buildHelpMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: helpMsg, metadata: { source: 'help' } });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: helpMsg,
+        metadata: { source: 'help' },
+      });
       return { handled: true, response: helpMsg };
     }
 
     // 4. BIBLIOTECA — lista de documentos guardados
-    if (/^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs))$/i.test(trimmedMessage)) {
+    if (
+      /^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs))$/i.test(
+        trimmedMessage,
+      )
+    ) {
       const libraryMsg = await this.buildLibraryMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: libraryMsg, metadata: { source: 'library_list' } });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: libraryMsg,
+        metadata: { source: 'library_list' },
+      });
       return { handled: true, response: libraryMsg };
     }
 
     // 5. CATEGORÍAS — lista de categorías con conteo
-    if (/^(mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay))$/i.test(trimmedMessage)) {
+    if (
+      /^(mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay))$/i.test(
+        trimmedMessage,
+      )
+    ) {
       const catMsg = await this.buildCategoriesMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: catMsg, metadata: { source: 'library_categories' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: catMsg, toolsUsed: ['library_categories'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: catMsg,
+        metadata: { source: 'library_categories' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: catMsg,
+        toolsUsed: ['library_categories'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: catMsg };
     }
 
     // 5b. AUTORES — lista de autores de la biblioteca
-    if (/^(mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(trimmedMessage)) {
+    if (
+      /^(mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(
+        trimmedMessage,
+      )
+    ) {
       const authorsMsg = await this.buildAuthorsMessage();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: authorsMsg, metadata: { source: 'library_authors' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: authorsMsg, toolsUsed: ['library_authors'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: authorsMsg,
+        metadata: { source: 'library_authors' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: authorsMsg,
+        toolsUsed: ['library_authors'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: authorsMsg };
     }
 
     // 6. LIBROS POR AUTOR
     const authorBooksRequest = this.extractAuthorBooksRequest(userMessage);
     if (authorBooksRequest) {
-      const authorBooksMsg = await this.buildAuthorBooksMessage(authorBooksRequest.author);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: authorBooksMsg, metadata: { source: 'library_author_books', author: authorBooksRequest.author } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: authorBooksMsg, toolsUsed: ['library_author_books'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      const authorBooksMsg = await this.buildAuthorBooksMessage(
+        authorBooksRequest.author,
+      );
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: authorBooksMsg,
+        metadata: {
+          source: 'library_author_books',
+          author: authorBooksRequest.author,
+        },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: authorBooksMsg,
+        toolsUsed: ['library_author_books'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: authorBooksMsg };
     }
 
     // 7. RESUMEN DE DOCUMENTO INDIVIDUAL
-    const docSummaryRequest = await this.extractDocumentSummaryRequest(userMessage);
+    const docSummaryRequest =
+      await this.extractDocumentSummaryRequest(userMessage);
     if (docSummaryRequest) {
       const summaryMsg = await this.buildDocumentSummaryResponse(
         docSummaryRequest.title,
         docSummaryRequest.maxItems,
       );
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: summaryMsg, metadata: { source: 'document_summary' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: summaryMsg, toolsUsed: ['document_summary'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: summaryMsg,
+        metadata: { source: 'document_summary' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: summaryMsg,
+        toolsUsed: ['document_summary'],
+        modelUsed: 'ollama',
+        provider: 'ollama',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: summaryMsg };
     }
 
     // 7. COMPARACIÓN ENTRE DOS DOCUMENTOS
     const compareRequest = this.extractCompareRequest(userMessage);
     if (compareRequest) {
-      const compareMsg = await this.buildCompareResponse(compareRequest.titleA, compareRequest.titleB);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: compareMsg, metadata: { source: 'document_compare' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: compareMsg, toolsUsed: ['document_compare'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      const compareMsg = await this.buildCompareResponse(
+        compareRequest.titleA,
+        compareRequest.titleB,
+      );
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: compareMsg,
+        metadata: { source: 'document_compare' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: compareMsg,
+        toolsUsed: ['document_compare'],
+        modelUsed: 'ollama',
+        provider: 'ollama',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: compareMsg };
     }
 
     // 8. DIAGNÓSTICO BIBLIOTECA RAG
-    if (/^(diagn[oó]stico( de( la)?)? biblioteca|estado del conocimiento|cobertura rag|stats biblioteca|diagn[oó]stico rag)$/i.test(trimmedMessage)) {
+    if (
+      /^(diagn[oó]stico( de( la)?)? biblioteca|estado del conocimiento|cobertura rag|stats biblioteca|diagn[oó]stico rag)$/i.test(
+        trimmedMessage,
+      )
+    ) {
       const diag = await this.knowledgeTestService.getLibraryDiagnostic();
       const diagMsg = this.knowledgeTestService.formatDiagnostic(diag);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: diagMsg, metadata: { source: 'library_diagnostic' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: diagMsg, toolsUsed: ['library_diagnostic'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: diagMsg,
+        metadata: { source: 'library_diagnostic' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: diagMsg,
+        toolsUsed: ['library_diagnostic'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: diagMsg };
     }
 
     // 9. TEST DE CONOCIMIENTO RAG
-    const knowledgeTestMatch = trimmedMessage.match(/^(test de conocimiento|validar conocimiento|test rag|validar rag|probar rag)(?:\s+(\d+))?$/i);
+    const knowledgeTestMatch = trimmedMessage.match(
+      /^(test de conocimiento|validar conocimiento|test rag|validar rag|probar rag)(?:\s+(\d+))?$/i,
+    );
     if (knowledgeTestMatch) {
-      const numTests = knowledgeTestMatch[2] ? parseInt(knowledgeTestMatch[2], 10) : 3;
+      const numTests = knowledgeTestMatch[2]
+        ? parseInt(knowledgeTestMatch[2], 10)
+        : 3;
       const testResult = await this.knowledgeTestService.runKnowledgeValidation(
         Math.min(Math.max(numTests, 1), 5),
       );
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: testResult.summary, metadata: { source: 'knowledge_test', passRate: testResult.passRate } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: testResult.summary, toolsUsed: ['knowledge_test'], modelUsed: 'ollama', provider: 'ollama', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: testResult.summary,
+        metadata: { source: 'knowledge_test', passRate: testResult.passRate },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: testResult.summary,
+        toolsUsed: ['knowledge_test'],
+        modelUsed: 'ollama',
+        provider: 'ollama',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: testResult.summary };
     }
 
@@ -184,17 +404,48 @@ export class JarvisCommandService {
       const probeQuery = probeMatch[1].trim();
       const probeResult = await this.knowledgeTestService.probeRag(probeQuery);
       const probeMsg = this.knowledgeTestService.formatProbeResult(probeResult);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: probeMsg, metadata: { source: 'rag_probe', query: probeQuery } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: probeMsg, toolsUsed: ['rag_probe'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: probeMsg,
+        metadata: { source: 'rag_probe', query: probeQuery },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: probeMsg,
+        toolsUsed: ['rag_probe'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: probeMsg };
     }
 
     // 11. DEDUPLICAR DOCUMENTOS
-    if (/^(elimina(r)? (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|borr(a|ar) (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|deduplicar|limpiar (la )?biblioteca)$/i.test(trimmedMessage)) {
+    if (
+      /^(elimina(r)? (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|borr(a|ar) (los )?(pdf|documentos?|libros?)? ?(repetidos?|duplicados?)|deduplicar|limpiar (la )?biblioteca)$/i.test(
+        trimmedMessage,
+      )
+    ) {
       const dedupMsg = await this.deduplicateDocuments();
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: dedupMsg, metadata: { source: 'library_dedup' } });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: dedupMsg,
+        metadata: { source: 'library_dedup' },
+      });
       return { handled: true, response: dedupMsg };
     }
 
@@ -202,26 +453,50 @@ export class JarvisCommandService {
     const deleteDocRequest = this.extractDeleteDocumentRequest(userMessage);
     if (deleteDocRequest) {
       const deleteMsg = await this.deleteDocumentByTitle(deleteDocRequest);
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: deleteMsg, metadata: { source: 'library_delete' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: deleteMsg, toolsUsed: ['library_delete'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: true });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: deleteMsg,
+        metadata: { source: 'library_delete' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: deleteMsg,
+        toolsUsed: ['library_delete'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: deleteMsg };
     }
 
     // 13. REPEAT / VOICE SHORTCUT
     if (this.isRepeatRequest(userMessage)) {
       if (!hasSessionId) {
-        const reply = 'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
+        const reply =
+          'Para repetir la última respuesta necesito que mantengas el mismo sessionId de la conversación anterior.';
         return { handled: true, response: reply };
       }
 
-      const lastAnswer = await this.conversationRepo.getLastAssistantMessage(sessionId);
+      const lastAnswer =
+        await this.conversationRepo.getLastAssistantMessage(sessionId);
       if (lastAnswer) {
         const repeatedContent = this.isVoiceRequest(userMessage)
           ? `No puedo generar audio en este canal, pero te repito la respuesta en texto: ${lastAnswer.content}`
           : lastAnswer.content;
 
-        await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'user',
+          content: userMessage,
+        });
         await this.conversationRepo.create({
           sessionId,
           role: 'assistant',
@@ -241,8 +516,13 @@ export class JarvisCommandService {
         return { handled: true, response: repeatedContent };
       }
 
-      await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
-      const reply = 'No encuentro una respuesta anterior para repetir dentro de esta conversación. Hacé otra pregunta primero y luego intentá repetirla.';
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      const reply =
+        'No encuentro una respuesta anterior para repetir dentro de esta conversación. Hacé otra pregunta primero y luego intentá repetirla.';
       return { handled: true, response: reply };
     }
 
@@ -256,7 +536,9 @@ export class JarvisCommandService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
-    return /\b(repiti[rt]|repeti[rt]|repite|repitelo|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat|say it again)\b/.test(normalized);
+    return /\b(repiti[rt]|repeti[rt]|repite|repitelo|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat|say it again)\b/.test(
+      normalized,
+    );
   }
 
   private isVoiceRequest(message: string): boolean {
@@ -265,10 +547,14 @@ export class JarvisCommandService {
   }
 
   private extractDeleteDocumentRequest(message: string): string | null {
-    const pattern = /(?:elimina(?:r)?|borra(?:r)?|borrar|remover|quitar)\s+(?:el\s+)?(?:documento|pdf|libro|archivo)\s+['"]?(.+?)['"]?$/i;
+    const pattern =
+      /(?:elimina(?:r)?|borra(?:r)?|borrar|remover|quitar)\s+(?:el\s+)?(?:documento|pdf|libro|archivo)\s+['"]?(.+?)['"]?$/i;
     const match = message.trim().match(pattern);
     if (match && match[1]) {
-      return match[1].trim().replace(/['".]+$/, '').trim();
+      return match[1]
+        .trim()
+        .replace(/['".]+$/, '')
+        .trim();
     }
     return null;
   }
@@ -280,7 +566,7 @@ export class JarvisCommandService {
     }
 
     const exact = candidates.find(
-      d => d.title.toLowerCase().trim() === title.toLowerCase().trim(),
+      (d) => d.title.toLowerCase().trim() === title.toLowerCase().trim(),
     );
     const target = exact ?? candidates[0];
     await this.documentRepo.deleteDocument(target.id);
@@ -302,7 +588,9 @@ export class JarvisCommandService {
       ``,
     ];
     for (const g of groups) {
-      lines.push(`  • "${g.title}" — se eliminaron ${g.duplicates.length} copia${g.duplicates.length !== 1 ? 's' : ''} (conservado id:${g.keeper})`);
+      lines.push(
+        `  • "${g.title}" — se eliminaron ${g.duplicates.length} copia${g.duplicates.length !== 1 ? 's' : ''} (conservado id:${g.keeper})`,
+      );
     }
     lines.push(``, `✅ Biblioteca limpia.`);
     return lines.join('\n');
@@ -328,15 +616,23 @@ export class JarvisCommandService {
           ``,
         ];
 
-        for (const [name, count] of Array.from(categoryMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
-          lines.push(`  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+        for (const [name, count] of Array.from(categoryMap.entries()).sort(
+          ([a], [b]) => a.localeCompare(b),
+        )) {
+          lines.push(
+            `  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`,
+          );
           lines.push(`     → \`resumen sobre ${name}\``);
         }
 
         lines.push(``);
         lines.push(`💡 Podés pedir:`);
-        lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
-        lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
+        lines.push(
+          `  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`,
+        );
+        lines.push(
+          `  \`mis documentos\`              —  ver todos los títulos organizados`,
+        );
 
         return lines.join('\n');
       }
@@ -355,14 +651,20 @@ export class JarvisCommandService {
     for (const cat of stats.byCategory) {
       const name = cat.category ?? 'sin categoría';
       const count = cat._count.id;
-      lines.push(`  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+      lines.push(
+        `  📂 **${name}** — ${count} documento${count !== 1 ? 's' : ''}`,
+      );
       lines.push(`     → \`resumen sobre ${name}\``);
     }
 
     lines.push(``);
     lines.push(`💡 Podés pedir:`);
-    lines.push(`  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`);
-    lines.push(`  \`mis documentos\`              —  ver todos los títulos organizados`);
+    lines.push(
+      `  \`resumen sobre <categoría>\`  —  resumen de todos los docs de esa categoría`,
+    );
+    lines.push(
+      `  \`mis documentos\`              —  ver todos los títulos organizados`,
+    );
 
     return lines.join('\n');
   }
@@ -385,14 +687,22 @@ export class JarvisCommandService {
           ``,
         ];
 
-        for (const [name, count] of Array.from(authorMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
-          lines.push(`  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+        for (const [name, count] of Array.from(authorMap.entries()).sort(
+          ([a], [b]) => a.localeCompare(b),
+        )) {
+          lines.push(
+            `  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`,
+          );
         }
 
         lines.push(``);
         lines.push(`💡 Podés pedir:`);
-        lines.push(`  \`resumen de '<autor>'\`  —  ver una vista general de los documentos de ese autor`);
-        lines.push(`  \`mis documentos\`       —  ver todos los títulos organizados`);
+        lines.push(
+          `  \`resumen de '<autor>'\`  —  ver una vista general de los documentos de ese autor`,
+        );
+        lines.push(
+          `  \`mis documentos\`       —  ver todos los títulos organizados`,
+        );
 
         return lines.join('\n');
       }
@@ -405,7 +715,9 @@ export class JarvisCommandService {
 
     const authorMap = new Map<string, number>();
     for (const doc of docs) {
-      const author = ((doc as any).author ?? (doc as any).autor ?? '').toString().trim();
+      const author = ((doc as any).author ?? (doc as any).autor ?? '')
+        .toString()
+        .trim();
       if (!author) continue;
       authorMap.set(author, (authorMap.get(author) ?? 0) + 1);
     }
@@ -414,30 +726,51 @@ export class JarvisCommandService {
       return `✍️ No encontré autores en la biblioteca todavía.`;
     }
 
-    const lines = [`✍️ **Tus autores** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
-    for (const [name, count] of Array.from(authorMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
-      lines.push(`  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`);
+    const lines = [
+      `✍️ **Tus autores** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`,
+      ``,
+    ];
+    for (const [name, count] of Array.from(authorMap.entries()).sort(
+      ([a], [b]) => a.localeCompare(b),
+    )) {
+      lines.push(
+        `  • **${name}** — ${count} documento${count !== 1 ? 's' : ''}`,
+      );
     }
 
     return lines.join('\n');
   }
-  private extractAuthorBooksRequest(message: string): { author: string } | null {
+  private extractAuthorBooksRequest(
+    message: string,
+  ): { author: string } | null {
     const trimmed = message.trim();
     if (!trimmed) return null;
 
-    if (/^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs)|mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay)|mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(trimmed)) {
+    if (
+      /^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs)|mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay)|mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(
+        trimmed,
+      )
+    ) {
       return null;
     }
 
-    const explicitMatch = trimmed.match(/^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i);
+    const explicitMatch = trimmed.match(
+      /^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i,
+    );
     if (explicitMatch?.[1]?.trim()) {
       return { author: explicitMatch[1].trim() };
     }
 
-    const simpleAuthor = trimmed.match(/^([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s.\-]{2,80})$/u);
+    const simpleAuthor = trimmed.match(
+      /^([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s.\-]{2,80})$/u,
+    );
     if (simpleAuthor?.[1]) {
       const candidate = simpleAuthor[1].trim();
-      if (/^(?:resumen|puntos|compara|comparar|relaciona|relacionar|busca|dame|muestra|mostrame|explica|analiza|describe|diagnostico|test|probe|configurar|modo|eliminar|borrar|repetir|repite|hola|help|ayuda)/i.test(candidate)) {
+      if (
+        /^(?:resumen|puntos|compara|comparar|relaciona|relacionar|busca|dame|muestra|mostrame|explica|analiza|describe|diagnostico|test|probe|configurar|modo|eliminar|borrar|repetir|repite|hola|help|ayuda)/i.test(
+          candidate,
+        )
+      ) {
         return null;
       }
       const words = candidate.split(/\s+/).filter(Boolean);
@@ -458,7 +791,7 @@ export class JarvisCommandService {
       const authorField = this.normalizeText(doc.autor ?? '');
       const titleField = this.normalizeText(doc.titulo ?? '');
       const fileField = this.normalizeText(doc.archivo ?? '');
-      
+
       // 1. Coincidencia exacta o substring
       if (
         authorField.includes(normalizedAuthor) ||
@@ -469,8 +802,12 @@ export class JarvisCommandService {
       }
 
       // 2. Fuzzy matching para el nombre del autor (ej: 'grindberg' -> 'grinberg')
-      const queryWords = normalizedAuthor.split(/[\s\-]+/g).filter(w => w.length > 2);
-      const docAuthorWords = authorField.split(/[\s\-]+/g).filter(w => w.length > 2);
+      const queryWords = normalizedAuthor
+        .split(/[\s\-]+/g)
+        .filter((w) => w.length > 2);
+      const docAuthorWords = authorField
+        .split(/[\s\-]+/g)
+        .filter((w) => w.length > 2);
 
       if (queryWords.length > 0 && docAuthorWords.length > 0) {
         // Todas las palabras largas buscadas deben matchear de forma fuzzy con alguna palabra del autor del doc
@@ -493,7 +830,9 @@ export class JarvisCommandService {
       const lines = [`📚 **Libros de ${author}** (${matches.length})`, ``];
       for (const doc of matches) {
         const formato = (doc.formato ?? 'pdf').toString().toUpperCase();
-        lines.push(`  • ${doc.titulo} — ${doc.autor ?? 'Sin autor'} [${formato}]`);
+        lines.push(
+          `  • ${doc.titulo} — ${doc.autor ?? 'Sin autor'} [${formato}]`,
+        );
       }
       lines.push(``);
       lines.push(`💡 Podés pedir:`);
@@ -518,7 +857,7 @@ export class JarvisCommandService {
         tmp[i][j] = Math.min(
           tmp[i - 1][j] + 1,
           tmp[i][j - 1] + 1,
-          tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+          tmp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1),
         );
       }
     }
@@ -532,7 +871,9 @@ export class JarvisCommandService {
       .toLowerCase()
       .trim();
   }
-  private extractCompareRequest(message: string): { titleA: string; titleB: string } | null {
+  private extractCompareRequest(
+    message: string,
+  ): { titleA: string; titleB: string } | null {
     const patterns = [
       /resumen\s+(?:de\s+)?['"]([^'"]{3,})['"]\s+(?:relaciona(?:do)?\s+(?:con)?|vs\.?|versus)\s+['"]([^'"]{3,})['"]/i,
       /compara(?:r)?\s+['"]([^'"]{3,})['"]\s+(?:con|y|vs\.?)\s+['"]([^'"]{3,})['"]/i,
@@ -553,7 +894,10 @@ export class JarvisCommandService {
     return null;
   }
 
-  private async buildCompareResponse(titleA: string, titleB: string): Promise<string> {
+  private async buildCompareResponse(
+    titleA: string,
+    titleB: string,
+  ): Promise<string> {
     try {
       const result = await this.documentCompareService.compare(titleA, titleB);
       return [
@@ -582,22 +926,37 @@ export class JarvisCommandService {
         byCategory.get(cat)!.push(doc);
       }
 
-      const lines: string[] = [`📚 **Tus documentos escaneados** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`, ``];
+      const lines: string[] = [
+        `📚 **Tus documentos escaneados** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`,
+        ``,
+      ];
 
       for (const [category, items] of byCategory.entries()) {
         lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
         for (const doc of items) {
-          const estado = doc.embeddings === 'ready' ? 'indexado' : doc.embeddings === 'processing' ? 'procesando' : 'disponible';
-          const displayTitle = doc.titulo?.trim() || doc.archivo?.trim() || 'Sin título';
-          lines.push(`  • ${displayTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`);
+          const estado =
+            doc.embeddings === 'ready'
+              ? 'indexado'
+              : doc.embeddings === 'processing'
+                ? 'procesando'
+                : 'disponible';
+          const displayTitle =
+            doc.titulo?.trim() || doc.archivo?.trim() || 'Sin título';
+          lines.push(
+            `  • ${displayTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`,
+          );
         }
         lines.push(``);
       }
 
       lines.push(`💡 Podés preguntar:`);
       lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
-      lines.push(`  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``);
-      lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
+      lines.push(
+        `  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``,
+      );
+      lines.push(
+        `  - Buscar en docs     →  \`busca en mis documentos <tema>\``,
+      );
       lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
 
       return lines.join('\n');
@@ -615,37 +974,60 @@ export class JarvisCommandService {
       byCategory.get(cat)!.push(doc);
     }
 
-    const lines: string[] = [`📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`, ``];
+    const lines: string[] = [
+      `📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`,
+      ``,
+    ];
 
     for (const [category, items] of byCategory.entries()) {
       lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
       for (const doc of items) {
-        const used = (doc as any).timesUsed > 0 ? ` · usado ${(doc as any).timesUsed}x` : '';
+        const used =
+          (doc as any).timesUsed > 0
+            ? ` · usado ${(doc as any).timesUsed}x`
+            : '';
         const tipo = (doc as any).category === 'web' ? 'web' : 'pdf';
-        lines.push(`  • ${doc.title}  [${tipo}] - CATEGORÍA: "${((doc as any).category ?? 'sin categoría').toUpperCase()}"${used ? `  _(${used.trim()})_` : ''}`);
+        lines.push(
+          `  • ${doc.title}  [${tipo}] - CATEGORÍA: "${((doc as any).category ?? 'sin categoría').toUpperCase()}"${used ? `  _(${used.trim()})_` : ''}`,
+        );
       }
       lines.push(``);
     }
 
     lines.push(`💡 Podés preguntar:`);
     lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
-    lines.push(`  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``);
+    lines.push(
+      `  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``,
+    );
     lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
     lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
 
     return lines.join('\n');
   }
 
-  private async extractDocumentSummaryRequest(message: string): Promise<{ title: string; maxItems: number } | null> {
+  private async extractDocumentSummaryRequest(
+    message: string,
+  ): Promise<{ title: string; maxItems: number } | null> {
     const trimmed = message.trim();
-    const normalized = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
-    const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
+    const normalized = trimmed
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    const numMatch = normalized.match(
+      /\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/,
+    );
+    const maxItems = numMatch
+      ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15)
+      : 10;
 
-    const ACTION_PREFIXES = /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
-    const CONNECTORS = /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|de(?:l)?|sobre)\s+/i;
-    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
-    const GREETINGS = /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
+    const ACTION_PREFIXES =
+      /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
+    const CONNECTORS =
+      /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|de(?:l)?|sobre)\s+/i;
+    const GENERIC_STARTERS =
+      /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
+    const GREETINGS =
+      /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
 
     let title = trimmed;
     let match;
@@ -666,7 +1048,10 @@ export class JarvisCommandService {
     title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
 
     if (title.length >= 2) {
-      const titleLower = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const titleLower = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       if (GENERIC_STARTERS.test(titleLower)) {
         const hasDoc = await this.dbOrIndexHasDocument(title);
         if (hasDoc) return { title, maxItems };
@@ -681,10 +1066,20 @@ export class JarvisCommandService {
   private async dbOrIndexHasDocument(title: string): Promise<boolean> {
     const index = this.corpusSelector.getIndex();
     if (index && index.documentos) {
-      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      const inIndex = index.documentos.some(doc => {
-        const normDocTitle = doc.titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      const normSearch = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+      const inIndex = index.documentos.some((doc) => {
+        const normDocTitle = doc.titulo
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+        return (
+          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+        );
       });
       if (inIndex) return true;
     }
@@ -692,11 +1087,24 @@ export class JarvisCommandService {
       const existing = await this.documentRepo.findDocumentByExactTitle(title);
       if (existing) return true;
 
-      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 3);
-      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      return candidates.some(doc => {
-        const normDocTitle = doc.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      const candidates = await this.documentRepo.searchDocumentsByTitle(
+        title,
+        3,
+      );
+      const normSearch = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+      return candidates.some((doc) => {
+        const normDocTitle = doc.title
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+        return (
+          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+        );
       });
     } catch {
       return false;
@@ -729,9 +1137,11 @@ export class JarvisCommandService {
       });
 
       lines.push(``);
-      lines.push(`💡 Podés profundizar con: _"busca en mis documentos <tema>"_`);
+      lines.push(
+        `💡 Podés profundizar con: _"busca en mis documentos <tema>"_`,
+      );
 
-      return lines.filter(l => l !== undefined).join('\n');
+      return lines.filter((l) => l !== undefined).join('\n');
     } catch (err: any) {
       const msg = err.message || String(err);
       if (msg.includes('No encontré')) {

@@ -42,7 +42,12 @@ export class JarvisPromptBuilderService {
     browserContext?: string,
     hasWebContext?: boolean,
     prefetchedRagContext?: string,
-  ): Promise<{ systemPrompt: string; userPrompt: string; usedMemory: boolean; usedDocs: boolean }> {
+  ): Promise<{
+    systemPrompt: string;
+    userPrompt: string;
+    usedMemory: boolean;
+    usedDocs: boolean;
+  }> {
     const profile = await this.userProfileRepo.getOrCreate();
     const identity = this.jarvisIdentity.getIdentity();
     const capabilities = this.capabilitiesService.getCapabilities();
@@ -57,7 +62,9 @@ export class JarvisPromptBuilderService {
       profile.name ? `Usuario: ${profile.name}` : 'Usuario: desconocido',
       profile.country ? `País del usuario: ${profile.country}` : undefined,
       profile.language ? `Idioma del usuario: ${profile.language}` : undefined,
-      profile.timezone ? `Zona horaria del usuario: ${profile.timezone}` : undefined,
+      profile.timezone
+        ? `Zona horaria del usuario: ${profile.timezone}`
+        : undefined,
     ]
       .filter(Boolean)
       .join(' | ');
@@ -115,7 +122,8 @@ export class JarvisPromptBuilderService {
     let usedMemory = false;
 
     // ── Local JSON Knowledge lookup ──────────────────────────────────────────
-    const localKnowledgeCtx = await this.jarvisKnowledge.extractRelevantContext(userMessage);
+    const localKnowledgeCtx =
+      await this.jarvisKnowledge.extractRelevantContext(userMessage);
     if (localKnowledgeCtx) {
       contextParts.push(localKnowledgeCtx);
     }
@@ -135,7 +143,9 @@ export class JarvisPromptBuilderService {
       const memories = await this.memoryRepo.search(userMessage, 3);
       if (memories.length > 0) {
         usedMemory = true;
-        contextParts.push(`### MEMORIA\n${memories.map((m) => m.content).join('\n')}`);
+        contextParts.push(
+          `### MEMORIA\n${memories.map((m) => m.content).join('\n')}`,
+        );
       }
     }
 
@@ -146,71 +156,97 @@ export class JarvisPromptBuilderService {
         contextParts.push(prefetchedRagContext);
       } else {
         const docSummary = await this.detectDocumentSummaryRequest(userMessage);
-        
+
         if (docSummary.isRequest && docSummary.title) {
-          this.logger.log(`[rag:document] detectado resumen de documento: "${docSummary.title}"`);
-          
+          this.logger.log(
+            `[rag:document] detectado resumen de documento: "${docSummary.title}"`,
+          );
+
           try {
-            const result = await this.documentSummaryService.generateDocumentSummary(
-              docSummary.title,
-              docSummary.maxKeyPoints,
-            );
+            const result =
+              await this.documentSummaryService.generateDocumentSummary(
+                docSummary.title,
+                docSummary.maxKeyPoints,
+              );
 
             usedDocs = true;
-            
+
             const formattedSummary = [
               `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
               result.category ? `**Categoría:** ${result.category}` : '',
-              result.wordCount > 0 ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}` : '',
+              result.wordCount > 0
+                ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}`
+                : '',
               '',
               '**RESUMEN EJECUTIVO:**',
               result.summary,
               '',
               '**PUNTOS CLAVE:**',
               ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
-            ].filter(line => line !== '').join('\n');
+            ]
+              .filter((line) => line !== '')
+              .join('\n');
 
             contextParts.push(formattedSummary);
           } catch (err: any) {
-            this.logger.warn(`[rag:document] error al generar resumen: ${err.message}`);
+            this.logger.warn(
+              `[rag:document] error al generar resumen: ${err.message}`,
+            );
             contextParts.push(`### DOCUMENTOS\n${err.message}`);
           }
         } else {
-          const categorySummary = this.detectCategorySummaryRequest(userMessage);
-          
+          const categorySummary =
+            this.detectCategorySummaryRequest(userMessage);
+
           if (categorySummary.isRequest && categorySummary.category) {
-            this.logger.log(`[rag:category] detectado resumen por categoría: "${categorySummary.category}"`);
-            
+            this.logger.log(
+              `[rag:category] detectado resumen por categoría: "${categorySummary.category}"`,
+            );
+
             try {
-              const result = await this.categorySummaryService.generateCategorySummary(
-                categorySummary.category,
-                categorySummary.query,
-              );
+              const result =
+                await this.categorySummaryService.generateCategorySummary(
+                  categorySummary.category,
+                  categorySummary.query,
+                );
 
               if (result.chunksUsed > 0) {
                 usedDocs = true;
-                contextParts.push(`### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`);
+                contextParts.push(
+                  `### RESUMEN DE DOCUMENTOS (${result.category})\n${result.summary}\n\n*Basado en ${result.documentsUsed} documento(s): ${result.documentTitles.join(', ')}*`,
+                );
               } else {
                 contextParts.push(`### DOCUMENTOS\n${result.summary}`);
               }
             } catch (err: any) {
-              this.logger.warn(`[rag:category] error al generar resumen: ${err.message}`);
+              this.logger.warn(
+                `[rag:category] error al generar resumen: ${err.message}`,
+              );
             }
           }
-          
+
           if (!categorySummary.isRequest) {
             let chunks = [] as any[];
             try {
-              const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
-              chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+              const queryEmbedding =
+                await this.embeddingsService.generateEmbedding(userMessage);
+              chunks = await this.documentRepo.searchChunksSemantic(
+                queryEmbedding,
+                3,
+              );
             } catch (err: any) {
-              this.logger.warn(`[rag:semantic] Fallback a búsqueda textual: ${err.message}`);
+              this.logger.warn(
+                `[rag:semantic] Fallback a búsqueda textual: ${err.message}`,
+              );
               chunks = await this.documentRepo.searchChunks(userMessage, 3);
             }
             if (chunks.length > 0) {
               usedDocs = true;
               const docText = chunks
-                .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
+                .map(
+                  (c) =>
+                    `[${(c as any).document?.title || 'Doc'}]\n${c.content}`,
+                )
                 .join('\n---\n');
               contextParts.push(`### DOCUMENTOS\n${docText}`);
             }
@@ -220,54 +256,82 @@ export class JarvisPromptBuilderService {
     }
 
     if (browserContext) {
-      contextParts.push(`### CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL\n${browserContext}`);
+      contextParts.push(
+        `### CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL\n${browserContext}`,
+      );
     }
 
     const summary = await this.sessionSummaryRepo.get(sessionId);
     if (summary) {
       contextParts.push(`### RESUMEN DE CONVERSACIÓN\n${summary.summary}`);
     } else {
-      const recentMessages = await this.conversationRepo.getRecentMessages(sessionId, maxHistoryMessages);
+      const recentMessages = await this.conversationRepo.getRecentMessages(
+        sessionId,
+        maxHistoryMessages,
+      );
       if (recentMessages.length > 1) {
         const historyText = recentMessages
           .slice(0, -1)
-          .map((m) => `${m.role === 'user' ? 'Usuario' : 'Jarvis'}: ${m.content}`)
+          .map(
+            (m) => `${m.role === 'user' ? 'Usuario' : 'Jarvis'}: ${m.content}`,
+          )
           .join('\n');
         contextParts.push(`### HISTORIAL RECIENTE\n${historyText}`);
       }
     }
 
-    const webInstruction = (browserContext || hasWebContext)
-      ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
-      : '';
+    const webInstruction =
+      browserContext || hasWebContext
+        ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
+        : '';
 
-    const userPrompt = contextParts.length > 0
-      ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
-      : userMessage;
-      
+    const userPrompt =
+      contextParts.length > 0
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
+        : userMessage;
+
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
   }
 
   // ── Helper parsers ────────────────────────────────────────────────────────
 
-  private async detectDocumentSummaryRequest(message: string): Promise<{ isRequest: boolean; title?: string; maxKeyPoints?: number }> {
+  private async detectDocumentSummaryRequest(
+    message: string,
+  ): Promise<{ isRequest: boolean; title?: string; maxKeyPoints?: number }> {
     const extracted = await this.extractDocumentSummaryRequest(message);
     if (extracted) {
-      return { isRequest: true, title: extracted.title, maxKeyPoints: extracted.maxItems };
+      return {
+        isRequest: true,
+        title: extracted.title,
+        maxKeyPoints: extracted.maxItems,
+      };
     }
     return { isRequest: false };
   }
 
-  private async extractDocumentSummaryRequest(message: string): Promise<{ title: string; maxItems: number } | null> {
+  private async extractDocumentSummaryRequest(
+    message: string,
+  ): Promise<{ title: string; maxItems: number } | null> {
     const trimmed = message.trim();
-    const normalized = trimmed.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const numMatch = normalized.match(/\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/);
-    const maxItems = numMatch ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15) : 10;
+    const normalized = trimmed
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    const numMatch = normalized.match(
+      /\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/,
+    );
+    const maxItems = numMatch
+      ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15)
+      : 10;
 
-    const ACTION_PREFIXES = /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
-    const CONNECTORS = /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|de(?:l)?|sobre)\s+/i;
-    const GENERIC_STARTERS = /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
-    const GREETINGS = /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
+    const ACTION_PREFIXES =
+      /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
+    const CONNECTORS =
+      /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|de(?:l)?|sobre)\s+/i;
+    const GENERIC_STARTERS =
+      /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
+    const GREETINGS =
+      /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
 
     let title = trimmed;
     let match;
@@ -288,7 +352,10 @@ export class JarvisPromptBuilderService {
     title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
 
     if (title.length >= 2) {
-      const titleLower = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const titleLower = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       if (GENERIC_STARTERS.test(titleLower)) {
         const hasDoc = await this.dbOrIndexHasDocument(title);
         if (hasDoc) return { title, maxItems };
@@ -303,10 +370,20 @@ export class JarvisPromptBuilderService {
   private async dbOrIndexHasDocument(title: string): Promise<boolean> {
     const index = this.corpusSelector.getIndex();
     if (index && index.documentos) {
-      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      const inIndex = index.documentos.some(doc => {
-        const normDocTitle = doc.titulo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      const normSearch = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+      const inIndex = index.documentos.some((doc) => {
+        const normDocTitle = doc.titulo
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+        return (
+          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+        );
       });
       if (inIndex) return true;
     }
@@ -314,19 +391,39 @@ export class JarvisPromptBuilderService {
       const existing = await this.documentRepo.findDocumentByExactTitle(title);
       if (existing) return true;
 
-      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 3);
-      const normSearch = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-      return candidates.some(doc => {
-        const normDocTitle = doc.title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-        return normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+      const candidates = await this.documentRepo.searchDocumentsByTitle(
+        title,
+        3,
+      );
+      const normSearch = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+      return candidates.some((doc) => {
+        const normDocTitle = doc.title
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+        return (
+          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+        );
       });
     } catch {
       return false;
     }
   }
 
-  private detectCategorySummaryRequest(message: string): { isRequest: boolean; category?: string; query?: string } {
-    const normalized = message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  private detectCategorySummaryRequest(message: string): {
+    isRequest: boolean;
+    category?: string;
+    query?: string;
+  } {
+    const normalized = message
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
 
     const patterns = [
       /(?:resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(?:sobre|de|acerca de)\s+([a-z_\s]+)/i,
@@ -342,21 +439,30 @@ export class JarvisPromptBuilderService {
       const match = normalized.match(pattern);
       if (match && match[1]) {
         let categoryRaw = match[1].trim();
-        
+
         categoryRaw = categoryRaw
-          .replace(/\s+(en|de|sobre|con|sin|para|por|como|que|cual|donde|cuando|porque).*$/i, '')
+          .replace(
+            /\s+(en|de|sobre|con|sin|para|por|como|que|cual|donde|cuando|porque).*$/i,
+            '',
+          )
           .trim();
-        
+
         const category = categoryRaw
           .replace(/\s+/g, '_')
           .replace(/[^a-z_]/g, '');
 
-        if (category.length < 3 || ['mis', 'los', 'tus', 'una', 'ese', 'esto', 'eso'].includes(category)) {
+        if (
+          category.length < 3 ||
+          ['mis', 'los', 'tus', 'una', 'ese', 'esto', 'eso'].includes(category)
+        ) {
           continue;
         }
 
         const queryMatch = message.match(/(?:sobre|de|con)\s+([a-z\s]+)$/i);
-        const query = queryMatch && queryMatch[1].length > 3 ? queryMatch[1].trim() : undefined;
+        const query =
+          queryMatch && queryMatch[1].length > 3
+            ? queryMatch[1].trim()
+            : undefined;
 
         return { isRequest: true, category, query };
       }

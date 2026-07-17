@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Changed — Fichas de Conocimiento Epistemológicas (2026-07-16)
+
+- **📚 Evolución de Resúmenes a Fichas de Conocimiento**: Transición de resúmenes cronológicos tradicionales a Fichas de Conocimiento (Knowledge Cards) estructuradas de alto valor RAG.
+- **🛠️ Estructura Refinada**: Inclusión de campos de metadatos (Aporte/Valoración, Tipo de Documento), Mapa de Conocimiento descriptivo, Conceptos Detectados (con frecuencia real de menciones en texto completo), preguntas clave con viñetas check (`✔`), Relaciones y Contexto extendidos (`Ideal para responder`, `Límites`) y Grafo de Relaciones en ASCII.
+- **⚡ Optimización y Persistencia**: Los resúmenes generados al vuelo (on-demand) en `DocumentSummaryService` ahora producen y persisten la Ficha de Conocimiento completa en la columna `summary` de la base de datos.
+- **🔍 Extracción Resiliente**: Se actualizó el parser de `keyPoints` en el servicio de resúmenes para extraer puntos clave de las nuevas secciones (`Conceptos Detectados`, `Preguntas que puede responder`).
+
 ### Added — Ingesta Jerárquica, Embeddings Perezosos y Compuerta de Seguridad (2026-07-16)
 
 - **📚 Estructura Jerárquica y Parser**: Nuevo parseador `HierarchicalParserService` que divide documentos en Capítulos y Secciones usando Markdown y aplica filtros inteligentes para omitir contenido redundante o ruidoso.

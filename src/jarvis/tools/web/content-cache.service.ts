@@ -16,7 +16,7 @@ export interface CacheResult {
 
 /**
  * ContentCacheService — Caché inteligente con TTL por categoría.
- * 
+ *
  * Flujo:
  * 1. Usuario pregunta algo
  * 2. Se clasifica la categoría (deportes, clima, noticias...)
@@ -34,7 +34,7 @@ export class ContentCacheService {
   /**
    * Obtiene contenido relevante para una pregunta.
    * Primero busca en caché válido, si no existe o expiró, scrapea.
-   * 
+   *
    * @param query     La pregunta del usuario
    * @param category  Categoría detectada (deportes, clima, noticias...)
    * @param limit     Máximo de fuentes a consultar
@@ -42,7 +42,7 @@ export class ContentCacheService {
   async fetchRelevantContent(
     query: string,
     category: string,
-    limit = 2,                  // reducido de 3 a 2: menos fuentes = más rápido
+    limit = 2, // reducido de 3 a 2: menos fuentes = más rápido
   ): Promise<CacheResult[]> {
     const startTime = Date.now();
     const sources = SourceRegistry.getByCategory(category).slice(0, limit);
@@ -121,8 +121,9 @@ export class ContentCacheService {
       this.logger.log(`[cache:MISS] scrapeando ${source.name}`);
 
       const scrapeWithTimeout = Promise.race([
-        WebHelper.scrapeUrlWithSelectors(targetUrl, query, source)
-          .catch(() => WebHelper.scrapeUrl(targetUrl, query)),
+        WebHelper.scrapeUrlWithSelectors(targetUrl, query, source).catch(() =>
+          WebHelper.scrapeUrl(targetUrl, query),
+        ),
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 8_000)),
       ]);
 
@@ -184,7 +185,9 @@ export class ContentCacheService {
         },
       });
 
-      this.logger.log(`[cache] guardado ${source.name} (expira en ${source.ttlHours}h)`);
+      this.logger.log(
+        `[cache] guardado ${source.name} (expira en ${source.ttlHours}h)`,
+      );
 
       return {
         url: targetUrl,
@@ -232,14 +235,23 @@ export class ContentCacheService {
       return null;
     }
 
-    const ageMinutes = Math.floor((now.getTime() - page.scrapedAt.getTime()) / 60000);
-    const expiresInMinutes = Math.floor((page.expiresAt.getTime() - now.getTime()) / 60000);
+    const ageMinutes = Math.floor(
+      (now.getTime() - page.scrapedAt.getTime()) / 60000,
+    );
+    const expiresInMinutes = Math.floor(
+      (page.expiresAt.getTime() - now.getTime()) / 60000,
+    );
 
     return {
       pageId: page.id,
       title: page.title ?? undefined,
       content: page.content.textExtracted,
-      metadata: page.content.metadata ? JSON.parse(page.content.metadata as string) as Record<string, unknown> : undefined,
+      metadata: page.content.metadata
+        ? (JSON.parse(page.content.metadata as string) as Record<
+            string,
+            unknown
+          >)
+        : undefined,
       scrapedAt: page.scrapedAt,
       expiresAt: page.expiresAt,
       ageMinutes,
@@ -286,7 +298,9 @@ export class ContentCacheService {
       },
     });
 
-    this.logger.log(`[cache:cleanup] ${result.count} páginas expiradas eliminadas`);
+    this.logger.log(
+      `[cache:cleanup] ${result.count} páginas expiradas eliminadas`,
+    );
     return result.count;
   }
 
@@ -294,7 +308,15 @@ export class ContentCacheService {
    * Obtiene estadísticas de caché.
    */
   async getCacheStats() {
-    const [total, valid, expired, topSources, topCategories, totalQueries, cacheHits] = await Promise.all([
+    const [
+      total,
+      valid,
+      expired,
+      topSources,
+      topCategories,
+      totalQueries,
+      cacheHits,
+    ] = await Promise.all([
       this.prisma.scrapedPage.count(),
       this.prisma.scrapedPage.count({ where: { status: 'valid' } }),
       this.prisma.scrapedPage.count({ where: { status: 'expired' } }),
@@ -320,7 +342,10 @@ export class ContentCacheService {
       validPages: valid,
       expiredPages: expired,
       topSources,
-      topCategories: topCategories.map((c) => ({ category: c.category, count: c._count.category })),
+      topCategories: topCategories.map((c) => ({
+        category: c.category,
+        count: c._count.category,
+      })),
       cacheHitRate,
       totalQueries,
       cacheHits,

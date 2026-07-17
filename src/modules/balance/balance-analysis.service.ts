@@ -1,4 +1,9 @@
-import { Injectable, Logger, Inject, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ILLMProvider } from '../../jarvis/llm/llm-provider.interface';
 import { OllamaProvider } from '../../jarvis/llm/ollama.provider';
@@ -31,7 +36,8 @@ export class BalanceAnalysisService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
-    @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
+    @Inject(OpenRouterProvider)
+    private readonly openRouterProvider: ILLMProvider,
   ) {}
 
   private getLLMProvider(): ILLMProvider {
@@ -50,10 +56,16 @@ export class BalanceAnalysisService {
     astrologicalContext: any,
     previousReports: any[],
   ): Promise<AnalysisOutput> {
-    this.logger.log(`[balance-analysis] Generando análisis para sesión ${sessionId}`);
+    this.logger.log(
+      `[balance-analysis] Generando análisis para sesión ${sessionId}`,
+    );
 
     const llm = this.getLLMProvider();
-    const prompt = this.buildAnalysisPrompt(answers, astrologicalContext, previousReports);
+    const prompt = this.buildAnalysisPrompt(
+      answers,
+      astrologicalContext,
+      previousReports,
+    );
 
     let content = '';
     try {
@@ -61,7 +73,8 @@ export class BalanceAnalysisService {
         messages: [
           {
             role: 'system',
-            content: 'Sos un analista transpersonal de la personalidad, especializado en la integración de psicología profunda, coaching existencial y arquetipos de energía. Tu salida es estrictamente JSON.',
+            content:
+              'Sos un analista transpersonal de la personalidad, especializado en la integración de psicología profunda, coaching existencial y arquetipos de energía. Tu salida es estrictamente JSON.',
           },
           {
             role: 'user',
@@ -75,38 +88,51 @@ export class BalanceAnalysisService {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Error en LLM durante generación de análisis: ${msg}`);
-      throw new BadRequestException('No se pudo analizar el cuestionario con IA.');
+      throw new BadRequestException(
+        'No se pudo analizar el cuestionario con IA.',
+      );
     }
 
     const parsed = this.parseAnalysis(content);
     if (!parsed) {
-      throw new BadRequestException('El formato del reporte devuelto por el LLM no es válido.');
+      throw new BadRequestException(
+        'El formato del reporte devuelto por el LLM no es válido.',
+      );
     }
 
     return parsed;
   }
 
-  private buildAnalysisPrompt(answers: any[], astrologicalContext: any, previousReports: any[]): string {
+  private buildAnalysisPrompt(
+    answers: any[],
+    astrologicalContext: any,
+    previousReports: any[],
+  ): string {
     const formattedAnswers = answers
       .map((a) => {
-        const dim = a.metadata && typeof a.metadata === 'object' ? a.metadata['dimension'] : 'desconocida';
+        const dim =
+          a.metadata && typeof a.metadata === 'object'
+            ? a.metadata['dimension']
+            : 'desconocida';
         return `- Dimensión: ${dim}\n  Pregunta: ${a.question}\n  Respuesta: ${a.answer}`;
       })
       .join('\n\n');
 
-    const formattedHistory = previousReports.length > 0
-      ? previousReports
-          .map((r, idx) => {
-            return `Reporte ${idx + 1} (${r.createdAt.toISOString()}):
+    const formattedHistory =
+      previousReports.length > 0
+        ? previousReports
+            .map((r, idx) => {
+              return `Reporte ${idx + 1} (${r.createdAt.toISOString()}):
 - Distribución: ${JSON.stringify(r.energyDistribution)}
 - Análisis previo: ${r.analysis}
 - Recomendaciones previas: ${r.recommendations}`;
-          })
-          .join('\n\n')
-      : 'No hay reportes previos.';
+            })
+            .join('\n\n')
+        : 'No hay reportes previos.';
 
     const cycle = astrologicalContext?.cycle || 1;
-    const cycleName = astrologicalContext?.cycleName || '¿Dónde está yendo tu energía?';
+    const cycleName =
+      astrologicalContext?.cycleName || '¿Dónde está yendo tu energía?';
     const cycleTheme = astrologicalContext?.cycleTheme || 'mapa_general';
 
     return `
@@ -175,7 +201,10 @@ Devolvé la respuesta ÚNICAMENTE como un objeto JSON válido, sin bloques de c�
 
   private parseAnalysis(rawContent: string): AnalysisOutput | null {
     try {
-      let clean = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+      let clean = rawContent
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
       const startIndex = clean.indexOf('{');
       const endIndex = clean.lastIndexOf('}');
       if (startIndex !== -1 && endIndex !== -1) {

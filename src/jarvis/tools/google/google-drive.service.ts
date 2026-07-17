@@ -23,7 +23,8 @@ export class GoogleDriveService {
 
   async searchFiles(query: string, mimeType?: string): Promise<string> {
     const drive = await this.getClient();
-    if (!drive) return 'No tengo acceso a Drive. Autenticate primero en /api/jarbees/google/auth.';
+    if (!drive)
+      return 'No tengo acceso a Drive. Autenticate primero en /api/jarbees/google/auth.';
 
     try {
       let q = `name contains '${query}' and trashed = false`;
@@ -36,11 +37,14 @@ export class GoogleDriveService {
       });
 
       const files = res.data.files ?? [];
-      if (files.length === 0) return `📂 No encontré archivos que coincidan con "${query}".`;
+      if (files.length === 0)
+        return `📂 No encontré archivos que coincidan con "${query}".`;
 
       const lines = files.map((f, i) => {
         const size = f.size ? `${Math.round(Number(f.size) / 1024)} KB` : '';
-        const date = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString('es-AR') : '';
+        const date = f.modifiedTime
+          ? new Date(f.modifiedTime).toLocaleDateString('es-AR')
+          : '';
         const link = f.webViewLink ? ` · [Abrir](${f.webViewLink})` : '';
         return `${i + 1}. 📄 **${f.name}**${size ? ` (${size})` : ''}${date ? ` — ${date}` : ''}${link}`;
       });
@@ -68,12 +72,17 @@ export class GoogleDriveService {
       if (files.length === 0) return '📂 Tu Drive no tiene archivos recientes.';
 
       const lines = files.map((f, i) => {
-        const date = f.modifiedTime ? new Date(f.modifiedTime).toLocaleDateString('es-AR') : '';
+        const date = f.modifiedTime
+          ? new Date(f.modifiedTime).toLocaleDateString('es-AR')
+          : '';
         const link = f.webViewLink ? ` · [Abrir](${f.webViewLink})` : '';
-        const icon = f.mimeType?.includes('pdf') ? '📄'
-          : f.mimeType?.includes('document') ? '📝'
-          : f.mimeType?.includes('spreadsheet') ? '📊'
-          : '📁';
+        const icon = f.mimeType?.includes('pdf')
+          ? '📄'
+          : f.mimeType?.includes('document')
+            ? '📝'
+            : f.mimeType?.includes('spreadsheet')
+              ? '📊'
+              : '📁';
         return `${i + 1}. ${icon} **${f.name}**${date ? ` — ${date}` : ''}${link}`;
       });
 
@@ -84,7 +93,10 @@ export class GoogleDriveService {
     }
   }
 
-  private async downloadFileContent(fileId: string, mimeType: string): Promise<string | null> {
+  private async downloadFileContent(
+    fileId: string,
+    mimeType: string,
+  ): Promise<string | null> {
     const drive = await this.getClient();
     if (!drive) return null;
 
@@ -112,17 +124,25 @@ export class GoogleDriveService {
    * Descarga un archivo de Drive (PDF o Doc) y lo ingesta en el sistema RAG.
    * Queda disponible para búsquedas y resúmenes igual que cualquier PDF subido manualmente.
    */
-  async syncToKnowledge(fileId: string, titleOverride?: string): Promise<string> {
+  async syncToKnowledge(
+    fileId: string,
+    titleOverride?: string,
+  ): Promise<string> {
     const drive = await this.getClient();
     if (!drive) return 'No tengo acceso a Drive. Autenticate primero.';
 
     try {
-      const meta = await drive.files.get({ fileId, fields: 'id, name, mimeType' });
+      const meta = await drive.files.get({
+        fileId,
+        fields: 'id, name, mimeType',
+      });
       const fileName = titleOverride ?? meta.data.name ?? fileId;
       const mimeType = meta.data.mimeType ?? '';
       const driveUrl = `https://drive.google.com/file/d/${fileId}/view`;
 
-      this.logger.log(`[Drive] sincronizando "${fileName}" (${mimeType}) → RAG`);
+      this.logger.log(
+        `[Drive] sincronizando "${fileName}" (${mimeType}) → RAG`,
+      );
 
       if (mimeType === 'application/pdf') {
         const res = await drive.files.get(
@@ -130,14 +150,24 @@ export class GoogleDriveService {
           { responseType: 'arraybuffer' },
         );
         const buffer = Buffer.from(res.data as ArrayBuffer);
-        const result = await this.ingestService.ingestPdf(buffer, fileName, undefined, driveUrl);
+        const result = await this.ingestService.ingestPdf(
+          buffer,
+          fileName,
+          undefined,
+          driveUrl,
+        );
         return `✅ PDF de Drive sincronizado al conocimiento.\n  📄 **${result.title}**\n  🏷️ Categoría: ${result.category}\n  📦 Chunks: ${result.chunks}`;
       }
 
       if (mimeType.includes('document') || mimeType.includes('text')) {
         const content = await this.downloadFileContent(fileId, mimeType);
         if (!content) return `❌ No pude leer el contenido de "${fileName}".`;
-        const result = await this.ingestService.ingestText(fileName, content, undefined, driveUrl);
+        const result = await this.ingestService.ingestText(
+          fileName,
+          content,
+          undefined,
+          driveUrl,
+        );
         return `✅ Documento de Drive sincronizado.\n  📝 **${result.title}**\n  🏷️ Categoría: ${result.category}\n  📦 Chunks: ${result.chunks}`;
       }
 

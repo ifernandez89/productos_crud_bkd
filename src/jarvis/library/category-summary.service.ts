@@ -13,7 +13,7 @@ export interface CategorySummaryResult {
 /**
  * Servicio especializado en generar resúmenes combinados de múltiples documentos
  * de una misma categoría.
- * 
+ *
  * Ejemplo de uso:
  * - Usuario: "resumen sobre plantas medicinales"
  * - Sistema: detecta categoría "plantas_medicinales" → recupera chunks → genera resumen unificado
@@ -36,30 +36,39 @@ export class CategorySummaryService {
     specificQuery?: string,
     maxChunks = 15,
   ): Promise<CategorySummaryResult> {
-    this.logger.log(`[category-summary] generando resumen para categoría="${category}" | query="${specificQuery ?? 'general'}"`);
+    this.logger.log(
+      `[category-summary] generando resumen para categoría="${category}" | query="${specificQuery ?? 'general'}"`,
+    );
 
     // 1. Recuperar chunks relevantes
     const chunks = specificQuery
-      ? await this.documentRepo.searchChunksByQueryAndCategory(specificQuery, category, maxChunks)
+      ? await this.documentRepo.searchChunksByQueryAndCategory(
+          specificQuery,
+          category,
+          maxChunks,
+        )
       : await this.documentRepo.searchChunksByCategory(category, maxChunks);
 
     if (chunks.length === 0) {
       // Intentar buscar categorías similares o listar las disponibles
       const stats = await this.documentRepo.getLibraryStats();
       const availableCategories = stats.byCategory
-        .filter(c => c.category)
-        .map(c => `${c.category} (${c._count.id} doc${c._count.id > 1 ? 's' : ''})`)
+        .filter((c) => c.category)
+        .map(
+          (c) =>
+            `${c.category} (${c._count.id} doc${c._count.id > 1 ? 's' : ''})`,
+        )
         .slice(0, 10);
 
       let message = `❌ No encontré documentos en la categoría "${category}".`;
-      
+
       if (availableCategories.length > 0) {
-        message += `\n\n📚 **Categorías disponibles:**\n${availableCategories.map(c => `  • ${c}`).join('\n')}`;
+        message += `\n\n📚 **Categorías disponibles:**\n${availableCategories.map((c) => `  • ${c}`).join('\n')}`;
         message += `\n\n💡 Podés pedirme un resumen de cualquiera de estas categorías.`;
       } else {
         message += `\n\n📤 Aún no tenés documentos en tu biblioteca. Subí PDFs o textos para que pueda ayudarte.`;
       }
-      
+
       return {
         category,
         documentsUsed: 0,
@@ -71,12 +80,12 @@ export class CategorySummaryService {
 
     // 2. Extraer información de los documentos
     const uniqueDocs = new Map<number, string>();
-    chunks.forEach(chunk => {
+    chunks.forEach((chunk) => {
       uniqueDocs.set(chunk.document.id, chunk.document.title);
     });
 
     const documentTitles = Array.from(uniqueDocs.values());
-    
+
     // 3. Combinar contenido de chunks (limitado para no saturar el contexto del LLM)
     const combinedContent = this.combineChunksIntelligently(chunks, 4000);
 
@@ -112,9 +121,9 @@ export class CategorySummaryService {
     maxChars: number,
   ): string {
     const docChunks = new Map<number, string[]>();
-    
+
     // Agrupar chunks por documento
-    chunks.forEach(chunk => {
+    chunks.forEach((chunk) => {
       if (!docChunks.has(chunk.document.id)) {
         docChunks.set(chunk.document.id, []);
       }
@@ -124,25 +133,27 @@ export class CategorySummaryService {
     // Tomar chunks balanceados de cada documento
     const combined: string[] = [];
     let totalChars = 0;
-    
+
     for (const [docId, docChunkList] of docChunks) {
-      const docTitle = chunks.find(c => c.document.id === docId)?.document.title ?? 'Sin título';
-      
+      const docTitle =
+        chunks.find((c) => c.document.id === docId)?.document.title ??
+        'Sin título';
+
       // Agregar título del documento como separador
       const header = `\n[📄 ${docTitle}]\n`;
       combined.push(header);
       totalChars += header.length;
-      
+
       // Agregar chunks de este documento
       for (const chunkContent of docChunkList) {
         if (totalChars + chunkContent.length > maxChars) break;
-        
+
         combined.push(chunkContent);
         totalChars += chunkContent.length + 2; // +2 por saltos de línea
-        
+
         if (totalChars >= maxChars) break;
       }
-      
+
       if (totalChars >= maxChars) break;
     }
 
@@ -185,7 +196,7 @@ Generá un resumen completo basándote en esta información.`;
       const response = await this.ollamaProvider.generate({
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userPrompt },
+          { role: 'user', content: userPrompt },
         ],
         maxTokens: 1000,
       });
@@ -194,7 +205,7 @@ Generá un resumen completo basándote en esta información.`;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`[category-summary:llm] error: ${msg}`);
-      
+
       // Fallback: devolver contenido crudo con formato básico
       return this.generateFallbackSummary(category, documentTitles, content);
     }

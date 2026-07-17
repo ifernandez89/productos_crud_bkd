@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    bufferLogs: true,   // acumula logs hasta que winston esté listo
+    bufferLogs: true, // acumula logs hasta que winston esté listo
   });
 
   // Reemplaza el logger interno de Nest por Winston
@@ -25,12 +25,12 @@ async function bootstrap() {
   // Configuración de CORS para permitir GitHub Pages y desarrollo local
   app.enableCors({
     origin: [
-      'http://localhost:3000',           // Next.js dev local
-      'http://localhost:4000',           // Backend local
-      'https://ifernandez89.github.io',  // GitHub Pages producción
-      /https:\/\/.*\.ngrok\.io$/,        // Cualquier URL de ngrok
-      /https:\/\/.*\.ngrok-free\.app$/,  // Nuevo dominio de ngrok
-      /https:\/\/.*\.loca\.lt$/,         // Localtunnel
+      'http://localhost:3000', // Next.js dev local
+      'http://localhost:4000', // Backend local
+      'https://ifernandez89.github.io', // GitHub Pages producción
+      /https:\/\/.*\.ngrok\.io$/, // Cualquier URL de ngrok
+      /https:\/\/.*\.ngrok-free\.app$/, // Nuevo dominio de ngrok
+      /https:\/\/.*\.loca\.lt$/, // Localtunnel
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

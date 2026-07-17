@@ -27,9 +27,10 @@ export class DailyJobsService {
   async generateMorningBriefing() {
     this.logger.log('🌅 Iniciando Morning Briefing (Job Matutino)');
     const sessionId = `job-morning-${new Date().toISOString().split('T')[0]}`;
-    
-    const prompt = 'Generá un resumen de las noticias más importantes de hoy para Paraná, Entre Ríos. Y luego sumá un reporte del clima.';
-    
+
+    const prompt =
+      'Generá un resumen de las noticias más importantes de hoy para Paraná, Entre Ríos. Y luego sumá un reporte del clima.';
+
     try {
       const response = await this.jarvisService.query(prompt, {
         sessionId,
@@ -37,14 +38,15 @@ export class DailyJobsService {
       });
 
       this.logger.log('✅ Morning Briefing generado exitosamente.');
-      
+
       // En el futuro, esto podría enviarse por Telegram o Email.
       // Por ahora, solo queda registrado en ConversationMessage asociado a ese sessionId.
       // Vamos a guardar una métrica en los logs para que sea fácil de rastrear.
       this.logger.log(`[Reporte Generado] \n${response.slice(0, 300)}...`);
-
     } catch (error) {
-      this.logger.error(`❌ Error generando el Morning Briefing: ${error.message}`);
+      this.logger.error(
+        `❌ Error generando el Morning Briefing: ${error.message}`,
+      );
     }
   }
 
@@ -57,11 +59,13 @@ export class DailyJobsService {
     timeZone: 'America/Argentina/Buenos_Aires',
   })
   async runNightlyProcessing() {
-    this.logger.log('🦉 Iniciando Procesamiento Nocturno (Ingesta de Biblioteca Viva)');
-    
+    this.logger.log(
+      '🦉 Iniciando Procesamiento Nocturno (Ingesta de Biblioteca Viva)',
+    );
+
     // 1. Ingesta de fuentes RSS
     const rssSources = await this.prisma.knowledgeSource.findMany({
-      where: { type: 'rss', active: true }
+      where: { type: 'rss', active: true },
     });
 
     for (const source of rssSources) {
@@ -71,7 +75,9 @@ export class DailyJobsService {
     }
 
     // 2. Podríamos recorrer una carpeta "docs_inbox" para PDFs
-    this.logger.log('✅ Fuentes RSS y Documentos indexados. Base de conocimiento actualizada.');
+    this.logger.log(
+      '✅ Fuentes RSS y Documentos indexados. Base de conocimiento actualizada.',
+    );
   }
 
   /**

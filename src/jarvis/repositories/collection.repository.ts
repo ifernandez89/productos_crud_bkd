@@ -62,7 +62,10 @@ export class CollectionRepository {
     });
   }
 
-  async update(id: number, data: Partial<CreateCollectionData>): Promise<Collection> {
+  async update(
+    id: number,
+    data: Partial<CreateCollectionData>,
+  ): Promise<Collection> {
     return this.prisma.collection.update({ where: { id }, data });
   }
 

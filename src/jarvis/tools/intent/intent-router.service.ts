@@ -5,30 +5,30 @@ import { resolveIntentModel } from '../../../shared/ollama-config';
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export type IntentType =
-  | 'LOCAL'      // El LLM puede responder con su conocimiento base
-  | 'WEB'        // Requiere búsqueda web (DuckDuckGo → API → Playwright)
-  | 'URL'        // El usuario pegó una URL para scrapear
-  | 'RAG'        // Buscar en documentos/biblioteca local
-  | 'TOOL'       // Tool directa (clima, matemáticas, economía, etc.)
-  | 'SPORTS'     // Partido, goles, resultado — va a API deportiva primero
-  | 'ASTROLOGY'  // Clima astrológico, posiciones planetarias — calculado en tiempo real
-  | 'REPEAT'     // Repetir última respuesta
-  | 'CALENDAR'   // Consultar o agendar en Google Calendar
-  | 'TASKS'      // Consultar o agendar en Google Tasks
-  | 'GMAIL'      // Leer, buscar o redactar correos en Gmail
-  | 'DRIVE'      // Buscar, leer o sincronizar archivos de Google Drive
-  | 'YOUTUBE'    // Buscar videos o info de YouTube
+  | 'LOCAL' // El LLM puede responder con su conocimiento base
+  | 'WEB' // Requiere búsqueda web (DuckDuckGo → API → Playwright)
+  | 'URL' // El usuario pegó una URL para scrapear
+  | 'RAG' // Buscar en documentos/biblioteca local
+  | 'TOOL' // Tool directa (clima, matemáticas, economía, etc.)
+  | 'SPORTS' // Partido, goles, resultado — va a API deportiva primero
+  | 'ASTROLOGY' // Clima astrológico, posiciones planetarias — calculado en tiempo real
+  | 'REPEAT' // Repetir última respuesta
+  | 'CALENDAR' // Consultar o agendar en Google Calendar
+  | 'TASKS' // Consultar o agendar en Google Tasks
+  | 'GMAIL' // Leer, buscar o redactar correos en Gmail
+  | 'DRIVE' // Buscar, leer o sincronizar archivos de Google Drive
+  | 'YOUTUBE' // Buscar videos o info de YouTube
   | 'SITE_SEARCH'; // Búsqueda dirigida en un sitio específico
 
 export interface IntentResult {
   intent: IntentType;
   confidence: 'high' | 'medium' | 'low';
-  reason: string;       // para logging
-  urls?: string[];      // si intent === 'URL'
+  reason: string; // para logging
+  urls?: string[]; // si intent === 'URL'
   sportsQuery?: string; // si intent === 'SPORTS', la query limpia
   siteSearch?: {
-    site: string;       // dominio, ej. "elonce.com"
-    query: string;      // búsqueda de texto
+    site: string; // dominio, ej. "elonce.com"
+    query: string; // búsqueda de texto
   };
 }
 
@@ -62,20 +62,31 @@ export class IntentRouterService {
     );
 
     // Si la confianza es high O medium → no gastar tiempo en el LLM
-    if (fastResult.confidence === 'high' || fastResult.confidence === 'medium') {
-      this.logger.log(`[intent:fast] ${fastResult.intent} (${fastResult.confidence}) — "${message.slice(0, 60)}"`);
+    if (
+      fastResult.confidence === 'high' ||
+      fastResult.confidence === 'medium'
+    ) {
+      this.logger.log(
+        `[intent:fast] ${fastResult.intent} (${fastResult.confidence}) — "${message.slice(0, 60)}"`,
+      );
       return fastResult;
     }
 
     // 2. Clasificador LLM solo para casos de baja confianza — usa texto truncado
     try {
       const llmResult = await this.llmClassify(classifyText);
-      this.logger.log(`[intent:llm] ${llmResult.intent} — "${message.slice(0, 60)}"`);
+      this.logger.log(
+        `[intent:llm] ${llmResult.intent} — "${message.slice(0, 60)}"`,
+      );
       return llmResult;
     } catch {
       this.logger.warn(`[intent] LLM no disponible, usando fast classify`);
       // Si fast dice LOCAL con low confidence, escalar a WEB como fallback seguro
-      return { ...fastResult, intent: 'WEB', reason: 'LLM unavailable → WEB fallback' };
+      return {
+        ...fastResult,
+        intent: 'WEB',
+        reason: 'LLM unavailable → WEB fallback',
+      };
     }
   }
 
@@ -103,36 +114,68 @@ export class IntentRouterService {
     }
 
     // REPEAT — alta confianza
-    if (/\b(repeti|repetí|repetir|repite|dilo de nuevo|decilo de nuevo|voz alta)\b/i.test(n)) {
+    if (
+      /\b(repeti|repetí|repetir|repite|dilo de nuevo|decilo de nuevo|voz alta)\b/i.test(
+        n,
+      )
+    ) {
       return { intent: 'REPEAT', confidence: 'high', reason: 'repeat keyword' };
     }
 
     // CALENDAR — alta confianza
-    if (/(calendario|agenda|reunion|citas|que tengo hoy|que tengo mañana|eventos de hoy|eventos proximos|agendar|agendame)/i.test(n)) {
+    if (
+      /(calendario|agenda|reunion|citas|que tengo hoy|que tengo mañana|eventos de hoy|eventos proximos|agendar|agendame)/i.test(
+        n,
+      )
+    ) {
       // Excluir si pregunta por "calendario maya/hebreo" que es una tool genérica
       if (!/(maya|tzolkin|haab|hebreo)/i.test(n)) {
-        return { intent: 'CALENDAR', confidence: 'high', reason: 'calendar keyword' };
+        return {
+          intent: 'CALENDAR',
+          confidence: 'high',
+          reason: 'calendar keyword',
+        };
       }
     }
 
     // TASKS — alta confianza
-    if (/(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes)/i.test(n)) {
+    if (
+      /(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes)/i.test(
+        n,
+      )
+    ) {
       return { intent: 'TASKS', confidence: 'high', reason: 'tasks keyword' };
     }
 
     // GMAIL — alta confianza
-    if (/(correo|email|mail|gmail|bandeja|mensaje recibido|correos de hoy|correos importantes|borrador|draft|busca en mi correo)/i.test(n)) {
+    if (
+      /(correo|email|mail|gmail|bandeja|mensaje recibido|correos de hoy|correos importantes|borrador|draft|busca en mi correo)/i.test(
+        n,
+      )
+    ) {
       return { intent: 'GMAIL', confidence: 'high', reason: 'gmail keyword' };
     }
 
     // DRIVE — alta confianza
-    if (/(google drive|mi drive|busca en drive|archivo en drive|subir a drive|sincronizar drive|documentos de drive)/i.test(n)) {
+    if (
+      /(google drive|mi drive|busca en drive|archivo en drive|subir a drive|sincronizar drive|documentos de drive)/i.test(
+        n,
+      )
+    ) {
       return { intent: 'DRIVE', confidence: 'high', reason: 'drive keyword' };
     }
 
     // YOUTUBE — alta confianza
-    if (/(youtube|busca un video|buscar video|canal de youtube|playlist de youtube|video de youtube)/i.test(n)) {
-      return { intent: 'YOUTUBE', confidence: 'high', reason: 'youtube keyword' };
+    if (
+      /(youtube|busca un video|buscar video|canal de youtube|playlist de youtube|video de youtube)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'YOUTUBE',
+        confidence: 'high',
+        reason: 'youtube keyword',
+      };
     }
     // YouTube por URL directa
     if (/(youtu\.be|youtube\.com\/watch)/i.test(n)) {
@@ -141,20 +184,31 @@ export class IntentRouterService {
 
     // URL — alta confianza
     if (urls.length > 0) {
-      return { intent: 'URL', confidence: 'high', reason: 'URL detectada', urls };
+      return {
+        intent: 'URL',
+        confidence: 'high',
+        reason: 'URL detectada',
+        urls,
+      };
     }
 
     // SPORTS — alta confianza (verificar ANTES que TOOL para evitar conflictos con "hora")
-    const sportsPattern = /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla|posiciones|pr[oó]ximo partido|siguiente partido)/i;
-    const timePattern   = /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido|proximo|siguiente|cuando juega|cuando es el)/i;
-    if (sportsPattern.test(n) || (timePattern.test(n) && /(seleccion|argentina|equipo|futbol)/i.test(n))) {
+    const sportsPattern =
+      /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla|posiciones|pr[oó]ximo partido|siguiente partido)/i;
+    const timePattern =
+      /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido|proximo|siguiente|cuando juega|cuando es el)/i;
+    if (
+      sportsPattern.test(n) ||
+      (timePattern.test(n) && /(seleccion|argentina|equipo|futbol)/i.test(n))
+    ) {
       const sportsQuery = this.extractSportsQuery(message);
       // Si hay señal temporal O menciona equipos → alta confianza
       // "cuando es el proximo partido de argentina" → SPORTS, no TOOL(hora)
       return {
         intent: 'SPORTS',
         confidence: 'high',
-        reason: 'sports keyword' + (timePattern.test(n) ? ' + time signal' : ''),
+        reason:
+          'sports keyword' + (timePattern.test(n) ? ' + time signal' : ''),
         sportsQuery,
       };
     }
@@ -162,33 +216,50 @@ export class IntentRouterService {
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
     // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología
-    if (/(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(n)
-        && !/(astro|zodiac|lunar|horoscopo|signo|astrolog)/i.test(n)) {
+    if (
+      /(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(
+        n,
+      ) &&
+      !/(astro|zodiac|lunar|horoscopo|signo|astrolog)/i.test(n)
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
     }
     if (/(dolar|cotizacion del dolar|riesgo pais|inflacion|blue)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'economy tool' };
     }
-    if (/(\d+\s*[\+\-\*\/\^]\s*\d|raiz cuadrada|logaritmo|calcula |integral |derivada )/i.test(n)) {
+    if (
+      /(\d+\s*[\+\-\*\/\^]\s*\d|raiz cuadrada|logaritmo|calcula |integral |derivada )/i.test(
+        n,
+      )
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'math tool' };
     }
     // ⚠️ NOTA: luna/fase lunar ya NO van a TOOL — van a ASTROLOGY (ver bloque debajo)
-    if (/(solsticio|amanecer|atardecer)/i.test(n)
-        && !/(astro|zodiac|lunar|astrolog|signo)/i.test(n)) {
+    if (
+      /(solsticio|amanecer|atardecer)/i.test(n) &&
+      !/(astro|zodiac|lunar|astrolog|signo)/i.test(n)
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'astronomy tool' };
     }
-    if (/(eclipse solar|eclipse lunar)/i.test(n)
-        && !/(carta|astrolog|horoscopo)/i.test(n)) {
+    if (
+      /(eclipse solar|eclipse lunar)/i.test(n) &&
+      !/(carta|astrolog|horoscopo)/i.test(n)
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'eclipse tool' };
     }
     if (/(feriado|asueto|dia no laborable)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'holiday tool' };
     }
     // Hora: solo si NO es contexto deportivo
-    if (/(que hora|hora actual|hora en|zona horaria)/i.test(n) && !/(partido|juego|match)/i.test(n)) {
+    if (
+      /(que hora|hora actual|hora en|zona horaria)/i.test(n) &&
+      !/(partido|juego|match)/i.test(n)
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'time tool' };
     }
-    if (/(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)) {
+    if (
+      /(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)
+    ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'calendar tool' };
     }
 
@@ -197,87 +268,203 @@ export class IntentRouterService {
     //             si ASTROLOGY no va primero.
 
     // Palabras clave explícitas de astrología — alta confianza
-    if (/(astrolog|horoscopo|carta astral|signo del zodiaco|retrogrado|aspectos astrologicos|transitos|revolucion solar)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'explicit astrology keyword' };
+    if (
+      /(astrolog|horoscopo|carta astral|signo del zodiaco|retrogrado|aspectos astrologicos|transitos|revolucion solar)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'explicit astrology keyword',
+      };
     }
 
     // Posiciones planetarias — alta confianza
-    if (/(luna en |sol en |mercurio en |venus en |marte en |jupiter en |saturno en |posicion(es)? planet)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'planetary position query' };
+    if (
+      /(luna en |sol en |mercurio en |venus en |marte en |jupiter en |saturno en |posicion(es)? planet)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'planetary position query',
+      };
     }
 
     // Energías y clima astrológico — alta confianza
-    if (/(energia (del dia|lunar|astral|cosmica|de hoy|de esta noche|de esta semana)|clima astral|clima zodiac|energia espiritual)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology energy query' };
+    if (
+      /(energia (del dia|lunar|astral|cosmica|de hoy|de esta noche|de esta semana)|clima astral|clima zodiac|energia espiritual)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'astrology energy query',
+      };
     }
 
     // "qué dicen los astros", "qué hay en el cielo", "astrología para esta noche"
-    if (/(que dicen los astros|que hay en el cielo|astros (de|para|esta)|astrologia para|que pasa (en el cielo|con los astros|con los planetas))/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology sky query' };
+    if (
+      /(que dicen los astros|que hay en el cielo|astros (de|para|esta)|astrologia para|que pasa (en el cielo|con los astros|con los planetas))/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'astrology sky query',
+      };
     }
 
     // Luna y fases — ASTROLOGY (NO meteorología)
     // ⚠️ Movido desde TOOL: luna/fase lunar son consultas astrológicas, no meteorológicas
-    if (/(luna|fase lunar|luna llena|luna nueva|luna creciente|luna menguante|donde esta la luna|como esta la luna|que signo|que signo es|signo lunar)/i.test(n)
-        && !/(clima|temperatura|lluvia|meteorolog|precipitacion)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'moon/astrology query' };
+    if (
+      /(luna|fase lunar|luna llena|luna nueva|luna creciente|luna menguante|donde esta la luna|como esta la luna|que signo|que signo es|signo lunar)/i.test(
+        n,
+      ) &&
+      !/(clima|temperatura|lluvia|meteorolog|precipitacion)/i.test(n)
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'moon/astrology query',
+      };
     }
 
     // Planetas en contexto astrológico (sin "clima" ni "meteorología")
-    if (/(mercurio retrogrado|venus retrograda|marte retrogrado|planetas visibles|que planetas hay|signo del mes)/i.test(n)) {
-      return { intent: 'ASTROLOGY', confidence: 'high', reason: 'astrology planet retrograde' };
+    if (
+      /(mercurio retrogrado|venus retrograda|marte retrogrado|planetas visibles|que planetas hay|signo del mes)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'astrology planet retrograde',
+      };
     }
 
     // RAG — alta confianza (buscar en mis documentos)
-    if (/(busca en mis|busca en los pdfs|en mi biblioteca|en mis documentos|en mis notas|segun mis archivos)/i.test(n)) {
-      return { intent: 'RAG', confidence: 'high', reason: 'explicit RAG request' };
+    if (
+      /(busca en mis|busca en los pdfs|en mi biblioteca|en mis documentos|en mis notas|segun mis archivos)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'explicit RAG request',
+      };
     }
 
     // RAG con categoría específica — resumen temático
-    if (/(resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(sobre|de|acerca de)\s+\w+/i.test(n)) {
-      return { intent: 'RAG', confidence: 'high', reason: 'category summary request' };
+    if (
+      /(resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(sobre|de|acerca de)\s+\w+/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'category summary request',
+      };
     }
 
     // RAG — consultas sobre existencia de documentos
-    if (/(tenemos|hay|existe|tenes)\s+.*(documentos?|pdfs?|archivos?|informacion|info|datos?).*(sobre|de|acerca de)/i.test(n)) {
-      return { intent: 'RAG', confidence: 'high', reason: 'document existence query' };
+    if (
+      /(tenemos|hay|existe|tenes)\s+.*(documentos?|pdfs?|archivos?|informacion|info|datos?).*(sobre|de|acerca de)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'document existence query',
+      };
     }
 
     // RAG — "mis documentos de X"
     if (/(mis|los|tus)\s+(documentos?|pdfs?|archivos?)\s+(de|sobre)/i.test(n)) {
-      return { intent: 'RAG', confidence: 'high', reason: 'my documents query' };
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'my documents query',
+      };
     }
 
     // RAG — resumen de documento individual
-    if (/(resumen|puntos clave|items relevantes|lo mas importante)\s+(?:de|del)\s+(?:documento|pdf|libro)/i.test(n)) {
-      return { intent: 'RAG', confidence: 'high', reason: 'document summary request' };
+    if (
+      /(resumen|puntos clave|items relevantes|lo mas importante)\s+(?:de|del)\s+(?:documento|pdf|libro)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'document summary request',
+      };
     }
 
     // LOCAL — alta confianza (conversación trivial, identidad del asistente)
-    const trivialPattern = /^(hola|buenas|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios)[\s!?.]*$/i;
+    const trivialPattern =
+      /^(hola|buenas|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios)[\s!?.]*$/i;
     if (trivialPattern.test(n.trim())) {
-      return { intent: 'LOCAL', confidence: 'high', reason: 'trivial greeting' };
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'trivial greeting',
+      };
     }
-    if (/(quien eres|como te llamas|que eres|que podes hacer|sos un bot|eres un bot)/i.test(n)) {
-      return { intent: 'LOCAL', confidence: 'high', reason: 'identity question' };
+    if (
+      /(quien eres|como te llamas|que eres|que podes hacer|sos un bot|eres un bot)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'identity question',
+      };
     }
     if (/^(recorda|guarda|anota|mi nombre es|me llamo|prefiero que)/i.test(n)) {
       return { intent: 'LOCAL', confidence: 'high', reason: 'memory command' };
     }
 
     // WEB — pedido explícito (alta confianza)
-    if (/(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web|search on internet|search the web)/i.test(n)) {
-      return { intent: 'WEB', confidence: 'high', reason: 'explicit web search request' };
+    if (
+      /(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web|search on internet|search the web)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'WEB',
+        confidence: 'high',
+        reason: 'explicit web search request',
+      };
     }
 
-
     // WEB — señales claras pero no definitivas
-    if (/(noticias|noticia|ultima hora|novedades|hoy|ayer|esta semana|precio de|cotizacion|cuando es|donde queda)/i.test(n)) {
-      return { intent: 'WEB', confidence: 'medium', reason: 'web signal keyword' };
+    if (
+      /(noticias|noticia|ultima hora|novedades|hoy|ayer|esta semana|precio de|cotizacion|cuando es|donde queda)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'WEB',
+        confidence: 'medium',
+        reason: 'web signal keyword',
+      };
     }
 
     // Dudoso → LLM va a clasificar
-    return { intent: 'LOCAL', confidence: 'low', reason: 'uncertain — needs LLM classification' };
+    return {
+      intent: 'LOCAL',
+      confidence: 'low',
+      reason: 'uncertain — needs LLM classification',
+    };
   }
 
   // ── Clasificación LLM ────────────────────────────────────────────────────────
@@ -315,7 +502,15 @@ Categoría:`;
       .toUpperCase();
 
     // Mapear respuesta del LLM a IntentType
-    const validIntents: IntentType[] = ['LOCAL', 'WEB', 'SPORTS', 'RAG', 'TOOL', 'ASTROLOGY', 'SITE_SEARCH'];
+    const validIntents: IntentType[] = [
+      'LOCAL',
+      'WEB',
+      'SPORTS',
+      'RAG',
+      'TOOL',
+      'ASTROLOGY',
+      'SITE_SEARCH',
+    ];
     const matched = validIntents.find((i) => raw.startsWith(i));
 
     if (matched === 'SITE_SEARCH') {
@@ -331,7 +526,8 @@ Categoría:`;
       return {
         intent: 'WEB',
         confidence: 'medium',
-        reason: 'LLM classified as SITE_SEARCH but could not extract details → WEB fallback',
+        reason:
+          'LLM classified as SITE_SEARCH but could not extract details → WEB fallback',
       };
     }
 
@@ -361,57 +557,59 @@ Categoría:`;
   /**
    * Extrae los parámetros de búsqueda en un sitio específico si la query coincide.
    */
-  private extractSiteSearchFromText(message: string): { site: string; query: string } | null {
+  private extractSiteSearchFromText(
+    message: string,
+  ): { site: string; query: string } | null {
     const n = this.normalize(message);
     const cleanN = n.replace(/[?¿!¡.]/g, '').trim();
 
     // Alias de sitios conocidos — se usa en todos los patrones
     const siteAliasMap: Record<string, string> = {
-      'elonce': 'elonce.com',
+      elonce: 'elonce.com',
       'el once': 'elonce.com',
       'once digital': 'elonce.com',
       'elonce digital': 'elonce.com',
       'el once digital': 'elonce.com',
-      'infobae': 'infobae.com',
+      infobae: 'infobae.com',
       'la nacion': 'lanacion.com.ar',
-      'uno': 'unoentrerios.com.ar',
+      uno: 'unoentrerios.com.ar',
       'uno entre rios': 'unoentrerios.com.ar',
-      'apf': 'apfdigital.com.ar',
+      apf: 'apfdigital.com.ar',
       'apf digital': 'apfdigital.com.ar',
-      'analisis': 'analisisdigital.com.ar',
+      analisis: 'analisisdigital.com.ar',
       'analisis digital': 'analisisdigital.com.ar',
       'el entre rios': 'elentrerios.com',
       'mi parana': 'mi.parana.gob.ar',
       'parana gob': 'parana.gob.ar',
-      'tyc': 'tycsports.com',
+      tyc: 'tycsports.com',
       'tyc sports': 'tycsports.com',
-      'tycsports': 'tycsports.com',
-      'ole': 'ole.com.ar',
-      'promiedos': 'promiedos.com.ar',
-      'conicet': 'conicet.gov.ar',
-      'fayerwayer': 'fayerwayer.com',
-      'xataka': 'xataka.com',
-      'muycomputer': 'muycomputer.com',
-      'techcrunch': 'techcrunch.com',
+      tycsports: 'tycsports.com',
+      ole: 'ole.com.ar',
+      promiedos: 'promiedos.com.ar',
+      conicet: 'conicet.gov.ar',
+      fayerwayer: 'fayerwayer.com',
+      xataka: 'xataka.com',
+      muycomputer: 'muycomputer.com',
+      techcrunch: 'techcrunch.com',
       'ars technica': 'arstechnica.com',
-      'huggingface': 'huggingface.co',
+      huggingface: 'huggingface.co',
       'hugging face': 'huggingface.co',
-      'devto': 'dev.to',
+      devto: 'dev.to',
       'dev.to': 'dev.to',
-      'github': 'github.com',
-      'npm': 'npmjs.org',
-      'nestjs': 'nestjs.com',
+      github: 'github.com',
+      npm: 'npmjs.org',
+      nestjs: 'nestjs.com',
       'mystery planet': 'mysteryplanet.com.ar',
       'rolling stone': 'rollingstone.com.ar',
       'los 40': 'los40.com.ar',
-      'los40': 'los40.com.ar',
-      'wikipedia': 'es.wikipedia.org',
-      'youtube': 'youtube.com',
-      'espn': 'espndeportes.espn.com',
-      'clarin': 'clarin.com',
-      'perfil': 'perfil.com',
-      'cronica': 'cronica.com.ar',
-      'pagina12': 'pagina12.com.ar',
+      los40: 'los40.com.ar',
+      wikipedia: 'es.wikipedia.org',
+      youtube: 'youtube.com',
+      espn: 'espndeportes.espn.com',
+      clarin: 'clarin.com',
+      perfil: 'perfil.com',
+      cronica: 'cronica.com.ar',
+      pagina12: 'pagina12.com.ar',
       'pagina 12': 'pagina12.com.ar',
     };
 
@@ -449,7 +647,8 @@ Categoría:`;
     }
 
     // ── Patrón 2: "noticias de/en X" ──
-    const enPattern = /(?:noticias?|novedades?|info|informacion|que paso|buscar?|busca|encontrar?|encontra)\s+(?:de|sobre|en|desde)?\s*(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
+    const enPattern =
+      /(?:noticias?|novedades?|info|informacion|que paso|buscar?|busca|encontrar?|encontra)\s+(?:de|sobre|en|desde)?\s*(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i;
     let match = enPattern.exec(cleanN);
     if (match) {
       const domain = this.resolveSiteAlias(match[2].trim(), siteAliasMap);
@@ -457,14 +656,19 @@ Categoría:`;
     }
 
     // ── Patrón 3: "que dice Y sobre X" ──
-    match = /(?:que dice|que dicen|segun|buscar en)\s+([a-z0-9\s.-]+)\s+sobre\s+(.+)$/i.exec(cleanN);
+    match =
+      /(?:que dice|que dicen|segun|buscar en)\s+([a-z0-9\s.-]+)\s+sobre\s+(.+)$/i.exec(
+        cleanN,
+      );
     if (match) {
       const domain = this.resolveSiteAlias(match[1].trim(), siteAliasMap);
       if (domain) return { site: domain, query: match[2].trim() };
     }
 
     // ── Patrón 4: "buscar en Y: X" ──
-    match = /(?:buscar en|busca en)\s+([a-z0-9\s.-]+)(?::|\s+)\s*(.+)$/i.exec(cleanN);
+    match = /(?:buscar en|busca en)\s+([a-z0-9\s.-]+)(?::|\s+)\s*(.+)$/i.exec(
+      cleanN,
+    );
     if (match) {
       const domain = this.resolveSiteAlias(match[1].trim(), siteAliasMap);
       if (domain) return { site: domain, query: match[2].trim() };
@@ -474,7 +678,19 @@ Categoría:`;
     // Más restrictivo que antes: solo matchea si Y resuelve a un dominio real
     match = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i.exec(cleanN);
     if (match) {
-      const falseSites = ['argentina', 'parana', 'entre rios', 'el mundo', 'cancha', 'vivo', 'directo', 'ingles', 'español', 'casa', 'internet'];
+      const falseSites = [
+        'argentina',
+        'parana',
+        'entre rios',
+        'el mundo',
+        'cancha',
+        'vivo',
+        'directo',
+        'ingles',
+        'español',
+        'casa',
+        'internet',
+      ];
       const siteRaw = match[2].trim();
       if (!falseSites.includes(siteRaw)) {
         const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
@@ -489,7 +705,10 @@ Categoría:`;
    * Resuelve un alias o nombre de sitio a su dominio real.
    * Devuelve null si no se puede identificar el sitio.
    */
-  private resolveSiteAlias(raw: string, aliases: Record<string, string>): string | null {
+  private resolveSiteAlias(
+    raw: string,
+    aliases: Record<string, string>,
+  ): string | null {
     const clean = raw.trim().toLowerCase();
     if (aliases[clean]) return aliases[clean];
 
@@ -522,19 +741,25 @@ Categoría:`;
   private levenshtein(a: string, b: string): number {
     if (Math.abs(a.length - b.length) > 2) return 99;
     const dp: number[][] = Array.from({ length: a.length + 1 }, (_, i) =>
-      Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+      Array.from({ length: b.length + 1 }, (_, j) =>
+        i === 0 ? j : j === 0 ? i : 0,
+      ),
     );
     for (let i = 1; i <= a.length; i++) {
       for (let j = 1; j <= b.length; j++) {
-        dp[i][j] = a[i - 1] === b[j - 1]
-          ? dp[i - 1][j - 1]
-          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        dp[i][j] =
+          a[i - 1] === b[j - 1]
+            ? dp[i - 1][j - 1]
+            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
       }
     }
     return dp[a.length][b.length];
   }
 
   private normalize(input: string): string {
-    return input.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return input
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
   }
 }

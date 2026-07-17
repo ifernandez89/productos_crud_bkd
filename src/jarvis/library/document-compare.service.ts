@@ -25,7 +25,10 @@ export class DocumentCompareService {
     private readonly ollamaProvider: OllamaProvider,
   ) {}
 
-  async compare(titleA: string, titleB: string): Promise<DocumentCompareResult> {
+  async compare(
+    titleA: string,
+    titleB: string,
+  ): Promise<DocumentCompareResult> {
     this.logger.log(`[compare] "${titleA}" ↔ "${titleB}"`);
 
     // Obtener resúmenes de ambos documentos en paralelo
@@ -38,8 +41,10 @@ export class DocumentCompareService {
     const contentB = `Título: ${resultB.title}\nCategoría: ${resultB.category ?? 'N/A'}\n\nResumen:\n${resultB.summary}\n\nPuntos clave:\n${resultB.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
 
     const comparison = await this.generateComparison(
-      resultA.title, contentA,
-      resultB.title, contentB,
+      resultA.title,
+      contentA,
+      resultB.title,
+      contentB,
     );
 
     return {
@@ -52,8 +57,10 @@ export class DocumentCompareService {
   }
 
   private async generateComparison(
-    titleA: string, contentA: string,
-    titleB: string, contentB: string,
+    titleA: string,
+    contentA: string,
+    titleB: string,
+    contentB: string,
   ): Promise<string> {
     const systemPrompt = `Sos un analista experto en comparación de textos y documentos.
 Tu tarea es analizar dos documentos y generar un análisis comparativo estructurado.

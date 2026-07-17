@@ -65,7 +65,8 @@ export class JarvisService {
     private readonly browserTool: BrowserToolService,
     private readonly intentRouter: IntentRouterService,
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
-    @Inject(OpenRouterProvider) private readonly openRouterProvider: ILLMProvider,
+    @Inject(OpenRouterProvider)
+    private readonly openRouterProvider: ILLMProvider,
     private readonly googleCalendar: GoogleCalendarService,
     private readonly googleTasks: GoogleTasksService,
     private readonly googleGmail: GoogleGmailService,
@@ -92,7 +93,10 @@ export class JarvisService {
 
   // ── Query principal ─────────────────────────────────────────────────────────
 
-  async query(userMessage: string, options: JarvisQueryOptions = {}): Promise<string> {
+  async query(
+    userMessage: string,
+    options: JarvisQueryOptions = {},
+  ): Promise<string> {
     const sessionId = options.sessionId || randomUUID();
     const taskSessionId = options.sessionId;
     const useMemory = options.useMemory !== false;
@@ -105,7 +109,11 @@ export class JarvisService {
     const toolsUsed: string[] = [];
 
     // ── 1. Interceptar comandos y accesos directos ──────────────────────────
-    const commandResult = await this.jarvisCommand.handleCommand(userMessage, sessionId, startTime);
+    const commandResult = await this.jarvisCommand.handleCommand(
+      userMessage,
+      sessionId,
+      startTime,
+    );
     if (commandResult.handled) {
       return commandResult.response!;
     }
@@ -115,38 +123,84 @@ export class JarvisService {
     let preferences: Record<string, any> = {};
     if (profile.preferences) {
       try {
-        preferences = typeof profile.preferences === 'string'
-          ? JSON.parse(profile.preferences)
-          : (profile.preferences as any);
+        preferences =
+          typeof profile.preferences === 'string'
+            ? JSON.parse(profile.preferences)
+            : (profile.preferences as any);
       } catch (err) {
         // ignore
       }
     }
-    const mode = (preferences.ragMode || 'LOCAL_FIRST') as 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST';
+    const mode = (preferences.ragMode || 'LOCAL_FIRST') as
+      | 'OFFLINE'
+      | 'LOCAL_FIRST'
+      | 'HYBRID'
+      | 'WEB_FIRST';
 
-    await this.conversationRepo.create({ sessionId, role: 'user', content: userMessage });
+    await this.conversationRepo.create({
+      sessionId,
+      role: 'user',
+      content: userMessage,
+    });
 
     // ── 3. Comprobar urls para investigación ────────────────────────────────
     const investigationUrl = this.investigationService.extractUrl(userMessage);
     if (investigationUrl) {
-      const result = await this.investigationService.investigateUrl(investigationUrl, sessionId);
-      await this.conversationRepo.create({ sessionId, role: 'assistant', content: JSON.stringify(result), metadata: { source: 'investigation' } });
-      await this.agentRunRepo.create({ sessionId, question: userMessage, answer: JSON.stringify(result), toolsUsed: ['investigation'], modelUsed: 'none', provider: 'investigation', durationMs: Date.now() - startTime, success: true });
+      const result = await this.investigationService.investigateUrl(
+        investigationUrl,
+        sessionId,
+      );
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: JSON.stringify(result),
+        metadata: { source: 'investigation' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: JSON.stringify(result),
+        toolsUsed: ['investigation'],
+        modelUsed: 'none',
+        provider: 'investigation',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return JSON.stringify(result, null, 2);
     }
 
     try {
       // ── 4. Comprobar tareas y recordatorios ────────────────────────────────
-      const taskReminderReply = await this.taskReminderService.handleTaskCommand(userMessage, taskSessionId);
+      const taskReminderReply =
+        await this.taskReminderService.handleTaskCommand(
+          userMessage,
+          taskSessionId,
+        );
       if (taskReminderReply) {
-        await this.conversationRepo.create({ sessionId, role: 'assistant', content: taskReminderReply, metadata: { source: 'task_reminder' } });
-        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: taskReminderReply, toolsUsed: ['task_reminder'], modelUsed: 'none', provider: 'task_reminder', durationMs: Date.now() - startTime, success: true });
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: taskReminderReply,
+          metadata: { source: 'task_reminder' },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: taskReminderReply,
+          toolsUsed: ['task_reminder'],
+          modelUsed: 'none',
+          provider: 'task_reminder',
+          durationMs: Date.now() - startTime,
+          success: true,
+        });
         return taskReminderReply;
       }
 
       // ── 5. Clasificar intención ───────────────────────────────────────────
       const intent = await this.intentRouter.classify(userMessage);
-      this.logger.log(`[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`);
+      this.logger.log(
+        `[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`,
+      );
 
       // ── 6. RAG pre-search ────────────────────────────────────────────────
       let prefetchedRagContext: string | undefined = undefined;
@@ -156,71 +210,120 @@ export class JarvisService {
         let chunks = [] as any[];
         try {
           // 1. Consultar el índice de la biblioteca para encontrar documentos relevantes
-          const matches = this.corpusSelector.findRelevantDocuments(userMessage, 3);
+          const matches = this.corpusSelector.findRelevantDocuments(
+            userMessage,
+            3,
+          );
           const targetDocIds: number[] = [];
 
           if (matches.length > 0) {
-            this.logger.log(`[rag] Corpus Selector detectó ${matches.length} documentos relevantes.`);
+            this.logger.log(
+              `[rag] Corpus Selector detectó ${matches.length} documentos relevantes.`,
+            );
             for (const match of matches) {
               const doc = match.document;
               try {
                 if (doc.embeddings !== 'ready') {
-                  const dbId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+                  const dbId = await this.corpusSelector.lazyLoadDocument(
+                    doc,
+                    this.ingestService,
+                    this.documentRepo,
+                  );
                   targetDocIds.push(dbId);
                 } else {
                   // Verificar existencia real en base de datos
-                  const existing = await this.documentRepo.findDocumentByExactTitle(doc.titulo);
+                  const existing =
+                    await this.documentRepo.findDocumentByExactTitle(
+                      doc.titulo,
+                    );
                   if (existing) {
                     targetDocIds.push(existing.id);
                   } else {
-                    this.logger.warn(`[rag] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`);
-                    const dbId = await this.corpusSelector.lazyLoadDocument(doc, this.ingestService, this.documentRepo);
+                    this.logger.warn(
+                      `[rag] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`,
+                    );
+                    const dbId = await this.corpusSelector.lazyLoadDocument(
+                      doc,
+                      this.ingestService,
+                      this.documentRepo,
+                    );
                     targetDocIds.push(dbId);
                   }
                 }
               } catch (err: any) {
-                this.logger.error(`[rag] Error en lazy loading de "${doc.titulo}": ${err.message}`);
+                this.logger.error(
+                  `[rag] Error en lazy loading de "${doc.titulo}": ${err.message}`,
+                );
               }
             }
           }
 
           // 2. Ejecutar la búsqueda semántica
-          const queryEmbedding = await this.embeddingsService.generateEmbedding(userMessage);
+          const queryEmbedding =
+            await this.embeddingsService.generateEmbedding(userMessage);
 
           if (targetDocIds.length > 0) {
-            this.logger.log(`[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')}`);
-            chunks = await this.documentRepo.searchChunksSemanticInDocuments(queryEmbedding, targetDocIds, 3);
+            this.logger.log(
+              `[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')}`,
+            );
+            chunks = await this.documentRepo.searchChunksSemanticInDocuments(
+              queryEmbedding,
+              targetDocIds,
+              3,
+            );
           } else {
             // Fallback: búsqueda global si no hay coincidencia en el índice estructural
-            this.logger.log(`[rag] Sin coincidencias en el índice. Ejecutando búsqueda global.`);
-            chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 3);
+            this.logger.log(
+              `[rag] Sin coincidencias en el índice. Ejecutando búsqueda global.`,
+            );
+            chunks = await this.documentRepo.searchChunksSemantic(
+              queryEmbedding,
+              3,
+            );
           }
         } catch (err: any) {
-          this.logger.warn(`[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`);
+          this.logger.warn(
+            `[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`,
+          );
           try {
             // Re-obtener los IDs de destino si existieron
-            const matches = this.corpusSelector.findRelevantDocuments(userMessage, 3);
+            const matches = this.corpusSelector.findRelevantDocuments(
+              userMessage,
+              3,
+            );
             const targetDocIds: number[] = [];
             for (const match of matches) {
-              const existing = await this.documentRepo.findDocumentByExactTitle(match.document.titulo);
+              const existing = await this.documentRepo.findDocumentByExactTitle(
+                match.document.titulo,
+              );
               if (existing) targetDocIds.push(existing.id);
             }
 
             if (targetDocIds.length > 0) {
-              chunks = await this.documentRepo.searchChunksInDocuments(userMessage, targetDocIds, 3);
+              chunks = await this.documentRepo.searchChunksInDocuments(
+                userMessage,
+                targetDocIds,
+                3,
+              );
             } else {
               chunks = await this.documentRepo.searchChunks(userMessage, 3);
             }
           } catch (fallbackErr: any) {
-            this.logger.error(`[rag:fallback] Error en búsqueda textual fallback: ${fallbackErr.message}`);
+            this.logger.error(
+              `[rag:fallback] Error en búsqueda textual fallback: ${fallbackErr.message}`,
+            );
           }
         }
 
         if (chunks.length > 0) {
           hasRagHits = true;
-          prefetchedRagContext = `### DOCUMENTOS\n` + chunks
-            .map((c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`)
-            .join('\n---\n');
+          prefetchedRagContext =
+            `### DOCUMENTOS\n` +
+            chunks
+              .map(
+                (c) => `[${(c as any).document?.title || 'Doc'}]\n${c.content}`,
+              )
+              .join('\n---\n');
         }
       }
 
@@ -232,11 +335,20 @@ export class JarvisService {
           if (mode === 'WEB_FIRST') {
             triggerWebSearch = true;
           } else if (mode === 'HYBRID') {
-            const isDynamic = /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura|busca en internet|busca en la web|googlea)/i.test(userMessage);
+            const isDynamic =
+              /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura|busca en internet|busca en la web|googlea)/i.test(
+                userMessage,
+              );
             triggerWebSearch = isDynamic || !hasRagHits;
           } else if (mode === 'LOCAL_FIRST') {
-            const isExplicitWeb = /(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web)/i.test(userMessage);
-            const isDynamic = /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura)/i.test(userMessage);
+            const isExplicitWeb =
+              /(busca(r)? en internet|busca(r)? en la web|busca(r)? en google|googlea(r)?|navega(r)?|chequea(r)? online|fijate en internet|investiga(r)? en la web)/i.test(
+                userMessage,
+              );
+            const isDynamic =
+              /(noticias|titulares|dolar|euro|cotizacion|precio|partido|goles|clima|pronostico|temperatura)/i.test(
+                userMessage,
+              );
             triggerWebSearch = isExplicitWeb || (isDynamic && !hasRagHits);
           }
         }
@@ -247,8 +359,22 @@ export class JarvisService {
         const toolAnswer = await this.assistantTools.resolve(userMessage);
         if (toolAnswer) {
           toolsUsed.push('direct_tool');
-          await this.conversationRepo.create({ sessionId, role: 'assistant', content: toolAnswer, metadata: { source: 'tool' } });
-          await this.agentRunRepo.create({ sessionId, question: userMessage, answer: toolAnswer, toolsUsed, modelUsed: 'none', provider: 'tool', durationMs: Date.now() - startTime, success: true });
+          await this.conversationRepo.create({
+            sessionId,
+            role: 'assistant',
+            content: toolAnswer,
+            metadata: { source: 'tool' },
+          });
+          await this.agentRunRepo.create({
+            sessionId,
+            question: userMessage,
+            answer: toolAnswer,
+            toolsUsed,
+            modelUsed: 'none',
+            provider: 'tool',
+            durationMs: Date.now() - startTime,
+            success: true,
+          });
           return toolAnswer;
         }
       }
@@ -258,7 +384,17 @@ export class JarvisService {
         const calContext = await this.googleCalendar.getUpcomingEvents();
         if (calContext) {
           toolsUsed.push('google_calendar');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, calContext, undefined, mode);
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            calContext,
+            undefined,
+            mode,
+          );
         }
       }
 
@@ -267,7 +403,17 @@ export class JarvisService {
         const tasksContext = await this.googleTasks.getPendingTasks();
         if (tasksContext) {
           toolsUsed.push('google_tasks');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, tasksContext, undefined, mode);
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            tasksContext,
+            undefined,
+            mode,
+          );
         }
       }
 
@@ -279,24 +425,46 @@ export class JarvisService {
         if (/(correos de hoy|de hoy|recibidos hoy)/i.test(n)) {
           gmailContext = await this.googleGmail.getEmailsFromToday();
         } else if (/(busca|buscar|buscame)\s+.*(correo|email|mail)/i.test(n)) {
-          const queryMatch = userMessage.match(/busca(?:r|me)?\s+(?:en\s+(?:mi\s+)?(?:correo|gmail))?\s*['""]?([^'""\n]+)['""]?/i);
+          const queryMatch = userMessage.match(
+            /busca(?:r|me)?\s+(?:en\s+(?:mi\s+)?(?:correo|gmail))?\s*['""]?([^'""\n]+)['""]?/i,
+          );
           const q = queryMatch?.[1]?.trim() ?? userMessage;
           gmailContext = await this.googleGmail.searchEmails(q);
         } else if (/(borrador|redacta|escrib[ei])\s+/i.test(n)) {
           const toMatch = userMessage.match(/(?:a|para)\s+([\w.@+-]+@[\w.]+)/i);
-          const subjectMatch = userMessage.match(/(?:sobre|asunto|subject)\s+['"]?([^'""\n]{3,60})['"]?/i);
+          const subjectMatch = userMessage.match(
+            /(?:sobre|asunto|subject)\s+['"]?([^'""\n]{3,60})['"]?/i,
+          );
           if (toMatch && subjectMatch) {
-            const body = userMessage.replace(/.*(?:sobre|asunto)\s+['""]?[^'""\n]+['""]?/i, '').trim() || '(cuerpo pendiente)';
-            gmailContext = await this.googleGmail.draftEmail(toMatch[1], subjectMatch[1], body);
+            const body =
+              userMessage
+                .replace(/.*(?:sobre|asunto)\s+['""]?[^'""\n]+['""]?/i, '')
+                .trim() || '(cuerpo pendiente)';
+            gmailContext = await this.googleGmail.draftEmail(
+              toMatch[1],
+              subjectMatch[1],
+              body,
+            );
           } else {
-            gmailContext = '⚠️ Para crear un borrador necesito el destinatario y el asunto.\nEjemplo: "redactá un email a nombre@email.com sobre Reunión del lunes"';
+            gmailContext =
+              '⚠️ Para crear un borrador necesito el destinatario y el asunto.\nEjemplo: "redactá un email a nombre@email.com sobre Reunión del lunes"';
           }
         } else {
           gmailContext = await this.googleGmail.getImportantEmails();
         }
 
         toolsUsed.push('gmail');
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, gmailContext, undefined, mode);
+        return await this.respondWithLLM(
+          userMessage,
+          sessionId,
+          providerName,
+          provider,
+          toolsUsed,
+          startTime,
+          gmailContext,
+          undefined,
+          mode,
+        );
       }
 
       // ── 12. Ejecutar Google Drive ──────────────────────────────────────────
@@ -309,18 +477,33 @@ export class JarvisService {
           if (idMatch) {
             driveContext = await this.googleDrive.syncToKnowledge(idMatch[1]);
           } else {
-            driveContext = '⚠️ Para sincronizar un archivo de Drive, compartí la URL del archivo.\nEjemplo: "sincronizá https://drive.google.com/file/d/FILE_ID/view"';
+            driveContext =
+              '⚠️ Para sincronizar un archivo de Drive, compartí la URL del archivo.\nEjemplo: "sincronizá https://drive.google.com/file/d/FILE_ID/view"';
           }
-        } else if (/(archivos recientes|archivos de drive|mis archivos)/i.test(n)) {
+        } else if (
+          /(archivos recientes|archivos de drive|mis archivos)/i.test(n)
+        ) {
           driveContext = await this.googleDrive.listRecentFiles();
         } else {
-          const queryMatch = userMessage.match(/(?:busca|encontrá|encontrar|buscar)\s+(?:en\s+drive\s+)?['"]?([^'""\n]{3,60})['"]?/i);
+          const queryMatch = userMessage.match(
+            /(?:busca|encontrá|encontrar|buscar)\s+(?:en\s+drive\s+)?['"]?([^'""\n]{3,60})['"]?/i,
+          );
           const q = queryMatch?.[1]?.trim() ?? userMessage;
           driveContext = await this.googleDrive.searchFiles(q);
         }
 
         toolsUsed.push('drive');
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, driveContext, undefined, mode);
+        return await this.respondWithLLM(
+          userMessage,
+          sessionId,
+          providerName,
+          provider,
+          toolsUsed,
+          startTime,
+          driveContext,
+          undefined,
+          mode,
+        );
       }
 
       // ── 13. Ejecutar YouTube ───────────────────────────────────────────────
@@ -329,7 +512,11 @@ export class JarvisService {
         let ytContext: string;
 
         if (videoId) {
-          if (/(comentarios?|comments?|que dice la gente|opiniones?)/i.test(userMessage)) {
+          if (
+            /(comentarios?|comments?|que dice la gente|opiniones?)/i.test(
+              userMessage,
+            )
+          ) {
             const [info, comments] = await Promise.all([
               this.youtubeService.getVideoInfo(videoId),
               this.youtubeService.getVideoComments(videoId),
@@ -339,30 +526,58 @@ export class JarvisService {
             ytContext = await this.youtubeService.getVideoInfo(videoId);
           }
         } else if (/(canal|channel)\s+/i.test(userMessage)) {
-          const idMatch = userMessage.match(/(?:canal|channel)\s+(?:de\s+)?[@]?([\w.-]{3,})/i);
+          const idMatch = userMessage.match(
+            /(?:canal|channel)\s+(?:de\s+)?[@]?([\w.-]{3,})/i,
+          );
           ytContext = idMatch?.[1]
             ? await this.youtubeService.getChannelInfo(idMatch[1])
             : await this.youtubeService.searchVideos(userMessage);
         } else {
-          const queryMatch = userMessage.match(/(?:busca(?:r)?|dame|mostrame)\s+(?:videos?\s+(?:de|sobre))?\s*['"]?([^'""\n]{3,80})['"]?/i)
-            ?? userMessage.match(/(?:videos?\s+(?:de|sobre))\s+['"]?([^'""\n]{3,80})['"]?/i);
+          const queryMatch =
+            userMessage.match(
+              /(?:busca(?:r)?|dame|mostrame)\s+(?:videos?\s+(?:de|sobre))?\s*['"]?([^'""\n]{3,80})['"]?/i,
+            ) ??
+            userMessage.match(
+              /(?:videos?\s+(?:de|sobre))\s+['"]?([^'""\n]{3,80})['"]?/i,
+            );
           const q = queryMatch?.[1]?.trim() ?? userMessage;
           ytContext = await this.youtubeService.searchVideos(q);
         }
 
         toolsUsed.push('youtube');
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, ytContext, undefined, mode);
+        return await this.respondWithLLM(
+          userMessage,
+          sessionId,
+          providerName,
+          provider,
+          toolsUsed,
+          startTime,
+          ytContext,
+          undefined,
+          mode,
+        );
       }
 
       // ── 14. Ejecutar Astrology ─────────────────────────────────────────────
       if (intent.intent === 'ASTROLOGY') {
-        const wantsFullChart = /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(userMessage);
+        const wantsFullChart =
+          /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(
+            userMessage,
+          );
         const astroData = wantsFullChart
           ? this.astrologyTool.getPlanetaryPositions()
           : this.astrologyTool.getTodaySkyData();
 
         toolsUsed.push('astrology_calculated');
-        return await this.respondWithAstrologyPrompt(userMessage, sessionId, providerName, provider, toolsUsed, startTime, astroData);
+        return await this.respondWithAstrologyPrompt(
+          userMessage,
+          sessionId,
+          providerName,
+          provider,
+          toolsUsed,
+          startTime,
+          astroData,
+        );
       }
 
       // ── 15. Ejecutar URL scraping ──────────────────────────────────────────
@@ -371,49 +586,137 @@ export class JarvisService {
         const browserCtx = this.assistantTools.consumeBrowserContext();
         if (browserCtx) {
           toolsUsed.push('browser');
-          await this.conversationRepo.create({ sessionId, role: 'system', content: browserCtx, metadata: { source: 'browser_context' } });
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, browserCtx, undefined, mode);
+          await this.conversationRepo.create({
+            sessionId,
+            role: 'system',
+            content: browserCtx,
+            metadata: { source: 'browser_context' },
+          });
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            browserCtx,
+            undefined,
+            mode,
+          );
         }
-        return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, undefined, mode);
+        return await this.respondWithLLM(
+          userMessage,
+          sessionId,
+          providerName,
+          provider,
+          toolsUsed,
+          startTime,
+          undefined,
+          undefined,
+          mode,
+        );
       }
 
       // ── 16. SITE_SEARCH ────────────────────────────────────────────────────
       if (intent.intent === 'SITE_SEARCH' && intent.siteSearch) {
         const { site, query } = intent.siteSearch;
-        const siteSearchCtx = await this.jarvisWebSearch.executeSiteSearch(site, query);
+        const siteSearchCtx = await this.jarvisWebSearch.executeSiteSearch(
+          site,
+          query,
+        );
         if (siteSearchCtx) {
           toolsUsed.push('site_search');
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, siteSearchCtx, prefetchedRagContext, mode);
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            siteSearchCtx,
+            prefetchedRagContext,
+            mode,
+          );
         }
 
-        const noEvidenceMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage, site);
-        await this.conversationRepo.create({ sessionId, role: 'assistant', content: noEvidenceMsg, metadata: { source: 'site_search_fail' } });
-        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noEvidenceMsg, toolsUsed: [...toolsUsed, 'site_search_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+        const noEvidenceMsg = this.jarvisWebSearch.buildNoEvidenceMessage(
+          userMessage,
+          site,
+        );
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: noEvidenceMsg,
+          metadata: { source: 'site_search_fail' },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: noEvidenceMsg,
+          toolsUsed: [...toolsUsed, 'site_search_fail'],
+          modelUsed: 'none',
+          provider: 'none',
+          durationMs: Date.now() - startTime,
+          success: false,
+        });
         return noEvidenceMsg;
       }
 
       // ── 17. SPORTS ─────────────────────────────────────────────────────────
       if (intent.intent === 'SPORTS') {
         if (mode !== 'OFFLINE' && triggerWebSearch) {
-          const sportsResult = await this.jarvisWebSearch.autoWebSearch(intent.sportsQuery ?? userMessage, 'deportes');
+          const sportsResult = await this.jarvisWebSearch.autoWebSearch(
+            intent.sportsQuery ?? userMessage,
+            'deportes',
+          );
           if (sportsResult) {
             toolsUsed.push('sports_search');
-            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, sportsResult, prefetchedRagContext, mode);
+            return await this.respondWithLLM(
+              userMessage,
+              sessionId,
+              providerName,
+              provider,
+              toolsUsed,
+              startTime,
+              sportsResult,
+              prefetchedRagContext,
+              mode,
+            );
           }
         }
-        const noSportsMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
-        await this.conversationRepo.create({ sessionId, role: 'assistant', content: noSportsMsg, metadata: { source: 'sports_fail' } });
-        await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noSportsMsg, toolsUsed: [...toolsUsed, 'sports_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+        const noSportsMsg =
+          this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: noSportsMsg,
+          metadata: { source: 'sports_fail' },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: noSportsMsg,
+          toolsUsed: [...toolsUsed, 'sports_fail'],
+          modelUsed: 'none',
+          provider: 'none',
+          durationMs: Date.now() - startTime,
+          success: false,
+        });
         return noSportsMsg;
       }
 
       // ── 18. WEB search ─────────────────────────────────────────────────────
       if (intent.intent === 'WEB') {
         if (triggerWebSearch) {
-          const domain = this.jarvisWebSearch.domainRouter.classify(userMessage);
-          this.logger.log(`[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`);
+          const domain =
+            this.jarvisWebSearch.domainRouter.classify(userMessage);
+          this.logger.log(
+            `[domain] ${domain.domain} (${domain.confidence}) — ${domain.reason}`,
+          );
 
-          const category = this.jarvisWebSearch.domainToCategory(domain.domain) ?? this.jarvisWebSearch.detectCategory(userMessage);
+          const category =
+            this.jarvisWebSearch.domainToCategory(domain.domain) ??
+            this.jarvisWebSearch.detectCategory(userMessage);
           const searchQuery = domain.enrichedQuery ?? userMessage;
 
           const webCtx = await this.jarvisWebSearch.autoWebSearchWithSources(
@@ -424,19 +727,52 @@ export class JarvisService {
 
           if (webCtx) {
             toolsUsed.push('auto_search');
-            if (domain.domain !== 'UNKNOWN') toolsUsed.push(`domain:${domain.domain}`);
-            return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
+            if (domain.domain !== 'UNKNOWN')
+              toolsUsed.push(`domain:${domain.domain}`);
+            return await this.respondWithLLM(
+              userMessage,
+              sessionId,
+              providerName,
+              provider,
+              toolsUsed,
+              startTime,
+              webCtx,
+              prefetchedRagContext,
+              mode,
+            );
           }
 
-          if (category === 'noticias' || category === 'gobierno' || domain.domain === 'LOCAL_NEWS' || domain.domain === 'GOVERNMENT_LOCAL') {
-            this.logger.log(`[jarvis] noticias sin resultados → último intento con titulares de El Once`);
+          if (
+            category === 'noticias' ||
+            category === 'gobierno' ||
+            domain.domain === 'LOCAL_NEWS' ||
+            domain.domain === 'GOVERNMENT_LOCAL'
+          ) {
+            this.logger.log(
+              `[jarvis] noticias sin resultados → último intento con titulares de El Once`,
+            );
             // Let it fallback gracefully or return buildNoEvidenceMessage
           }
 
           if (this.jarvisWebSearch.isCurrentEventQuery(userMessage)) {
-            const noWebMsg = this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
-            await this.conversationRepo.create({ sessionId, role: 'assistant', content: noWebMsg, metadata: { source: 'web_fail_graceful' } });
-            await this.agentRunRepo.create({ sessionId, question: userMessage, answer: noWebMsg, toolsUsed: [...toolsUsed, 'web_fail'], modelUsed: 'none', provider: 'none', durationMs: Date.now() - startTime, success: false });
+            const noWebMsg =
+              this.jarvisWebSearch.buildNoEvidenceMessage(userMessage);
+            await this.conversationRepo.create({
+              sessionId,
+              role: 'assistant',
+              content: noWebMsg,
+              metadata: { source: 'web_fail_graceful' },
+            });
+            await this.agentRunRepo.create({
+              sessionId,
+              question: userMessage,
+              answer: noWebMsg,
+              toolsUsed: [...toolsUsed, 'web_fail'],
+              modelUsed: 'none',
+              provider: 'none',
+              durationMs: Date.now() - startTime,
+              success: false,
+            });
             return noWebMsg;
           }
         }
@@ -445,17 +781,39 @@ export class JarvisService {
       // ── 19. Fallback web query ─────────────────────────────────────────────
       if (this.jarvisWebSearch.needsWebSearch(userMessage)) {
         const category = this.jarvisWebSearch.detectCategory(userMessage);
-        const webCtx = await this.jarvisWebSearch.autoWebSearch(userMessage, category);
+        const webCtx = await this.jarvisWebSearch.autoWebSearch(
+          userMessage,
+          category,
+        );
         if (webCtx) {
           toolsUsed.push('auto_search');
           if (category) toolsUsed.push(`cache:${category}`);
-          return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, webCtx, prefetchedRagContext, mode);
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            webCtx,
+            prefetchedRagContext,
+            mode,
+          );
         }
       }
 
       // ── 20. LOCAL LLM query ────────────────────────────────────────────────
-      return await this.respondWithLLM(userMessage, sessionId, providerName, provider, toolsUsed, startTime, undefined, prefetchedRagContext, mode);
-
+      return await this.respondWithLLM(
+        userMessage,
+        sessionId,
+        providerName,
+        provider,
+        toolsUsed,
+        startTime,
+        undefined,
+        prefetchedRagContext,
+        mode,
+      );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
       this.logger.error(`Error en Jarvis query: ${errMsg}`);
@@ -499,21 +857,30 @@ export class JarvisService {
     mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
-      await this.jarvisPromptBuilder.buildJarvisContext(userMessage, sessionId, true, true, 6, webContext, !!webContext, prefetchedRagContext);
+      await this.jarvisPromptBuilder.buildJarvisContext(
+        userMessage,
+        sessionId,
+        true,
+        true,
+        6,
+        webContext,
+        !!webContext,
+        prefetchedRagContext,
+      );
 
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs) toolsUsed.push('rag');
 
     const finalSystemPrompt = webContext
       ? systemPrompt
-        .replace(
-          '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
-          '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
-        )
-        .replace(
-          '3. No inventar datos. Si no tenés la info, decilo claramente.',
-          '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
-        )
+          .replace(
+            '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
+            '4. TENÉS datos reales en el contexto web. Respondé directamente con esos datos. Si el texto es en inglés, traducílo. NUNCA digas "no hay información disponible" si hay datos en el contexto.',
+          )
+          .replace(
+            '3. No inventar datos. Si no tenés la info, decilo claramente.',
+            '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
+          )
       : systemPrompt;
 
     const response = await provider.generate({
@@ -522,18 +889,35 @@ export class JarvisService {
         { role: 'user', content: userPrompt },
       ],
     });
-    const responseContent = this.formatProviderResponse(response.content, provider);
+    const responseContent = this.formatProviderResponse(
+      response.content,
+      provider,
+    );
 
-    const isEvasiveResponse = !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
+    const isEvasiveResponse =
+      !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
     if (isEvasiveResponse) {
-      this.logger.log(`[jarvis] respuesta evasiva detectada → buscando en internet`);
+      this.logger.log(
+        `[jarvis] respuesta evasiva detectada → buscando en internet`,
+      );
       const category = this.jarvisWebSearch.detectCategory(userMessage);
-      const webCtx = await this.jarvisWebSearch.autoWebSearch(userMessage, category);
+      const webCtx = await this.jarvisWebSearch.autoWebSearch(
+        userMessage,
+        category,
+      );
       if (webCtx) {
         toolsUsed.push('web_fallback');
         if (category) toolsUsed.push(`cache:${category}`);
         const { systemPrompt: sp2, userPrompt: up2 } =
-          await this.jarvisPromptBuilder.buildJarvisContext(userMessage, sessionId, false, false, 0, webCtx, true);
+          await this.jarvisPromptBuilder.buildJarvisContext(
+            userMessage,
+            sessionId,
+            false,
+            false,
+            0,
+            webCtx,
+            true,
+          );
         const sp2Final = sp2
           .replace(
             '4. Responder en máximo 3 oraciones salvo que se pidan detalles.',
@@ -549,13 +933,30 @@ export class JarvisService {
             { role: 'user', content: up2 },
           ],
         });
-        const response2Content = this.formatProviderResponse(response2.content, provider);
-        await this.saveAndObserve(sessionId, userMessage, response2Content, toolsUsed, response2, startTime);
+        const response2Content = this.formatProviderResponse(
+          response2.content,
+          provider,
+        );
+        await this.saveAndObserve(
+          sessionId,
+          userMessage,
+          response2Content,
+          toolsUsed,
+          response2,
+          startTime,
+        );
         return response2Content;
       }
     }
 
-    await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
+    await this.saveAndObserve(
+      sessionId,
+      userMessage,
+      responseContent,
+      toolsUsed,
+      response,
+      startTime,
+    );
     return responseContent;
   }
 
@@ -572,10 +973,14 @@ export class JarvisService {
     const identity = this.jarvisIdentity.getIdentity();
     const now = new Date();
     const dateStr = now.toLocaleDateString('es-AR', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
     const timeStr = now.toLocaleTimeString('es-AR', {
-      hour: '2-digit', minute: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
       timeZone: profile.timezone || 'America/Argentina/Buenos_Aires',
     });
 
@@ -615,12 +1020,25 @@ export class JarvisService {
       ],
     });
 
-    const responseContent = this.formatProviderResponse(response.content, provider);
-    await this.saveAndObserve(sessionId, userMessage, responseContent, toolsUsed, response, startTime);
+    const responseContent = this.formatProviderResponse(
+      response.content,
+      provider,
+    );
+    await this.saveAndObserve(
+      sessionId,
+      userMessage,
+      responseContent,
+      toolsUsed,
+      response,
+      startTime,
+    );
     return responseContent;
   }
 
-  private formatProviderResponse(content: string, provider: ILLMProvider): string {
+  private formatProviderResponse(
+    content: string,
+    provider: ILLMProvider,
+  ): string {
     if (provider.getProviderName() !== 'ollama') {
       return content;
     }
@@ -670,7 +1088,12 @@ export class JarvisService {
       sessionId,
       role: 'assistant',
       content: answer,
-      metadata: { source: 'llm', model: response.model, provider: response.provider, latencyMs: response.latencyMs },
+      metadata: {
+        source: 'llm',
+        model: response.model,
+        provider: response.provider,
+        latencyMs: response.latencyMs,
+      },
     });
     await this.agentRunRepo.create({
       sessionId,
@@ -686,12 +1109,18 @@ export class JarvisService {
     await this.updateSessionSummaryIfNeeded(sessionId);
 
     this.memoryExtractor.extractAndSave(question, sessionId).catch((err) => {
-      this.logger.warn(`[memory:extract] error background: ${err?.message ?? err}`);
+      this.logger.warn(
+        `[memory:extract] error background: ${err?.message ?? err}`,
+      );
     });
 
-    this.knowledgeEvolution.extractAndSave(question, answer, sessionId).catch((err) => {
-      this.logger.warn(`[evolution:extract] error background: ${err?.message ?? err}`);
-    });
+    this.knowledgeEvolution
+      .extractAndSave(question, answer, sessionId)
+      .catch((err) => {
+        this.logger.warn(
+          `[evolution:extract] error background: ${err?.message ?? err}`,
+        );
+      });
   }
 
   private async updateSessionSummaryIfNeeded(sessionId: string): Promise<void> {
@@ -707,7 +1136,11 @@ export class JarvisService {
       const provider = this.providers.get('ollama')!;
       const response = await provider.generate({
         messages: [
-          { role: 'system', content: 'Resumí en 2-3 oraciones los temas principales de esta conversación. Sé muy conciso.' },
+          {
+            role: 'system',
+            content:
+              'Resumí en 2-3 oraciones los temas principales de esta conversación. Sé muy conciso.',
+          },
           { role: 'user', content: conversationText },
         ],
       });
@@ -754,8 +1187,18 @@ export class JarvisService {
 
   // ── Documentos RAG ──────────────────────────────────────────────────────────
 
-  async ingestDocument(title: string, content: string, category?: string, source?: string) {
-    const doc = await this.documentRepo.createDocument({ title, content, category, source });
+  async ingestDocument(
+    title: string,
+    content: string,
+    category?: string,
+    source?: string,
+  ) {
+    const doc = await this.documentRepo.createDocument({
+      title,
+      content,
+      category,
+      source,
+    });
 
     const paragraphs = content
       .split(/\n\n+/)
@@ -763,10 +1206,15 @@ export class JarvisService {
       .filter((p) => p.length > 50);
 
     for (const para of paragraphs) {
-      await this.documentRepo.createChunk({ documentId: doc.id, content: para });
+      await this.documentRepo.createChunk({
+        documentId: doc.id,
+        content: para,
+      });
     }
 
-    this.logger.log(`Documento "${title}" ingestado con ${paragraphs.length} chunks`);
+    this.logger.log(
+      `Documento "${title}" ingestado con ${paragraphs.length} chunks`,
+    );
     return doc;
   }
 
@@ -817,7 +1265,16 @@ export class JarvisService {
 
   // ── Browser Tool ─────────────────────────────────────────────────────────────
 
-  async fetchUrl(url: string): Promise<{ url: string; title?: string; description?: string; text?: string; wordCount?: number; links?: string[]; renderedWithPlaywright?: boolean; error?: string }> {
+  async fetchUrl(url: string): Promise<{
+    url: string;
+    title?: string;
+    description?: string;
+    text?: string;
+    wordCount?: number;
+    links?: string[];
+    renderedWithPlaywright?: boolean;
+    error?: string;
+  }> {
     const result = await this.browserTool.fetch(url);
     if ('error' in result) return { url, error: result.error };
     return {
@@ -831,7 +1288,10 @@ export class JarvisService {
     };
   }
 
-  async navigateUrl(url: string, options?: { screenshot?: boolean; waitFor?: string }) {
+  async navigateUrl(
+    url: string,
+    options?: { screenshot?: boolean; waitFor?: string },
+  ) {
     const result = await this.browserTool.navigate(url, options);
     if ('error' in result) return { url, error: result.error };
     return result;
@@ -845,4 +1305,3 @@ export class JarvisService {
     return this.corpusSelector.getIndex();
   }
 }
-

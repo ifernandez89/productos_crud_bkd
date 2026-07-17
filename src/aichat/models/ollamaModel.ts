@@ -38,7 +38,9 @@ export class OllamaModelService implements IModelService {
    * Separar System de Human mejora considerablemente la calidad
    * en llama3.2 y modelos instrucción-tuneados.
    */
-  async invokeWithMessages(prompt: StructuredPrompt): Promise<AIMessageResponse> {
+  async invokeWithMessages(
+    prompt: StructuredPrompt,
+  ): Promise<AIMessageResponse> {
     const model = await this.getModel();
     const messages = [
       new SystemMessage(prompt.system),
@@ -53,15 +55,17 @@ export class OllamaModelService implements IModelService {
   private async create(): Promise<void> {
     this.model = new ChatOllama({
       model: resolveOllamaModelName(), //en cloud, EXCELENTE RENDIMIENTO: qwen3-coder-next:cloud //qwen2.5:1.5b aun mas rapido // llama3.2:3b rápido para chat //qwen3.5:4b más preciso para tareas complejas
-      temperature: 0.2,            // bajado de 0.3 → más determinista
+      temperature: 0.2, // bajado de 0.3 → más determinista
       topP: 0.85,
       topK: 15,
       numPredict: 400,
       repeatPenalty: 1.1,
-      numCtx: 4096,                // subido de 2048 → mejor comprensión de contexto largo
+      numCtx: 4096, // subido de 2048 → mejor comprensión de contexto largo
       // Stop tokens ampliados: cortan antes si el modelo intenta "seguir hablando"
       stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:'],
     });
-    this.logger.log('Ollama model initialized (Jarvis config: temp=0.2, ctx=4096)');
+    this.logger.log(
+      'Ollama model initialized (Jarvis config: temp=0.2, ctx=4096)',
+    );
   }
 }

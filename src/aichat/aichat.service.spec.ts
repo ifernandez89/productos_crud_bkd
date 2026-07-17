@@ -168,7 +168,9 @@ describe('AichatService', () => {
       expect(result.system).toMatch(/"hora":"\d{2}:\d{2}"/);
       expect(result.system).toMatch(/"ubicacion":"Paraná, Entre Ríos"/);
       expect(result.system).toContain('Hoy es');
-      expect(result.system).toContain('Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.');
+      expect(result.system).toContain(
+        'Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.',
+      );
     });
   });
 
@@ -176,10 +178,16 @@ describe('AichatService', () => {
     it('should include a model notice in the user-facing answer', async () => {
       process.env.OLLAMA_MODEL_NAME = 'qwen3.5:4b';
       mockAssistantTools.resolve.mockResolvedValue(null);
-      mockOllamaModel.invokeWithMessages.mockResolvedValue({ content: 'Respuesta de prueba' });
-      jest.spyOn(service as any, 'persistSuccessfulQuestion').mockResolvedValue(undefined);
+      mockOllamaModel.invokeWithMessages.mockResolvedValue({
+        content: 'Respuesta de prueba',
+      });
+      jest
+        .spyOn(service as any, 'persistSuccessfulQuestion')
+        .mockResolvedValue(undefined);
 
-      const result = await service.preguntarOllamaOexternal({ pregunta: 'hola' } as any);
+      const result = await service.preguntarOllamaOexternal({
+        pregunta: 'hola',
+      } as any);
 
       expect(result).toContain('Modelo activo');
       expect(result).toContain('qwen3.5:4b');

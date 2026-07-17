@@ -2,7 +2,9 @@ import { extractInvestigationCommand } from './investigation.utils';
 
 describe('extractInvestigationCommand', () => {
   it('detecta una URL después del comando /investigar', () => {
-    const result = extractInvestigationCommand('/investigar https://docs.nestjs.com/security/authentication');
+    const result = extractInvestigationCommand(
+      '/investigar https://docs.nestjs.com/security/authentication',
+    );
     expect(result).toBe('https://docs.nestjs.com/security/authentication');
   });
 

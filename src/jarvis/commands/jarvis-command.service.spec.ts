@@ -4,17 +4,23 @@ import { JarvisCommandService } from './jarvis-command.service';
 
 describe('JarvisCommandService', () => {
   it('returns the scanned books from the library index when the user asks for mis documentos', async () => {
-    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const conversationRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const documentRepo = {
       getMostRecentDocuments: jest.fn().mockResolvedValue([]),
     } as any;
     const userProfileRepo = {} as any;
-    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const agentRunRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const categorySummaryService = {} as any;
     const documentSummaryService = {} as any;
     const documentCompareService = {} as any;
     const knowledgeTestService = {} as any;
-    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const jarvisKnowledge = {
+      handleListCommand: jest.fn().mockResolvedValue(null),
+    } as any;
     const corpusSelector = {
       getIndex: jest.fn().mockReturnValue({
         metadata: { version: 1, descripcion: '', nota: '' },
@@ -51,7 +57,11 @@ describe('JarvisCommandService', () => {
       corpusSelector,
     );
 
-    const result = await service.handleCommand('mis documentos', 'session-1', 123);
+    const result = await service.handleCommand(
+      'mis documentos',
+      'session-1',
+      123,
+    );
 
     expect(result.handled).toBe(true);
     expect(result.response).toContain('Libro escaneado');
@@ -59,17 +69,23 @@ describe('JarvisCommandService', () => {
   });
 
   it('returns the authors from the library index when the user asks for mis autores', async () => {
-    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const conversationRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const documentRepo = {
       getMostRecentDocuments: jest.fn().mockResolvedValue([]),
     } as any;
     const userProfileRepo = {} as any;
-    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const agentRunRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const categorySummaryService = {} as any;
     const documentSummaryService = {} as any;
     const documentCompareService = {} as any;
     const knowledgeTestService = {} as any;
-    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const jarvisKnowledge = {
+      handleListCommand: jest.fn().mockResolvedValue(null),
+    } as any;
     const corpusSelector = {
       getIndex: jest.fn().mockReturnValue({
         metadata: { version: 1, descripcion: '', nota: '' },
@@ -128,25 +144,39 @@ describe('JarvisCommandService', () => {
   });
 
   it('returns the books associated with a specific author when the user sends the author name', async () => {
-    const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
+    const indexPath = path.join(
+      process.cwd(),
+      'src',
+      'jarvis',
+      'knowledge',
+      'library-index.json',
+    );
     const raw = fs.readFileSync(indexPath, 'utf8');
     const index = JSON.parse(raw);
     const docs = index.documentos as Array<Record<string, any>>;
-    const targetDoc = docs.find((doc) => /hermes trismegisto/i.test(doc.autor ?? ''));
+    const targetDoc = docs.find((doc) =>
+      /hermes trismegisto/i.test(doc.autor ?? ''),
+    );
 
     expect(targetDoc).toBeDefined();
 
-    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const conversationRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const documentRepo = {
       getMostRecentDocuments: jest.fn().mockResolvedValue([]),
     } as any;
     const userProfileRepo = {} as any;
-    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const agentRunRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const categorySummaryService = {} as any;
     const documentSummaryService = {} as any;
     const documentCompareService = {} as any;
     const knowledgeTestService = {} as any;
-    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const jarvisKnowledge = {
+      handleListCommand: jest.fn().mockResolvedValue(null),
+    } as any;
     const corpusSelector = {
       getIndex: jest.fn().mockReturnValue(index),
     } as any;
@@ -164,7 +194,11 @@ describe('JarvisCommandService', () => {
       corpusSelector,
     );
 
-    const result = await service.handleCommand('Hermes Trismegisto', 'session-1', 123);
+    const result = await service.handleCommand(
+      'Hermes Trismegisto',
+      'session-1',
+      123,
+    );
 
     expect(result.handled).toBe(true);
     expect(result.response).toContain(targetDoc!.titulo);
@@ -172,15 +206,23 @@ describe('JarvisCommandService', () => {
   });
 
   it('shows cleaned titles in mis documentos instead of the noisy author suffixes', async () => {
-    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
-    const documentRepo = { getMostRecentDocuments: jest.fn().mockResolvedValue([]) } as any;
+    const conversationRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
+    const documentRepo = {
+      getMostRecentDocuments: jest.fn().mockResolvedValue([]),
+    } as any;
     const userProfileRepo = {} as any;
-    const agentRunRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const agentRunRepo = {
+      create: jest.fn().mockResolvedValue(undefined),
+    } as any;
     const categorySummaryService = {} as any;
     const documentSummaryService = {} as any;
     const documentCompareService = {} as any;
     const knowledgeTestService = {} as any;
-    const jarvisKnowledge = { handleListCommand: jest.fn().mockResolvedValue(null) } as any;
+    const jarvisKnowledge = {
+      handleListCommand: jest.fn().mockResolvedValue(null),
+    } as any;
     const corpusSelector = {
       getIndex: jest.fn().mockReturnValue({
         metadata: { version: 1, descripcion: '', nota: '' },
@@ -217,29 +259,63 @@ describe('JarvisCommandService', () => {
       corpusSelector,
     );
 
-    const result = await service.handleCommand('mis documentos', 'session-1', 123);
+    const result = await service.handleCommand(
+      'mis documentos',
+      'session-1',
+      123,
+    );
 
     expect(result.handled).toBe(true);
-    expect(result.response).toContain('aventuras fuera del cuerpo buhlman william');
+    expect(result.response).toContain(
+      'aventuras fuera del cuerpo buhlman william',
+    );
     expect(result.response).toContain('William Buhlman');
   });
 
   it('loads Jung and Grinberg entries from the library index JSON so authors and categories are discoverable', async () => {
-    const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
+    const indexPath = path.join(
+      process.cwd(),
+      'src',
+      'jarvis',
+      'knowledge',
+      'library-index.json',
+    );
     const raw = fs.readFileSync(indexPath, 'utf8');
     const index = JSON.parse(raw);
     const docs = index.documentos as Array<Record<string, any>>;
 
-    const jungDocs = docs.filter((doc) => /carl gustav jung/i.test(doc.autor ?? '') || /carl gustav jung/i.test(doc.titulo ?? '') || /carl gustav jung/i.test(doc.archivo ?? ''));
-    const grinbergDocs = docs.filter((doc) => /jacobo grinberg|grinberg zylberbaum/i.test(doc.autor ?? '') || /jacobo grinberg|grinberg zylberbaum/i.test(doc.titulo ?? '') || /jacobo grinberg|grinberg zylberbaum/i.test(doc.archivo ?? ''));
+    const jungDocs = docs.filter(
+      (doc) =>
+        /carl gustav jung/i.test(doc.autor ?? '') ||
+        /carl gustav jung/i.test(doc.titulo ?? '') ||
+        /carl gustav jung/i.test(doc.archivo ?? ''),
+    );
+    const grinbergDocs = docs.filter(
+      (doc) =>
+        /jacobo grinberg|grinberg zylberbaum/i.test(doc.autor ?? '') ||
+        /jacobo grinberg|grinberg zylberbaum/i.test(doc.titulo ?? '') ||
+        /jacobo grinberg|grinberg zylberbaum/i.test(doc.archivo ?? ''),
+    );
 
     expect(jungDocs.length).toBeGreaterThan(0);
     expect(grinbergDocs.length).toBeGreaterThan(0);
 
-    const jungCategories = new Set(jungDocs.flatMap((doc) => doc.categorias ?? []));
-    const grinbergCategories = new Set(grinbergDocs.flatMap((doc) => doc.categorias ?? []));
+    const jungCategories = new Set(
+      jungDocs.flatMap((doc) => doc.categorias ?? []),
+    );
+    const grinbergCategories = new Set(
+      grinbergDocs.flatMap((doc) => doc.categorias ?? []),
+    );
 
-    expect(Array.from(jungCategories).some((c) => /psic|anal|arquet|inconsc/i.test(c))).toBe(true);
-    expect(Array.from(grinbergCategories).some((c) => /chaman|espirit|mistic|medicina|psic/i.test(c))).toBe(true);
+    expect(
+      Array.from(jungCategories).some((c) =>
+        /psic|anal|arquet|inconsc/i.test(c),
+      ),
+    ).toBe(true);
+    expect(
+      Array.from(grinbergCategories).some((c) =>
+        /chaman|espirit|mistic|medicina|psic/i.test(c),
+      ),
+    ).toBe(true);
   });
 });

@@ -1,6 +1,6 @@
 /**
  * BusinessSourceService — Gestor de fuentes comerciales con keywords semánticas
- * 
+ *
  * Esta clase carga las fuentes desde el archivo JSON de configuración y las
  * integra con el SourceRegistry para búsquedas semánticas sin scraping.
  */
@@ -69,27 +69,33 @@ export class BusinessSourceService {
    */
   private loadSources(): void {
     const configPath = path.join(__dirname, 'business-sources.json');
-    
+
     try {
       const configContent = fs.readFileSync(configPath, 'utf-8');
       const config: BusinessSourcesConfig = JSON.parse(configContent);
-      
-      this.logger.log(`Cargando ${config.sources.length} fuentes comerciales...`);
-      
+
+      this.logger.log(
+        `Cargando ${config.sources.length} fuentes comerciales...`,
+      );
+
       // Indexar por URL y por categoría
       for (const source of config.sources) {
         this.sources.set(source.urlBase, source);
-        
+
         if (!this.categories.has(source.category)) {
           this.categories.set(source.category, []);
         }
         this.categories.get(source.category)?.push(source);
       }
-      
-      this.logger.log(`✅ Cargadas ${this.sources.size} fuentes en ${this.categories.size} categorías`);
+
+      this.logger.log(
+        `✅ Cargadas ${this.sources.size} fuentes en ${this.categories.size} categorías`,
+      );
     } catch (error) {
       this.logger.error(`❌ Error al cargar fuentes: ${error.message}`);
-      throw new Error(`No se pudieron cargar las fuentes comerciales: ${error.message}`);
+      throw new Error(
+        `No se pudieron cargar las fuentes comerciales: ${error.message}`,
+      );
     }
   }
 
@@ -120,15 +126,16 @@ export class BusinessSourceService {
    */
   searchByKeywords(query: string): BusinessSource[] {
     const queryLower = query.toLowerCase();
-    const queryTags = queryLower.split(' ').filter(k => k.length > 2);
-    
-    return Array.from(this.sources.values()).filter(source => {
+    const queryTags = queryLower.split(' ').filter((k) => k.length > 2);
+
+    return Array.from(this.sources.values()).filter((source) => {
       // Buscar si alguna tag de la fuente coincide con alguna de la consulta
-      return source.tags.some(sourceTag => 
-        queryTags.some(queryTag => 
-          sourceTag.toLowerCase().includes(queryTag) || 
-          queryTag.includes(sourceTag.toLowerCase())
-        )
+      return source.tags.some((sourceTag) =>
+        queryTags.some(
+          (queryTag) =>
+            sourceTag.toLowerCase().includes(queryTag) ||
+            queryTag.includes(sourceTag.toLowerCase()),
+        ),
       );
     });
   }
@@ -151,9 +158,9 @@ export class BusinessSourceService {
   } {
     const sources = this.getByCategory(category);
     const allTags = new Set<string>();
-    
-    sources.forEach(source => {
-      source.tags.forEach(tag => allTags.add(tag));
+
+    sources.forEach((source) => {
+      source.tags.forEach((tag) => allTags.add(tag));
     });
 
     return {
@@ -163,7 +170,7 @@ export class BusinessSourceService {
       topSources: sources
         .sort((a, b) => b.priority - a.priority)
         .slice(0, 5)
-        .map(s => ({ name: s.name, priority: s.priority })),
+        .map((s) => ({ name: s.name, priority: s.priority })),
     };
   }
 

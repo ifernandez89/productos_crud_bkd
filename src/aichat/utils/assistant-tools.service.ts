@@ -2,7 +2,11 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import { DateTime } from 'luxon';
 import * as Astronomy from 'astronomy-engine';
-import { toJewishDate, formatJewishDateInHebrew, toGregorianDate } from 'jewish-date';
+import {
+  toJewishDate,
+  formatJewishDateInHebrew,
+  toGregorianDate,
+} from 'jewish-date';
 import { create, all } from 'mathjs';
 import { BrowserToolService } from '../../jarvis/tools/browser/browser-tool.service';
 
@@ -23,7 +27,11 @@ type OpenMeteoCurrentResponse = {
   };
 };
 type HolidayRecord = { date: string; localName: string; name?: string };
-type WorldTimeResponse = { datetime: string; timezone: string; utc_offset: string };
+type WorldTimeResponse = {
+  datetime: string;
+  timezone: string;
+  utc_offset: string;
+};
 type CountryRecord = {
   name?: { common?: string };
   capital?: string[];
@@ -134,47 +142,68 @@ export class AssistantToolsService {
     const trimmed = n.trim();
     // Saludo simple de máx 40 chars con palabras clave
     if (trimmed.length > 40) return false;
-    return /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|como estas|como andas|que onda|como va|todo bien|hermano|amigo|brother|hey|hi|hello|como te va|que haces|que tal todo)[\s,?!.]*$/i.test(trimmed);
+    return /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|como estas|como andas|que onda|como va|todo bien|hermano|amigo|brother|hey|hi|hello|como te va|que haces|que tal todo)[\s,?!.]*$/i.test(
+      trimmed,
+    );
   }
 
   // ── Detectores de intención ─────────────────────────────────────────────────
 
   private isWeatherQuery(n: string): boolean {
     // Excluir "clima astrológico" / "clima zodiacal" / "clima lunar" → eso es astrología
-    if (/(astro|zodiac|lunar|horoscopo|signo|tarot|astrolog)/i.test(n)) return false;
-    return /(clima|temperatura|tiempo|pronostico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio)/i.test(n);
+    if (/(astro|zodiac|lunar|horoscopo|signo|tarot|astrolog)/i.test(n))
+      return false;
+    return /(clima|temperatura|tiempo|pronostico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio)/i.test(
+      n,
+    );
   }
 
   private isEconomyQuery(n: string): boolean {
-    return /(dolar|dólar|cotizacion|cotización|riesgo pais|riesgo país|inflacion|inflación)/i.test(n);
+    return /(dolar|dólar|cotizacion|cotización|riesgo pais|riesgo país|inflacion|inflación)/i.test(
+      n,
+    );
   }
 
   private isHolidayQuery(n: string): boolean {
-    return /(feriado|asueto|dia no laborable|dias no laborables|puente)/i.test(n);
+    return /(feriado|asueto|dia no laborable|dias no laborables|puente)/i.test(
+      n,
+    );
   }
 
   private isTimeQuery(n: string): boolean {
-    return /(hora|horario|zona horaria|que hora|hora local|hora actual)/i.test(n);
+    return /(hora|horario|zona horaria|que hora|hora local|hora actual)/i.test(
+      n,
+    );
   }
 
   private isCountryQuery(n: string): boolean {
-    return /(pais|capital|moneda|idioma|poblacion|bandera|datos de|sobre [a-z])/i.test(n);
+    return /(pais|capital|moneda|idioma|poblacion|bandera|datos de|sobre [a-z])/i.test(
+      n,
+    );
   }
 
   private isAstronomyQuery(n: string): boolean {
-    return /(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante|eclipse|solsticio|equinoccio|hemisferio|estacion del ano|primavera|verano|otono|invierno|planeta|mercurio|venus|marte|jupiter|saturno|urano|neptuno|amanecer|atardecer|alba|ocaso|astronomia|constelacion|elongacion|conjuncion)/i.test(n);
+    return /(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante|eclipse|solsticio|equinoccio|hemisferio|estacion del ano|primavera|verano|otono|invierno|planeta|mercurio|venus|marte|jupiter|saturno|urano|neptuno|amanecer|atardecer|alba|ocaso|astronomia|constelacion|elongacion|conjuncion)/i.test(
+      n,
+    );
   }
 
   private isMayanCalendarQuery(n: string): boolean {
-    return /(maya|tzolkin|haab|kin|long count|calendario maya|cuenta larga)/i.test(n);
+    return /(maya|tzolkin|haab|kin|long count|calendario maya|cuenta larga)/i.test(
+      n,
+    );
   }
 
   private isHebrewCalendarQuery(n: string): boolean {
-    return /(hebreo|judio|judaico|calendario hebreo|fecha hebrea|parasha|shabat)/i.test(n);
+    return /(hebreo|judio|judaico|calendario hebreo|fecha hebrea|parasha|shabat)/i.test(
+      n,
+    );
   }
 
   private isMathQuery(n: string): boolean {
-    return /(calcula|calculo|cuanto es|cuanto da|resuelve|deriva|integral|simplifica|factoriza|raiz cuadrada|logaritmo|seno|coseno|tangente|matematica|\d+\s*[\+\-\*\/\^]\s*\d)/i.test(n);
+    return /(calcula|calculo|cuanto es|cuanto da|resuelve|deriva|integral|simplifica|factoriza|raiz cuadrada|logaritmo|seno|coseno|tangente|matematica|\d+\s*[\+\-\*\/\^]\s*\d)/i.test(
+      n,
+    );
   }
 
   // ── Detector de URL ─────────────────────────────────────────────────────────
@@ -184,7 +213,9 @@ export class AssistantToolsService {
   }
 
   private isWebSearchQuery(n: string): boolean {
-    return /(busca|buscar|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame|busca en internet|busca en la web|busca en google|que dice internet|que dice la web|que hay sobre|que se sabe de|novedades de|novedades sobre|noticias de|noticias sobre)/i.test(n);
+    return /(busca|buscar|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame|busca en internet|busca en la web|busca en google|que dice internet|que dice la web|que hay sobre|que se sabe de|novedades de|novedades sobre|noticias de|noticias sobre)/i.test(
+      n,
+    );
   }
 
   /**
@@ -211,9 +242,11 @@ export class AssistantToolsService {
       // Si el usuario escribió algo además de la URL → siempre al LLM
       // El LLM usa el contenido web como contexto para responder la pregunta específica
       if (hasQuestion) {
-        this.logger.log(`[browser] pregunta detectada ("${instruction.slice(0, 60)}") → LLM processing`);
+        this.logger.log(
+          `[browser] pregunta detectada ("${instruction.slice(0, 60)}") → LLM processing`,
+        );
         this._lastBrowserContext = context;
-        return null;  // JarvisService lo inyecta en el prompt
+        return null; // JarvisService lo inyecta en el prompt
       }
 
       // Sin pregunta (solo URL) → mostrar contenido crudo
@@ -248,7 +281,10 @@ export class AssistantToolsService {
   private async getWebSearchAnswer(query: string): Promise<string> {
     try {
       const cleanQuery = query
-        .replace(/^(busca|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame)\s+/i, '')
+        .replace(
+          /^(busca|buscame|buscá|googlea|googleame|googleá|investiga|investigame|investigá|encontra|encontrá|encontrame)\s+/i,
+          '',
+        )
         .replace(/(en internet|en la web|en google|en línea)/gi, '')
         .trim();
 
@@ -260,7 +296,10 @@ export class AssistantToolsService {
       }
 
       const resultLines = results
-        .map((r, i) => `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || 'Sin descripción disponible.'}`)
+        .map(
+          (r, i) =>
+            `**${i + 1}. ${r.title}**\n🔗 ${r.url}\n${r.snippet || 'Sin descripción disponible.'}`,
+        )
         .join('\n\n');
 
       return (
@@ -278,7 +317,10 @@ export class AssistantToolsService {
   // ── Utilidades comunes ──────────────────────────────────────────────────────
 
   private normalize(input: string): string {
-    return input.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return input
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
   }
 
   private extractLocation(query: string): string | null {
@@ -309,18 +351,18 @@ export class AssistantToolsService {
       /\s+(al atardecer|a la noche|en la noche|durante la noche|esta noche)/gi,
       /\s+(ahora|luego|después|antes|próximamente|pronto)/gi,
     ];
-    
+
     let cleaned = location;
     for (const pattern of temporalPatterns) {
       cleaned = cleaned.replace(pattern, '').trim();
     }
-    
+
     // Si quedó vacío o muy corto, retornar original limitado a primera palabra
     if (cleaned.length < 3) {
       const firstWord = location.split(/[\s,;]/)[0];
       return firstWord.length >= 3 ? firstWord : '';
     }
-    
+
     return cleaned;
   }
 
@@ -330,10 +372,10 @@ export class AssistantToolsService {
     );
     if (match?.[1]) return match[1].trim().replace(/\s+/g, ' ');
     if (/argentina/i.test(query)) return 'Argentina';
-    if (/brasil/i.test(query))    return 'Brasil';
-    if (/chile/i.test(query))     return 'Chile';
-    if (/uruguay/i.test(query))   return 'Uruguay';
-    if (/paraguay/i.test(query))  return 'Paraguay';
+    if (/brasil/i.test(query)) return 'Brasil';
+    if (/chile/i.test(query)) return 'Chile';
+    if (/uruguay/i.test(query)) return 'Uruguay';
+    if (/paraguay/i.test(query)) return 'Paraguay';
     return null;
   }
 
@@ -341,8 +383,8 @@ export class AssistantToolsService {
     const normalized = this.normalize(query);
     const today = new Date();
     if (normalized.includes('pasado manana')) return this.offsetDate(today, 2);
-    if (normalized.includes('manana'))         return this.offsetDate(today, 1);
-    if (normalized.includes('hoy'))            return this.offsetDate(today, 0);
+    if (normalized.includes('manana')) return this.offsetDate(today, 1);
+    if (normalized.includes('hoy')) return this.offsetDate(today, 0);
     const explicit = query.match(/\b(\d{4}-\d{2}-\d{2})\b/);
     if (explicit?.[1]) {
       const d = new Date(`${explicit[1]}T00:00:00`);
@@ -381,7 +423,8 @@ export class AssistantToolsService {
         const reverse = await this.reverseGeocodeLocation(lat, lon);
         displayName = reverse.displayName;
       } else {
-        const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
+        const location =
+          this.extractLocation(query) ?? this.defaultWeatherLocation;
         const geocoded = await this.geocodeLocation(location);
         lat = geocoded.lat;
         lon = geocoded.lon;
@@ -399,12 +442,16 @@ export class AssistantToolsService {
       ].join('\n');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[tool:weather] API no disponible (${msg}), cayendo a ollama`);
+      this.logger.warn(
+        `[tool:weather] API no disponible (${msg}), cayendo a ollama`,
+      );
       return null;
     }
   }
 
-  private async geocodeLocation(location: string): Promise<{ lat: number; lon: number; displayName: string }> {
+  private async geocodeLocation(
+    location: string,
+  ): Promise<{ lat: number; lon: number; displayName: string }> {
     const response = await axios.get<NominatimResult[]>(
       'https://nominatim.openstreetmap.org/search',
       {
@@ -414,9 +461,16 @@ export class AssistantToolsService {
     );
     const result = response.data?.[0];
     if (!result) {
-      throw new HttpException(`No pude encontrar coordenadas para "${location}".`, HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        `No pude encontrar coordenadas para "${location}".`,
+        HttpStatus.NOT_FOUND,
+      );
     }
-    return { lat: Number(result.lat), lon: Number(result.lon), displayName: result.display_name || location };
+    return {
+      lat: Number(result.lat),
+      lon: Number(result.lon),
+      displayName: result.display_name || location,
+    };
   }
 
   private async reverseGeocodeLocation(
@@ -430,7 +484,7 @@ export class AssistantToolsService {
           lat: latitude,
           lon: longitude,
           format: 'jsonv2',
-          zoom: 10,          // zoom 10 = ciudad, no negocio/calle
+          zoom: 10, // zoom 10 = ciudad, no negocio/calle
         },
         headers: { 'User-Agent': 'productos-crud-bkd/1.0' },
       },
@@ -439,12 +493,14 @@ export class AssistantToolsService {
 
     // Construir nombre legible: "Ciudad, Provincia, País" — ignorar calles y negocios
     const addr = (result as any).address;
-    const city    = addr?.city ?? addr?.town ?? addr?.village ?? addr?.municipality ?? '';
-    const state   = addr?.state ?? '';
+    const city =
+      addr?.city ?? addr?.town ?? addr?.village ?? addr?.municipality ?? '';
+    const state = addr?.state ?? '';
     const country = addr?.country ?? '';
-    const displayName = [city, state, country].filter(Boolean).join(', ')
-      || result.display_name
-      || `Lat ${latitude}, Lon ${longitude}`;
+    const displayName =
+      [city, state, country].filter(Boolean).join(', ') ||
+      result.display_name ||
+      `Lat ${latitude}, Lon ${longitude}`;
 
     return { displayName };
   }
@@ -456,28 +512,33 @@ export class AssistantToolsService {
         params: {
           latitude: lat,
           longitude: lon,
-          current: 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m',
+          current:
+            'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m',
           timezone: 'auto',
         },
       },
     );
     const current = response.data.current;
-    if (!current) throw new HttpException('No pude obtener el clima actual.', HttpStatus.BAD_GATEWAY);
+    if (!current)
+      throw new HttpException(
+        'No pude obtener el clima actual.',
+        HttpStatus.BAD_GATEWAY,
+      );
     return {
-      temperature:         current.temperature_2m         ?? 'desconocida',
-      apparentTemperature: current.apparent_temperature   ?? 'desconocida',
-      windSpeed:           current.wind_speed_10m         ?? 'desconocida',
-      humidity:            current.relative_humidity_2m   ?? 'desconocida',
-      label:               this.describeWeatherCode(current.weather_code),
+      temperature: current.temperature_2m ?? 'desconocida',
+      apparentTemperature: current.apparent_temperature ?? 'desconocida',
+      windSpeed: current.wind_speed_10m ?? 'desconocida',
+      humidity: current.relative_humidity_2m ?? 'desconocida',
+      label: this.describeWeatherCode(current.weather_code),
     };
   }
 
   private describeWeatherCode(code?: number): string {
     const map: WeatherCodeEntry[] = [
-      { code: 0,  label: 'Despejado' },
-      { code: 1,  label: 'Mayormente despejado' },
-      { code: 2,  label: 'Parcialmente nublado' },
-      { code: 3,  label: 'Cubierto' },
+      { code: 0, label: 'Despejado' },
+      { code: 1, label: 'Mayormente despejado' },
+      { code: 2, label: 'Parcialmente nublado' },
+      { code: 3, label: 'Cubierto' },
       { code: 45, label: 'Niebla' },
       { code: 48, label: 'Niebla con escarcha' },
       { code: 51, label: 'Llovizna leve' },
@@ -496,12 +557,18 @@ export class AssistantToolsService {
       { code: 96, label: 'Tormenta con granizo leve' },
       { code: 99, label: 'Tormenta con granizo fuerte' },
     ];
-    return map.find((e) => e.code === code)?.label ?? 'Estado meteorológico no disponible';
+    return (
+      map.find((e) => e.code === code)?.label ??
+      'Estado meteorológico no disponible'
+    );
   }
 
   // ── ECONOMÍA ARGENTINA (DolarAPI) ───────────────────────────────────────────
 
-  private async getEconomyAnswer(query: string, normalized: string): Promise<string | null> {
+  private async getEconomyAnswer(
+    query: string,
+    normalized: string,
+  ): Promise<string | null> {
     try {
       if (/(riesgo pais|riesgo país)/i.test(normalized)) {
         const res = await axios.get('https://dolarapi.com/v1/riesgopais');
@@ -517,15 +584,21 @@ export class AssistantToolsService {
       let targetCasa = '';
       if (/(blue|informal|ilegal)/i.test(normalized)) targetCasa = 'blue';
       else if (/(mep|bolsa)/i.test(normalized)) targetCasa = 'mep';
-      else if (/(ccl|contado|liqui)/i.test(normalized)) targetCasa = 'contadoconliqui';
-      else if (/(oficial|banco nacion)/i.test(normalized)) targetCasa = 'oficial';
+      else if (/(ccl|contado|liqui)/i.test(normalized))
+        targetCasa = 'contadoconliqui';
+      else if (/(oficial|banco nacion)/i.test(normalized))
+        targetCasa = 'oficial';
       else if (/(tarjeta|turista)/i.test(normalized)) targetCasa = 'tarjeta';
       else if (/(mayorista)/i.test(normalized)) targetCasa = 'mayorista';
 
       let message = 'Cotizaciones del dólar en Argentina:\n';
-      
+
       if (targetCasa) {
-        const item = dolares.find((d) => d.casa.toLowerCase().replace(/\s+/g, '') === targetCasa.replace(/\s+/g, ''));
+        const item = dolares.find(
+          (d) =>
+            d.casa.toLowerCase().replace(/\s+/g, '') ===
+            targetCasa.replace(/\s+/g, ''),
+        );
         if (item) {
           return `Dólar ${item.nombre}:\nCompra: $${item.compra} | Venta: $${item.venta}\n(Actualizado: ${new Date(item.fechaActualizacion).toLocaleString('es-AR')})`;
         }
@@ -550,17 +623,18 @@ export class AssistantToolsService {
   private async getHolidayAnswer(query: string): Promise<string | null> {
     try {
       const targetDate = this.extractHolidayDate(query);
-      const year       = targetDate.getFullYear();
-      const isoDate    = this.formatIsoDate(targetDate);
+      const year = targetDate.getFullYear();
+      const isoDate = this.formatIsoDate(targetDate);
 
       const response = await axios.get<HolidayRecord[]>(
         `https://date.nager.at/api/v3/PublicHolidays/${year}/AR`,
         { timeout: 5000, validateStatus: (s) => s === 200 },
       );
       const holidays = response.data || [];
-      const match    = holidays.find((h) => h.date === isoDate);
+      const match = holidays.find((h) => h.date === isoDate);
 
-      if (match) return `Sí, el ${isoDate} es feriado en Argentina: ${match.localName}.`;
+      if (match)
+        return `Sí, el ${isoDate} es feriado en Argentina: ${match.localName}.`;
 
       const upcoming = holidays
         .filter((h) => h.date >= isoDate)
@@ -573,7 +647,9 @@ export class AssistantToolsService {
         : `No encontré feriados nacionales para ${year} en Argentina.`;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`[tool:holiday] API no disponible (${msg}), cayendo a ollama`);
+      this.logger.warn(
+        `[tool:holiday] API no disponible (${msg}), cayendo a ollama`,
+      );
       return null;
     }
   }
@@ -591,22 +667,34 @@ export class AssistantToolsService {
       );
       if (response?.data?.datetime) {
         const dt = DateTime.fromISO(response.data.datetime).setZone(timezone);
-        const abbrev = timezone === 'America/Argentina/Buenos_Aires' ? 'ART' : dt.offsetNameShort || dt.zoneName;
+        const abbrev =
+          timezone === 'America/Argentina/Buenos_Aires'
+            ? 'ART'
+            : dt.offsetNameShort || dt.zoneName;
         return `Hora actual en ${dt.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
       }
-      this.logger.warn(`[tool:time] worldtimeapi devolvió sin datetime para ${timezone}`);
+      this.logger.warn(
+        `[tool:time] worldtimeapi devolvió sin datetime para ${timezone}`,
+      );
     } catch (error) {
-      this.logger.warn(`[tool:time] fallo en worldtimeapi (${timezone}): ${error?.message || error}`);
+      this.logger.warn(
+        `[tool:time] fallo en worldtimeapi (${timezone}): ${error?.message || error}`,
+      );
     }
 
     // Fallback local si la API externa falla
     try {
       const now = DateTime.now().setZone(timezone);
-      const abbrev = timezone === 'America/Argentina/Buenos_Aires' ? 'ART' : now.offsetNameShort || now.zoneName;
+      const abbrev =
+        timezone === 'America/Argentina/Buenos_Aires'
+          ? 'ART'
+          : now.offsetNameShort || now.zoneName;
       return `Hora actual en ${now.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
     } catch (err) {
       // Último recurso: hora local del servidor en ISO
-      this.logger.warn(`[tool:time] fallback local simple por error: ${err?.message || err}`);
+      this.logger.warn(
+        `[tool:time] fallback local simple por error: ${err?.message || err}`,
+      );
       return `Hora actual (servidor): ${new Date().toISOString()}`;
     }
   }
@@ -615,7 +703,11 @@ export class AssistantToolsService {
 
   private async getCountryAnswer(query: string): Promise<string | null> {
     const country = this.extractCountry(query);
-    if (!country) throw new HttpException('Necesito el nombre de un país.', HttpStatus.BAD_REQUEST);
+    if (!country)
+      throw new HttpException(
+        'Necesito el nombre de un país.',
+        HttpStatus.BAD_REQUEST,
+      );
 
     try {
       const response = await axios.get<CountryRecord[]>(
@@ -627,12 +719,18 @@ export class AssistantToolsService {
         return null;
       }
 
-      const capital    = info.capital?.[0] || 'No disponible';
-      const population = info.population ? info.population.toLocaleString('es-AR') : 'No disponible';
-      const currencies = info.currencies
-        ? Object.values(info.currencies).map((c) => `${c.name} (${c.symbol})`).join(', ')
+      const capital = info.capital?.[0] || 'No disponible';
+      const population = info.population
+        ? info.population.toLocaleString('es-AR')
         : 'No disponible';
-      const languages = info.languages ? Object.values(info.languages).join(', ') : 'No disponible';
+      const currencies = info.currencies
+        ? Object.values(info.currencies)
+            .map((c) => `${c.name} (${c.symbol})`)
+            .join(', ')
+        : 'No disponible';
+      const languages = info.languages
+        ? Object.values(info.languages).join(', ')
+        : 'No disponible';
 
       return [
         `País: ${info.name?.common || country}`,
@@ -644,19 +742,28 @@ export class AssistantToolsService {
     } catch (error) {
       // ENOTFOUND, timeout, red → fallback amigable sin romper
       const msg = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`[tool:country] API no disponible (${msg}), cayendo a ollama`);
-      return null;  // null → JarvisService cae a LLM con contexto
+      this.logger.warn(
+        `[tool:country] API no disponible (${msg}), cayendo a ollama`,
+      );
+      return null; // null → JarvisService cae a LLM con contexto
     }
   }
 
   // ── ASTRONOMÍA (astronomy-engine — sin clave, cálculo local) ────────────────
 
-  private async getAstronomyAnswer(query: string, normalized: string): Promise<string> {
-    const now  = new Date();
+  private async getAstronomyAnswer(
+    query: string,
+    normalized: string,
+  ): Promise<string> {
+    const now = new Date();
     const adate = new Astronomy.AstroTime(now);
 
     // Fase lunar
-    if (/(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante)/i.test(normalized)) {
+    if (
+      /(luna|fase lunar|luna llena|luna nueva|cuarto creciente|cuarto menguante)/i.test(
+        normalized,
+      )
+    ) {
       return this.getMoonPhaseAnswer(now, adate);
     }
 
@@ -696,13 +803,19 @@ export class AssistantToolsService {
     const phaseLabel = this.describeMoonPhase(moonPhaseDegrees);
 
     // Próximas fases
-    const nextNewMoon  = Astronomy.SearchMoonPhase(0,  adate, 30);
+    const nextNewMoon = Astronomy.SearchMoonPhase(0, adate, 30);
     const nextFullMoon = Astronomy.SearchMoonPhase(180, adate, 30);
-    const nextQ1       = Astronomy.SearchMoonPhase(90,  adate, 30);
-    const nextQ3       = Astronomy.SearchMoonPhase(270, adate, 30);
+    const nextQ1 = Astronomy.SearchMoonPhase(90, adate, 30);
+    const nextQ3 = Astronomy.SearchMoonPhase(270, adate, 30);
 
     const fmt = (t: Astronomy.AstroTime | null) =>
-      t ? t.date.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'No calculada';
+      t
+        ? t.date.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+          })
+        : 'No calculada';
 
     return [
       `Fase lunar actual: ${phaseLabel}`,
@@ -718,37 +831,61 @@ export class AssistantToolsService {
   }
 
   private describeMoonPhase(angle: number): string {
-    if (angle < 22.5)                    return '🌑 Luna nueva';
-    if (angle < 67.5)                    return '🌒 Creciente cóncava';
-    if (angle < 112.5)                   return '🌓 Cuarto creciente';
-    if (angle < 157.5)                   return '🌔 Creciente gibosa';
-    if (angle < 202.5)                   return '🌕 Luna llena';
-    if (angle < 247.5)                   return '🌖 Menguante gibosa';
-    if (angle < 292.5)                   return '🌗 Cuarto menguante';
-    if (angle < 337.5)                   return '🌘 Menguante cóncava';
+    if (angle < 22.5) return '🌑 Luna nueva';
+    if (angle < 67.5) return '🌒 Creciente cóncava';
+    if (angle < 112.5) return '🌓 Cuarto creciente';
+    if (angle < 157.5) return '🌔 Creciente gibosa';
+    if (angle < 202.5) return '🌕 Luna llena';
+    if (angle < 247.5) return '🌖 Menguante gibosa';
+    if (angle < 292.5) return '🌗 Cuarto menguante';
+    if (angle < 337.5) return '🌘 Menguante cóncava';
     return '🌑 Luna nueva';
   }
 
   private getLunarEclipseAnswer(adate: Astronomy.AstroTime): string {
     const eclipse = Astronomy.SearchLunarEclipse(adate);
     if (!eclipse) return 'No encontré datos de próximo eclipse lunar.';
-    const date = eclipse.peak.date.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
-    const kind = eclipse.kind === 'total' ? 'Total' : eclipse.kind === 'partial' ? 'Parcial' : 'Penumbral';
+    const date = eclipse.peak.date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+    const kind =
+      eclipse.kind === 'total'
+        ? 'Total'
+        : eclipse.kind === 'partial'
+          ? 'Parcial'
+          : 'Penumbral';
     return `Próximo eclipse lunar: ${kind} el ${date}`;
   }
 
   private getSolarEclipseAnswer(adate: Astronomy.AstroTime): string {
     const eclipse = Astronomy.SearchGlobalSolarEclipse(adate);
     if (!eclipse) return 'No encontré datos de próximo eclipse solar.';
-    const date = eclipse.peak.date.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' });
-    const kind = eclipse.kind === 'total' ? 'Total' : eclipse.kind === 'annular' ? 'Anular' : 'Parcial';
+    const date = eclipse.peak.date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+    const kind =
+      eclipse.kind === 'total'
+        ? 'Total'
+        : eclipse.kind === 'annular'
+          ? 'Anular'
+          : 'Parcial';
     return `Próximo eclipse solar: ${kind} el ${date}`;
   }
 
   private getSeasonsAnswer(year: number): string {
     const seasons = Astronomy.Seasons(year);
     const fmt = (t: Astronomy.AstroTime) =>
-      t.date.toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      t.date.toLocaleDateString('es-AR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     return [
       `Eventos astronómicos ${year}:`,
       `🌱 Equinoccio de primavera (norte): ${fmt(seasons.mar_equinox)}`,
@@ -760,17 +897,37 @@ export class AssistantToolsService {
     ].join('\n');
   }
 
-  private async getSunriseSunsetAnswer(query: string, now: Date): Promise<string> {
+  private async getSunriseSunsetAnswer(
+    query: string,
+    now: Date,
+  ): Promise<string> {
     const location = this.extractLocation(query) ?? this.defaultWeatherLocation;
     const geocoded = await this.geocodeLocation(location);
     const observer = new Astronomy.Observer(geocoded.lat, geocoded.lon, 0);
-    const adate    = new Astronomy.AstroTime(now);
+    const adate = new Astronomy.AstroTime(now);
 
-    const sunrise = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, +1, adate, 1);
-    const sunset  = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, -1, adate, 1);
+    const sunrise = Astronomy.SearchRiseSet(
+      Astronomy.Body.Sun,
+      observer,
+      +1,
+      adate,
+      1,
+    );
+    const sunset = Astronomy.SearchRiseSet(
+      Astronomy.Body.Sun,
+      observer,
+      -1,
+      adate,
+      1,
+    );
 
     const fmt = (t: Astronomy.AstroTime | null) =>
-      t ? t.date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : 'No disponible';
+      t
+        ? t.date.toLocaleTimeString('es-AR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : 'No disponible';
 
     return [
       `Horarios solares para ${geocoded.displayName}:`,
@@ -781,8 +938,13 @@ export class AssistantToolsService {
 
   private extractPlanet(normalized: string): string | null {
     const planets: Record<string, string> = {
-      mercurio: 'Mercury', venus: 'Venus', marte: 'Mars',
-      jupiter: 'Jupiter', saturno: 'Saturn', urano: 'Uranus', neptuno: 'Neptune',
+      mercurio: 'Mercury',
+      venus: 'Venus',
+      marte: 'Mars',
+      jupiter: 'Jupiter',
+      saturno: 'Saturn',
+      urano: 'Uranus',
+      neptuno: 'Neptune',
     };
     for (const [es, en] of Object.entries(planets)) {
       if (normalized.includes(es)) return en;
@@ -792,9 +954,9 @@ export class AssistantToolsService {
 
   private getPlanetAnswer(planet: string, adate: Astronomy.AstroTime): string {
     try {
-      const body        = Astronomy.Body[planet as keyof typeof Astronomy.Body];
+      const body = Astronomy.Body[planet as keyof typeof Astronomy.Body];
       const illumination = Astronomy.Illumination(body, adate);
-      const elongation   = Astronomy.AngleFromSun(body, adate);
+      const elongation = Astronomy.AngleFromSun(body, adate);
 
       return [
         `${planet} ahora:`,
@@ -813,7 +975,11 @@ export class AssistantToolsService {
     // Extraer fecha del query o usar hoy
     const dateMatch = query.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
     const date = dateMatch
-      ? new Date(Number(dateMatch[3]), Number(dateMatch[2]) - 1, Number(dateMatch[1]))
+      ? new Date(
+          Number(dateMatch[3]),
+          Number(dateMatch[2]) - 1,
+          Number(dateMatch[1]),
+        )
       : new Date();
 
     const result = this.gregorianToMayan(date);
@@ -828,8 +994,8 @@ export class AssistantToolsService {
 
   private gregorianToMayan(date: Date): {
     longCount: string;
-    tzolkin:   { number: number; dayName: string };
-    haab:      { day: number; monthName: string };
+    tzolkin: { number: number; dayName: string };
+    haab: { day: number; monthName: string };
     lordOfNight: number;
   } {
     // Día juliano
@@ -837,43 +1003,80 @@ export class AssistantToolsService {
 
     // Correlación GMT (584283)
     const CORRELATION = 584283;
-    const mayanDay    = jdn - CORRELATION;
+    const mayanDay = jdn - CORRELATION;
 
     // Cuenta Larga
     let remaining = mayanDay;
-    const baktun  = Math.floor(remaining / 144000); remaining %= 144000;
-    const katun   = Math.floor(remaining / 7200);   remaining %= 7200;
-    const tun     = Math.floor(remaining / 360);    remaining %= 360;
-    const uinal   = Math.floor(remaining / 20);     remaining %= 20;
-    const kin     = remaining;
+    const baktun = Math.floor(remaining / 144000);
+    remaining %= 144000;
+    const katun = Math.floor(remaining / 7200);
+    remaining %= 7200;
+    const tun = Math.floor(remaining / 360);
+    remaining %= 360;
+    const uinal = Math.floor(remaining / 20);
+    remaining %= 20;
+    const kin = remaining;
     const longCount = `${baktun}.${katun}.${tun}.${uinal}.${kin}`;
 
     // Tzolk'in (260 días = 20 nombres × 13 números)
     const tzolkinNames = [
-      'Imix', 'Ik', 'Akbal', 'Kan', 'Chicchan', 'Cimi', 'Manik', 'Lamat',
-      'Muluc', 'Oc', 'Chuen', 'Eb', 'Ben', 'Ix', 'Men', 'Cib', 'Caban',
-      'Etznab', 'Cauac', 'Ahau',
+      'Imix',
+      'Ik',
+      'Akbal',
+      'Kan',
+      'Chicchan',
+      'Cimi',
+      'Manik',
+      'Lamat',
+      'Muluc',
+      'Oc',
+      'Chuen',
+      'Eb',
+      'Ben',
+      'Ix',
+      'Men',
+      'Cib',
+      'Caban',
+      'Etznab',
+      'Cauac',
+      'Ahau',
     ];
     const tzolkinNumber = ((mayanDay % 13) + 13) % 13 || 13;
-    const tzolkinDay    = ((mayanDay % 20) + 20) % 20;
+    const tzolkinDay = ((mayanDay % 20) + 20) % 20;
 
     // Haab' (365 días = 18 meses de 20 + Uayeb de 5)
     const haabMonths = [
-      'Pop', 'Uo', 'Zip', 'Zotz', 'Tzec', 'Xul', 'Yaxkin', 'Mol',
-      'Chen', 'Yax', 'Zac', 'Ceh', 'Mac', 'Kankin', 'Muan', 'Pax',
-      'Kayab', 'Cumku', 'Uayeb',
+      'Pop',
+      'Uo',
+      'Zip',
+      'Zotz',
+      'Tzec',
+      'Xul',
+      'Yaxkin',
+      'Mol',
+      'Chen',
+      'Yax',
+      'Zac',
+      'Ceh',
+      'Mac',
+      'Kankin',
+      'Muan',
+      'Pax',
+      'Kayab',
+      'Cumku',
+      'Uayeb',
     ];
-    const haabPosition = ((mayanDay + 348) % 365 + 365) % 365;
-    const haabDay      = haabPosition % 20;
-    const haabMonth    = Math.floor(haabPosition / 20);
+    const haabPosition = (((mayanDay + 348) % 365) + 365) % 365;
+    const haabDay = haabPosition % 20;
+    const haabMonth = Math.floor(haabPosition / 20);
 
     // Señor de la Noche (ciclo de 9)
     const lordOfNight = ((mayanDay % 9) + 9) % 9 || 9;
 
     return {
       longCount,
-      tzolkin:  { number: tzolkinNumber, dayName: tzolkinNames[tzolkinDay] },
-      haab:     { day: haabDay, monthName: haabMonths[Math.min(haabMonth, 18)] },
+      tzolkin: { number: tzolkinNumber, dayName: tzolkinNames[tzolkinDay] },
+      haab: { day: haabDay, monthName: haabMonths[Math.min(haabMonth, 18)] },
       lordOfNight,
     };
   }
@@ -885,8 +1088,15 @@ export class AssistantToolsService {
     const a = Math.floor((14 - m) / 12);
     const yr = y + 4800 - a;
     const mo = m + 12 * a - 3;
-    return d + Math.floor((153 * mo + 2) / 5) + 365 * yr +
-      Math.floor(yr / 4) - Math.floor(yr / 100) + Math.floor(yr / 400) - 32045;
+    return (
+      d +
+      Math.floor((153 * mo + 2) / 5) +
+      365 * yr +
+      Math.floor(yr / 4) -
+      Math.floor(yr / 100) +
+      Math.floor(yr / 400) -
+      32045
+    );
   }
 
   // ── CALENDARIO HEBREO (jewish-date) ──────────────────────────────────────────
@@ -894,7 +1104,11 @@ export class AssistantToolsService {
   private getHebrewCalendarAnswer(query: string): string {
     const dateMatch = query.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
     const date = dateMatch
-      ? new Date(Number(dateMatch[3]), Number(dateMatch[2]) - 1, Number(dateMatch[1]))
+      ? new Date(
+          Number(dateMatch[3]),
+          Number(dateMatch[2]) - 1,
+          Number(dateMatch[1]),
+        )
       : new Date();
 
     const jewish = toJewishDate(date);
@@ -915,7 +1129,10 @@ export class AssistantToolsService {
 
   // ── MATEMÁTICAS (mathjs local + Newton API para derivadas/integrales) ─────────
 
-  private async getMathAnswer(query: string, normalized: string): Promise<string> {
+  private async getMathAnswer(
+    query: string,
+    normalized: string,
+  ): Promise<string> {
     // Derivada → Newton API (sin clave)
     if (/(deriva|derivada)/i.test(normalized)) {
       return this.getNewtonAnswer('derive', query);
@@ -952,9 +1169,13 @@ export class AssistantToolsService {
     return null;
   }
 
-  private async getNewtonAnswer(operation: string, query: string): Promise<string> {
+  private async getNewtonAnswer(
+    operation: string,
+    query: string,
+  ): Promise<string> {
     const expr = this.extractMathExpression(query);
-    if (!expr) return 'No pude identificar la expresión matemática en la pregunta.';
+    if (!expr)
+      return 'No pude identificar la expresión matemática en la pregunta.';
 
     // Newton API usa expresiones URL-encoded
     const encoded = encodeURIComponent(expr.replace(/\s/g, '+'));
@@ -963,28 +1184,32 @@ export class AssistantToolsService {
       const response = await axios.get<NewtonResponse>(
         `https://newton.vercel.app/api/v2/${operation}/${encoded}`,
         {
-          timeout: 5000,                          // corto: si cae, cae rápido
+          timeout: 5000, // corto: si cae, cae rápido
           validateStatus: (s) => s === 200,
         },
       );
       const opLabels: Record<string, string> = {
-        derive:    'Derivada',
+        derive: 'Derivada',
         integrate: 'Integral',
-        simplify:  'Simplificado',
-        factor:    'Factorizado',
+        simplify: 'Simplificado',
+        factor: 'Factorizado',
       };
       return `${opLabels[operation] ?? operation} de "${expr}":\n${response.data.result}`;
     } catch (err: unknown) {
       // ECONNRESET / timeout / 4xx → fallback silencioso a mathjs
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.warn(`Newton API no disponible (${msg}), usando mathjs como fallback`);
+      this.logger.warn(
+        `Newton API no disponible (${msg}), usando mathjs como fallback`,
+      );
       return this.evaluateWithMathJs(query);
     }
   }
 
   private evaluateWithMathJs(query: string): string {
     // Extraer expresión numérica del texto
-    const exprMatch = query.match(/([\d\s\+\-\*\/\^\(\)\.\,]+(?:sqrt|sin|cos|tan|log|pi|e)?[\d\s\+\-\*\/\^\(\)\.\,]*)/i);
+    const exprMatch = query.match(
+      /([\d\s\+\-\*\/\^\(\)\.\,]+(?:sqrt|sin|cos|tan|log|pi|e)?[\d\s\+\-\*\/\^\(\)\.\,]*)/i,
+    );
     if (!exprMatch?.[0]?.trim()) {
       return 'No pude identificar una expresión matemática válida. Escribí la operación directamente, ej: "cuánto es 25 * 4 + 10".';
     }

@@ -35,6 +35,8 @@ export function resolveTechModel(defaultModel = 'qwen3:4b'): string {
  * Modelo multimodal / visión — OLLAMA_MODEL_VL_NAME
  * Caso de uso: VisionService — OCR, análisis de imágenes, PDFs escaneados
  */
-export function resolveVisionModel(defaultModel = 'yemifo/qwen25-vl-3b-q4km:latest'): string {
+export function resolveVisionModel(
+  defaultModel = 'yemifo/qwen25-vl-3b-q4km:latest',
+): string {
   return process.env.OLLAMA_MODEL_VL_NAME?.trim() || defaultModel;
 }

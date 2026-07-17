@@ -7,12 +7,17 @@ export class EmbeddingsService {
 
   // Usamos nomic-embed-text o llama3.2 como default.
   private readonly OLLAMA_URL = 'http://localhost:11434/api/embeddings';
-  private readonly EMBEDDING_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'bge-m3:latest';
+  private readonly EMBEDDING_MODEL =
+    process.env.OLLAMA_EMBEDDING_MODEL ?? 'bge-m3:latest';
   private readonly EMBEDDING_DIMS = 1024; // bge-m3 genera 1024 dimensiones
 
   private getEmbeddingModelFallbacks(): string[] {
     const configured = process.env.OLLAMA_EMBEDDING_MODEL_FALLBACKS;
-    const defaults = ['mxbai-embed-large', 'all-minilm', 'nomic-embed-text:latest'];
+    const defaults = [
+      'mxbai-embed-large',
+      'all-minilm',
+      'nomic-embed-text:latest',
+    ];
 
     if (!configured) {
       return defaults;
@@ -30,17 +35,23 @@ export class EmbeddingsService {
    */
   async generateEmbedding(text: string): Promise<number[]> {
     try {
-      const response = await axios.post(this.OLLAMA_URL, {
-        model: this.EMBEDDING_MODEL,
-        prompt: text,
-      }, { timeout: 20000 });
+      const response = await axios.post(
+        this.OLLAMA_URL,
+        {
+          model: this.EMBEDDING_MODEL,
+          prompt: text,
+        },
+        { timeout: 20000 },
+      );
 
       if (response.data?.embedding) {
         return response.data.embedding;
       }
       throw new Error('Respuesta inválida de Ollama embeddings');
     } catch (error: any) {
-      this.logger.error(`[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${error.message}`);
+      this.logger.error(
+        `[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${error.message}`,
+      );
       throw new Error(`Fallo al generar embedding: ${error.message}`);
     }
   }

@@ -5,14 +5,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 export interface DocumentEnrichment {
   summary: string;
-  concepts: string[];       // 15-20 conceptos clave
+  concepts: string[]; // 15-20 conceptos clave
   entities: {
-    people: string[];       // personas mencionadas
-    theories: string[];     // teorías / frameworks
+    people: string[]; // personas mencionadas
+    theories: string[]; // teorías / frameworks
     technologies: string[]; // tecnologías / herramientas
   };
-  quotes: string[];         // citas destacadas (máx 5)
-  tags: string[];           // tags para búsqueda
+  quotes: string[]; // citas destacadas (máx 5)
+  tags: string[]; // tags para búsqueda
 }
 
 /**
@@ -50,8 +50,14 @@ export class DocumentEnrichmentService {
    * Punto de entrada principal. Se llama en background desde ingestPdf.
    * Guarda el enriquecimiento en BD y retorna el resultado.
    */
-  async enrich(documentId: number, title: string, fullText: string): Promise<DocumentEnrichment | null> {
-    this.logger.log(`[enrichment] iniciando para "${title}" (${fullText.length} chars)`);
+  async enrich(
+    documentId: number,
+    title: string,
+    fullText: string,
+  ): Promise<DocumentEnrichment | null> {
+    this.logger.log(
+      `[enrichment] iniciando para "${title}" (${fullText.length} chars)`,
+    );
 
     try {
       const enrichment = await this.extractEnrichment(title, fullText);
@@ -61,7 +67,7 @@ export class DocumentEnrichmentService {
 
       this.logger.log(
         `[enrichment] OK "${title}" — ${enrichment.concepts.length} conceptos, ` +
-        `${enrichment.quotes.length} citas, tags: [${enrichment.tags.join(', ')}]`,
+          `${enrichment.quotes.length} citas, tags: [${enrichment.tags.join(', ')}]`,
       );
       return enrichment;
     } catch (err: unknown) {
@@ -73,13 +79,20 @@ export class DocumentEnrichmentService {
 
   // ── Extracción ──────────────────────────────────────────────────────────────
 
-  private async extractEnrichment(title: string, fullText: string): Promise<DocumentEnrichment | null> {
+  private async extractEnrichment(
+    title: string,
+    fullText: string,
+  ): Promise<DocumentEnrichment | null> {
     // Para textos largos, hacer una primera pasada por secciones y luego consolidar
     const sections = this.splitSections(fullText);
     this.logger.log(`[enrichment] procesando ${sections.length} secciones`);
 
     // Recolectar conceptos y entidades de cada sección
-    const sectionResults: Array<{ concepts: string[]; entities: any; quotes: string[] }> = [];
+    const sectionResults: Array<{
+      concepts: string[];
+      entities: any;
+      quotes: string[];
+    }> = [];
 
     for (const [i, section] of sections.entries()) {
       this.logger.log(`[enrichment] sección ${i + 1}/${sections.length}`);
@@ -140,11 +153,19 @@ ${text.slice(0, 3500)}`;
     sections: Array<{ concepts: string[]; entities: any; quotes: string[] }>,
   ): Promise<DocumentEnrichment | null> {
     // Agrupar todo lo recolectado
-    const allConcepts = [...new Set(sections.flatMap(s => s.concepts ?? []))];
-    const allPeople   = [...new Set(sections.flatMap(s => s.entities?.people ?? []))];
-    const allTheories = [...new Set(sections.flatMap(s => s.entities?.theories ?? []))];
-    const allTechs    = [...new Set(sections.flatMap(s => s.entities?.technologies ?? []))];
-    const allQuotes   = [...new Set(sections.flatMap(s => s.quotes ?? []))].slice(0, 5);
+    const allConcepts = [...new Set(sections.flatMap((s) => s.concepts ?? []))];
+    const allPeople = [
+      ...new Set(sections.flatMap((s) => s.entities?.people ?? [])),
+    ];
+    const allTheories = [
+      ...new Set(sections.flatMap((s) => s.entities?.theories ?? [])),
+    ];
+    const allTechs = [
+      ...new Set(sections.flatMap((s) => s.entities?.technologies ?? [])),
+    ];
+    const allQuotes = [
+      ...new Set(sections.flatMap((s) => s.quotes ?? [])),
+    ].slice(0, 5);
 
     // Generar resumen con el texto completo (primeros 5000 chars para el resumen)
     const summaryText = fullText.slice(0, 5000);
@@ -172,16 +193,16 @@ ${summaryText}`;
       ...allTechs.slice(0, 4),
       ...allTheories.slice(0, 4),
     ]
-      .map(t => t.toLowerCase().replace(/\s+/g, '-'))
+      .map((t) => t.toLowerCase().replace(/\s+/g, '-'))
       .filter((t, i, arr) => t.length > 2 && arr.indexOf(t) === i)
       .slice(0, 15);
 
     return {
       summary,
-      concepts:   allConcepts.slice(0, 20),
+      concepts: allConcepts.slice(0, 20),
       entities: {
-        people:       allPeople.slice(0, 15),
-        theories:     allTheories.slice(0, 10),
+        people: allPeople.slice(0, 15),
+        theories: allTheories.slice(0, 10),
         technologies: allTechs.slice(0, 15),
       },
       quotes: allQuotes,
@@ -217,9 +238,13 @@ ${summaryText}`;
     if (enrichment.entities.people.length > 0)
       entityLines.push(`Personas: ${enrichment.entities.people.join(', ')}`);
     if (enrichment.entities.theories.length > 0)
-      entityLines.push(`Teorías/Frameworks: ${enrichment.entities.theories.join(', ')}`);
+      entityLines.push(
+        `Teorías/Frameworks: ${enrichment.entities.theories.join(', ')}`,
+      );
     if (enrichment.entities.technologies.length > 0)
-      entityLines.push(`Tecnologías: ${enrichment.entities.technologies.join(', ')}`);
+      entityLines.push(
+        `Tecnologías: ${enrichment.entities.technologies.join(', ')}`,
+      );
 
     if (entityLines.length > 0) {
       await this.documentRepo.createChunk({
@@ -242,10 +267,10 @@ ${summaryText}`;
     //    Un snapshot por documento con el resumen y tags
     await this.prisma.topicSnapshot.create({
       data: {
-        topic:      title,
+        topic: title,
         conclusion: enrichment.summary.slice(0, 500),
-        tags:       JSON.stringify(enrichment.tags),
-        sessionId:  null,
+        tags: JSON.stringify(enrichment.tags),
+        sessionId: null,
       },
     });
 
@@ -253,10 +278,14 @@ ${summaryText}`;
     for (const concept of enrichment.concepts.slice(0, 5)) {
       await this.prisma.topicSnapshot.create({
         data: {
-          topic:      concept,
+          topic: concept,
           conclusion: `Mencionado en "${title}". ${enrichment.summary.slice(0, 200)}`,
-          tags:       JSON.stringify([...enrichment.tags.slice(0, 3), 'pdf', 'libro']),
-          sessionId:  null,
+          tags: JSON.stringify([
+            ...enrichment.tags.slice(0, 3),
+            'pdf',
+            'libro',
+          ]),
+          sessionId: null,
         },
       });
     }

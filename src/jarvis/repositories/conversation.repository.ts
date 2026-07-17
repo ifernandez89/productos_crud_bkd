@@ -47,14 +47,19 @@ export class ConversationRepository {
     return messages.reverse(); // cronológico ascendente para el LLM
   }
 
-  async getLastAssistantMessage(sessionId: string): Promise<ConversationMessage | null> {
+  async getLastAssistantMessage(
+    sessionId: string,
+  ): Promise<ConversationMessage | null> {
     return this.prisma.conversationMessage.findFirst({
       where: { sessionId, role: 'assistant' },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async searchAcrossSessions(query: string, limit = 5): Promise<ConversationMessage[]> {
+  async searchAcrossSessions(
+    query: string,
+    limit = 5,
+  ): Promise<ConversationMessage[]> {
     const terms = query
       .toLowerCase()
       .split(/\s+/)

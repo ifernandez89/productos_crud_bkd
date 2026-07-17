@@ -9,13 +9,20 @@ export class SafeExecService {
 
   private allowedExecutables = new Set(['python', 'python3']);
 
-  async runPythonScript(scriptPath: string, args: string[], timeoutMs = 30000): Promise<{ stdout: string; stderr: string; code: number }> {
+  async runPythonScript(
+    scriptPath: string,
+    args: string[],
+    timeoutMs = 30000,
+  ): Promise<{ stdout: string; stderr: string; code: number }> {
     // Normalize and validate path
-    const abs = path.isAbsolute(scriptPath) ? scriptPath : path.join(process.cwd(), scriptPath);
+    const abs = path.isAbsolute(scriptPath)
+      ? scriptPath
+      : path.join(process.cwd(), scriptPath);
     if (!existsSync(abs)) throw new Error(`Script no encontrado: ${abs}`);
 
     // Choose python executable by platform
-    const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+    const pythonExecutable =
+      process.platform === 'win32' ? 'python' : 'python3';
     if (!this.allowedExecutables.has(pythonExecutable)) {
       throw new Error('Ejecutable Python no permitido en este entorno');
     }

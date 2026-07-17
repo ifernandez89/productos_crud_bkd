@@ -25,9 +25,7 @@ export interface SourceDefinition {
 }
 
 export class SourceRegistry {
-
   private static readonly sources: SourceDefinition[] = [
-
     // ══════════════════════════════════════════════════════════════════════════
     // 📰 NOTICIAS — Argentina general
     // ✅ Verificado: todos funcionan con scraping estático
@@ -74,7 +72,13 @@ export class SourceRegistry {
       searchPattern: '/noticias?s={query}',
       selectors: {
         title: ['h1', '.titular', '.article-title', '.title'],
-        content: ['.nota-cuerpo', '.article-body', '.contenido', 'article', 'main'],
+        content: [
+          '.nota-cuerpo',
+          '.article-body',
+          '.contenido',
+          'article',
+          'main',
+        ],
         date: ['time', '.fecha', '.date', '[datetime]'],
       },
     },
@@ -525,8 +529,6 @@ export class SourceRegistry {
 
     // ❌ Medium.com → requiere cuenta o bloquea scraping (403 en listas de artículos)
 
-
-
     // ══════════════════════════════════════════════════════════════════════════
     // 🔮 MISTERIO
     // ✅ Mystery Planet funciona | ❌ los 3 alternativos tienen ENOTFOUND
@@ -747,7 +749,7 @@ export class SourceRegistry {
     {
       name: 'Carta Natal ES',
       urlBase: 'https://carta-natal.es/carta.php',
-      category: 'astrologia_ref',   // categoría separada: referencia astro, no cálculo
+      category: 'astrologia_ref', // categoría separada: referencia astro, no cálculo
       priority: 7,
       ttlHours: 168, // 7 días — contenido interpretativo estático
       selectors: {
@@ -968,7 +970,6 @@ export class SourceRegistry {
         content: ['#content', 'dl', 'dt', 'dd', 'p'],
       },
     },
-
   ];
 
   // ── API pública ─────────────────────────────────────────────────────────────
@@ -993,10 +994,15 @@ export class SourceRegistry {
   /**
    * Obtiene todas las fuentes, opcionalmente filtradas.
    */
-  static getAll(filter?: { category?: string; minPriority?: number }): SourceDefinition[] {
+  static getAll(filter?: {
+    category?: string;
+    minPriority?: number;
+  }): SourceDefinition[] {
     let result = this.sources;
-    if (filter?.category) result = result.filter((s) => s.category === filter.category);
-    if (filter?.minPriority !== undefined) result = result.filter((s) => s.priority >= filter.minPriority);
+    if (filter?.category)
+      result = result.filter((s) => s.category === filter.category);
+    if (filter?.minPriority !== undefined)
+      result = result.filter((s) => s.priority >= filter.minPriority);
     return result.sort((a, b) => b.priority - a.priority);
   }
 
@@ -1010,7 +1016,10 @@ export class SourceRegistry {
   /**
    * Construye una URL de búsqueda para una fuente específica.
    */
-  static buildSearchUrl(source: SourceDefinition, query: string): string | null {
+  static buildSearchUrl(
+    source: SourceDefinition,
+    query: string,
+  ): string | null {
     if (!source.searchPattern) return null;
     const encoded = encodeURIComponent(query);
     return source.urlBase + source.searchPattern.replace('{query}', encoded);

@@ -64,7 +64,9 @@ export class AgentRunRepository {
 
     const toolCounts = new Map<string, number>();
     runs.forEach((run) => {
-      const tools: string[] = run.toolsUsed ? JSON.parse(run.toolsUsed as string) : [];
+      const tools: string[] = run.toolsUsed
+        ? JSON.parse(run.toolsUsed as string)
+        : [];
       tools?.forEach((tool) => {
         toolCounts.set(tool, (toolCounts.get(tool) || 0) + 1);
       });

@@ -9,9 +9,12 @@ export class PgvectorService {
 
   validateEmbedding(embedding: number[]) {
     const expected = parseInt(process.env.EMBEDDING_DIM || '1024', 10);
-    if (!Array.isArray(embedding)) throw new Error('Embedding debe ser un array de números');
+    if (!Array.isArray(embedding))
+      throw new Error('Embedding debe ser un array de números');
     if (expected && embedding.length !== expected) {
-      throw new Error(`Embedding inválido: se esperaba dimensión ${expected}, pero se recibieron ${embedding.length}`);
+      throw new Error(
+        `Embedding inválido: se esperaba dimensión ${expected}, pero se recibieron ${embedding.length}`,
+      );
     }
     for (const v of embedding) {
       if (typeof v !== 'number' || !isFinite(v)) {
@@ -65,7 +68,11 @@ export class PgvectorService {
     return rows;
   }
 
-  async searchChunksSemanticInDocuments(embedding: number[], documentIds: number[], limit = 10) {
+  async searchChunksSemanticInDocuments(
+    embedding: number[],
+    documentIds: number[],
+    limit = 10,
+  ) {
     if (documentIds.length === 0) return [];
     this.validateEmbedding(embedding);
     const vectorString = this.vectorToString(embedding);
@@ -98,7 +105,10 @@ export class PgvectorService {
     return rows;
   }
 
-  async saveChapterEmbedding(chapterId: number, vector: number[]): Promise<void> {
+  async saveChapterEmbedding(
+    chapterId: number,
+    vector: number[],
+  ): Promise<void> {
     this.validateEmbedding(vector);
     const vectorString = this.vectorToString(vector);
     await this.prisma.$executeRaw`
@@ -108,7 +118,10 @@ export class PgvectorService {
     `;
   }
 
-  async saveSectionEmbedding(sectionId: number, vector: number[]): Promise<void> {
+  async saveSectionEmbedding(
+    sectionId: number,
+    vector: number[],
+  ): Promise<void> {
     this.validateEmbedding(vector);
     const vectorString = this.vectorToString(vector);
     await this.prisma.$executeRaw`
@@ -139,7 +152,11 @@ export class PgvectorService {
     return rows;
   }
 
-  async searchChaptersSemanticInDocuments(embedding: number[], documentIds: number[], limit = 5) {
+  async searchChaptersSemanticInDocuments(
+    embedding: number[],
+    documentIds: number[],
+    limit = 5,
+  ) {
     if (documentIds.length === 0) return [];
     this.validateEmbedding(embedding);
     const vectorString = this.vectorToString(embedding);
@@ -162,7 +179,11 @@ export class PgvectorService {
     return rows;
   }
 
-  async searchChunksSemanticInChapters(embedding: number[], chapterIds: number[], limit = 10) {
+  async searchChunksSemanticInChapters(
+    embedding: number[],
+    chapterIds: number[],
+    limit = 10,
+  ) {
     if (chapterIds.length === 0) return [];
     this.validateEmbedding(embedding);
     const vectorString = this.vectorToString(embedding);

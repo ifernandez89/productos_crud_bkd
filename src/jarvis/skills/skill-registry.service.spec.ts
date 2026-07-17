@@ -54,7 +54,11 @@ Guías recomendadas para organizar módulos y servicios.
       }),
       'utf-8',
     );
-    writeFileSync(path.join(fallbackDir, 'skill.md'), '# Fallback skill\n\nContenido de respaldo.\n', 'utf-8');
+    writeFileSync(
+      path.join(fallbackDir, 'skill.md'),
+      '# Fallback skill\n\nContenido de respaldo.\n',
+      'utf-8',
+    );
 
     const service = new SkillRegistryService();
     const relevant = service.findRelevant('nestjs', 5);

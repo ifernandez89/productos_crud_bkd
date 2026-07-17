@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BalanceQuestionnaireService } from './balance-questionnaire.service';
 import { BalanceAnalysisService } from './balance-analysis.service';
@@ -19,7 +24,9 @@ export class BalanceService {
    * Inicia un nuevo cuestionario de balance energético
    */
   async start(type: string = 'manual'): Promise<any> {
-    this.logger.log(`[balance-service] Iniciando nueva sesión de balance de tipo: ${type}`);
+    this.logger.log(
+      `[balance-service] Iniciando nueva sesión de balance de tipo: ${type}`,
+    );
 
     // Crear la sesión en la base de datos
     const session = await this.prisma.balanceSession.create({
@@ -30,7 +37,9 @@ export class BalanceService {
 
     try {
       // Generar y guardar las preguntas
-      const questions = await this.questionnaireService.generateAndSetup(session.id);
+      const questions = await this.questionnaireService.generateAndSetup(
+        session.id,
+      );
       return {
         sessionId: session.id,
         type: session.type,
@@ -39,7 +48,9 @@ export class BalanceService {
       };
     } catch (err) {
       // Si falla la generación de preguntas, eliminamos la sesión creada para limpiar la DB
-      await this.prisma.balanceSession.delete({ where: { id: session.id } }).catch(() => {});
+      await this.prisma.balanceSession
+        .delete({ where: { id: session.id } })
+        .catch(() => {});
       throw err;
     }
   }
@@ -47,8 +58,14 @@ export class BalanceService {
   /**
    * Responde una pregunta específica dentro de una sesión y genera la siguiente si corresponde
    */
-  async submitAnswer(sessionId: number, questionId: number, answer: string): Promise<any> {
-    this.logger.log(`[balance-service] Guardando respuesta para sesión ${sessionId}, pregunta ID ${questionId}`);
+  async submitAnswer(
+    sessionId: number,
+    questionId: number,
+    answer: string,
+  ): Promise<any> {
+    this.logger.log(
+      `[balance-service] Guardando respuesta para sesión ${sessionId}, pregunta ID ${questionId}`,
+    );
 
     // Verificar que exista la sesión y la pregunta
     const dbAnswer = await this.prisma.balanceAnswer.findFirst({
@@ -59,7 +76,9 @@ export class BalanceService {
     });
 
     if (!dbAnswer) {
-      throw new NotFoundException(`No se encontró la pregunta con ID ${questionId} para la sesión ${sessionId}`);
+      throw new NotFoundException(
+        `No se encontró la pregunta con ID ${questionId} para la sesión ${sessionId}`,
+      );
     }
 
     // Actualizar la respuesta
@@ -75,7 +94,9 @@ export class BalanceService {
     });
 
     const MAX_QUESTIONS = 10;
-    const answeredCount = allAnswers.filter((a) => a.answer && a.answer.trim().length > 0).length;
+    const answeredCount = allAnswers.filter(
+      (a) => a.answer && a.answer.trim().length > 0,
+    ).length;
 
     // Si aún quedan preguntas por hacer en la entrevista
     if (allAnswers.length < MAX_QUESTIONS) {
@@ -84,7 +105,8 @@ export class BalanceService {
 
       if (allAnswers.length === 1) {
         // Pregunta 2 de Capa 1 (fija)
-        nextQuestionText = '¿Qué ocupó la mayor parte de tu energía mental durante estos días?';
+        nextQuestionText =
+          '¿Qué ocupó la mayor parte de tu energía mental durante estos días?';
         metadata = { layer: 1, step: 2, dimension: 'general' };
       } else if (allAnswers.length === 2) {
         // Pregunta 3 de Capa 1 (fija)
@@ -92,7 +114,11 @@ export class BalanceService {
         metadata = { layer: 1, step: 3, dimension: 'general' };
       } else {
         // A partir de la pregunta 4 en adelante (Capa 2: exploración adaptativa y dimensional)
-        const nextQuestionData = await this.questionnaireService.generateNextQuestion(sessionId, allAnswers);
+        const nextQuestionData =
+          await this.questionnaireService.generateNextQuestion(
+            sessionId,
+            allAnswers,
+          );
         nextQuestionText = nextQuestionData.question;
         metadata = {
           layer: 2,
@@ -135,7 +161,9 @@ export class BalanceService {
    * Finaliza el cuestionario y genera el informe de balance energético
    */
   async finish(sessionId: number): Promise<any> {
-    this.logger.log(`[balance-service] Finalizando sesión ${sessionId} y generando reporte`);
+    this.logger.log(
+      `[balance-service] Finalizando sesión ${sessionId} y generando reporte`,
+    );
 
     // 1. Obtener la sesión con sus respuestas
     const session = await this.prisma.balanceSession.findUnique({
@@ -144,17 +172,23 @@ export class BalanceService {
     });
 
     if (!session) {
-      throw new NotFoundException(`No se encontró la sesión de balance con ID ${sessionId}`);
+      throw new NotFoundException(
+        `No se encontró la sesión de balance con ID ${sessionId}`,
+      );
     }
 
     if (session.completedAt) {
-      throw new BadRequestException(`La sesión con ID ${sessionId} ya fue completada anteriormente.`);
+      throw new BadRequestException(
+        `La sesión con ID ${sessionId} ya fue completada anteriormente.`,
+      );
     }
 
-    const answeredAnswers = session.answers.filter((a) => a.answer && a.answer.trim().length > 0);
+    const answeredAnswers = session.answers.filter(
+      (a) => a.answer && a.answer.trim().length > 0,
+    );
     if (answeredAnswers.length < 5) {
       throw new BadRequestException(
-        `Para generar un balance preciso, debés responder al menos 5 preguntas (respondiste ${answeredAnswers.length}).`
+        `Para generar un balance preciso, debés responder al menos 5 preguntas (respondiste ${answeredAnswers.length}).`,
       );
     }
 
@@ -181,10 +215,11 @@ export class BalanceService {
     );
 
     // 4. Procesar y enriquecer recomendaciones
-    const processedRecs = await this.recommendationService.processRecommendations(
-      rawAnalysis.recommendations,
-      rawAnalysis.energyDistribution,
-    );
+    const processedRecs =
+      await this.recommendationService.processRecommendations(
+        rawAnalysis.recommendations,
+        rawAnalysis.energyDistribution,
+      );
 
     // 5. Crear el reporte en la base de datos
     const report = await this.prisma.balanceReport.create({
@@ -247,7 +282,10 @@ export class BalanceService {
     });
 
     if (!latestSession || latestSession.reports.length === 0) {
-      return { message: 'Aún no completaste ningún cuestionario de balance energético.' };
+      return {
+        message:
+          'Aún no completaste ningún cuestionario de balance energético.',
+      };
     }
 
     const report = latestSession.reports[0];
@@ -255,10 +293,18 @@ export class BalanceService {
     let recommendationsObj = {};
 
     try {
-      analysisObj = typeof report.analysis === 'string' ? JSON.parse(report.analysis) : report.analysis;
-      recommendationsObj = typeof report.recommendations === 'string' ? JSON.parse(report.recommendations) : report.recommendations;
+      analysisObj =
+        typeof report.analysis === 'string'
+          ? JSON.parse(report.analysis)
+          : report.analysis;
+      recommendationsObj =
+        typeof report.recommendations === 'string'
+          ? JSON.parse(report.recommendations)
+          : report.recommendations;
     } catch (e) {
-      this.logger.warn(`Error al parsear campos JSON del reporte: ${e.message}`);
+      this.logger.warn(
+        `Error al parsear campos JSON del reporte: ${e.message}`,
+      );
     }
 
     return {
@@ -276,7 +322,10 @@ export class BalanceService {
         id: a.id,
         question: a.question,
         answer: a.answer,
-        dimension: a.metadata && typeof a.metadata === 'object' ? a.metadata['dimension'] : 'desconocida',
+        dimension:
+          a.metadata && typeof a.metadata === 'object'
+            ? a.metadata['dimension']
+            : 'desconocida',
       })),
     };
   }
@@ -307,13 +356,21 @@ export class BalanceService {
       if (report) {
         try {
           if (report.analysis) {
-            analysisObj = typeof report.analysis === 'string' ? JSON.parse(report.analysis) : report.analysis;
+            analysisObj =
+              typeof report.analysis === 'string'
+                ? JSON.parse(report.analysis)
+                : report.analysis;
           }
           if (report.recommendations) {
-            recommendationsObj = typeof report.recommendations === 'string' ? JSON.parse(report.recommendations) : report.recommendations;
+            recommendationsObj =
+              typeof report.recommendations === 'string'
+                ? JSON.parse(report.recommendations)
+                : report.recommendations;
           }
         } catch (e) {
-          this.logger.warn(`Error al parsear campos JSON en historial: ${e.message}`);
+          this.logger.warn(
+            `Error al parsear campos JSON en historial: ${e.message}`,
+          );
         }
       }
 

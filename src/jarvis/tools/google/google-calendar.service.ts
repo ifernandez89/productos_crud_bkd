@@ -11,7 +11,9 @@ export class GoogleCalendarService {
   async getCalendarClient(): Promise<calendar_v3.Calendar | null> {
     const auth = await this.googleAuthService.getAuthenticatedClient();
     if (!auth) {
-      this.logger.warn('[Google Calendar] No hay cliente autenticado. El usuario debe loguearse.');
+      this.logger.warn(
+        '[Google Calendar] No hay cliente autenticado. El usuario debe loguearse.',
+      );
       return null;
     }
     return google.calendar({ version: 'v3', auth });
@@ -31,12 +33,17 @@ export class GoogleCalendarService {
       });
 
       const events = response.data.items;
-      if (!events || events.length === 0) return 'No tenés eventos próximos en el calendario.';
+      if (!events || events.length === 0)
+        return 'No tenés eventos próximos en el calendario.';
 
       const formatted = events.map((e, i) => {
         const start = e.start?.dateTime || e.start?.date;
         const date = new Date(start!).toLocaleString('es-AR', {
-          weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
         });
         return `${i + 1}. **${e.summary || 'Sin título'}** — ${date}`;
       });
@@ -68,15 +75,28 @@ export class GoogleCalendarService {
       });
 
       const events = response.data.items ?? [];
-      const dayLabel = target.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+      const dayLabel = target.toLocaleDateString('es-AR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
 
       if (events.length === 0) return `📅 No tenés eventos el ${dayLabel}.`;
 
-      const sections: Record<string, string[]> = { '🌅 Mañana': [], '🌞 Tarde': [], '🌙 Noche': [] };
+      const sections: Record<string, string[]> = {
+        '🌅 Mañana': [],
+        '🌞 Tarde': [],
+        '🌙 Noche': [],
+      };
       for (const e of events) {
         const dt = e.start?.dateTime ? new Date(e.start.dateTime) : null;
         const hour = dt ? dt.getHours() : -1;
-        const time = dt ? dt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : 'todo el día';
+        const time = dt
+          ? dt.toLocaleTimeString('es-AR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : 'todo el día';
         const entry = `  • ${time} — **${e.summary || 'Sin título'}**`;
         if (hour < 0 || hour >= 20) sections['🌙 Noche'].push(entry);
         else if (hour >= 13) sections['🌞 Tarde'].push(entry);
@@ -94,7 +114,10 @@ export class GoogleCalendarService {
     }
   }
 
-  async getEventsInRange(startDate: string, endDate: string): Promise<calendar_v3.Schema$Event[]> {
+  async getEventsInRange(
+    startDate: string,
+    endDate: string,
+  ): Promise<calendar_v3.Schema$Event[]> {
     const calendar = await this.getCalendarClient();
     if (!calendar) return [];
 
@@ -132,7 +155,8 @@ export class GoogleCalendarService {
       });
 
       const events = response.data.items ?? [];
-      if (events.length < 2) return `✅ No hay conflictos de horario para ese día.`;
+      if (events.length < 2)
+        return `✅ No hay conflictos de horario para ese día.`;
 
       const conflicts: string[] = [];
       for (let i = 0; i < events.length - 1; i++) {
@@ -141,7 +165,9 @@ export class GoogleCalendarService {
         const aEnd = a.end?.dateTime ? new Date(a.end.dateTime) : null;
         const bStart = b.start?.dateTime ? new Date(b.start.dateTime) : null;
         if (aEnd && bStart && bStart < aEnd) {
-          conflicts.push(`⚠️ **${a.summary}** y **${b.summary}** se superponen`);
+          conflicts.push(
+            `⚠️ **${a.summary}** y **${b.summary}** se superponen`,
+          );
         }
       }
 
@@ -154,9 +180,15 @@ export class GoogleCalendarService {
     }
   }
 
-  async createEvent(summary: string, description: string, startTimeIso: string, endTimeIso: string): Promise<string> {
+  async createEvent(
+    summary: string,
+    description: string,
+    startTimeIso: string,
+    endTimeIso: string,
+  ): Promise<string> {
     const calendar = await this.getCalendarClient();
-    if (!calendar) return 'No tengo acceso a tu cuenta de Google. Autenticate primero.';
+    if (!calendar)
+      return 'No tengo acceso a tu cuenta de Google. Autenticate primero.';
 
     try {
       const res = await calendar.events.insert({
@@ -164,8 +196,14 @@ export class GoogleCalendarService {
         requestBody: {
           summary,
           description,
-          start: { dateTime: startTimeIso, timeZone: 'America/Argentina/Buenos_Aires' },
-          end:   { dateTime: endTimeIso,   timeZone: 'America/Argentina/Buenos_Aires' },
+          start: {
+            dateTime: startTimeIso,
+            timeZone: 'America/Argentina/Buenos_Aires',
+          },
+          end: {
+            dateTime: endTimeIso,
+            timeZone: 'America/Argentina/Buenos_Aires',
+          },
         },
       });
       return `✅ Evento creado: **${res.data.summary}**\n🔗 [Ver en Google Calendar](${res.data.htmlLink})`;
@@ -190,19 +228,31 @@ export class GoogleCalendarService {
         conferenceDataVersion: 1,
         requestBody: {
           summary,
-          start: { dateTime: startTimeIso, timeZone: 'America/Argentina/Buenos_Aires' },
-          end:   { dateTime: endTimeIso,   timeZone: 'America/Argentina/Buenos_Aires' },
-          attendees: attendees.map(email => ({ email })),
+          start: {
+            dateTime: startTimeIso,
+            timeZone: 'America/Argentina/Buenos_Aires',
+          },
+          end: {
+            dateTime: endTimeIso,
+            timeZone: 'America/Argentina/Buenos_Aires',
+          },
+          attendees: attendees.map((email) => ({ email })),
           conferenceData: {
-            createRequest: { requestId: `jarbees-${Date.now()}`, conferenceSolutionKey: { type: 'hangoutsMeet' } },
+            createRequest: {
+              requestId: `jarbees-${Date.now()}`,
+              conferenceSolutionKey: { type: 'hangoutsMeet' },
+            },
           },
         },
       });
 
-      const meetLink = res.data.conferenceData?.entryPoints?.[0]?.uri ?? 'sin enlace de Meet';
+      const meetLink =
+        res.data.conferenceData?.entryPoints?.[0]?.uri ?? 'sin enlace de Meet';
       return `✅ Reunión creada: **${res.data.summary}**\n🎥 Google Meet: ${meetLink}\n🔗 [Ver en Calendario](${res.data.htmlLink})`;
     } catch (error) {
-      this.logger.error(`[Calendar] createMeetingWithAttendees: ${error.message}`);
+      this.logger.error(
+        `[Calendar] createMeetingWithAttendees: ${error.message}`,
+      );
       return `❌ Error al crear la reunión: ${error.message}`;
     }
   }

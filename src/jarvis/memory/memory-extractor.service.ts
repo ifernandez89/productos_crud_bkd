@@ -26,49 +26,56 @@ export class MemoryExtractorService {
   }> = [
     // Identidad
     {
-      regex: /(?:me llamo|mi nombre es|soy)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/i,
+      regex:
+        /(?:me llamo|mi nombre es|soy)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/i,
       category: 'fact',
       importance: 9,
       extract: (m) => `El usuario se llama ${m[1]}`,
     },
     // Profesión / trabajo
     {
-      regex: /(?:trabajo(?:\s+(?:con|en|como))?|soy\s+(?:un\s+)?|trabajo\s+de)\s+(desarrollador|programador|ingeniero|diseñador|arquitecto|devops|fullstack|backend|frontend|data\s+scientist|[a-zA-Z]+\s+developer)/i,
+      regex:
+        /(?:trabajo(?:\s+(?:con|en|como))?|soy\s+(?:un\s+)?|trabajo\s+de)\s+(desarrollador|programador|ingeniero|diseñador|arquitecto|devops|fullstack|backend|frontend|data\s+scientist|[a-zA-Z]+\s+developer)/i,
       category: 'skill',
       importance: 8,
       extract: (m) => `El usuario trabaja como ${m[1]}`,
     },
     // Tecnologías
     {
-      regex: /(?:uso|trabajo con|desarrollo en|programo en|estoy aprendiendo|me especializo en)\s+(NestJS|Next\.?js|React|Angular|Vue|TypeScript|JavaScript|Python|Java|Rust|Go|PostgreSQL|MongoDB|Redis|Docker|Kubernetes|GraphQL|Prisma|[A-Z][a-zA-Z]+)/,
+      regex:
+        /(?:uso|trabajo con|desarrollo en|programo en|estoy aprendiendo|me especializo en)\s+(NestJS|Next\.?js|React|Angular|Vue|TypeScript|JavaScript|Python|Java|Rust|Go|PostgreSQL|MongoDB|Redis|Docker|Kubernetes|GraphQL|Prisma|[A-Z][a-zA-Z]+)/,
       category: 'skill',
       importance: 7,
       extract: (m) => `El usuario usa/trabaja con ${m[1]}`,
     },
     // Preferencias explícitas
     {
-      regex: /(?:prefiero|me gusta(?:\s+más)?|siempre|quiero que|necesito que)\s+(?:las?\s+)?respuestas?\s+(cortas?|largas?|concisas?|detalladas?|con\s+ejemplos?|en\s+viñetas?|con\s+código)/i,
+      regex:
+        /(?:prefiero|me gusta(?:\s+más)?|siempre|quiero que|necesito que)\s+(?:las?\s+)?respuestas?\s+(cortas?|largas?|concisas?|detalladas?|con\s+ejemplos?|en\s+viñetas?|con\s+código)/i,
       category: 'preference',
       importance: 9,
       extract: (m) => `El usuario prefiere respuestas ${m[1]}`,
     },
     // Ciudad / ubicación
     {
-      regex: /(?:vivo en|soy de|estoy en|me encuentro en)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/i,
+      regex:
+        /(?:vivo en|soy de|estoy en|me encuentro en)\s+([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)/i,
       category: 'fact',
       importance: 8,
       extract: (m) => `El usuario vive en ${m[1]}`,
     },
     // Proyectos
     {
-      regex: /(?:estoy (?:desarrollando|construyendo|trabajando en)|mi proyecto (?:es|se llama))\s+([A-ZÁÉÍÓÚÑ][a-zA-Z0-9\-áéíóúñ]+)/i,
+      regex:
+        /(?:estoy (?:desarrollando|construyendo|trabajando en)|mi proyecto (?:es|se llama))\s+([A-ZÁÉÍÓÚÑ][a-zA-Z0-9\-áéíóúñ]+)/i,
       category: 'context',
       importance: 7,
       extract: (m) => `El usuario está desarrollando el proyecto ${m[1]}`,
     },
     // Intereses
     {
-      regex: /(?:me interesa(?:n)?|me apasiona(?:n)?|soy fanático de|me encanta(?:n)?)\s+(?:la?\s+)?(astronomía|astrología|música|cine|deportes|fútbol|programación|inteligencia artificial|IA|[a-záéíóúñA-Z]+)/i,
+      regex:
+        /(?:me interesa(?:n)?|me apasiona(?:n)?|soy fanático de|me encanta(?:n)?)\s+(?:la?\s+)?(astronomía|astrología|música|cine|deportes|fútbol|programación|inteligencia artificial|IA|[a-záéíóúñA-Z]+)/i,
       category: 'preference',
       importance: 6,
       extract: (m) => `Al usuario le interesa/apasiona ${m[1]}`,
@@ -96,7 +103,11 @@ export class MemoryExtractorService {
     const words = userMessage.trim().split(/\s+/);
     if (words.length < 3) return;
 
-    const extracted: Array<{ content: string; category: string; importance: number }> = [];
+    const extracted: Array<{
+      content: string;
+      category: string;
+      importance: number;
+    }> = [];
 
     for (const pattern of this.MEMORY_PATTERNS) {
       const match = userMessage.match(pattern.regex);
@@ -136,7 +147,9 @@ export class MemoryExtractorService {
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        this.logger.warn(`[memory:extract] error guardando "${fact.content}": ${msg}`);
+        this.logger.warn(
+          `[memory:extract] error guardando "${fact.content}": ${msg}`,
+        );
       }
     }
   }
@@ -147,10 +160,20 @@ export class MemoryExtractorService {
    */
   private roughSimilarity(a: string, b: string): number {
     const setA = new Set(
-      a.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter((w) => w.length > 2),
+      a
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .split(/\s+/)
+        .filter((w) => w.length > 2),
     );
     const setB = new Set(
-      b.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter((w) => w.length > 2),
+      b
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .split(/\s+/)
+        .filter((w) => w.length > 2),
     );
     if (setA.size === 0 || setB.size === 0) return 0;
 

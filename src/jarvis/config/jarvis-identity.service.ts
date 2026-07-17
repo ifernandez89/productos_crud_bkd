@@ -18,7 +18,11 @@ export interface JarvisIdentity {
 @Injectable()
 export class JarvisIdentityService {
   private readonly logger = new Logger(JarvisIdentityService.name);
-  private readonly configPath = path.join(process.cwd(), 'config', 'jarvis.identity.json');
+  private readonly configPath = path.join(
+    process.cwd(),
+    'config',
+    'jarvis.identity.json',
+  );
   private readonly defaultIdentity: JarvisIdentity = {
     name: 'Jarvis',
     language: 'es-AR',
@@ -34,7 +38,9 @@ export class JarvisIdentityService {
   getIdentity(): JarvisIdentity {
     try {
       if (!existsSync(this.configPath)) {
-        this.logger.warn(`No se encontró ${this.configPath}, usando identidad por defecto.`);
+        this.logger.warn(
+          `No se encontró ${this.configPath}, usando identidad por defecto.`,
+        );
         return this.defaultIdentity;
       }
       const raw = readFileSync(this.configPath, 'utf-8');

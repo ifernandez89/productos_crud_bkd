@@ -5,7 +5,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class TaskRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createTask(data: { sessionId?: string; objective: string; status?: string; priority?: string; category?: string; project?: string }) {
+  async createTask(data: {
+    sessionId?: string;
+    objective: string;
+    status?: string;
+    priority?: string;
+    category?: string;
+    project?: string;
+  }) {
     return this.prisma.task.create({
       data: {
         sessionId: data.sessionId,
@@ -18,7 +25,10 @@ export class TaskRepository {
     });
   }
 
-  async createTaskSteps(taskId: number, steps: Array<{ stepNumber: number; description: string }>) {
+  async createTaskSteps(
+    taskId: number,
+    steps: Array<{ stepNumber: number; description: string }>,
+  ) {
     return this.prisma.taskStep.createMany({
       data: steps.map((s) => ({
         taskId,

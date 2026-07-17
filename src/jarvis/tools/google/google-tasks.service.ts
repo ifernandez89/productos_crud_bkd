@@ -11,7 +11,9 @@ export class GoogleTasksService {
   async getTasksClient(): Promise<tasks_v1.Tasks | null> {
     const auth = await this.googleAuthService.getAuthenticatedClient();
     if (!auth) {
-      this.logger.warn('[Google Tasks] No hay cliente autenticado. El usuario debe loguearse.');
+      this.logger.warn(
+        '[Google Tasks] No hay cliente autenticado. El usuario debe loguearse.',
+      );
       return null;
     }
     return google.tasks({ version: 'v1', auth });
@@ -46,14 +48,21 @@ export class GoogleTasksService {
 
       return `📋 **Tus Tareas Pendientes:**\n${formattedTasks.join('\n')}`;
     } catch (error) {
-      this.logger.error(`[Google Tasks] Error obteniendo tareas: ${error.message}`);
+      this.logger.error(
+        `[Google Tasks] Error obteniendo tareas: ${error.message}`,
+      );
       return 'Ocurrió un error al intentar leer tus tareas. Verifica tus permisos.';
     }
   }
 
-  async createTask(title: string, notes?: string, dueIso?: string): Promise<string> {
+  async createTask(
+    title: string,
+    notes?: string,
+    dueIso?: string,
+  ): Promise<string> {
     const tasksApi = await this.getTasksClient();
-    if (!tasksApi) return 'No tengo acceso a tu cuenta de Google. Por favor autentícate primero.';
+    if (!tasksApi)
+      return 'No tengo acceso a tu cuenta de Google. Por favor autentícate primero.';
 
     try {
       const taskBody: tasks_v1.Schema$Task = { title };

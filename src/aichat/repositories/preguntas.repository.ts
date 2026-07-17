@@ -27,7 +27,9 @@ export class PreguntasRepository implements IPreguntasRepository {
 
   async create(data: CreatePreguntaData): Promise<Pregunta> {
     // Guardar createdAt como Date en zona America/Argentina/Buenos_Aires
-    const createdAtDate = DateTime.now().setZone('America/Argentina/Buenos_Aires').toJSDate();
+    const createdAtDate = DateTime.now()
+      .setZone('America/Argentina/Buenos_Aires')
+      .toJSDate();
     const payload = {
       texto: data.texto,
       respuesta: data.respuesta ?? '',
@@ -43,10 +45,14 @@ export class PreguntasRepository implements IPreguntasRepository {
       attempt++;
       try {
         const rec = await this.prisma.pregunta.create({ data: payload });
-        log.log(`Pregunta creada id=${rec.id} createdAt=${rec.createdAt.toISOString()}`);
+        log.log(
+          `Pregunta creada id=${rec.id} createdAt=${rec.createdAt.toISOString()}`,
+        );
         return rec;
       } catch (err) {
-        log.error(`Error creando pregunta (intento ${attempt}): ${err?.message || err}`);
+        log.error(
+          `Error creando pregunta (intento ${attempt}): ${err?.message || err}`,
+        );
         // Exponemos una pequeña espera antes de reintentar
         if (attempt < maxAttempts) {
           const delay = 200 * Math.pow(2, attempt); // backoff: 400ms, 800ms
@@ -57,13 +63,24 @@ export class PreguntasRepository implements IPreguntasRepository {
         // Si fallaron todos los reintentos, hacer un fallback escribiendo a disco
         try {
           const fallbackDir = path.join(process.cwd(), 'data');
-          if (!fs.existsSync(fallbackDir)) fs.mkdirSync(fallbackDir, { recursive: true });
-          const fallbackFile = path.join(fallbackDir, 'preguntas-fallback.jsonl');
-          const recordToWrite = JSON.stringify({ ...payload, fallbackAt: new Date().toISOString() });
-          fs.appendFileSync(fallbackFile, recordToWrite + '\n', { encoding: 'utf8' });
+          if (!fs.existsSync(fallbackDir))
+            fs.mkdirSync(fallbackDir, { recursive: true });
+          const fallbackFile = path.join(
+            fallbackDir,
+            'preguntas-fallback.jsonl',
+          );
+          const recordToWrite = JSON.stringify({
+            ...payload,
+            fallbackAt: new Date().toISOString(),
+          });
+          fs.appendFileSync(fallbackFile, recordToWrite + '\n', {
+            encoding: 'utf8',
+          });
           log.error(`Se escribió fallback de pregunta en ${fallbackFile}`);
         } catch (fsErr) {
-          log.error(`No se pudo escribir fallback en disco: ${fsErr?.message || fsErr}`);
+          log.error(
+            `No se pudo escribir fallback en disco: ${fsErr?.message || fsErr}`,
+          );
         }
 
         // Finalmente, relanzar el error para que el caller pueda reaccionar si lo necesita
@@ -75,8 +92,12 @@ export class PreguntasRepository implements IPreguntasRepository {
   }
 
   async findAll(): Promise<Pregunta[]> {
-    const rows = await this.prisma.pregunta.findMany({ orderBy: { createdAt: 'desc' } });
-    log.log(`findAll devuelve ${rows.length} preguntas (mostrando las más recientes primero)`);
+    const rows = await this.prisma.pregunta.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    log.log(
+      `findAll devuelve ${rows.length} preguntas (mostrando las más recientes primero)`,
+    );
     return rows;
   }
 
@@ -126,10 +147,16 @@ export class PreguntasRepository implements IPreguntasRepository {
 
     // Rankear por cantidad de términos que coinciden (texto tiene más peso que respuesta)
     const scored = matches.map((m) => {
-      const textoNorm = m.texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const respNorm = m.respuesta.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const textoNorm = m.texto
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      const respNorm = m.respuesta
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
       const score = terms.reduce((acc, term) => {
-        if (textoNorm.includes(term)) acc += 2;   // coincidencia en pregunta vale doble
+        if (textoNorm.includes(term)) acc += 2; // coincidencia en pregunta vale doble
         if (respNorm.includes(term)) acc += 1;
         return acc;
       }, 0);

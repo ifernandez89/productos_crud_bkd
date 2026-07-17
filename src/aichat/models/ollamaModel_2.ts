@@ -86,7 +86,9 @@ COMPORTAMIENTO:
    * Separar System de Human mejora considerablemente la calidad
    * en qwen3:4b y modelos instrucción-tuneados.
    */
-  async invokeWithMessages(prompt: StructuredPrompt): Promise<AIMessageResponse> {
+  async invokeWithMessages(
+    prompt: StructuredPrompt,
+  ): Promise<AIMessageResponse> {
     const model = await this.getModel();
     const systemMsg = prompt.system || this.TECH_EXPERT_SYSTEM_PROMPT;
     const messages = [
@@ -102,7 +104,7 @@ COMPORTAMIENTO:
   private async create(): Promise<void> {
     /**
      * CONFIGURACIÓN: Qwen3:4b como Experto Técnico
-     * 
+     *
      * Parámetros de RAG (Retrieval-Augmented Generation):
      * - Chunk size: 1000 (rango 800-1200)
      * - Chunk overlap: 200 (rango 150-250)
@@ -125,7 +127,7 @@ COMPORTAMIENTO:
 
     this.logger.log(
       `🔧 Tech Expert Model initialized: ${resolveTechModel()} | ` +
-      'Config: temp=0.2, topK=5, ctx=4096, RAG: chunk=1000, overlap=200, embedding=bge-m3'
+        'Config: temp=0.2, topK=5, ctx=4096, RAG: chunk=1000, overlap=200, embedding=bge-m3',
     );
   }
 }

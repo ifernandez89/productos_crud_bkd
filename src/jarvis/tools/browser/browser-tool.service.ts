@@ -22,7 +22,7 @@ export interface BrowserResult {
   description: string;
   text: string;
   excerpt: string;
-  headlines: string[];         // titulares / h1-h3 extraídos
+  headlines: string[]; // titulares / h1-h3 extraídos
   links: string[];
   images: string[];
   wordCount: number;
@@ -55,15 +55,15 @@ export class BrowserToolService {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
     '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-  private readonly TIMEOUT_MS     = 20_000;
+  private readonly TIMEOUT_MS = 20_000;
   private readonly MAX_TEXT_CHARS = 10_000;
-  private readonly EXCERPT_CHARS  = 3_000;
-  private readonly MIN_WORDS      = 300;   // umbral para decidir si vale la pena
+  private readonly EXCERPT_CHARS = 3_000;
+  private readonly MIN_WORDS = 300; // umbral para decidir si vale la pena
 
   // Tiempos de espera optimizados para velocidad
-  private readonly GOTO_TIMEOUT   = 15_000;  // timeout navegación
-  private readonly CONTENT_WAIT   = 2_000;   // espera contenido inicial
-  private readonly SCROLL_STEP_MS = 300;     // ms entre pasos de scroll (antes: 600)
+  private readonly GOTO_TIMEOUT = 15_000; // timeout navegación
+  private readonly CONTENT_WAIT = 2_000; // espera contenido inicial
+  private readonly SCROLL_STEP_MS = 300; // ms entre pasos de scroll (antes: 600)
 
   private browser: Browser | null = null;
 
@@ -92,7 +92,9 @@ export class BrowserToolService {
 
     // Usar el que tenga más contenido
     if ('error' in rendered) return staticResult;
-    return rendered.wordCount >= staticResult.wordCount ? rendered : staticResult;
+    return rendered.wordCount >= staticResult.wordCount
+      ? rendered
+      : staticResult;
   }
 
   extractUrls(message: string): string[] {
@@ -109,18 +111,24 @@ export class BrowserToolService {
     const urls = this.extractUrls(message);
     if (urls.length === 0) return null;
 
-    this.logger.log(`[browser] ${urls.length} URL(s) detectadas: ${urls.join(', ')}`);
+    this.logger.log(
+      `[browser] ${urls.length} URL(s) detectadas: ${urls.join(', ')}`,
+    );
 
     const results = await Promise.all(urls.map((u) => this.fetch(u)));
     const sections: string[] = [];
 
     for (const result of results) {
       if ('error' in result) {
-        sections.push(`### 🌐 URL: ${result.url}\n⚠️ No se pudo acceder: ${result.error}`);
+        sections.push(
+          `### 🌐 URL: ${result.url}\n⚠️ No se pudo acceder: ${result.error}`,
+        );
         continue;
       }
 
-      const rendered = result.renderedWithPlaywright ? ' _(JS renderizado)_' : '';
+      const rendered = result.renderedWithPlaywright
+        ? ' _(JS renderizado)_'
+        : '';
       const parts: string[] = [
         `### 🌐 ${result.title}${rendered}`,
         `**URL:** ${result.finalUrl}`,
@@ -147,12 +155,18 @@ export class BrowserToolService {
         parts.push('');
         parts.push('**APIs / Endpoints Detectados:**');
         result.apis.slice(0, 15).forEach((api) => {
-          parts.push(`• **${api.method}** \`${api.url}\` (Status: ${api.status})`);
+          parts.push(
+            `• **${api.method}** \`${api.url}\` (Status: ${api.status})`,
+          );
           if (api.requestPayload) {
-            parts.push(`  - *Payload:* \`${api.requestPayload.trim().slice(0, 200)}\``);
+            parts.push(
+              `  - *Payload:* \`${api.requestPayload.trim().slice(0, 200)}\``,
+            );
           }
           if (api.responsePayload) {
-            parts.push(`  - *Respuesta:* \`${api.responsePayload.trim().slice(0, 500)}\``);
+            parts.push(
+              `  - *Respuesta:* \`${api.responsePayload.trim().slice(0, 500)}\``,
+            );
           }
         });
       }
@@ -195,10 +209,14 @@ export class BrowserToolService {
             const responseUrl = response.url();
             const method = req.method();
             const contentType = response.headers()['content-type'] || '';
-            
+
             const isJson = contentType.includes('application/json');
-            const isApiPattern = /\/(api|v\d+|graphql|json)/i.test(responseUrl) || responseUrl.includes('/graphql') || responseUrl.includes('/api/') || responseUrl.endsWith('.json');
-            
+            const isApiPattern =
+              /\/(api|v\d+|graphql|json)/i.test(responseUrl) ||
+              responseUrl.includes('/graphql') ||
+              responseUrl.includes('/api/') ||
+              responseUrl.endsWith('.json');
+
             if (isJson || isApiPattern) {
               const status = response.status();
               if (status >= 200 && status < 300) {
@@ -223,10 +241,15 @@ export class BrowserToolService {
         pendingResponses.push(p);
       });
 
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.TIMEOUT_MS });
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: this.TIMEOUT_MS,
+      });
 
       if (options?.waitFor) {
-        await page.waitForSelector(options.waitFor, { timeout: 5000 }).catch(() => {});
+        await page
+          .waitForSelector(options.waitFor, { timeout: 5000 })
+          .catch(() => {});
       }
 
       await this.deepScroll(page);
@@ -257,7 +280,11 @@ export class BrowserToolService {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:navigate] error en ${url}: ${msg}`);
-      if (page) await page.context().close().catch(() => {});
+      if (page)
+        await page
+          .context()
+          .close()
+          .catch(() => {});
       return { url, error: msg };
     }
   }
@@ -275,32 +302,48 @@ export class BrowserToolService {
       const context = await browser.newContext({ userAgent: this.USER_AGENT });
       page = await context.newPage();
 
-      await page.goto(searchUrl, { waitUntil: 'domcontentloaded', timeout: this.TIMEOUT_MS });
+      await page.goto(searchUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: this.TIMEOUT_MS,
+      });
 
       const results = await page.evaluate((maxResults: number) => {
-        const items: Array<{ title: string; url: string; snippet: string }> = [];
-        document.querySelectorAll('div.g, div[data-sokoban-container]').forEach((container) => {
-          if (items.length >= maxResults) return;
-          const anchor = container.querySelector('a[href]') as HTMLAnchorElement | null;
-          const titleEl = container.querySelector('h3');
-          const snippetEl = container.querySelector('.VwiC3b, span[data-ved], .IsZvec');
-          const url = anchor?.href ?? '';
-          const title = titleEl?.innerText?.trim() ?? '';
-          const snippet = snippetEl?.textContent?.trim() ?? '';
-          if (url.startsWith('http') && title) {
-            items.push({ title, url, snippet: snippet.slice(0, 200) });
-          }
-        });
+        const items: Array<{ title: string; url: string; snippet: string }> =
+          [];
+        document
+          .querySelectorAll('div.g, div[data-sokoban-container]')
+          .forEach((container) => {
+            if (items.length >= maxResults) return;
+            const anchor = container.querySelector(
+              'a[href]',
+            ) as HTMLAnchorElement | null;
+            const titleEl = container.querySelector('h3');
+            const snippetEl = container.querySelector(
+              '.VwiC3b, span[data-ved], .IsZvec',
+            );
+            const url = anchor?.href ?? '';
+            const title = titleEl?.innerText?.trim() ?? '';
+            const snippet = snippetEl?.textContent?.trim() ?? '';
+            if (url.startsWith('http') && title) {
+              items.push({ title, url, snippet: snippet.slice(0, 200) });
+            }
+          });
         return items;
       }, limit);
 
       await context.close();
-      this.logger.log(`[browser:search] "${query}" → ${results.length} resultados`);
+      this.logger.log(
+        `[browser:search] "${query}" → ${results.length} resultados`,
+      );
       return results;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:search] error buscando "${query}": ${msg}`);
-      if (page) await page.context().close().catch(() => {});
+      if (page)
+        await page
+          .context()
+          .close()
+          .catch(() => {});
       return [];
     }
   }
@@ -320,7 +363,9 @@ export class BrowserToolService {
 
   // ── Estrategias de fetch ─────────────────────────────────────────────────────
 
-  private async fetchRendered(url: string): Promise<BrowserResult | BrowserError> {
+  private async fetchRendered(
+    url: string,
+  ): Promise<BrowserResult | BrowserError> {
     let page: Page | null = null;
     try {
       const browser = await this.getBrowser();
@@ -340,10 +385,14 @@ export class BrowserToolService {
             const responseUrl = response.url();
             const method = req.method();
             const contentType = response.headers()['content-type'] || '';
-            
+
             const isJson = contentType.includes('application/json');
-            const isApiPattern = /\/(api|v\d+|graphql|json)/i.test(responseUrl) || responseUrl.includes('/graphql') || responseUrl.includes('/api/') || responseUrl.endsWith('.json');
-            
+            const isApiPattern =
+              /\/(api|v\d+|graphql|json)/i.test(responseUrl) ||
+              responseUrl.includes('/graphql') ||
+              responseUrl.includes('/api/') ||
+              responseUrl.endsWith('.json');
+
             if (isJson || isApiPattern) {
               const status = response.status();
               if (status >= 200 && status < 300) {
@@ -369,24 +418,34 @@ export class BrowserToolService {
       });
 
       // Bloquear recursos pesados que no aportan texto
-      await page.route('**/*.{png,jpg,jpeg,gif,svg,webp,woff,woff2,ttf,mp4,mp3,avi}', (route) =>
-        route.abort(),
+      await page.route(
+        '**/*.{png,jpg,jpeg,gif,svg,webp,woff,woff2,ttf,mp4,mp3,avi}',
+        (route) => route.abort(),
       );
       // Bloquear también analytics/ads que alargan networkidle indefinidamente
-      await page.route('**/{analytics,gtm,googletagmanager,doubleclick,facebook,hotjar,intercom}**', (route) =>
-        route.abort(),
+      await page.route(
+        '**/{analytics,gtm,googletagmanager,doubleclick,facebook,hotjar,intercom}**',
+        (route) => route.abort(),
       );
 
       // ✅ Cambiado de 'networkidle' a 'domcontentloaded' — 10-15x más rápido
       // networkidle espera que TODA la red esté quieta (ads, analytics, etc.)
       // domcontentloaded dispara apenas el HTML principal está listo
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: this.GOTO_TIMEOUT });
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: this.GOTO_TIMEOUT,
+      });
 
       // Esperar a que el contenido principal aparezca (máx 3s, no bloqueante)
       await Promise.race([
-        page.waitForSelector('article, .article, [class*="news"], [class*="nota"], main, h2, h3', {
-          timeout: 3000,
-        }).catch(() => {}),
+        page
+          .waitForSelector(
+            'article, .article, [class*="news"], [class*="nota"], main, h2, h3',
+            {
+              timeout: 3000,
+            },
+          )
+          .catch(() => {}),
         page.waitForTimeout(this.CONTENT_WAIT),
       ]);
 
@@ -402,22 +461,32 @@ export class BrowserToolService {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(`[browser:playwright] error en ${url}: ${msg}`);
-      if (page) await page.context().close().catch(() => {});
+      if (page)
+        await page
+          .context()
+          .close()
+          .catch(() => {});
       return { url, error: msg };
     }
   }
 
-  private async fetchStatic(url: string): Promise<BrowserResult | BrowserError> {
+  private async fetchStatic(
+    url: string,
+  ): Promise<BrowserResult | BrowserError> {
     try {
       const response = await axios.get(url, {
-        headers: { 'User-Agent': this.USER_AGENT, 'Accept-Language': 'es-AR,es;q=0.9' },
+        headers: {
+          'User-Agent': this.USER_AGENT,
+          'Accept-Language': 'es-AR,es;q=0.9',
+        },
         timeout: this.TIMEOUT_MS,
         maxRedirects: 5,
         validateStatus: (s) => s < 400,
       });
-      const html = typeof response.data === 'string'
-        ? response.data
-        : JSON.stringify(response.data);
+      const html =
+        typeof response.data === 'string'
+          ? response.data
+          : JSON.stringify(response.data);
       return this.parseHtml(url, url, html, false);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -503,14 +572,18 @@ export class BrowserToolService {
       '[class*="nota"] h2, [class*="nota"] h3',
       '[class*="news"] h2, [class*="news"] h3',
       '[class*="article"] h2, [class*="article"] h3',
-      'h2 a, h3 a',          // links dentro de titulares (muy común en portales)
-      'h2, h3',              // fallback general
+      'h2 a, h3 a', // links dentro de titulares (muy común en portales)
+      'h2, h3', // fallback general
     ];
 
     for (const selector of newsSelectors) {
       $(selector).each((_, el) => {
         const text = $(el).text().trim().replace(/\s+/g, ' ');
-        if (text.length > 10 && text.length < 300 && !headlines.includes(text)) {
+        if (
+          text.length > 10 &&
+          text.length < 300 &&
+          !headlines.includes(text)
+        ) {
           headlines.push(text);
         }
       });
@@ -520,14 +593,21 @@ export class BrowserToolService {
     // ── Limpiar DOM para extraer cuerpo ──────────────────────────────────────
     $(
       'script, style, noscript, nav, footer, header, aside, ' +
-      'iframe, form, [aria-hidden="true"], ' +
-      '[class*="cookie"], [class*="banner"], [class*="popup"], ' +
-      '[class*="ads"], [class*="advertisement"]',
+        'iframe, form, [aria-hidden="true"], ' +
+        '[class*="cookie"], [class*="banner"], [class*="popup"], ' +
+        '[class*="ads"], [class*="advertisement"]',
     ).remove();
 
     // Intentar extraer solo el cuerpo principal (article, main, etc.)
     let bodyText = '';
-    const mainSelectors = ['article', 'main', '[role="main"]', '#content', '.content', 'body'];
+    const mainSelectors = [
+      'article',
+      'main',
+      '[role="main"]',
+      '#content',
+      '.content',
+      'body',
+    ];
     for (const sel of mainSelectors) {
       const candidate = $(sel).text();
       const clean = candidate.replace(/\s+/g, ' ').trim();
@@ -549,11 +629,15 @@ export class BrowserToolService {
     $('a[href]').each((_, el) => {
       const href = $(el).attr('href') ?? '';
       try {
-        const abs = href.startsWith('http') ? href : new URL(href, finalUrl).href;
+        const abs = href.startsWith('http')
+          ? href
+          : new URL(href, finalUrl).href;
         if (!links.includes(abs) && !abs.includes('#') && links.length < 15) {
           links.push(abs);
         }
-      } catch { /* ignorar href inválido */ }
+      } catch {
+        /* ignorar href inválido */
+      }
     });
 
     // ── Imágenes ─────────────────────────────────────────────────────────────

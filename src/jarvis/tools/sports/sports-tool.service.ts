@@ -24,34 +24,34 @@ export class SportsTool {
   private readonly TIMEOUT = 6_000;
 
   private readonly TEAM_IDS: Record<string, string> = {
-    'argentina':         '134509',
-    'brasil':            '134506',
-    'brazil':            '134506',
-    'uruguay':           '134511',
-    'colombia':          '134510',
-    'boca juniors':      '133703',
-    'river plate':       '133704',
-    'real madrid':       '133613',
-    'barcelona':         '133600',
+    argentina: '134509',
+    brasil: '134506',
+    brazil: '134506',
+    uruguay: '134511',
+    colombia: '134510',
+    'boca juniors': '133703',
+    'river plate': '133704',
+    'real madrid': '133613',
+    barcelona: '133600',
     'manchester united': '133616',
-    'manchester city':   '133615',
-    'liverpool':         '133602',
-    'chelsea':           '133610',
-    'inter':             '133738',
-    'milan':             '133739',
-    'juventus':          '133736',
+    'manchester city': '133615',
+    liverpool: '133602',
+    chelsea: '133610',
+    inter: '133738',
+    milan: '133739',
+    juventus: '133736',
   };
 
   private readonly LEAGUE_IDS: Record<string, string> = {
-    'premier league':   '4328',
-    'la liga':          '4335',
-    'copa america':     '4499',
-    'mundial':          '4429',
-    'world cup':        '4429',
+    'premier league': '4328',
+    'la liga': '4335',
+    'copa america': '4499',
+    mundial: '4429',
+    'world cup': '4429',
     'champions league': '4480',
-    'superliga':        '4406',
-    'serie a':          '4332',
-    'bundesliga':       '4331',
+    superliga: '4406',
+    'serie a': '4332',
+    bundesliga: '4331',
   };
 
   // ── API pública ─────────────────────────────────────────────────────────────
@@ -66,10 +66,14 @@ export class SportsTool {
     const { home, away, date } = this.extractMatchInfo(basicResult, n);
 
     // 3. Buscar goleadores/minutos via scraper (en paralelo con paso 1)
-    const scrapeText = await SportsScraperHelper.fetchGoalDetails(home, away, date);
+    const scrapeText = await SportsScraperHelper.fetchGoalDetails(
+      home,
+      away,
+      date,
+    );
 
     if (scrapeText) {
-      const baseInfo  = basicResult.found ? `${basicResult.content}\n\n` : '';
+      const baseInfo = basicResult.found ? `${basicResult.content}\n\n` : '';
       return {
         found: true,
         source: 'TheSportsDB + Web',
@@ -87,16 +91,22 @@ export class SportsTool {
   // ── TheSportsDB ──────────────────────────────────────────────────────────────
 
   private async getFromTheSportsDB(n: string): Promise<SportsResult> {
-    const teamId   = this.detectTeamId(n);
+    const teamId = this.detectTeamId(n);
     const leagueId = this.detectLeagueId(n);
     const teamName = this.extractTeamName(n);
 
     const promises: Promise<SportsResult>[] = [];
-    if (teamId)              promises.push(this.getLastEventByTeam(teamId));
-    if (leagueId)            promises.push(this.getLastEventsByLeague(leagueId));
+    if (teamId) promises.push(this.getLastEventByTeam(teamId));
+    if (leagueId) promises.push(this.getLastEventsByLeague(leagueId));
     if (teamName && !teamId) promises.push(this.searchTeamByName(teamName));
 
-    if (!promises.length) return { found: false, source: 'none', content: '', hasGoalDetail: false };
+    if (!promises.length)
+      return {
+        found: false,
+        source: 'none',
+        content: '',
+        hasGoalDetail: false,
+      };
 
     try {
       const result = await Promise.race([
@@ -107,11 +117,18 @@ export class SportsTool {
       ]);
       return result;
     } catch {
-      return { found: false, source: 'none', content: '', hasGoalDetail: false };
+      return {
+        found: false,
+        source: 'none',
+        content: '',
+        hasGoalDetail: false,
+      };
     }
   }
 
-  private async firstFound(promises: Promise<SportsResult>[]): Promise<SportsResult> {
+  private async firstFound(
+    promises: Promise<SportsResult>[],
+  ): Promise<SportsResult> {
     const results = await Promise.allSettled(promises);
     for (const r of results) {
       if (r.status === 'fulfilled' && r.value.found) return r.value;
@@ -126,7 +143,13 @@ export class SportsTool {
         { timeout: this.TIMEOUT },
       );
       const events: any[] = resp.data?.results ?? [];
-      if (!events.length) return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      if (!events.length)
+        return {
+          found: false,
+          source: 'thesportsdb',
+          content: '',
+          hasGoalDetail: false,
+        };
 
       // Guardar metadata del evento en el contenido para que el scraper lo use
       this._lastEvents = events.slice(0, 3);
@@ -138,7 +161,12 @@ export class SportsTool {
         hasGoalDetail: false,
       };
     } catch {
-      return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      return {
+        found: false,
+        source: 'thesportsdb',
+        content: '',
+        hasGoalDetail: false,
+      };
     }
   }
 
@@ -149,7 +177,13 @@ export class SportsTool {
         { timeout: this.TIMEOUT },
       );
       const events: any[] = resp.data?.events ?? [];
-      if (!events.length) return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      if (!events.length)
+        return {
+          found: false,
+          source: 'thesportsdb',
+          content: '',
+          hasGoalDetail: false,
+        };
 
       this._lastEvents = events.slice(0, 5);
       const lines = events.slice(0, 5).map((e) => this.formatEvent(e));
@@ -160,7 +194,12 @@ export class SportsTool {
         hasGoalDetail: false,
       };
     } catch {
-      return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      return {
+        found: false,
+        source: 'thesportsdb',
+        content: '',
+        hasGoalDetail: false,
+      };
     }
   }
 
@@ -171,10 +210,21 @@ export class SportsTool {
         { timeout: this.TIMEOUT },
       );
       const teams: any[] = resp.data?.teams ?? [];
-      if (!teams.length) return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      if (!teams.length)
+        return {
+          found: false,
+          source: 'thesportsdb',
+          content: '',
+          hasGoalDetail: false,
+        };
       return this.getLastEventByTeam(teams[0].idTeam);
     } catch {
-      return { found: false, source: 'thesportsdb', content: '', hasGoalDetail: false };
+      return {
+        found: false,
+        source: 'thesportsdb',
+        content: '',
+        hasGoalDetail: false,
+      };
     }
   }
 
@@ -207,29 +257,45 @@ export class SportsTool {
 
   private extractTeamsFromQuery(query: string): string[] {
     const n = query.toLowerCase();
-    const known = ['argentina', 'austria', 'brasil', 'brazil', 'uruguay', 'colombia',
-                   'boca', 'river', 'barcelona', 'real madrid', 'manchester'];
+    const known = [
+      'argentina',
+      'austria',
+      'brasil',
+      'brazil',
+      'uruguay',
+      'colombia',
+      'boca',
+      'river',
+      'barcelona',
+      'real madrid',
+      'manchester',
+    ];
     return known.filter((t) => n.includes(t));
   }
 
   // ── Formateo ─────────────────────────────────────────────────────────────────
 
   private formatEvent(e: any): string {
-    const home    = e.strHomeTeam  ?? '?';
-    const away    = e.strAwayTeam  ?? '?';
-    const scoreH  = e.intHomeScore ?? '-';
-    const scoreA  = e.intAwayScore ?? '-';
-    const date    = e.dateEvent    ?? '';
-    const time    = e.strTimeLocal ?? e.strTime ?? '';
-    const league  = e.strLeague    ?? '';
-    const venue   = e.strVenue     ?? '';
-    const status  = e.strStatus    ?? '';
+    const home = e.strHomeTeam ?? '?';
+    const away = e.strAwayTeam ?? '?';
+    const scoreH = e.intHomeScore ?? '-';
+    const scoreA = e.intAwayScore ?? '-';
+    const date = e.dateEvent ?? '';
+    const time = e.strTimeLocal ?? e.strTime ?? '';
+    const league = e.strLeague ?? '';
+    const venue = e.strVenue ?? '';
+    const status = e.strStatus ?? '';
 
-    const statusLabel = status === 'FT' ? '✅ Finalizado' : status === 'NS' ? '⏳ No iniciado' : status || '';
+    const statusLabel =
+      status === 'FT'
+        ? '✅ Finalizado'
+        : status === 'NS'
+          ? '⏳ No iniciado'
+          : status || '';
     let line = `• **${home} ${scoreH} - ${scoreA} ${away}** ${statusLabel}`;
-    if (date)   line += `\n  📅 ${date}${time ? ' ' + time : ''}`;
+    if (date) line += `\n  📅 ${date}${time ? ' ' + time : ''}`;
     if (league) line += `  🏆 ${league}`;
-    if (venue)  line += `\n  📍 ${venue}`;
+    if (venue) line += `\n  📍 ${venue}`;
     return line;
   }
 
@@ -251,10 +317,12 @@ export class SportsTool {
 
   private extractTeamName(n: string): string | null {
     if (n.includes('argentina') || n.includes('seleccion')) return 'Argentina';
-    if (n.includes('boca'))   return 'Boca Juniors';
-    if (n.includes('river'))  return 'River Plate';
+    if (n.includes('boca')) return 'Boca Juniors';
+    if (n.includes('river')) return 'River Plate';
     if (n.includes('brasil') || n.includes('brazil')) return 'Brazil';
-    const m = n.match(/(?:de|del|sobre|partido de)\s+([\w\s]{3,30})(?:\s+hoy|\s+ayer|\s+el partido|$)/i);
+    const m = n.match(
+      /(?:de|del|sobre|partido de)\s+([\w\s]{3,30})(?:\s+hoy|\s+ayer|\s+el partido|$)/i,
+    );
     return m?.[1]?.trim() ?? null;
   }
 }

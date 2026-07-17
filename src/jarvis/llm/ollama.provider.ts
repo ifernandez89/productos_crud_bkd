@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ChatOllama } from '@langchain/ollama';
-import { SystemMessage, HumanMessage, AIMessage } from '@langchain/core/messages';
+import {
+  SystemMessage,
+  HumanMessage,
+  AIMessage,
+} from '@langchain/core/messages';
 import {
   ILLMProvider,
   LLMGenerateOptions,
@@ -65,20 +69,31 @@ export class OllamaProvider implements ILLMProvider {
       const msg = err instanceof Error ? err.message : String(err);
 
       // Error de conexión — Ollama no está corriendo
-      if (msg.includes('fetch failed') || msg.includes('ECONNREFUSED') || msg.includes('connect')) {
-        this.logger.error(`[ollama] No se puede conectar con Ollama en localhost:11434. ¿Está corriendo?`);
+      if (
+        msg.includes('fetch failed') ||
+        msg.includes('ECONNREFUSED') ||
+        msg.includes('connect')
+      ) {
+        this.logger.error(
+          `[ollama] No se puede conectar con Ollama en localhost:11434. ¿Está corriendo?`,
+        );
         throw new Error(
           '⚠️ No puedo responder en este momento porque el modelo de IA local (Ollama) no está disponible. ' +
-          'Por favor iniciá Ollama ejecutando "ollama serve" en una terminal y volvé a intentar.',
+            'Por favor iniciá Ollama ejecutando "ollama serve" en una terminal y volvé a intentar.',
         );
       }
 
       // Modelo no encontrado
-      if (msg.includes('model') && (msg.includes('not found') || msg.includes('404'))) {
-        this.logger.error(`[ollama] Modelo ${this.getDefaultModel()} no encontrado`);
+      if (
+        msg.includes('model') &&
+        (msg.includes('not found') || msg.includes('404'))
+      ) {
+        this.logger.error(
+          `[ollama] Modelo ${this.getDefaultModel()} no encontrado`,
+        );
         throw new Error(
           `⚠️ El modelo "${this.getDefaultModel()}" no está descargado. ` +
-          `Ejecutá "ollama pull ${this.getDefaultModel()}" para descargarlo.`,
+            `Ejecutá "ollama pull ${this.getDefaultModel()}" para descargarlo.`,
         );
       }
 
@@ -106,13 +121,13 @@ export class OllamaProvider implements ILLMProvider {
     }
     // Para llamadas con tokens distintos, crear instancia temporal
     return new ChatOllama({
-      model:         this.getDefaultModel(),
-      temperature:   0.2,
-      topP:          0.85,
-      topK:          15,
+      model: this.getDefaultModel(),
+      temperature: 0.2,
+      topP: 0.85,
+      topK: 15,
       numPredict,
       repeatPenalty: 1.1,
-      numCtx:        4096,
+      numCtx: 4096,
       stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
     });
   }
@@ -122,13 +137,13 @@ export class OllamaProvider implements ILLMProvider {
   private async initialize(): Promise<void> {
     this.currentNumPredict = 400;
     this.model = new ChatOllama({
-      model:         this.getDefaultModel(),
-      temperature:   0.2,
-      topP:          0.85,
-      topK:          15,
-      numPredict:    400,
+      model: this.getDefaultModel(),
+      temperature: 0.2,
+      topP: 0.85,
+      topK: 15,
+      numPredict: 400,
       repeatPenalty: 1.1,
-      numCtx:        4096,
+      numCtx: 4096,
       stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
     });
     this.logger.log(`Ollama provider initialized: ${this.getDefaultModel()}`);

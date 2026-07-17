@@ -12,14 +12,14 @@ import { ActionExecutionGateService } from '../security/action-execution-gate.se
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export type StepType =
-  | 'search'       // búsqueda web via Playwright
-  | 'scrape'       // scrapear URL específica
-  | 'read_memory'  // consultar memorias relevantes
-  | 'read_docs'    // consultar documentos RAG
-  | 'summarize'    // resumir contenido acumulado
-  | 'save'         // guardar resultado en Knowledge
-  | 'deduplicate'  // eliminar duplicados
-  | 'respond';     // generar respuesta final al usuario
+  | 'search' // búsqueda web via Playwright
+  | 'scrape' // scrapear URL específica
+  | 'read_memory' // consultar memorias relevantes
+  | 'read_docs' // consultar documentos RAG
+  | 'summarize' // resumir contenido acumulado
+  | 'save' // guardar resultado en Knowledge
+  | 'deduplicate' // eliminar duplicados
+  | 'respond'; // generar respuesta final al usuario
 
 export interface StepInput {
   query?: string;
@@ -54,10 +54,10 @@ export interface ExecutionPlan {
 // ── Knowledge Filter & Score ─────────────────────────────────────────────────
 
 export interface KnowledgeScore {
-  novelty: number;        // 0-10: ¿Es nuevo o único?
-  importance: number;     // 0-10: ¿Qué tan importante es?
-  reusability: number;    // 0-10: ¿Se puede reutilizar en otros contextos?
-  confidence: number;     // 0-10: ¿Qué tan confiable es la fuente?
+  novelty: number; // 0-10: ¿Es nuevo o único?
+  importance: number; // 0-10: ¿Qué tan importante es?
+  reusability: number; // 0-10: ¿Se puede reutilizar en otros contextos?
+  confidence: number; // 0-10: ¿Qué tan confiable es la fuente?
 }
 
 export interface KnowledgeFilterResult {
@@ -124,7 +124,9 @@ export class ExecutionEngine {
    */
   async execute(plan: ExecutionPlan): Promise<ExecutionResult> {
     const startTime = Date.now();
-    this.logger.log(`[engine] ejecutando plan #${plan.taskId}: "${plan.objective.slice(0, 80)}"`);
+    this.logger.log(
+      `[engine] ejecutando plan #${plan.taskId}: "${plan.objective.slice(0, 80)}"`,
+    );
 
     // Marcar task como in_progress
     await this.taskRepo.updateTaskStatus(plan.taskId, 'in_progress');
@@ -141,19 +143,31 @@ export class ExecutionEngine {
       try {
         // Marcar step como running
         await this.taskRepo.updateStepStatus(step.id, 'running');
-        this.logger.log(`[engine] step ${step.stepNumber}/${plan.steps.length}: ${step.type} — "${step.description.slice(0, 60)}"`);
+        this.logger.log(
+          `[engine] step ${step.stepNumber}/${plan.steps.length}: ${step.type} — "${step.description.slice(0, 60)}"`,
+        );
 
         // Validar acción a través de la compuerta de seguridad
         await this.actionGate.checkStep(step);
 
-        const output = await this.executeStep(step, accumulatedContext, plan.objective);
+        const output = await this.executeStep(
+          step,
+          accumulatedContext,
+          plan.objective,
+        );
 
         // Guardar resultado en DB
-        await this.taskRepo.updateStepStatus(step.id, 'completed', output.content);
+        await this.taskRepo.updateStepStatus(
+          step.id,
+          'completed',
+          output.content,
+        );
 
         // Acumular contexto para pasos siguientes
         if (output.content.trim().length > 20) {
-          accumulatedContext.push(`[${step.type}] ${output.content.slice(0, 2000)}`);
+          accumulatedContext.push(
+            `[${step.type}] ${output.content.slice(0, 2000)}`,
+          );
         }
 
         // Si es el paso final de respuesta, capturar como answer
@@ -170,12 +184,15 @@ export class ExecutionEngine {
         step.status = 'completed';
         step.durationMs = Date.now() - stepStart;
         stepsCompleted++;
-
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         this.logger.error(`[engine] step ${step.stepNumber} falló: ${msg}`);
 
-        await this.taskRepo.updateStepStatus(step.id, 'failed', `Error: ${msg}`);
+        await this.taskRepo.updateStepStatus(
+          step.id,
+          'failed',
+          `Error: ${msg}`,
+        );
         step.status = 'failed';
         step.error = msg;
         step.durationMs = Date.now() - stepStart;
@@ -183,7 +200,9 @@ export class ExecutionEngine {
 
         // Si un paso crítico falla y no tenemos contexto, abortar
         if (accumulatedContext.length === 0 && step.type !== 'save') {
-          this.logger.warn(`[engine] abortando plan — paso crítico sin contexto previo`);
+          this.logger.warn(
+            `[engine] abortando plan — paso crítico sin contexto previo`,
+          );
           break;
         }
         // En otros casos, continuar con el siguiente paso
@@ -192,16 +211,25 @@ export class ExecutionEngine {
 
     // Si no hubo paso 'respond', generar respuesta final con el contexto acumulado
     if (!finalAnswer && accumulatedContext.length > 0) {
-      finalAnswer = await this.generateFinalAnswer(plan.objective, accumulatedContext);
+      finalAnswer = await this.generateFinalAnswer(
+        plan.objective,
+        accumulatedContext,
+      );
     } else if (!finalAnswer) {
-      finalAnswer = 'No pude completar la investigación. Intentá reformular el objetivo.';
+      finalAnswer =
+        'No pude completar la investigación. Intentá reformular el objetivo.';
     }
 
     const totalDurationMs = Date.now() - startTime;
 
     // Actualizar status final de la task
-    const finalStatus = stepsFailed > 0 && stepsCompleted === 0 ? 'failed' : 'completed';
-    await this.taskRepo.updateTaskStatus(plan.taskId, finalStatus, finalAnswer.slice(0, 1000));
+    const finalStatus =
+      stepsFailed > 0 && stepsCompleted === 0 ? 'failed' : 'completed';
+    await this.taskRepo.updateTaskStatus(
+      plan.taskId,
+      finalStatus,
+      finalAnswer.slice(0, 1000),
+    );
 
     this.logger.log(
       `[engine] plan #${plan.taskId} finalizado: ${stepsCompleted} ok, ${stepsFailed} errores, ${totalDurationMs}ms`,
@@ -210,9 +238,13 @@ export class ExecutionEngine {
     // Construir registro de ejecución para aprendizaje
     const executionLog = {
       plan: plan.objective,
-      steps: plan.steps.map((s) => `${s.stepNumber}. ${s.description} (${s.type})`),
+      steps: plan.steps.map(
+        (s) => `${s.stepNumber}. ${s.description} (${s.type})`,
+      ),
       toolsUsed: plan.steps
-        .filter((s) => ['search', 'scrape', 'read_memory', 'read_docs'].includes(s.type))
+        .filter((s) =>
+          ['search', 'scrape', 'read_memory', 'read_docs'].includes(s.type),
+        )
         .map((s) => s.type),
       cost: this.estimateCost(totalDurationMs),
       quality: this.estimateQuality(stepsCompleted, stepsFailed, finalAnswer),
@@ -286,7 +318,8 @@ export class ExecutionEngine {
       confidence: this.estimateConfidenceFromContext(context),
     };
 
-    const totalScore = score.novelty + score.importance + score.reusability + score.confidence;
+    const totalScore =
+      score.novelty + score.importance + score.reusability + score.confidence;
     const shouldSave = totalScore >= 15; // Umbral para guardar
 
     return {
@@ -305,7 +338,11 @@ export class ExecutionEngine {
     return (durationMs / 1000) * 0.0001;
   }
 
-  private estimateQuality(completed: number, failed: number, answer: string): number {
+  private estimateQuality(
+    completed: number,
+    failed: number,
+    answer: string,
+  ): number {
     // 0-10: calidad de la ejecución
     if (failed > 0 && completed === 0) return 2;
     if (answer.length < 100) return 4;
@@ -332,8 +369,9 @@ export class ExecutionEngine {
       'framework',
       'librería',
     ];
-    const matches = technicalTerms.filter((t) =>
-      objective.toLowerCase().includes(t) || answer.toLowerCase().includes(t),
+    const matches = technicalTerms.filter(
+      (t) =>
+        objective.toLowerCase().includes(t) || answer.toLowerCase().includes(t),
     );
     return Math.min(10, matches.length * 3);
   }
@@ -372,7 +410,8 @@ export class ExecutionEngine {
 
   private estimateConfidenceFromContext(context: string[]): number {
     if (context.length === 0) return 5;
-    if (context.some((c) => c.includes('source') || c.includes('fuente'))) return 8;
+    if (context.some((c) => c.includes('source') || c.includes('fuente')))
+      return 8;
     return 6;
   }
 
@@ -450,7 +489,10 @@ export class ExecutionEngine {
 
   // ── Implementación de cada tipo de paso ─────────────────────────────────────
 
-  private async executeSearch(step: ExecutionStep, objective: string): Promise<StepOutput> {
+  private async executeSearch(
+    step: ExecutionStep,
+    objective: string,
+  ): Promise<StepOutput> {
     const query = step.input.query || objective;
     const results = await this.browserTool.search(query, 5);
 
@@ -483,7 +525,10 @@ export class ExecutionEngine {
       result.description ? `> ${result.description}` : '',
       '',
       result.headlines.length > 0
-        ? `**Titulares:**\n${result.headlines.slice(0, 10).map((h) => `- ${h}`).join('\n')}`
+        ? `**Titulares:**\n${result.headlines
+            .slice(0, 10)
+            .map((h) => `- ${h}`)
+            .join('\n')}`
         : '',
       '',
       result.excerpt,
@@ -494,7 +539,10 @@ export class ExecutionEngine {
     return { content, metadata: { url, wordCount: result.wordCount } };
   }
 
-  private async executeReadMemory(step: ExecutionStep, objective: string): Promise<StepOutput> {
+  private async executeReadMemory(
+    step: ExecutionStep,
+    objective: string,
+  ): Promise<StepOutput> {
     const query = step.input.query || objective;
     const memories = await this.memoryRepo.search(query, 5);
 
@@ -509,14 +557,20 @@ export class ExecutionEngine {
     return { content: `**Memorias relevantes:**\n${content}` };
   }
 
-  private async executeReadDocs(step: ExecutionStep, objective: string): Promise<StepOutput> {
+  private async executeReadDocs(
+    step: ExecutionStep,
+    objective: string,
+  ): Promise<StepOutput> {
     const query = step.input.query || objective;
     let chunks = [] as any[];
     try {
-      const queryEmbedding = await this.embeddingsService.generateEmbedding(query);
+      const queryEmbedding =
+        await this.embeddingsService.generateEmbedding(query);
       chunks = await this.documentRepo.searchChunksSemantic(queryEmbedding, 5);
     } catch (err: any) {
-      this.logger.warn(`[planner:executeReadDocs] Fallback a búsqueda textual: ${err.message}`);
+      this.logger.warn(
+        `[planner:executeReadDocs] Fallback a búsqueda textual: ${err.message}`,
+      );
       chunks = await this.documentRepo.searchChunks(query, 5);
     }
 
@@ -546,7 +600,8 @@ export class ExecutionEngine {
       messages: [
         {
           role: 'system',
-          content: 'Sos un asistente que resume contenido de forma clara y en español. Sé conciso pero completo. No inventes información.',
+          content:
+            'Sos un asistente que resume contenido de forma clara y en español. Sé conciso pero completo. No inventes información.',
         },
         {
           role: 'user',
@@ -577,7 +632,9 @@ export class ExecutionEngine {
         const words = new Set(line.toLowerCase().split(/\s+/));
         const uWords = new Set(u.toLowerCase().split(/\s+/));
         let shared = 0;
-        for (const w of words) { if (uWords.has(w)) shared++; }
+        for (const w of words) {
+          if (uWords.has(w)) shared++;
+        }
         return shared / Math.max(words.size, uWords.size) > 0.7;
       });
       if (!isDuplicate) unique.push(line);

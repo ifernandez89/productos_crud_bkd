@@ -17,36 +17,36 @@ import { Injectable, Logger } from '@nestjs/common';
  */
 
 export type Domain =
-  | 'SPORTS'            // fútbol, resultados, fichajes, fixture
-  | 'LOCAL_NEWS'        // noticias Paraná / Entre Ríos
-  | 'NATIONAL_NEWS'     // noticias Argentina
-  | 'POLITICS'          // política nacional/provincial
-  | 'AI'                // IA, LLMs, modelos de lenguaje
-  | 'AI_PAPERS'         // papers académicos de IA — arXiv, HuggingFace
-  | 'PROGRAMMING'       // código, frameworks, lenguajes
-  | 'SCIENCE'           // ciencia general, investigación, salud
-  | 'TECHNOLOGY'        // tech general (gadgets, empresas tech)
-  | 'ASTROLOGY'         // astrología, horóscopo, planetas
-  | 'MUSIC'             // música, bandas, canciones
-  | 'MOVIES_TV'         // cine, series, entretenimiento, MCU
-  | 'MYSTERY'           // paranormal, misterios, OVNIS
-  | 'ECONOMY'           // economía, finanzas, inflación
-  | 'GOVERNMENT_LOCAL'  // municipalidad Paraná, gobierno ER
-  | 'REFERENCE'         // definiciones, historia, Wikipedia
-  | 'PLANTS'            // plantas medicinales, herboristería
-  | 'DEVELOPMENT'       // novedades de software, dev.to, GitHub
-  | 'MATH'              // matemática — MathWorld, Encyclopedia of Math
-  | 'PHYSICS'           // física — HyperPhysics, Physics World
-  | 'ASTRONOMY'         // astronomía — NASA, ESA
-  | 'WEB_DOCS'          // documentación web — MDN, PostgreSQL docs
-  | 'UNKNOWN';          // no se pudo clasificar
+  | 'SPORTS' // fútbol, resultados, fichajes, fixture
+  | 'LOCAL_NEWS' // noticias Paraná / Entre Ríos
+  | 'NATIONAL_NEWS' // noticias Argentina
+  | 'POLITICS' // política nacional/provincial
+  | 'AI' // IA, LLMs, modelos de lenguaje
+  | 'AI_PAPERS' // papers académicos de IA — arXiv, HuggingFace
+  | 'PROGRAMMING' // código, frameworks, lenguajes
+  | 'SCIENCE' // ciencia general, investigación, salud
+  | 'TECHNOLOGY' // tech general (gadgets, empresas tech)
+  | 'ASTROLOGY' // astrología, horóscopo, planetas
+  | 'MUSIC' // música, bandas, canciones
+  | 'MOVIES_TV' // cine, series, entretenimiento, MCU
+  | 'MYSTERY' // paranormal, misterios, OVNIS
+  | 'ECONOMY' // economía, finanzas, inflación
+  | 'GOVERNMENT_LOCAL' // municipalidad Paraná, gobierno ER
+  | 'REFERENCE' // definiciones, historia, Wikipedia
+  | 'PLANTS' // plantas medicinales, herboristería
+  | 'DEVELOPMENT' // novedades de software, dev.to, GitHub
+  | 'MATH' // matemática — MathWorld, Encyclopedia of Math
+  | 'PHYSICS' // física — HyperPhysics, Physics World
+  | 'ASTRONOMY' // astronomía — NASA, ESA
+  | 'WEB_DOCS' // documentación web — MDN, PostgreSQL docs
+  | 'UNKNOWN'; // no se pudo clasificar
 
 export interface DomainResult {
   domain: Domain;
-  confidence: number;   // 0.0 — 1.0
+  confidence: number; // 0.0 — 1.0
   reason: string;
-  suggestedSources: string[];  // urlBases de SourceRegistry recomendados
-  enrichedQuery?: string;       // query enriquecida con contexto del dominio
+  suggestedSources: string[]; // urlBases de SourceRegistry recomendados
+  enrichedQuery?: string; // query enriquecida con contexto del dominio
 }
 
 // ── Reglas de dominio ─────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ interface DomainRule {
   patterns: RegExp[];
   // negación: si alguno de estos patrones aparece, NO aplicar esta regla
   negations?: RegExp[];
-  priority: number;  // mayor = se evalúa primero
+  priority: number; // mayor = se evalúa primero
   sources: string[];
 }
 
@@ -79,7 +79,11 @@ export class DomainRouterService {
         /servicio[s]?\s+municipal/i,
         /secretar[ií]a\s+de\s+(gobierno|salud|obra)/i,
       ],
-      sources: ['https://mi.parana.gob.ar', 'https://www.parana.gob.ar', 'https://www.elonce.com'],
+      sources: [
+        'https://mi.parana.gob.ar',
+        'https://www.parana.gob.ar',
+        'https://www.elonce.com',
+      ],
     },
 
     // ── NOTICIAS LOCALES — PARANÁ / ENTRE RÍOS ────────────────────────────────
@@ -315,10 +319,7 @@ export class DomainRouterService {
         /\bzona\s+51\b|\btriangulo\s+de\s+las\s+bermudas\b/i,
         /\barqueolog[ií]a\s+(prohibida|alternativa)\b/i,
       ],
-      sources: [
-        'https://mysteryplanet.com.ar/site',
-        'https://www.infobae.com',
-      ],
+      sources: ['https://mysteryplanet.com.ar/site', 'https://www.infobae.com'],
     },
 
     // ── NOTICIAS NACIONALES (fallback) ────────────────────────────────────────
@@ -331,10 +332,7 @@ export class DomainRouterService {
         /\bactualidad\s+argentina\b/i,
         /\bque\s+pas[oó]\s+(en\s+argentina|hoy)\b/i,
       ],
-      sources: [
-        'https://www.infobae.com',
-        'https://www.lanacion.com.ar',
-      ],
+      sources: ['https://www.infobae.com', 'https://www.lanacion.com.ar'],
     },
 
     // ── REFERENCIA — Wikipedia y conocimiento enciclopédico ──────────────────
@@ -352,10 +350,7 @@ export class DomainRouterService {
         /\bbiograf[ií]a\s+de\b/i,
         /\bpor\s+qu[eé]\s+se\s+llama\b/i,
       ],
-      sources: [
-        'https://es.wikipedia.org',
-        'https://www.infobae.com',
-      ],
+      sources: ['https://es.wikipedia.org', 'https://www.infobae.com'],
     },
 
     // ── PLANTAS MEDICINALES ───────────────────────────────────────────────────
@@ -580,7 +575,9 @@ export class DomainRouterService {
     }
 
     // Ordenar por score descendente
-    const sorted = [...scores.entries()].sort((a, b) => b[1].score - a[1].score);
+    const sorted = [...scores.entries()].sort(
+      (a, b) => b[1].score - a[1].score,
+    );
     const [topDomain, topData] = sorted[0];
 
     // Calcular confianza (0-1) basada en score relativo al máximo posible
@@ -626,7 +623,8 @@ export class DomainRouterService {
         return query;
 
       case 'AI':
-        if (!/ia\b|inteligencia/i.test(n)) return `${query} inteligencia artificial`;
+        if (!/ia\b|inteligencia/i.test(n))
+          return `${query} inteligencia artificial`;
         return query;
 
       default:

@@ -25,19 +25,31 @@ export class CreateAichatDto {
   @IsOptional()
   agente: boolean;
 
-  @ApiProperty({ required: false, type: 'number', description: 'Latitud del usuario para clima local' })
+  @ApiProperty({
+    required: false,
+    type: 'number',
+    description: 'Latitud del usuario para clima local',
+  })
   @Type(() => Number)
   @IsNumber({}, { message: 'latitude debe ser un número' })
   @IsOptional()
   latitude?: number;
 
-  @ApiProperty({ required: false, type: 'number', description: 'Longitud del usuario para clima local' })
+  @ApiProperty({
+    required: false,
+    type: 'number',
+    description: 'Longitud del usuario para clima local',
+  })
   @Type(() => Number)
   @IsNumber({}, { message: 'longitude debe ser un número' })
   @IsOptional()
   longitude?: number;
 
-  @ApiProperty({ required: false, description: 'Identificador de sesión para mantener el hilo de conversación' })
+  @ApiProperty({
+    required: false,
+    description:
+      'Identificador de sesión para mantener el hilo de conversación',
+  })
   @IsString()
   @IsOptional()
   sessionId?: string;

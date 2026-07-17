@@ -58,7 +58,10 @@ describe('AichatController', () => {
 
       const result = await controller.preguntar(dto as any);
 
-      expect(result).toEqual({ respuesta: 'Test answer', lastMessage: 'Last answer' });
+      expect(result).toEqual({
+        respuesta: 'Test answer',
+        lastMessage: 'Last answer',
+      });
       expect(service.preguntarOllamaOexternal).toHaveBeenCalled();
       expect(service.getLastAssistantMessage).toHaveBeenCalled();
     });

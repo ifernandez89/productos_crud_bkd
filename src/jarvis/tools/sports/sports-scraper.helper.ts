@@ -56,9 +56,15 @@ export class SportsScraperHelper {
 
   // ── Construcción de URLs ────────────────────────────────────────────────────
 
-  private static buildUrls(home: string, away: string, date?: string): string[] {
-    const q    = encodeURIComponent(`${home} ${away}`);
-    const qGol = encodeURIComponent(`goles ${home} ${away} ${date ?? ''}`.trim());
+  private static buildUrls(
+    home: string,
+    away: string,
+    date?: string,
+  ): string[] {
+    const q = encodeURIComponent(`${home} ${away}`);
+    const qGol = encodeURIComponent(
+      `goles ${home} ${away} ${date ?? ''}`.trim(),
+    );
 
     return [
       // Olé — portal deportivo argentino
@@ -84,7 +90,7 @@ export class SportsScraperHelper {
         headers: {
           'User-Agent': SportsScraperHelper.USER_AGENT,
           'Accept-Language': 'es-AR,es;q=0.9,en;q=0.8',
-          'Accept': 'text/html,application/xhtml+xml',
+          Accept: 'text/html,application/xhtml+xml',
         },
         timeout: SportsScraperHelper.TIMEOUT,
         validateStatus: (s) => s < 400,
@@ -93,28 +99,49 @@ export class SportsScraperHelper {
       const $ = cheerioLoad(resp.data as string);
 
       // Remover ruido
-      $('script, style, nav, footer, header, aside, iframe, .ads, [aria-hidden="true"], .cookie').remove();
+      $(
+        'script, style, nav, footer, header, aside, iframe, .ads, [aria-hidden="true"], .cookie',
+      ).remove();
 
       // Palabras clave que indican info de goles
       const goalKeywords = [
-        'gol', 'minuto', 'anotó', 'marcó', 'tanto', "min.", "'", 'scorer',
-        'goal', 'scored', 'penalty', 'penal', 'hat-trick',
+        'gol',
+        'minuto',
+        'anotó',
+        'marcó',
+        'tanto',
+        'min.',
+        "'",
+        'scorer',
+        'goal',
+        'scored',
+        'penalty',
+        'penal',
+        'hat-trick',
       ];
 
       const relevant: string[] = [];
 
       // 1. Buscar en elementos estructurados de goles primero
       const goalSelectors = [
-        '.goal', '.scorer', '.event-goal', '[class*="goal"]',
-        '[class*="scorer"]', '[class*="gol"]', 'table td',
-        '.incident', '.match-event',
+        '.goal',
+        '.scorer',
+        '.event-goal',
+        '[class*="goal"]',
+        '[class*="scorer"]',
+        '[class*="gol"]',
+        'table td',
+        '.incident',
+        '.match-event',
       ];
 
       for (const sel of goalSelectors) {
         $(sel).each((_, el) => {
           const text = $(el).text().replace(/\s+/g, ' ').trim();
           if (text.length > 5 && text.length < 200) {
-            const hasKw = goalKeywords.some((kw) => text.toLowerCase().includes(kw));
+            const hasKw = goalKeywords.some((kw) =>
+              text.toLowerCase().includes(kw),
+            );
             if (hasKw && !relevant.includes(text)) relevant.push(text);
           }
         });
@@ -127,7 +154,9 @@ export class SportsScraperHelper {
           if (relevant.length >= 10) return;
           const text = $(el).text().replace(/\s+/g, ' ').trim();
           if (text.length < 20 || text.length > 400) return;
-          const hasKw = goalKeywords.some((kw) => text.toLowerCase().includes(kw));
+          const hasKw = goalKeywords.some((kw) =>
+            text.toLowerCase().includes(kw),
+          );
           if (hasKw && !relevant.includes(text)) relevant.push(text);
         });
       }
@@ -136,9 +165,15 @@ export class SportsScraperHelper {
       if (relevant.length === 0) {
         const article = $('article, main, .article-body, .content').first();
         if (article.length) {
-          const text = article.text().replace(/\s+/g, ' ').trim().slice(0, 2000);
+          const text = article
+            .text()
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 2000);
           if (text.length > 100) {
-            SportsScraperHelper.logger.log(`[scraper] artículo crudo de ${url} (${text.length} chars)`);
+            SportsScraperHelper.logger.log(
+              `[scraper] artículo crudo de ${url} (${text.length} chars)`,
+            );
             return `${text}\n\n_(Fuente: ${new URL(url).hostname})_`;
           }
         }
@@ -149,7 +184,6 @@ export class SportsScraperHelper {
         `[scraper] ${relevant.length} fragmentos de goles encontrados en ${url}`,
       );
       return `${relevant.slice(0, 8).join('\n')}\n\n_(Fuente: ${new URL(url).hostname})_`;
-
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       // No loguear 404s como warning — son esperables

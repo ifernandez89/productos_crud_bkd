@@ -77,7 +77,8 @@ export class JarvisController {
   @Get('history')
   @ApiOperation({
     summary: 'Historial de mensajes de una sesión',
-    description: 'Devuelve los últimos N mensajes de la sesión. El frontend puede usarlo para reconstruir el chat al recargar.',
+    description:
+      'Devuelve los últimos N mensajes de la sesión. El frontend puede usarlo para reconstruir el chat al recargar.',
   })
   async getHistory(
     @Query('sessionId') sessionId: string,
@@ -126,11 +127,13 @@ export class JarvisController {
   @Public()
   @Post('planner')
   @ApiOperation({ summary: 'Crear un plan de tareas a partir de un objetivo' })
-  async createPlan(
-    @Body() body: { objective: string; sessionId?: string },
-  ) {
-    if (!body.objective) throw new BadRequestException('Se requiere un objetivo');
-    const plan = await this.plannerService.createPlan(body.objective, body.sessionId);
+  async createPlan(@Body() body: { objective: string; sessionId?: string }) {
+    if (!body.objective)
+      throw new BadRequestException('Se requiere un objetivo');
+    const plan = await this.plannerService.createPlan(
+      body.objective,
+      body.sessionId,
+    );
     return { success: true, plan };
   }
 
@@ -142,11 +145,13 @@ export class JarvisController {
       'El Execution Engine descompone el objetivo en pasos (search, scrape, summarize, save, respond) ' +
       'y los ejecuta secuencialmente. Retorna la respuesta final generada por el LLM con el contexto acumulado.',
   })
-  async executePlan(
-    @Body() body: { objective: string; sessionId?: string },
-  ) {
-    if (!body.objective) throw new BadRequestException('Se requiere un objetivo');
-    const result = await this.plannerService.createAndExecute(body.objective, body.sessionId);
+  async executePlan(@Body() body: { objective: string; sessionId?: string }) {
+    if (!body.objective)
+      throw new BadRequestException('Se requiere un objetivo');
+    const result = await this.plannerService.createAndExecute(
+      body.objective,
+      body.sessionId,
+    );
     return { success: true, ...result };
   }
 
@@ -154,7 +159,10 @@ export class JarvisController {
 
   @Public()
   @Get('dashboard')
-  @ApiOperation({ summary: 'Estadísticas del sistema: memorias, documentos, colecciones, conversaciones' })
+  @ApiOperation({
+    summary:
+      'Estadísticas del sistema: memorias, documentos, colecciones, conversaciones',
+  })
   async getDashboard() {
     return this.dashboardService.getStats();
   }
@@ -198,7 +206,12 @@ export class JarvisController {
   @ApiOperation({ summary: 'Ingerir un documento de texto o markdown' })
   async ingestDocument(
     @Body()
-    body: { title: string; content: string; category?: string; source?: string },
+    body: {
+      title: string;
+      content: string;
+      category?: string;
+      source?: string;
+    },
   ) {
     const result = await this.ingestService.ingestText(
       body.title,
@@ -217,19 +230,34 @@ export class JarvisController {
     schema: {
       type: 'object',
       properties: {
-        file:      { type: 'string', format: 'binary' },
-        title:     { type: 'string' },
-        category:  { type: 'string' },
-        source:    { type: 'string' },
-        question:  { type: 'string', description: 'Pregunta sobre el contenido del PDF (opcional, si no se envía se genera un resumen)' },
-        sessionId: { type: 'string', description: 'Para guardar la respuesta en el historial de conversación' },
+        file: { type: 'string', format: 'binary' },
+        title: { type: 'string' },
+        category: { type: 'string' },
+        source: { type: 'string' },
+        question: {
+          type: 'string',
+          description:
+            'Pregunta sobre el contenido del PDF (opcional, si no se envía se genera un resumen)',
+        },
+        sessionId: {
+          type: 'string',
+          description:
+            'Para guardar la respuesta en el historial de conversación',
+        },
       },
     },
   })
   @UseInterceptors(FileInterceptor('file'))
   async ingestPdf(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { title?: string; category?: string; source?: string; question?: string; sessionId?: string },
+    @Body()
+    body: {
+      title?: string;
+      category?: string;
+      source?: string;
+      question?: string;
+      sessionId?: string;
+    },
   ) {
     if (!file) throw new BadRequestException('Se requiere un archivo PDF');
     if (!file.mimetype.includes('pdf')) {
@@ -269,10 +297,10 @@ export class JarvisController {
 
   @Public()
   @Post('library/document/url')
-  @ApiOperation({ summary: 'Ingerir contenido desde una URL (Scraping simple)' })
-  async ingestUrl(
-    @Body() body: { url: string; category?: string },
-  ) {
+  @ApiOperation({
+    summary: 'Ingerir contenido desde una URL (Scraping simple)',
+  })
+  async ingestUrl(@Body() body: { url: string; category?: string }) {
     if (!body.url) throw new BadRequestException('Se requiere una URL');
     const result = await this.ingestService.ingestUrl(body.url, body.category);
     return { success: true, ...result };
@@ -288,7 +316,9 @@ export class JarvisController {
 
   @Public()
   @Get('library/index')
-  @ApiOperation({ summary: 'Obtener el índice completo de la biblioteca (library-index.json)' })
+  @ApiOperation({
+    summary: 'Obtener el índice completo de la biblioteca (library-index.json)',
+  })
   getLibraryIndex() {
     return this.jarvisService.getLibraryIndex();
   }
@@ -327,13 +357,22 @@ export class JarvisController {
     @Query('confirm') confirm?: string,
     @Headers('x-human-confirmation') humanConfirmation?: string,
   ) {
-    const humanOk = (confirm === 'true') || (humanConfirmation === 'yes') || (process.env.SKIP_HITL === 'true');
+    const humanOk =
+      confirm === 'true' ||
+      humanConfirmation === 'yes' ||
+      process.env.SKIP_HITL === 'true';
     if (!humanOk) {
-      throw new BadRequestException('Operación destructiva requiere confirmación humana: enviar ?confirm=true o header x-human-confirmation: yes');
+      throw new BadRequestException(
+        'Operación destructiva requiere confirmación humana: enviar ?confirm=true o header x-human-confirmation: yes',
+      );
     }
 
     // Audit before performing destructive action
-    await this.auditService.log('deleteDocument.request', { id, by: 'api', confirmVia: confirm ? 'query' : (humanConfirmation ? 'header' : 'none') });
+    await this.auditService.log('deleteDocument.request', {
+      id,
+      by: 'api',
+      confirmVia: confirm ? 'query' : humanConfirmation ? 'header' : 'none',
+    });
 
     await this.documentRepo.deleteDocument(id);
 
@@ -343,27 +382,38 @@ export class JarvisController {
 
   @Public()
   @Post('library/document/:id/approve')
-  @ApiOperation({ summary: 'Aprobar un documento en cuarentena e iniciar su indexación jerárquica' })
+  @ApiOperation({
+    summary:
+      'Aprobar un documento en cuarentena e iniciar su indexación jerárquica',
+  })
   async approveDocument(@Param('id', ParseIntPipe) id: number) {
     await this.auditService.log('approveDocument.request', { id });
     await this.ingestService.approveDocument(id);
     await this.auditService.log('approveDocument.success', { id });
-    return { success: true, message: 'Documento aprobado. Indexación jerárquica e incremental iniciada en segundo plano.' };
+    return {
+      success: true,
+      message:
+        'Documento aprobado. Indexación jerárquica e incremental iniciada en segundo plano.',
+    };
   }
 
   @Public()
   @Get('library/stats')
-  @ApiOperation({ summary: 'Estadísticas de la biblioteca (docs, chunks, categorías, top usados)' })
+  @ApiOperation({
+    summary:
+      'Estadísticas de la biblioteca (docs, chunks, categorías, top usados)',
+  })
   async libraryStats() {
     return this.documentRepo.getLibraryStats();
   }
 
   @Public()
   @Post('library/category-summary')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Generar resumen inteligente por categoría',
-    description: 'Combina información de múltiples documentos de una categoría específica y genera un resumen coherente. ' +
-                 'Ejemplo: categoría="plantas_medicinales" con query="propiedades curativas" → resumen basado en todos los PDFs sobre plantas medicinales.'
+    description:
+      'Combina información de múltiples documentos de una categoría específica y genera un resumen coherente. ' +
+      'Ejemplo: categoría="plantas_medicinales" con query="propiedades curativas" → resumen basado en todos los PDFs sobre plantas medicinales.',
   })
   async categorySummary(
     @Body() body: { category: string; query?: string; maxChunks?: number },
@@ -378,11 +428,12 @@ export class JarvisController {
 
   @Public()
   @Post('library/document-summary')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Generar resumen detallado de un documento específico',
-    description: 'Genera un resumen ejecutivo y extrae los puntos clave (top 10) de un documento individual. ' +
-                 'Busca el documento por título (fuzzy match) o ID numérico. ' +
-                 'Ejemplos: "Manual de Plantas Medicinales", "TypeScript Handbook", o ID: 123'
+    description:
+      'Genera un resumen ejecutivo y extrae los puntos clave (top 10) de un documento individual. ' +
+      'Busca el documento por título (fuzzy match) o ID numérico. ' +
+      'Ejemplos: "Manual de Plantas Medicinales", "TypeScript Handbook", o ID: 123',
   })
   async documentSummary(
     @Body() body: { titleOrId: string | number; maxKeyPoints?: number },
@@ -436,11 +487,12 @@ export class JarvisController {
       'con título del documento, categoría y snippet del contenido. ' +
       'Útil para debuggear por qué el asistente no encontró algo. Body: { query: string, limit?: number }',
   })
-  async probeRag(
-    @Body() body: { query: string; limit?: number },
-  ) {
+  async probeRag(@Body() body: { query: string; limit?: number }) {
     if (!body.query) throw new BadRequestException('Se requiere una query');
-    const result = await this.knowledgeTestService.probeRag(body.query, body.limit ?? 8);
+    const result = await this.knowledgeTestService.probeRag(
+      body.query,
+      body.limit ?? 8,
+    );
     const formatted = this.knowledgeTestService.formatProbeResult(result);
     return { success: true, ...result, formatted };
   }
@@ -451,7 +503,13 @@ export class JarvisController {
   @Post('library/collection')
   @ApiOperation({ summary: 'Crear una colección temática' })
   async createCollection(
-    @Body() body: { name: string; description?: string; color?: string; icon?: string },
+    @Body()
+    body: {
+      name: string;
+      description?: string;
+      color?: string;
+      icon?: string;
+    },
   ) {
     const collection = await this.collectionRepo.create(body);
     return { success: true, collection };
@@ -459,7 +517,9 @@ export class JarvisController {
 
   @Public()
   @Get('library/collection')
-  @ApiOperation({ summary: 'Listar todas las colecciones con conteo de documentos' })
+  @ApiOperation({
+    summary: 'Listar todas las colecciones con conteo de documentos',
+  })
   async listCollections() {
     const collections = await this.collectionRepo.findAll();
     return { collections };
@@ -478,7 +538,13 @@ export class JarvisController {
   @ApiOperation({ summary: 'Actualizar una colección' })
   async updateCollection(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { name?: string; description?: string; color?: string; icon?: string },
+    @Body()
+    body: {
+      name?: string;
+      description?: string;
+      color?: string;
+      icon?: string;
+    },
   ) {
     const collection = await this.collectionRepo.update(id, body);
     return { success: true, collection };
@@ -496,7 +562,7 @@ export class JarvisController {
   @Post('library/collection/:id/document/:docId')
   @ApiOperation({ summary: 'Agregar documento a una colección' })
   async addDocumentToCollection(
-    @Param('id',    ParseIntPipe) id:    number,
+    @Param('id', ParseIntPipe) id: number,
     @Param('docId', ParseIntPipe) docId: number,
   ) {
     const entry = await this.collectionRepo.addDocument(id, docId);
@@ -507,7 +573,7 @@ export class JarvisController {
   @Delete('library/collection/:id/document/:docId')
   @ApiOperation({ summary: 'Quitar documento de una colección' })
   async removeDocumentFromCollection(
-    @Param('id',    ParseIntPipe) id:    number,
+    @Param('id', ParseIntPipe) id: number,
     @Param('docId', ParseIntPipe) docId: number,
   ) {
     await this.collectionRepo.removeDocument(id, docId);
@@ -518,7 +584,9 @@ export class JarvisController {
 
   @Public()
   @Post('browser/fetch')
-  @ApiOperation({ summary: 'Extraer contenido de una URL (axios → Playwright si es SPA)' })
+  @ApiOperation({
+    summary: 'Extraer contenido de una URL (axios → Playwright si es SPA)',
+  })
   async browserFetch(@Body() body: { url: string }) {
     if (!body.url) throw new BadRequestException('Se requiere una URL');
     const result = await this.jarvisService.fetchUrl(body.url);
@@ -527,7 +595,10 @@ export class JarvisController {
 
   @Public()
   @Post('browser/navigate')
-  @ApiOperation({ summary: 'Navegar a una URL con Playwright (JavaScript renderizado, screenshot opcional)' })
+  @ApiOperation({
+    summary:
+      'Navegar a una URL con Playwright (JavaScript renderizado, screenshot opcional)',
+  })
   async browserNavigate(
     @Body() body: { url: string; screenshot?: boolean; waitFor?: string },
   ) {
@@ -541,21 +612,30 @@ export class JarvisController {
 
   @Public()
   @Post('browser/search')
-  @ApiOperation({ summary: 'Buscar en Google y devolver resultados con título, URL y snippet' })
-  async browserSearch(
-    @Body() body: { query: string; limit?: number },
-  ) {
-    if (!body.query) throw new BadRequestException('Se requiere una query de búsqueda');
-    const results = await this.jarvisService.webSearch(body.query, body.limit ?? 5);
+  @ApiOperation({
+    summary: 'Buscar en Google y devolver resultados con título, URL y snippet',
+  })
+  async browserSearch(@Body() body: { query: string; limit?: number }) {
+    if (!body.query)
+      throw new BadRequestException('Se requiere una query de búsqueda');
+    const results = await this.jarvisService.webSearch(
+      body.query,
+      body.limit ?? 5,
+    );
     return { success: true, results };
   }
 
   @Public()
   @Post('investigate')
-  @ApiOperation({ summary: 'Investigar una URL y convertirla en conocimiento consultable' })
+  @ApiOperation({
+    summary: 'Investigar una URL y convertirla en conocimiento consultable',
+  })
   async investigateUrl(@Body() body: { url: string; sessionId?: string }) {
     if (!body.url) throw new BadRequestException('Se requiere una URL');
-    const result = await this.investigationService.investigateUrl(body.url, body.sessionId);
+    const result = await this.investigationService.investigateUrl(
+      body.url,
+      body.sessionId,
+    );
     return { success: true, ...result };
   }
 
@@ -589,7 +669,9 @@ export class JarvisController {
 
   @Public()
   @Get('observability/stats')
-  @ApiOperation({ summary: 'Estadísticas de uso (herramientas, latencia, éxitos)' })
+  @ApiOperation({
+    summary: 'Estadísticas de uso (herramientas, latencia, éxitos)',
+  })
   async getStats() {
     return this.jarvisService.getObservabilityStats();
   }
@@ -656,7 +738,8 @@ export class JarvisController {
     @Query('topic') topic: string,
     @Query('days') days?: string,
   ) {
-    if (!topic) throw new BadRequestException('Se requiere un topic. Ej: ?topic=Qwen');
+    if (!topic)
+      throw new BadRequestException('Se requiere un topic. Ej: ?topic=Qwen');
     const limitDays = days ? parseInt(days, 10) : 365;
     const report = await this.knowledgeEvolution.getEvolution(topic, limitDays);
     if (!report) {
@@ -672,7 +755,8 @@ export class JarvisController {
   @Get('evolution/topics')
   @ApiOperation({
     summary: 'Listar todos los temas registrados',
-    description: 'Retorna los temas más frecuentes con fecha del último registro.',
+    description:
+      'Retorna los temas más frecuentes con fecha del último registro.',
   })
   async listEvolutionTopics() {
     const topics = await this.knowledgeEvolution.listTopics();
@@ -695,10 +779,19 @@ export class JarvisController {
     schema: {
       type: 'object',
       properties: {
-        file:      { type: 'string', format: 'binary' },
-        question:  { type: 'string', description: 'Pregunta sobre la imagen (opcional)' },
-        mode:      { type: 'string', enum: ['general', 'ocr', 'error', 'diagram', 'document'] },
-        sessionId: { type: 'string', description: 'Para guardar en historial de conversación' },
+        file: { type: 'string', format: 'binary' },
+        question: {
+          type: 'string',
+          description: 'Pregunta sobre la imagen (opcional)',
+        },
+        mode: {
+          type: 'string',
+          enum: ['general', 'ocr', 'error', 'diagram', 'document'],
+        },
+        sessionId: {
+          type: 'string',
+          description: 'Para guardar en historial de conversación',
+        },
       },
     },
   })
@@ -707,17 +800,29 @@ export class JarvisController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { question?: string; mode?: string; sessionId?: string },
   ) {
-    if (!file) throw new BadRequestException('Se requiere un archivo de imagen');
+    if (!file)
+      throw new BadRequestException('Se requiere un archivo de imagen');
 
     const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
     if (!allowed.includes(file.mimetype)) {
-      throw new BadRequestException('Formato no soportado. Usá PNG, JPG, WEBP o GIF.');
+      throw new BadRequestException(
+        'Formato no soportado. Usá PNG, JPG, WEBP o GIF.',
+      );
     }
 
     const imageBase64 = file.buffer.toString('base64');
-    const mode = (body.mode ?? 'general') as 'general' | 'ocr' | 'error' | 'diagram' | 'document';
+    const mode = (body.mode ?? 'general') as
+      | 'general'
+      | 'ocr'
+      | 'error'
+      | 'diagram'
+      | 'document';
 
-    const result = await this.visionService.analyze(imageBase64, body.question, mode);
+    const result = await this.visionService.analyze(
+      imageBase64,
+      body.question,
+      mode,
+    );
 
     // Si hay sessionId, guardar la interacción en el historial de conversación
     if (body.sessionId) {
@@ -729,13 +834,21 @@ export class JarvisController {
         sessionId: body.sessionId,
         role: 'user',
         content: userMsg,
-        metadata: { source: 'vision', filename: file.originalname, mimetype: file.mimetype },
+        metadata: {
+          source: 'vision',
+          filename: file.originalname,
+          mimetype: file.mimetype,
+        },
       });
       await this.conversationRepo.create({
         sessionId: body.sessionId,
         role: 'assistant',
         content: result.text,
-        metadata: { source: 'vision', model: result.model, latencyMs: result.latencyMs },
+        metadata: {
+          source: 'vision',
+          model: result.model,
+          latencyMs: result.latencyMs,
+        },
       });
     }
 

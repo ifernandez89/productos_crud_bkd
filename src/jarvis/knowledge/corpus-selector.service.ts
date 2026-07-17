@@ -78,8 +78,13 @@ export class CorpusSelectorService {
         `[corpus] índice cargado: ${this.index!.documentos.length} documentos`,
       );
     } catch (err) {
-      this.logger.error(`[corpus] error leyendo library-index.json: ${err.message}`);
-      this.index = { metadata: { version: 0, descripcion: '', nota: '' }, documentos: [] };
+      this.logger.error(
+        `[corpus] error leyendo library-index.json: ${err.message}`,
+      );
+      this.index = {
+        metadata: { version: 0, descripcion: '', nota: '' },
+        documentos: [],
+      };
     }
   }
 
@@ -112,9 +117,7 @@ export class CorpusSelectorService {
       }
     }
 
-    const top = scored
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK);
+    const top = scored.sort((a, b) => b.score - a.score).slice(0, topK);
 
     if (top.length > 0) {
       this.logger.log(
@@ -126,7 +129,9 @@ export class CorpusSelectorService {
         ),
       );
     } else {
-      this.logger.log(`[corpus] sin documentos relevantes para: "${query.slice(0, 60)}"`);
+      this.logger.log(
+        `[corpus] sin documentos relevantes para: "${query.slice(0, 60)}"`,
+      );
     }
 
     return top;
@@ -300,7 +305,9 @@ export class CorpusSelectorService {
     if (doc) {
       doc.embeddings = 'ready';
       this.saveIndexToDisk();
-      this.logger.log(`[corpus] embeddings marcados como ready: "${doc.titulo}"`);
+      this.logger.log(
+        `[corpus] embeddings marcados como ready: "${doc.titulo}"`,
+      );
     }
   }
 
@@ -309,10 +316,18 @@ export class CorpusSelectorService {
    */
   private saveIndexToDisk(): void {
     try {
-      fs.writeFileSync(this.indexPath, JSON.stringify(this.index, null, 2), 'utf-8');
-      this.logger.log(`[corpus] Índice de biblioteca guardado en disco: ${this.indexPath}`);
+      fs.writeFileSync(
+        this.indexPath,
+        JSON.stringify(this.index, null, 2),
+        'utf-8',
+      );
+      this.logger.log(
+        `[corpus] Índice de biblioteca guardado en disco: ${this.indexPath}`,
+      );
     } catch (err: any) {
-      this.logger.error(`[corpus] Error guardando library-index.json: ${err.message}`);
+      this.logger.error(
+        `[corpus] Error guardando library-index.json: ${err.message}`,
+      );
     }
   }
 
@@ -324,13 +339,17 @@ export class CorpusSelectorService {
     ingestService: DocumentIngestService,
     documentRepo: DocumentRepository,
   ): Promise<number> {
-    this.logger.log(`[lazy-load] Iniciando carga perezosa para: "${doc.titulo}" (${doc.archivo})`);
-    
+    this.logger.log(
+      `[lazy-load] Iniciando carga perezosa para: "${doc.titulo}" (${doc.archivo})`,
+    );
+
     // 1. Verificar si ya existe en la base de datos (por título exacto)
     const existing = await documentRepo.findDocumentByExactTitle(doc.titulo);
     if (existing) {
-      this.logger.log(`[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id}.`);
-      
+      this.logger.log(
+        `[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id}.`,
+      );
+
       // Actualizar el índice JSON
       doc.embeddings = 'ready';
       this.saveIndexToDisk();
@@ -343,7 +362,9 @@ export class CorpusSelectorService {
       // Intentar sin la carpeta libros
       fullPath = path.join(process.cwd(), 'docs', doc.archivo);
       if (!fs.existsSync(fullPath)) {
-        throw new Error(`Archivo no encontrado en docs/ o docs/libros/: ${doc.archivo}`);
+        throw new Error(
+          `Archivo no encontrado en docs/ o docs/libros/: ${doc.archivo}`,
+        );
       }
     }
 
@@ -357,7 +378,7 @@ export class CorpusSelectorService {
         buffer,
         doc.titulo,
         doc.categorias[0] ?? 'libros',
-        fullPath
+        fullPath,
       );
       dbDocId = result.documentId;
     } else {
@@ -367,7 +388,7 @@ export class CorpusSelectorService {
         doc.titulo,
         content,
         doc.categorias[0] ?? 'libros',
-        fullPath
+        fullPath,
       );
       dbDocId = result.documentId;
     }
@@ -375,23 +396,99 @@ export class CorpusSelectorService {
     // 4. Actualizar el índice en memoria y disco
     doc.embeddings = 'ready';
     this.saveIndexToDisk();
-    
-    this.logger.log(`[lazy-load] Carga perezosa finalizada con éxito. Documento ID en BD: ${dbDocId}`);
+
+    this.logger.log(
+      `[lazy-load] Carga perezosa finalizada con éxito. Documento ID en BD: ${dbDocId}`,
+    );
     return dbDocId;
   }
 }
 
 // ── Stopwords en español ──────────────────────────────────────────────────────
 const STOPWORDS = new Set([
-  'que', 'qué', 'como', 'cómo', 'cual', 'cuál', 'cuando', 'cuándo',
-  'donde', 'dónde', 'quien', 'quién', 'por', 'para', 'con', 'sin',
-  'sobre', 'entre', 'desde', 'hasta', 'hacia', 'ante', 'bajo', 'tras',
-  'una', 'uno', 'unos', 'unas', 'los', 'las', 'del', 'los', 'sus',
-  'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
-  'hay', 'ser', 'estar', 'tiene', 'tienen', 'puedo', 'puede', 'pueden',
-  'decir', 'dice', 'dices', 'habla', 'hablan', 'sabe', 'saben',
-  'más', 'muy', 'tan', 'todo', 'toda', 'todos', 'todas',
-  'algo', 'alguien', 'algún', 'alguna', 'ningún', 'ninguna',
-  'me', 'te', 'se', 'nos', 'les', 'him', 'her', 'them',
-  'the', 'and', 'for', 'with', 'about', 'what', 'how', 'who',
+  'que',
+  'qué',
+  'como',
+  'cómo',
+  'cual',
+  'cuál',
+  'cuando',
+  'cuándo',
+  'donde',
+  'dónde',
+  'quien',
+  'quién',
+  'por',
+  'para',
+  'con',
+  'sin',
+  'sobre',
+  'entre',
+  'desde',
+  'hasta',
+  'hacia',
+  'ante',
+  'bajo',
+  'tras',
+  'una',
+  'uno',
+  'unos',
+  'unas',
+  'los',
+  'las',
+  'del',
+  'los',
+  'sus',
+  'este',
+  'esta',
+  'estos',
+  'estas',
+  'ese',
+  'esa',
+  'esos',
+  'esas',
+  'hay',
+  'ser',
+  'estar',
+  'tiene',
+  'tienen',
+  'puedo',
+  'puede',
+  'pueden',
+  'decir',
+  'dice',
+  'dices',
+  'habla',
+  'hablan',
+  'sabe',
+  'saben',
+  'más',
+  'muy',
+  'tan',
+  'todo',
+  'toda',
+  'todos',
+  'todas',
+  'algo',
+  'alguien',
+  'algún',
+  'alguna',
+  'ningún',
+  'ninguna',
+  'me',
+  'te',
+  'se',
+  'nos',
+  'les',
+  'him',
+  'her',
+  'them',
+  'the',
+  'and',
+  'for',
+  'with',
+  'about',
+  'what',
+  'how',
+  'who',
 ]);

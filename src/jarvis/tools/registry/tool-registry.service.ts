@@ -28,7 +28,9 @@ export class ToolRegistryService {
   }
 
   findByName(name: string): ToolDefinition | undefined {
-    return this.tools.find((tool) => tool.name.toLowerCase() === name.toLowerCase());
+    return this.tools.find(
+      (tool) => tool.name.toLowerCase() === name.toLowerCase(),
+    );
   }
 
   private registerDefaults(): void {
@@ -82,16 +84,20 @@ export class ToolRegistryService {
     });
     this.register({
       name: 'browser',
-      description: 'Navega y extrae contenido de URLs detectadas en el mensaje del usuario',
+      description:
+        'Navega y extrae contenido de URLs detectadas en el mensaje del usuario',
       category: 'external_api',
       enabled: true,
     });
     this.register({
       name: 'browser_search',
-      description: 'Busca en Google y devuelve resultados cuando el usuario pide buscar en internet',
+      description:
+        'Busca en Google y devuelve resultados cuando el usuario pide buscar en internet',
       category: 'external_api',
       enabled: true,
     });
-    this.logger.log(`Tool registry inicializado con ${this.tools.length} herramientas.`);
+    this.logger.log(
+      `Tool registry inicializado con ${this.tools.length} herramientas.`,
+    );
   }
 }

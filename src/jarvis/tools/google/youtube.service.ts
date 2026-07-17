@@ -30,7 +30,8 @@ export class YouTubeService {
     return process.env.YOUTUBE_API_KEY;
   }
 
-  private noKeyMsg = '⚠️ No está configurada la variable YOUTUBE_API_KEY. Agregala en tu .env para usar YouTube.';
+  private noKeyMsg =
+    '⚠️ No está configurada la variable YOUTUBE_API_KEY. Agregala en tu .env para usar YouTube.';
 
   // ── BÚSQUEDA (100 puntos de cuota) ─────────────────────────────────────────
 
@@ -51,10 +52,10 @@ export class YouTubeService {
       if (items.length === 0) return `🎬 No encontré videos para "${query}".`;
 
       const lines = items.map((item, i) => {
-        const id      = item.id?.videoId ?? '';
-        const title   = item.snippet?.title ?? 'Sin título';
+        const id = item.id?.videoId ?? '';
+        const title = item.snippet?.title ?? 'Sin título';
         const channel = item.snippet?.channelTitle ?? '';
-        const url     = id ? `https://youtube.com/watch?v=${id}` : '';
+        const url = id ? `https://youtube.com/watch?v=${id}` : '';
         return `${i + 1}. 🎬 **${title}**\n   Canal: ${channel}${url ? `\n   ${url}` : ''}`;
       });
 
@@ -79,29 +80,39 @@ export class YouTubeService {
       const video = res.data.items?.[0];
       if (!video) return `❌ No encontré el video con ID: ${videoId}`;
 
-      const title       = video.snippet?.title ?? 'Sin título';
-      const channel     = video.snippet?.channelTitle ?? '';
+      const title = video.snippet?.title ?? 'Sin título';
+      const channel = video.snippet?.channelTitle ?? '';
       const description = (video.snippet?.description ?? '').slice(0, 400);
-      const views       = Number(video.statistics?.viewCount ?? 0).toLocaleString('es-AR');
-      const likes       = Number(video.statistics?.likeCount ?? 0).toLocaleString('es-AR');
-      const comments    = Number(video.statistics?.commentCount ?? 0).toLocaleString('es-AR');
-      const duration    = video.contentDetails?.duration
-        ? this.parseDuration(video.contentDetails.duration) : '';
-      const published   = video.snippet?.publishedAt
-        ? new Date(video.snippet.publishedAt).toLocaleDateString('es-AR') : '';
+      const views = Number(video.statistics?.viewCount ?? 0).toLocaleString(
+        'es-AR',
+      );
+      const likes = Number(video.statistics?.likeCount ?? 0).toLocaleString(
+        'es-AR',
+      );
+      const comments = Number(
+        video.statistics?.commentCount ?? 0,
+      ).toLocaleString('es-AR');
+      const duration = video.contentDetails?.duration
+        ? this.parseDuration(video.contentDetails.duration)
+        : '';
+      const published = video.snippet?.publishedAt
+        ? new Date(video.snippet.publishedAt).toLocaleDateString('es-AR')
+        : '';
 
       return [
         `🎬 **${title}**`,
         `📺 Canal: ${channel}`,
         published ? `📅 Publicado: ${published}` : '',
-        duration  ? `⏱️ Duración: ${duration}` : '',
+        duration ? `⏱️ Duración: ${duration}` : '',
         `👁️ Vistas: ${views}  |  👍 Likes: ${likes}  |  💬 Comentarios: ${comments}`,
         ``,
         `📝 **Descripción:**`,
         description + (description.length === 400 ? '...' : ''),
         ``,
         `🔗 https://youtube.com/watch?v=${videoId}`,
-      ].filter(Boolean).join('\n');
+      ]
+        .filter(Boolean)
+        .join('\n');
     } catch (error) {
       this.logger.error(`[YouTube] getVideoInfo: ${error.message}`);
       return `Error al obtener info del video: ${error.message}`;
@@ -123,13 +134,14 @@ export class YouTubeService {
       });
 
       const items = res.data.items ?? [];
-      if (items.length === 0) return `💬 No encontré comentarios para este video.`;
+      if (items.length === 0)
+        return `💬 No encontré comentarios para este video.`;
 
       const lines = items.map((item, i) => {
-        const c       = item.snippet?.topLevelComment?.snippet;
-        const author  = c?.authorDisplayName ?? 'Anónimo';
-        const text    = (c?.textDisplay ?? '').slice(0, 200);
-        const likes   = c?.likeCount ?? 0;
+        const c = item.snippet?.topLevelComment?.snippet;
+        const author = c?.authorDisplayName ?? 'Anónimo';
+        const text = (c?.textDisplay ?? '').slice(0, 200);
+        const likes = c?.likeCount ?? 0;
         return `${i + 1}. **${author}** (👍 ${likes})\n   ${text}`;
       });
 
@@ -155,14 +167,16 @@ export class YouTubeService {
       });
 
       const items = res.data.items ?? [];
-      if (items.length === 0) return `🎬 No encontré videos para el canal ${channelId}.`;
+      if (items.length === 0)
+        return `🎬 No encontré videos para el canal ${channelId}.`;
 
       const lines = items.map((item, i) => {
-        const id    = item.id?.videoId ?? '';
+        const id = item.id?.videoId ?? '';
         const title = item.snippet?.title ?? 'Sin título';
-        const date  = item.snippet?.publishedAt
-          ? new Date(item.snippet.publishedAt).toLocaleDateString('es-AR') : '';
-        const url   = id ? `https://youtube.com/watch?v=${id}` : '';
+        const date = item.snippet?.publishedAt
+          ? new Date(item.snippet.publishedAt).toLocaleDateString('es-AR')
+          : '';
+        const url = id ? `https://youtube.com/watch?v=${id}` : '';
         return `${i + 1}. **${title}**${date ? ` — ${date}` : ''}${url ? `\n   ${url}` : ''}`;
       });
 
@@ -189,18 +203,24 @@ export class YouTubeService {
       const channel = res.data.items?.[0];
       if (!channel) return `❌ No encontré el canal: ${channelIdOrName}`;
 
-      const name        = channel.snippet?.title ?? '';
+      const name = channel.snippet?.title ?? '';
       const description = (channel.snippet?.description ?? '').slice(0, 300);
-      const subs        = Number(channel.statistics?.subscriberCount ?? 0).toLocaleString('es-AR');
-      const videos      = channel.statistics?.videoCount ?? '?';
-      const views       = Number(channel.statistics?.viewCount ?? 0).toLocaleString('es-AR');
+      const subs = Number(
+        channel.statistics?.subscriberCount ?? 0,
+      ).toLocaleString('es-AR');
+      const videos = channel.statistics?.videoCount ?? '?';
+      const views = Number(channel.statistics?.viewCount ?? 0).toLocaleString(
+        'es-AR',
+      );
 
       return [
         `📺 **${name}**`,
         `👥 Suscriptores: ${subs}  |  🎬 Videos: ${videos}  |  👁️ Vistas totales: ${views}`,
         ``,
         description,
-      ].filter(Boolean).join('\n');
+      ]
+        .filter(Boolean)
+        .join('\n');
     } catch (error) {
       this.logger.error(`[YouTube] getChannelInfo: ${error.message}`);
       return `Error al obtener info del canal: ${error.message}`;
@@ -226,7 +246,7 @@ export class YouTubeService {
   private parseDuration(iso: string): string {
     const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     if (!m) return iso;
-    const h   = m[1] ? `${m[1]}:` : '';
+    const h = m[1] ? `${m[1]}:` : '';
     const min = m[2] ? m[2].padStart(h ? 2 : 1, '0') : '0';
     const sec = (m[3] ?? '0').padStart(2, '0');
     return `${h}${min}:${sec}`;

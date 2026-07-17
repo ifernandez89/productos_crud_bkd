@@ -40,7 +40,7 @@ export class DashboardService {
       this.prisma.agentRun.groupBy({
         by: ['modelUsed'],
         _count: { id: true },
-        _avg:   { durationMs: true },
+        _avg: { durationMs: true },
         orderBy: { _count: { id: 'desc' } },
       }),
     ]);
@@ -51,19 +51,19 @@ export class DashboardService {
         conversations,
         sessions,
         collections,
-        documents:  libraryStats.totalDocs,
-        chunks:     libraryStats.totalChunks,
+        documents: libraryStats.totalDocs,
+        chunks: libraryStats.totalChunks,
       },
       library: {
-        topDocuments:      libraryStats.topDocs,
-        byCategory:        libraryStats.byCategory,
-        recentDocuments:   await this.documentRepo.getMostRecentDocuments(5),
+        topDocuments: libraryStats.topDocs,
+        byCategory: libraryStats.byCategory,
+        recentDocuments: await this.documentRepo.getMostRecentDocuments(5),
       },
       agent: {
         recentRuns,
         modelBreakdown: modelBreakdown.map((m) => ({
-          model:       m.modelUsed,
-          runs:        m._count.id,
+          model: m.modelUsed,
+          runs: m._count.id,
           avgLatencyMs: Math.round(m._avg.durationMs ?? 0),
         })),
       },

@@ -38,7 +38,8 @@ export class SkillRegistryService {
         const score = terms.reduce((acc, term) => {
           if (skill.name.toLowerCase().includes(term)) return acc + 3;
           if (skill.description.toLowerCase().includes(term)) return acc + 2;
-          if (skill.keywords.some((kw) => kw.toLowerCase().includes(term))) return acc + 4;
+          if (skill.keywords.some((kw) => kw.toLowerCase().includes(term)))
+            return acc + 4;
           if (skill.content.toLowerCase().includes(term)) return acc + 1;
           return acc;
         }, 0);
@@ -46,7 +47,11 @@ export class SkillRegistryService {
         return { skill, score: effectiveScore };
       })
       .filter((item) => item.score > 0)
-      .sort((a, b) => b.score - a.score || (b.skill.priority ?? 0) - (a.skill.priority ?? 0))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          (b.skill.priority ?? 0) - (a.skill.priority ?? 0),
+      )
       .slice(0, limit)
       .map((item) => item.skill);
 
@@ -84,7 +89,9 @@ export class SkillRegistryService {
     const skillPath = path.join(folderPath, 'skill.md');
 
     if (!existsSync(metadataPath) || !existsSync(skillPath)) {
-      this.logger.warn(`Skill incompleta en ${folderPath}; se requiere metadata.json y skill.md`);
+      this.logger.warn(
+        `Skill incompleta en ${folderPath}; se requiere metadata.json y skill.md`,
+      );
       return;
     }
 
@@ -101,7 +108,8 @@ export class SkillRegistryService {
         source: folderName,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Error desconocido';
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
       this.logger.error(`Error cargando skill ${folderName}: ${message}`);
     }
   }
@@ -109,7 +117,10 @@ export class SkillRegistryService {
   private loadSkillFromMarkdownFile(filePath: string, fileName: string): void {
     try {
       const content = readFileSync(filePath, 'utf-8');
-      const { metadata, content: skillContent } = this.parseMarkdownSkill(content, fileName);
+      const { metadata, content: skillContent } = this.parseMarkdownSkill(
+        content,
+        fileName,
+      );
       const summary = this.buildSummary(skillContent);
 
       this.skills.push({
@@ -119,16 +130,26 @@ export class SkillRegistryService {
         source: fileName,
       });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Error desconocido';
+      const message =
+        error instanceof Error ? error.message : 'Error desconocido';
       this.logger.error(`Error cargando skill ${fileName}: ${message}`);
     }
   }
 
-  private parseMarkdownSkill(content: string, fallbackName: string): { metadata: SkillMetadata; content: string } {
+  private parseMarkdownSkill(
+    content: string,
+    fallbackName: string,
+  ): { metadata: SkillMetadata; content: string } {
     const frontmatter = this.parseFrontmatter(content);
     const skillContent = frontmatter.content ?? content;
-    const name = frontmatter.name ?? this.extractHeadingName(skillContent) ?? path.basename(fallbackName, path.extname(fallbackName));
-    const description = frontmatter.description ?? this.extractDescription(skillContent) ?? `Skill cargada desde ${fallbackName}`;
+    const name =
+      frontmatter.name ??
+      this.extractHeadingName(skillContent) ??
+      path.basename(fallbackName, path.extname(fallbackName));
+    const description =
+      frontmatter.description ??
+      this.extractDescription(skillContent) ??
+      `Skill cargada desde ${fallbackName}`;
     const category = frontmatter.category ?? 'general';
     const keywords = frontmatter.keywords?.length
       ? frontmatter.keywords
@@ -198,7 +219,10 @@ export class SkillRegistryService {
       }
 
       if (key === 'name' || key === 'description' || key === 'category') {
-        parsed[key as 'name' | 'description' | 'category'] = value.replace(/^['"]|['"]$/g, '');
+        parsed[key as 'name' | 'description' | 'category'] = value.replace(
+          /^['"]|['"]$/g,
+          '',
+        );
       }
     }
 
@@ -227,7 +251,10 @@ export class SkillRegistryService {
   private extractKeywords(content: string, name: string): string[] {
     const tokens = new Set<string>();
     const normalizedName = name.toLowerCase();
-    normalizedName.split(/[^a-z0-9]+/).filter(Boolean).forEach((token) => tokens.add(token));
+    normalizedName
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+      .forEach((token) => tokens.add(token));
 
     content
       .toLowerCase()

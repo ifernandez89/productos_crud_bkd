@@ -3,13 +3,13 @@ import * as Astronomy from 'astronomy-engine';
 
 /**
  * AstrologyTool — Cálculos astrológicos en tiempo real usando astronomy-engine.
- * 
+ *
  * ✅ VENTAJAS sobre scraping:
  * - Respuesta instantánea (<100ms vs 15-30s)
  * - Sin dependencias externas (0 API keys)
  * - Datos precisos basados en VSOP87
  * - Sin riesgo de bloqueo o timeout
- * 
+ *
  * Basado en: Archeoscope — Módulos astronómicos/astrológicos calculados
  */
 @Injectable()
@@ -17,19 +17,48 @@ export class AstrologyTool {
   private readonly logger = new Logger(AstrologyTool.name);
 
   private readonly SIGNS = [
-    'Aries', 'Tauro', 'Géminis', 'Cáncer', 'Leo', 'Virgo',
-    'Libra', 'Escorpio', 'Sagitario', 'Capricornio', 'Acuario', 'Piscis',
+    'Aries',
+    'Tauro',
+    'Géminis',
+    'Cáncer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Escorpio',
+    'Sagitario',
+    'Capricornio',
+    'Acuario',
+    'Piscis',
   ];
 
   private readonly GLYPHS = [
-    '♈', '♉', '♊', '♋', '♌', '♍',
-    '♎', '♏', '♐', '♑', '♒', '♓',
+    '♈',
+    '♉',
+    '♊',
+    '♋',
+    '♌',
+    '♍',
+    '♎',
+    '♏',
+    '♐',
+    '♑',
+    '♒',
+    '♓',
   ];
 
   private readonly ELEMENTS = {
-    Aries: 'Fuego', Tauro: 'Tierra', Géminis: 'Aire', Cáncer: 'Agua',
-    Leo: 'Fuego', Virgo: 'Tierra', Libra: 'Aire', Escorpio: 'Agua',
-    Sagitario: 'Fuego', Capricornio: 'Tierra', Acuario: 'Aire', Piscis: 'Agua',
+    Aries: 'Fuego',
+    Tauro: 'Tierra',
+    Géminis: 'Aire',
+    Cáncer: 'Agua',
+    Leo: 'Fuego',
+    Virgo: 'Tierra',
+    Libra: 'Aire',
+    Escorpio: 'Agua',
+    Sagitario: 'Fuego',
+    Capricornio: 'Tierra',
+    Acuario: 'Aire',
+    Piscis: 'Agua',
   };
 
   private readonly PHASE_NAMES: Array<[number, string, string]> = [
@@ -65,7 +94,9 @@ export class AstrologyTool {
       // ── LUNA ──────────────────────────────────────────────────────────────
       const moonLon = Astronomy.EclipticLongitude(Astronomy.Body.Moon, t);
       const phaseAngle = Astronomy.MoonPhase(t);
-      const illumination = Math.round(((1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2) * 100);
+      const illumination = Math.round(
+        ((1 - Math.cos((phaseAngle * Math.PI) / 180)) / 2) * 100,
+      );
 
       let phaseName = 'Luna Nueva';
       let phaseEmoji = '🌑';
@@ -140,7 +171,9 @@ export class AstrologyTool {
           lines.push(`- ${p.emoji} **${p.name}** en ${p.sign} ${p.deg}°`);
         }
       } else {
-        lines.push(`**Planetas visibles esta noche:** Ninguno (todos muy cerca del Sol)`);
+        lines.push(
+          `**Planetas visibles esta noche:** Ninguno (todos muy cerca del Sol)`,
+        );
       }
 
       // ── INTERPRETACIÓN ASTROLÓGICA BÁSICA ─────────────────────────────────
@@ -148,7 +181,9 @@ export class AstrologyTool {
 
       // Elemento lunar
       const moonElement = this.ELEMENTS[moonSign];
-      lines.push(`- Luna en ${moonSign} (${moonElement}): ${this.getMoonSignInterpretation(moonSign)}`);
+      lines.push(
+        `- Luna en ${moonSign} (${moonElement}): ${this.getMoonSignInterpretation(moonSign)}`,
+      );
 
       // Fase lunar
       lines.push(`- ${phaseName}: ${this.getPhaseInterpretation(phaseName)}`);
@@ -174,20 +209,56 @@ export class AstrologyTool {
     try {
       const t = Astronomy.MakeTime(date);
 
-      const BODIES: Array<{ id: string; body: Astronomy.Body | null; name: string; emoji: string }> = [
+      const BODIES: Array<{
+        id: string;
+        body: Astronomy.Body | null;
+        name: string;
+        emoji: string;
+      }> = [
         { id: 'sun', body: null, name: 'Sol', emoji: '☀️' },
         { id: 'moon', body: Astronomy.Body.Moon, name: 'Luna', emoji: '🌙' },
-        { id: 'mercury', body: Astronomy.Body.Mercury, name: 'Mercurio', emoji: '☿' },
+        {
+          id: 'mercury',
+          body: Astronomy.Body.Mercury,
+          name: 'Mercurio',
+          emoji: '☿',
+        },
         { id: 'venus', body: Astronomy.Body.Venus, name: 'Venus', emoji: '♀' },
         { id: 'mars', body: Astronomy.Body.Mars, name: 'Marte', emoji: '♂' },
-        { id: 'jupiter', body: Astronomy.Body.Jupiter, name: 'Júpiter', emoji: '♃' },
-        { id: 'saturn', body: Astronomy.Body.Saturn, name: 'Saturno', emoji: '♄' },
-        { id: 'uranus', body: Astronomy.Body.Uranus, name: 'Urano', emoji: '♅' },
-        { id: 'neptune', body: Astronomy.Body.Neptune, name: 'Neptuno', emoji: '♆' },
+        {
+          id: 'jupiter',
+          body: Astronomy.Body.Jupiter,
+          name: 'Júpiter',
+          emoji: '♃',
+        },
+        {
+          id: 'saturn',
+          body: Astronomy.Body.Saturn,
+          name: 'Saturno',
+          emoji: '♄',
+        },
+        {
+          id: 'uranus',
+          body: Astronomy.Body.Uranus,
+          name: 'Urano',
+          emoji: '♅',
+        },
+        {
+          id: 'neptune',
+          body: Astronomy.Body.Neptune,
+          name: 'Neptuno',
+          emoji: '♆',
+        },
         { id: 'pluto', body: Astronomy.Body.Pluto, name: 'Plutón', emoji: '♇' },
       ];
 
-      const positions: Array<{ name: string; emoji: string; sign: string; deg: string; retrograde: boolean }> = [];
+      const positions: Array<{
+        name: string;
+        emoji: string;
+        sign: string;
+        deg: string;
+        retrograde: boolean;
+      }> = [];
 
       for (const b of BODIES) {
         let lon: number;
@@ -286,13 +357,13 @@ export class AstrologyTool {
   private getPhaseInterpretation(phase: string): string {
     const interpretations: Record<string, string> = {
       'Luna Nueva': 'momento ideal para nuevos comienzos e intenciones',
-      'Creciente': 'tiempo de acción y construcción',
+      Creciente: 'tiempo de acción y construcción',
       'Cuarto Creciente': 'superar obstáculos y tomar decisiones',
       'Gibosa Creciente': 'refinamiento y preparación',
       'Luna Llena': 'culminación, revelaciones y liberación emocional',
       'Gibosa Menguante': 'compartir sabiduría y gratitud',
       'Cuarto Menguante': 'soltar lo que ya no sirve',
-      'Menguante': 'descanso, reflexión interior y cierre de ciclos',
+      Menguante: 'descanso, reflexión interior y cierre de ciclos',
     };
     return interpretations[phase] || 'fase de transición lunar';
   }

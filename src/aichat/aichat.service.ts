@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger, Inject, Optional } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  Inject,
+  Optional,
+} from '@nestjs/common';
 import { CreateAichatDto } from './dto/create-aichat.dto';
 import { UpdateAichatDto } from './dto/update-aichat.dto';
 import { PreguntasRepository } from './repositories/preguntas.repository';
@@ -41,7 +48,10 @@ export class AichatService {
 
   // ── Almacenamiento del último mensaje de IA ───────────────────────────────────
   private lastAssistantMessage: string | null = null;
-  private readonly sessionContextStore = new Map<string, Array<{ role: 'user' | 'assistant'; content: string }>>();
+  private readonly sessionContextStore = new Map<
+    string,
+    Array<{ role: 'user' | 'assistant'; content: string }>
+  >();
 
   constructor(
     private readonly preguntasRepository: PreguntasRepository,
@@ -75,7 +85,11 @@ export class AichatService {
     return turns.slice(-limit);
   }
 
-  private rememberSessionTurn(sessionId: string | undefined, role: 'user' | 'assistant', content: string) {
+  private rememberSessionTurn(
+    sessionId: string | undefined,
+    role: 'user' | 'assistant',
+    content: string,
+  ) {
     if (!sessionId) return;
     const turns = this.sessionContextStore.get(sessionId) ?? [];
     turns.push({ role, content });
@@ -85,7 +99,11 @@ export class AichatService {
     this.sessionContextStore.set(sessionId, turns);
   }
 
-  private rememberSessionPair(sessionId: string | undefined, userText: string, assistantText: string) {
+  private rememberSessionPair(
+    sessionId: string | undefined,
+    userText: string,
+    assistantText: string,
+  ) {
     this.rememberSessionTurn(sessionId, 'user', userText);
     this.rememberSessionTurn(sessionId, 'assistant', assistantText);
   }
@@ -95,7 +113,10 @@ export class AichatService {
    * - system: rol + reglas estrictas (no cambia por pregunta → token cacheado)
    * - user:   contexto RAG + pregunta del usuario
    */
-  async promptAgente(texto: string, sessionId?: string): Promise<StructuredPrompt> {
+  async promptAgente(
+    texto: string,
+    sessionId?: string,
+  ): Promise<StructuredPrompt> {
     const [products, preguntasRelevantes] = await Promise.all([
       this.getProducts(),
       this.preguntasRepository.findRelevant(texto, 3),
@@ -111,9 +132,7 @@ export class AichatService {
     let catalogoTexto = '';
     if (esPreguntaProductos) {
       // Intentar filtrar por marca o término mencionado en la pregunta
-      const palabrasClave = textoNorm
-        .split(/\s+/)
-        .filter((w) => w.length >= 4);
+      const palabrasClave = textoNorm.split(/\s+/).filter((w) => w.length >= 4);
 
       let filtrados = products.filter((p) =>
         palabrasClave.some(
@@ -152,9 +171,14 @@ export class AichatService {
       })
       .join('\n---\n');
 
-    const now = DateTime.now().setZone('America/Argentina/Buenos_Aires').setLocale('es');
+    const now = DateTime.now()
+      .setZone('America/Argentina/Buenos_Aires')
+      .setLocale('es');
     const sessionHistoryText = this.getSessionContext(sessionId, 6)
-      .map((turn) => `${turn.role === 'user' ? 'Usuario' : 'Asistente'}: ${turn.content}`)
+      .map(
+        (turn) =>
+          `${turn.role === 'user' ? 'Usuario' : 'Asistente'}: ${turn.content}`,
+      )
       .join('\n');
     const fechaActual = now.toFormat('yyyy-MM-dd');
     const horaActual = now.toFormat('HH:mm');
@@ -211,7 +235,7 @@ export class AichatService {
       longitude,
       sessionId,
     } = createAichatDto;
-    
+
     // ── Detectar comandos especiales para repetir el último mensaje ─────────────
     if (this.isRepeatCommand(texto)) {
       if (!this.lastAssistantMessage) {
@@ -220,7 +244,9 @@ export class AichatService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      this.logger.log(`Comando de repetición detectado. Devolviendo: ${this.lastAssistantMessage.slice(0, 50)}...`);
+      this.logger.log(
+        `Comando de repetición detectado. Devolviendo: ${this.lastAssistantMessage.slice(0, 50)}...`,
+      );
       return this.lastAssistantMessage;
     }
 
@@ -242,9 +268,16 @@ export class AichatService {
             finalToolAnswer,
             this.getActiveModelName(),
           );
-          this.rememberSessionPair(sessionId, texto, finalAnswerWithModelNotice);
+          this.rememberSessionPair(
+            sessionId,
+            texto,
+            finalAnswerWithModelNotice,
+          );
           this.lastAssistantMessage = finalAnswerWithModelNotice;
-          await this.persistSuccessfulQuestion(texto, finalAnswerWithModelNotice);
+          await this.persistSuccessfulQuestion(
+            texto,
+            finalAnswerWithModelNotice,
+          );
           return finalAnswerWithModelNotice;
         }
 
@@ -263,7 +296,10 @@ export class AichatService {
           const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
           taskPromise = this.callExternalAI(textoParaIA);
         } else {
-          console.log('Ejecución modelo local con Ollama: ', this.getActiveModelName());
+          console.log(
+            'Ejecución modelo local con Ollama: ',
+            this.getActiveModelName(),
+          );
           this.logger.log('Ejecución modelo local con Ollama');
           const prompt = await this.promptAgente(texto, sessionId);
           taskPromise = this.callOllamaModel(prompt, texto);
@@ -278,7 +314,9 @@ export class AichatService {
         await this.persistSuccessfulQuestion(texto, finalAnswer);
         return finalAnswer;
       } catch (error) {
-        this.logger.error(`Intento ${attempts} fallido: ${this.getErrorMessage(error)}`);
+        this.logger.error(
+          `Intento ${attempts} fallido: ${this.getErrorMessage(error)}`,
+        );
         await this.persistFailedQuestion(texto, error);
         throw new HttpException(
           this.getErrorMessage(error),
@@ -394,7 +432,10 @@ export class AichatService {
     return response.data.choices[0]?.message?.content || 'Sin respuesta';
   }
 
-  private async callOllamaModel(prompt: StructuredPrompt, preguntaOriginal: string): Promise<string> {
+  private async callOllamaModel(
+    prompt: StructuredPrompt,
+    preguntaOriginal: string,
+  ): Promise<string> {
     // 🔀 Router inteligente: elige modelo según el contenido
     const routing = this.modelRouter.routeToModel(preguntaOriginal);
     const modelToUse = routing.model;
@@ -408,7 +449,9 @@ export class AichatService {
       model = this.qwenModel;
     } else {
       if (modelToUse === 'qwen3:4b' && !this.qwenModel) {
-        this.logger.warn('⚠️ Qwen3:4b no disponible, usando fallback llama3.2:3b');
+        this.logger.warn(
+          '⚠️ Qwen3:4b no disponible, usando fallback llama3.2:3b',
+        );
       }
       this.logger.log('🧠 Usando Llama3.2:3b (General)');
       model = this.ollamaModel;
@@ -433,7 +476,10 @@ export class AichatService {
     return resolveOllamaModelName('llama3.2:3b');
   }
 
-  private formatAnswerWithModelNotice(answer: string, modelName: string): string {
+  private formatAnswerWithModelNotice(
+    answer: string,
+    modelName: string,
+  ): string {
     const normalizedAnswer = answer.trim();
     if (!normalizedAnswer) {
       return normalizedAnswer;
@@ -465,11 +511,12 @@ export class AichatService {
           );
         }
         this.logger.log('Script encontrado, procediendo a ejecutar...');
-        const { stdout, stderr, code } = await this.safeExecService.runPythonScript(
-          scriptPath,
-          [pregunta],
-          30000,
-        );
+        const { stdout, stderr, code } =
+          await this.safeExecService.runPythonScript(
+            scriptPath,
+            [pregunta],
+            30000,
+          );
         this.logger.log(`Proceso Python finalizado con código: ${code}`);
         if (code !== 0) {
           throw new HttpException(
@@ -508,7 +555,9 @@ export class AichatService {
       estado: r.estado,
       errorMessage: r.errorMessage ?? null,
       errorStatus: r.errorStatus ?? null,
-      createdAt: DateTime.fromJSDate(r.createdAt).setZone('America/Argentina/Buenos_Aires').toISO(),
+      createdAt: DateTime.fromJSDate(r.createdAt)
+        .setZone('America/Argentina/Buenos_Aires')
+        .toISO(),
     }));
   }
 
@@ -547,7 +596,9 @@ export class AichatService {
       const rec = await this.preguntasRepository.create(payload);
       this.logger.log(`Pregunta persistida id=${rec.id}`);
     } catch (err) {
-      this.logger.error(`Error al persistir pregunta exitosa: ${this.getErrorMessage(err)}`);
+      this.logger.error(
+        `Error al persistir pregunta exitosa: ${this.getErrorMessage(err)}`,
+      );
       // No propagar el error para no bloquear la respuesta al usuario
     }
   }

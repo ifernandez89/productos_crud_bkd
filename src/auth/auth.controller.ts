@@ -12,7 +12,10 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login simple — devuelve JWT sin credenciales' })
-  @ApiResponse({ status: 200, description: 'Login exitoso, devuelve access_token' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login exitoso, devuelve access_token',
+  })
   login() {
     return this.authService.login();
   }

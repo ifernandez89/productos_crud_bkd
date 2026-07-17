@@ -3,10 +3,10 @@ import axios from 'axios';
 import { resolveVisionModel } from '../../../shared/ollama-config';
 
 export interface VisionAnalysisResult {
-  text: string;          // respuesta del modelo
+  text: string; // respuesta del modelo
   model: string;
   latencyMs: number;
-  detectedLanguage?: string;  // TypeScript, SQL, Python, etc. si aplica
+  detectedLanguage?: string; // TypeScript, SQL, Python, etc. si aplica
 }
 
 /**
@@ -74,7 +74,9 @@ Respondé en español argentino.`,
       ? `${question}\n\nSi hay texto en la imagen, transcribílo también.`
       : this.PROMPTS[mode];
 
-    this.logger.log(`[vision] analizando imagen con ${this.model} (modo: ${mode})`);
+    this.logger.log(
+      `[vision] analizando imagen con ${this.model} (modo: ${mode})`,
+    );
 
     try {
       const response = await axios.post(
@@ -107,12 +109,14 @@ Respondé en español argentino.`,
       const msg = err instanceof Error ? err.message : String(err);
 
       if (msg.includes('ECONNREFUSED') || msg.includes('fetch failed')) {
-        throw new Error('⚠️ Ollama no está disponible. Ejecutá "ollama serve" e intentá de nuevo.');
+        throw new Error(
+          '⚠️ Ollama no está disponible. Ejecutá "ollama serve" e intentá de nuevo.',
+        );
       }
       if (msg.includes('not found') || msg.includes('404')) {
         throw new Error(
           `⚠️ El modelo de visión "${this.model}" no está descargado. ` +
-          `Ejecutá: ollama pull ${this.model}`,
+            `Ejecutá: ollama pull ${this.model}`,
         );
       }
       throw err;
@@ -139,7 +143,10 @@ Respondé en español argentino.`,
    */
   private detectCodeLanguage(text: string): string | undefined {
     const patterns: [RegExp, string][] = [
-      [/\bTypeScript\b|\bts\b|\.ts\b|interface\s+\w|: string|: number/i, 'TypeScript'],
+      [
+        /\bTypeScript\b|\bts\b|\.ts\b|interface\s+\w|: string|: number/i,
+        'TypeScript',
+      ],
       [/\bJavaScript\b|\bjs\b|\.js\b|const\s|let\s|=>\s*{/i, 'JavaScript'],
       [/\bPython\b|\.py\b|def\s+\w|import\s+\w|print\(/i, 'Python'],
       [/\bSQL\b|SELECT\s+|FROM\s+|WHERE\s+|INSERT\s+INTO/i, 'SQL'],

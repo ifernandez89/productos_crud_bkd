@@ -2,7 +2,12 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { TaskRepository } from '../repositories/task.repository';
 import { ILLMProvider } from '../llm/llm-provider.interface';
 import { OllamaProvider } from '../llm/ollama.provider';
-import { ExecutionEngine, ExecutionPlan, ExecutionStep, StepType } from './execution-engine.service';
+import {
+  ExecutionEngine,
+  ExecutionPlan,
+  ExecutionStep,
+  StepType,
+} from './execution-engine.service';
 
 @Injectable()
 export class PlannerService {
@@ -39,9 +44,16 @@ Mantén los pasos entre 2 y 6 máximo. Sé muy directo y específico.
       temperature: 0.1,
     });
 
-    let stepsArray: Array<{ stepNumber: number; description: string; type?: string }> = [];
+    let stepsArray: Array<{
+      stepNumber: number;
+      description: string;
+      type?: string;
+    }> = [];
     try {
-      const cleanJson = response.content.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const cleanJson = response.content
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
       stepsArray = JSON.parse(cleanJson);
       if (!Array.isArray(stepsArray)) throw new Error('No es un array');
       stepsArray = stepsArray.map((s, i) => ({
@@ -52,7 +64,11 @@ Mantén los pasos entre 2 y 6 máximo. Sé muy directo y específico.
     } catch (err) {
       this.logger.error(`Error parseando el plan del LLM: ${err.message}`);
       stepsArray = [
-        { stepNumber: 1, description: 'Ejecutar objetivo directamente', type: 'respond' },
+        {
+          stepNumber: 1,
+          description: 'Ejecutar objetivo directamente',
+          type: 'respond',
+        },
       ];
     }
 
@@ -78,7 +94,9 @@ Mantén los pasos entre 2 y 6 máximo. Sé muy directo y específico.
         id: s.id,
         stepNumber: s.stepNumber,
         description: s.description,
-        type: (s.status === 'pending' ? this.inferStepType(s.description) : 'respond') as StepType,
+        type: (s.status === 'pending'
+          ? this.inferStepType(s.description)
+          : 'respond') as StepType,
         input: this.inferStepInput(s.description, objective),
         status: 'pending' as const,
       })) as ExecutionStep[],
@@ -92,13 +110,14 @@ Mantén los pasos entre 2 y 6 máximo. Sé muy directo y específico.
    */
   private inferStepType(description: string): StepType {
     const d = description.toLowerCase();
-    if (/(buscar|busca|search|investigar)/.test(d))             return 'search';
-    if (/(scrapear|scrape|extraer de url|leer url)/.test(d))    return 'scrape';
-    if (/(memoria|recuerdo|preferencias|historial)/.test(d))    return 'read_memory';
-    if (/(documento|pdf|biblioteca|archivo)/.test(d))           return 'read_docs';
-    if (/(resumir|resumen|sintetizar|condensar)/.test(d))       return 'summarize';
-    if (/(deduplicar|duplicados|limpiar)/.test(d))              return 'deduplicate';
-    if (/(guardar|salvar|almacenar|indexar)/.test(d))           return 'save';
+    if (/(buscar|busca|search|investigar)/.test(d)) return 'search';
+    if (/(scrapear|scrape|extraer de url|leer url)/.test(d)) return 'scrape';
+    if (/(memoria|recuerdo|preferencias|historial)/.test(d))
+      return 'read_memory';
+    if (/(documento|pdf|biblioteca|archivo)/.test(d)) return 'read_docs';
+    if (/(resumir|resumen|sintetizar|condensar)/.test(d)) return 'summarize';
+    if (/(deduplicar|duplicados|limpiar)/.test(d)) return 'deduplicate';
+    if (/(guardar|salvar|almacenar|indexar)/.test(d)) return 'save';
     return 'respond';
   }
 
