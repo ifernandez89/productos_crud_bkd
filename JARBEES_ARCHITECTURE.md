@@ -468,6 +468,18 @@ Los resúmenes generales de los documentos evolucionaron hacia un formato estruc
   - **Grafo de Relaciones**: Un mapa conceptual en formato ASCII de las dependencias lógicas dentro del documento.
 - **Acceso Optimizado**: Al solicitar el resumen de un documento, `DocumentSummaryService` comprueba si ya existe la Ficha de Conocimiento almacenada para servirla directamente y extrae de ella los puntos clave de manera resiliente.
 
+### 11.7 Recuperación Enriquecida, Reranking Híbrido y Salvaguardas de RAG (nuevo)
+
+El pipeline de recuperación RAG en `JarvisService` y `JarvisPromptBuilderService` ha sido optimizado con algoritmos de reordenación inteligente y reglas de prompt estrictas para evitar alucinaciones y mejorar la relevancia del contexto:
+- **Mayor Cobertura de Chunks**: Se incrementó el límite de recuperación de chunks en la base de datos de 3 a 15, permitiendo un análisis contextual más extenso y robusto.
+- **Reranker Híbrido Léxico-Semántico**: Implementación de un algoritmo de reranking (`rerankChunks`) que puntúa los fragmentos recuperados asignando un 40% de peso a la coincidencia léxica (palabras clave normalizadas de la consulta del usuario) y un 60% de peso al orden de relevancia semántica original.
+- **Metadatos en Contexto RAG**: Los chunks inyectados en el prompt del LLM son formateados con metadatos estructurados (`DOCUMENTO`, `AUTOR`, `ESCUELA DE PENSAMIENTO`), resueltos dinámicamente mediante `CorpusSelectorService.getAuthorAndSchoolByTitle`. Esto le permite al modelo saber exactamente qué autor y escuela de pensamiento fundamenta cada afirmación.
+- **Salvaguardas Contra Alucinaciones (System Prompt)**: Se añadieron reglas estrictas en `JarvisPromptBuilderService` para que el modelo:
+  - Dé prioridad absoluta al contexto provisto y explicite si la información no está en los documentos antes de recurrir a su conocimiento general.
+  - Tenga prohibición absoluta de inventar libros, autores o capítulos que no existan en la biblioteca.
+  - Preserve la integridad de los marcos intelectuales, separando claramente las perspectivas de distintos autores/escuelas sin mezclarlas.
+- **Auto-aprobación en Lazy Load**: Durante las búsquedas en caliente y carga diferida en `CorpusSelectorService`, si un documento existente coincide pero está en estado `quarantined` o `not_indexed`, el sistema aprueba e inicia la indexación jerárquica automáticamente para garantizar que su contenido esté disponible.
+
 **RssIngestService** — procesa feeds RSS:
 - Limpia HTML con Cheerio
 - Ingesta artículo por artículo al pipeline

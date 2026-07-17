@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Optimized — RAG Reranking, Context Enrichment and Prompt Safeguards (2026-07-16)
+
+- **🔄 Reranker Híbrido Léxico-Semántico**: Implementación de `rerankChunks` en `JarvisService` y `JarvisPromptBuilderService` que combina coincidencia léxica (40% de peso) y orden semántico (60% de peso) para reordenar los chunks recuperados en consultas RAG.
+- **📈 Mayor Cobertura de Chunks**: Incremento del límite de chunks consultados de 3 a 15 en la recuperación RAG para proveer más contexto relevante al modelo.
+- **🏷️ Metadatos de Autores y Escuelas**: Inclusión de etiquetas estructuradas (`DOCUMENTO`, `AUTOR`, `ESCUELA DE PENSAMIENTO`) en el contexto RAG de cada chunk, resolviendo el autor y su escuela de pensamiento mediante `CorpusSelectorService.getAuthorAndSchoolByTitle`.
+- **🛡️ Directivas Estrictas de Prompt**: Nuevas reglas integradas en `JarvisPromptBuilderService` que exigen prioridad absoluta del contexto RAG, prohibición total de alucinaciones sobre obras/autores no presentes en la biblioteca, y preservación del marco intelectual de cada autor (evitando mezclar escuelas de pensamiento).
+- **⚡ Ingesta y Auto-aprobación en Lazy Load**: Se mejoró el flujo de carga diferida en `CorpusSelectorService` para auto-aprobar e iniciar la indexación jerárquica de documentos existentes que se encuentren en estado `quarantined` o `not_indexed` cuando son solicitados durante una consulta de RAG.
+
 ### Added & Changed — Fichas de Conocimiento Epistemológicas (2026-07-16)
 
 - **📚 Evolución de Resúmenes a Fichas de Conocimiento**: Transición de resúmenes cronológicos tradicionales a Fichas de Conocimiento (Knowledge Cards) estructuradas de alto valor RAG.
