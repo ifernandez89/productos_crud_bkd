@@ -45,6 +45,7 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 | `AichatModule` | `src/aichat/` | Chatbot legacy con Model Router dual |
 | `UploadModule` | `src/upload/` | `POST /upload/image` → Base64 |
 | **`JarvisModule`** | `src/jarvis/` | **Agente principal — todo lo nuevo va aquí** |
+| **`BalanceModule`** | `src/modules/balance/` | **Balance Energético turn-by-turn adaptativo y basado en ciclos** |
 | `JobsModule` | `src/jobs/` | Crons diarios (Morning Briefing, Nightly Processing) |
 | `HRM` | `src/hrm/` | Python ML standalone (invocado por spawn) |
 
@@ -74,9 +75,18 @@ El esquema de Prisma está orientado a PostgreSQL y contiene los modelos que el 
 | Modelo | Propósito |
 |--------|-----------|
 | `KnowledgeSource` | Fuentes tipadas: `pdf`, `markdown`, `web`, `rss`, `github`, `api` |
-| `Document` | Documentos ingestados con título, contenido, categoría y status (`not_indexed`, `indexing`, `ready`) |
-| `Chunk` | Fragmentos embeddables con `embeddingId` |
+| `Document` | Documentos ingestados con título, contenido, categoría y status (`not_indexed`, `indexing`, `ready`, `quarantined`). Rastrea progreso de indexado (`progressIndex`, `progressEmbed`, `progressSummary`) y almacena la Ficha de Conocimiento en `summary`. |
+| `Chapter` | Capítulos estructurados del documento para la ingesta jerárquica con embeddings macro. |
+| `Section` | Secciones jerárquicas vinculando fragmentos de texto (chunks) para búsquedas en dos capas. |
+| `Chunk` | Fragmentos embeddables de texto con vinculación opcional a secciones y soporte nativo pgvector (`vector(1024)`). |
 | `Collection` + `CollectionDocument` | Agrupación temática de documentos |
+
+### Balance Energético (JarBees v2.1)
+| Modelo | Propósito |
+|--------|-----------|
+| `BalanceSession` | Sesiones de balance de energía con contexto astrológico y resultados de autoevaluación. |
+| `BalanceAnswer` | Respuestas de la entrevista adaptativa turn-by-turn. |
+| `BalanceReport` | Análisis y recomendaciones estructuradas en 7 dimensiones. |
 
 ### Planner, herramientas y observabilidad
 | Modelo | Propósito |
@@ -190,6 +200,14 @@ El pipeline de prompt y ejecución fue reorganizado para reducir fricción entre
 - mejor separación entre planificación, ejecución y generación de respuesta,
 - soporte para contexto pre-cargado desde RAG y conocimiento local,
 - manejo más robusto de pasos fallidos y continuidad del flujo.
+
+### 5.2 Compuerta de Seguridad (ActionExecutionGate)
+
+Para evitar que el agente ejecute acciones destructivas o no autorizadas de manera autónoma (o mediante inyección de prompts indirecta), se implementó `ActionExecutionGateService` en el motor de ejecución:
+- **Intercepción y Validación**: Todo paso de ejecución del planner pasa por la compuerta antes de activar la herramienta correspondiente.
+- **Validación de Parámetros**: Se validan los argumentos de las herramientas contra un esquema seguro y lista blanca.
+- **Human-in-the-Loop (HITL)**: Requiere explícitamente confirmación del usuario para acciones que modifican o destruyen el estado del sistema (como `drop` o `delete`).
+- **Auditoría Estricta**: Cada acción crítica rechazada, pendiente o aprobada se registra cronológicamente en `logs/security_audit.log`.
 
 ---
 
@@ -429,6 +447,27 @@ El pipeline de RAG fue reforzado para que no dependa exclusivamente de un único
 
 Este cambio mejora la estabilidad general del sistema y reduce los fallos de respuesta cuando la instalación local de Ollama no incluye el modelo esperado.
 
+### 11.5 Ingesta Jerárquica y Embeddings Perezosos (Lazy Embeddings) (nuevo)
+
+El pipeline de ingesta se profesionalizó para manejar documentos extensos de forma estructurada a través de `HierarchicalParserService`:
+- **Estado de Cuarentena (Quarantine)**: Los nuevos documentos ingresan por defecto con estado `quarantined`. Se requiere una llamada explícita a `POST /api/jarbees/library/document/:id/approve` para liberar y comenzar el pipeline de indexación.
+- **División Estructural**: Divide documentos extensos en capítulos (`Chapter`) y secciones (`Section`) basados en la sintaxis de encabezados Markdown, aplicando filtros inteligentes para ignorar páginas o bloques repetitivos o ruidosos.
+- **Embeddings Diferidos y Amortiguados**: El cálculo de embeddings vectoriales de los chunks de texto se realiza asíncronamente en una cola con control de concurrencia (límite = 3) y delays dinámicos para evitar tasas de fallos y saturación del proveedor.
+- **Resúmenes en Cascada (MapReduce)**: Generación recursiva de resúmenes de secciones para construir el resumen macro del capítulo y finalmente el meta-resumen general de la obra.
+- **Búsqueda Híbrida en Dos Capas**: En la fase de recuperación RAG, se busca primero qué capítulos son relevantes y luego se busca semánticamente sobre los chunks específicos de esos capítulos. Si se detectan chunks candidatos sin embedding, se generan vectorizaciones "en caliente" (perezosas/on-demand).
+
+### 11.6 Fichas de Conocimiento Epistemológicas (nuevo)
+
+Los resúmenes generales de los documentos evolucionaron hacia un formato estructurado de alto valor RAG denominado **Ficha de Conocimiento (Knowledge Card)**, el cual se persiste en la base de datos (columna `summary` del modelo `Document`):
+- **Estructura Estricta**: Contiene bloques estandarizados que facilitan la ingesta de RAG:
+  - **Metadatos**: Aporte/valoración y tipo de documento.
+  - **Mapa de Conocimiento**: Resumen condensado de la obra.
+  - **Conceptos Detectados**: Listado de conceptos clave con su frecuencia real de menciones en el texto.
+  - **Preguntas Respondidas**: Bloque de preguntas clave identificadas por el modelo, prefijadas con el check `✔`.
+  - **Relaciones y Contexto**: Definición de límites y aplicabilidad.
+  - **Grafo de Relaciones**: Un mapa conceptual en formato ASCII de las dependencias lógicas dentro del documento.
+- **Acceso Optimizado**: Al solicitar el resumen de un documento, `DocumentSummaryService` comprueba si ya existe la Ficha de Conocimiento almacenada para servirla directamente y extrae de ella los puntos clave de manera resiliente.
+
 **RssIngestService** — procesa feeds RSS:
 - Limpia HTML con Cheerio
 - Ingesta artículo por artículo al pipeline
@@ -439,7 +478,22 @@ Este cambio mejora la estabilidad general del sistema y reduce los fallos de res
 
 ---
 
-## 12. Automation — Jobs diarios
+## 12. Balance Energético (JarBees v2.1) (nuevo)
+
+El módulo de Balance Energético (`BalanceModule`) gestiona el proceso interactivo de autoevaluación energética del usuario a través de una entrevista guiada por IA en 7 dimensiones:
+- **Entrevista Adaptativa Turn-by-Turn**: Reemplaza el formulario estático heredado por una interacción dinámica de 10 preguntas. La IA guía la conversación y a partir de la cuarta pregunta genera consultas adaptativas para indagar en profundidad.
+- **Rotación por Ciclos Temáticos**: Para mantener la personalidad y el enfoque frescos, el sistema rota automáticamente entre 4 ciclos temáticos cada 15 días según el volumen de sesiones del usuario:
+  - **Ciclo 1**: *¿Dónde está yendo tu energía?* (mapa general)
+  - **Ciclo 2**: *¿Qué está bloqueando tu energía?* (resistencias y límites)
+  - **Ciclo 3**: *¿Qué merece crecer?* (potencial y expansión)
+  - **Ciclo 4**: *¿Qué necesita cerrarse?* (cierre de ciclos y manifestación)
+- **Preguntas Dinámicas con Personalidad**: Las preguntas dinámicas usan modismo argentino ("vos"), detectan contradicciones basándose en respuestas previas y evitan duplicidad o redundancia mediante directivas del prompt de generación.
+- **Análisis de Balance**: El motor `BalanceAnalysisService` procesa las respuestas del ciclo activo y produce un reporte completo detallando fortalezas, puntos ciegos, distribución energética en las 7 dimensiones y recomendaciones personalizadas.
+- **Validaciones**: Se requiere un mínimo de 5 respuestas completas en la sesión para posibilitar el cierre del cuestionario y la generación del reporte.
+
+---
+
+## 13. Automation — Jobs diarios
 
 `DailyJobsService` con `@nestjs/schedule`:
 
@@ -450,7 +504,7 @@ Este cambio mejora la estabilidad general del sistema y reduce los fallos de res
 
 ---
 
-## 13. Observabilidad
+## 14. Observabilidad
 
 Cada respuesta genera un `AgentRun` con:
 - `question` / `answer`
@@ -467,7 +521,7 @@ Cada respuesta genera un `AgentRun` con:
 
 ---
 
-## 14. Endpoints REST completos
+## 15. Endpoints REST completos
 
 Todos los endpoints reales del controlador de Jarvis quedan bajo el prefijo global `/api`, por lo que la ruta completa es `/api/jarbees/...`.
 
@@ -508,12 +562,23 @@ Todos los endpoints reales del controlador de Jarvis quedan bajo el prefijo glob
 | GET | `/api/jarbees/library/document/search?q=` | Buscar documentos |
 | GET | `/api/jarbees/library/document/recent` | Más recientes |
 | GET | `/api/jarbees/library/document/:id` | Documento con chunks |
+| POST | `/api/jarbees/library/document/:id/approve` | Liberar documento en cuarentena hacia la indexación |
 | DELETE | `/api/jarbees/library/document/:id` | Eliminar documento |
 | GET | `/api/jarbees/library/stats` | Stats de la biblioteca |
 | POST/GET | `/api/jarbees/library/collection` | CRUD de colecciones |
 | GET | `/api/jarbees/library/diagnostic` | Diagnóstico del conocimiento |
 | POST | `/api/jarbees/library/knowledge-test` | Pruebas automáticas de RAG |
 | POST | `/api/jarbees/library/probe` | Inspección detallada de chunks |
+
+### Balance Energético
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/balance/start` | Iniciar cuestionario de balance y calcular tránsitos astrológicos |
+| POST | `/api/balance/:id/answer` | Enviar respuesta a pregunta del cuestionario |
+| POST | `/api/balance/:id/finish` | Finalizar cuestionario y generar informe con IA |
+| GET | `/api/balance/latest` | Obtener el último informe de balance completado |
+| GET | `/api/balance/history` | Obtener historial de informes de balance |
+| GET | `/api/balance/trends` | Obtener tendencias evolutivas de las 7 dimensiones |
 
 ### Browser
 | Método | Ruta | Descripción |
@@ -542,14 +607,15 @@ Todos los endpoints reales del controlador de Jarvis quedan bajo el prefijo glob
 
 ---
 
-## 15. Cobertura actual por módulo del OS Personal
+## 16. Cobertura actual por módulo del OS Personal
 
 ```
 Memory           ████████░░  85%  ✅  Extracción automática + Knowledge Evolution
-Knowledge        ████████░░  80%  ✅  PDF + URL + RSS + chunking + embeddings
+Knowledge        ████████░░  80%  ✅  PDF + URL + RSS + chunking + embeddings + Jerárquico
 Browser          ████████░░  80%  ✅  Playwright completo + búsqueda Google
 Calendar         █████████░  90%  ✅  Google Calendar + feriados + hora + astronomía
-Tasks/Planner    ████████░░  80%  ✅  Planner + Execution Engine funcional
+Tasks/Planner    ████████░░  80%  ✅  Planner + Execution Engine funcional + ActionGate
+Balance          █████████░  85%  ✅  Entrevista adaptativa turn-by-turn + 4 ciclos de rotación + reportes
 Research         ██████░░░░  60%  🟡  RSS + BusinessSources, sin búsqueda web real-time
 Programming      ███████░░░  75%  ✅  qwen3:4b + SkillRegistry + ModelRouter
 Vision           ████░░░░░░  40%  🟡  Soporte inicial de análisis de imágenes con `VisionService` y OCR vía Qwen2.5-VL
@@ -559,12 +625,12 @@ GitHub           ░░░░░░░░░░   0%  🔴  Schema preparado, si
 Ollama           █████████░  90%  ✅  Dos modelos + embeddings + Model Router
 OpenRouter       ████████░░  80%  ✅  Mistral-7B, intercambiable vía flag
 ─────────────────────────────────────
-Cobertura total  ~78%
+Cobertura total  ~79%
 ```
 
 ---
 
-## 16. Limitaciones conocidas
+## 17. Limitaciones conocidas
 
 | Limitación | Estado | Alternativa |
 |------------|--------|-------------|
@@ -577,7 +643,7 @@ Cobertura total  ~78%
 
 ---
 
-## 17. Próximos pasos recomendados
+## 18. Próximos pasos recomendados
 
 **Alta prioridad:**
 1. **pgvector** — activar `embedding vector(768)` en `Chunk` y `MemoryChunk`. Los embeddings ya se generan con `nomic-embed-text`, solo falta el campo y la función de búsqueda por coseno. Desbloquea todo el RAG semántico.
