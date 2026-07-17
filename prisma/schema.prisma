@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -44,14 +44,14 @@ model Pregunta {
 // Jarvis debe conocer a su usuario
 
 model UserProfile {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   name        String?
-  timezone    String   @default("America/Argentina/Buenos_Aires")
-  country     String   @default("Argentina")
-  language    String   @default("es-AR")
-  preferences String?  // JSON serializado
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  timezone    String           @default("America/Argentina/Buenos_Aires")
+  country     String           @default("Argentina")
+  language    String           @default("es-AR")
+  preferences String? // JSON serializado
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   credentials UserCredential[]
 }
 
@@ -59,16 +59,16 @@ model UserProfile {
 // Guarda tokens de acceso para integraciones (ej. Google Calendar, Drive, etc.)
 
 model UserCredential {
-  id           Int         @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   userProfileId Int
-  provider     String      // "google", "microsoft", etc.
-  accessToken  String
-  refreshToken String?
-  expiryDate   BigInt?     // timestamp de vencimiento
-  scope        String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  userProfile  UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  provider      String // "google", "microsoft", etc.
+  accessToken   String
+  refreshToken  String?
+  expiryDate    BigInt? // timestamp de vencimiento
+  scope         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
 
   @@unique([userProfileId, provider])
   @@index([provider])
@@ -79,13 +79,13 @@ model UserCredential {
 // NO es key-value rígido, sino memoria semántica natural
 
 model Memory {
-  id           Int            @id @default(autoincrement())
-  content      String         // "Ignacio trabaja con NestJS", "Prefiere TypeScript"
-  category     String         // "preference", "fact", "context", "skill", "experience"
-  importance   Int            @default(1) // 1-10, para rankear recuperación
-  lastAccessed DateTime?      // tracking de uso para priorización
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id           Int           @id @default(autoincrement())
+  content      String // "Ignacio trabaja con NestJS", "Prefiere TypeScript"
+  category     String // "preference", "fact", "context", "skill", "experience"
+  importance   Int           @default(1) // 1-10, para rankear recuperación
+  lastAccessed DateTime? // tracking de uso para priorización
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   chunks       MemoryChunk[]
 
   @@index([category])
@@ -97,12 +97,12 @@ model Memory {
 // Búsqueda semántica con pgvector
 
 model MemoryChunk {
-  id          Int                        @id @default(autoincrement())
+  id          Int                          @id @default(autoincrement())
   memoryId    Int
   content     String
-  embeddingId String?                     // legacy: referencia a vector store externo
+  embeddingId String? // legacy: referencia a vector store externo
   embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
-  memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  memory      Memory                       @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@index([memoryId])
   @@index([embeddingId])
@@ -113,10 +113,10 @@ model MemoryChunk {
 
 model ConversationMessage {
   id        Int      @id @default(autoincrement())
-  sessionId String   // UUID de sesión, permite múltiples conversaciones
-  role      String   // "user" | "assistant" | "system" | "tool"
+  sessionId String // UUID de sesión, permite múltiples conversaciones
+  role      String // "user" | "assistant" | "system" | "tool"
   content   String
-  metadata  String?  // JSON serializado: { model, tokens, latency, toolCalls, etc }
+  metadata  String? // JSON serializado: { model, tokens, latency, toolCalls, etc }
   createdAt DateTime @default(now())
 
   @@index([sessionId])
@@ -130,7 +130,7 @@ model ConversationMessage {
 model SessionSummary {
   id        Int      @id @default(autoincrement())
   sessionId String   @unique
-  summary   String   // "Se habló de pgvector, diseño de Jarvis, NestJS"
+  summary   String // "Se habló de pgvector, diseño de Jarvis, NestJS"
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
@@ -143,8 +143,8 @@ model SessionSummary {
 model KnowledgeSource {
   id        Int        @id @default(autoincrement())
   name      String
-  type      String     // "pdf", "markdown", "web", "notion", "github", "postgres", "api"
-  url       String?    // URL o path
+  type      String // "pdf", "markdown", "web", "notion", "github", "postgres", "api"
+  url       String? // URL o path
   active    Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -161,8 +161,8 @@ model Collection {
   id          Int                  @id @default(autoincrement())
   name        String               @unique
   description String?
-  color       String?              // "#4F46E5" — color de UI
-  icon        String?              // emoji o nombre de ícono
+  color       String? // "#4F46E5" — color de UI
+  icon        String? // emoji o nombre de ícono
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   documents   CollectionDocument[]
@@ -185,20 +185,27 @@ model CollectionDocument {
 }
 
 model Document {
-  id          Int                  @id @default(autoincrement())
-  sourceId    Int?                 // relación con KnowledgeSource
-  title       String
-  content     String
-  category    String?              // "tech", "personal", "reference", "api-doc"
-  source      String?              // legacy: URL, file path, manual
-  status      String               @default("not_indexed") // "not_indexed" | "indexing" | "ready"
-  timesUsed   Int                  @default(0)  // cuántas veces fue recuperado
-  lastUsed    DateTime?            // última vez que se usó en RAG
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  chunks      Chunk[]
-  knowledgeSource KnowledgeSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  collections CollectionDocument[]
+  id        Int       @id @default(autoincrement())
+  sourceId  Int? // relación con KnowledgeSource
+  title     String
+  content   String
+  category  String? // "tech", "personal", "reference", "api-doc"
+  source    String? // legacy: URL, file path, manual
+  status    String    @default("not_indexed") // "not_indexed" | "indexing" | "ready" | "quarantined"
+  timesUsed Int       @default(0) // cuántas veces fue recuperado
+  lastUsed  DateTime? // última vez que se usó en RAG
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  progressIndex   Float   @default(0.0) // % de texto extraído y estructurado
+  progressEmbed   Float   @default(0.0) // % de chunks con embedding generado
+  progressSummary Float   @default(0.0) // % de capítulos con resumen generado
+  summary         String? // Meta-resumen final del libro
+
+  chunks          Chunk[]
+  chapters        Chapter[]
+  knowledgeSource KnowledgeSource?     @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  collections     CollectionDocument[]
 
   @@index([category])
   @@index([status])
@@ -211,16 +218,44 @@ model Document {
 // Fragmentos embeddables para búsqueda semántica con pgvector
 
 model Chunk {
-  id          Int                         @id @default(autoincrement())
+  id          Int                          @id @default(autoincrement())
   documentId  Int
+  sectionId   Int? // Relación opcional para jerarquía y embeddings perezosos
   content     String
-  embeddingId String?                     // legacy: referencia a vector store externo
+  embeddingId String? // legacy: referencia a vector store externo
   embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
-  metadata    String?                     // JSON serializado: { page, section, language, etc }
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  metadata    String? // JSON serializado: { page, section, language, etc }
+  document    Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  section     Section?                     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
+  @@index([sectionId])
   @@index([embeddingId])
+}
+
+model Chapter {
+  id         Int                          @id @default(autoincrement())
+  documentId Int
+  title      String
+  order      Int
+  summary    String? // Resumen individual de este capítulo
+  embedding  Unsupported("vector(1024)")? // Embedding macro de la temática del capítulo
+  sections   Section[]
+  document   Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model Section {
+  id        Int                          @id @default(autoincrement())
+  chapterId Int
+  title     String
+  summary   String?
+  embedding Unsupported("vector(1024)")?
+  chunks    Chunk[]
+  chapter   Chapter                      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId])
 }
 
 // ── 6) PLANNER (TAREAS) ───────────────────────────────────────────────────────
@@ -228,12 +263,12 @@ model Chunk {
 
 model Task {
   id        Int        @id @default(autoincrement())
-  sessionId String?    // relacionar con conversación si aplica
+  sessionId String? // relacionar con conversación si aplica
   objective String
   status    String     @default("pending") // "pending" | "in_progress" | "completed" | "failed"
   priority  String?    @default("normal") // "low" | "normal" | "high" | "critical"
-  category  String?    // "compras" | "trabajo" | "personal" | "tecnologia" | etc.
-  project   String?    // "JarBees" | "Casa" | "Trabajo" | etc.
+  category  String? // "compras" | "trabajo" | "personal" | "tecnologia" | etc.
+  project   String? // "JarBees" | "Casa" | "Trabajo" | etc.
   result    String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -252,9 +287,9 @@ model Task {
 model TaskStep {
   id          Int      @id @default(autoincrement())
   taskId      Int
-  stepNumber  Int      // orden de ejecución
-  description String   // "Buscar documentación de Ollama"
-  result      String?  // resultado del paso
+  stepNumber  Int // orden de ejecución
+  description String // "Buscar documentación de Ollama"
+  result      String? // resultado del paso
   status      String   @default("pending") // "pending" | "in_progress" | "completed" | "failed"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -272,7 +307,7 @@ model Feedback {
   sessionId String?
   question  String
   answer    String
-  score     Int      // 1-5 stars, o -1/+1 thumbs
+  score     Int // 1-5 stars, o -1/+1 thumbs
   comment   String?
   createdAt DateTime @default(now())
 
@@ -291,9 +326,9 @@ model Tool {
   id          Int      @id @default(autoincrement())
   name        String   @unique // "weather", "calendar", "rag", "memory", "search"
   description String
-  category    String   // "external_api", "database", "llm", "system"
+  category    String // "external_api", "database", "llm", "system"
   enabled     Boolean  @default(true)
-  config      String?  // JSON serializado
+  config      String? // JSON serializado
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -309,11 +344,11 @@ model AgentRun {
   sessionId  String?
   question   String
   answer     String?
-  toolsUsed  String?  // JSON serializado: ["weather", "rag", "memory"]
-  modelUsed  String   // "llama3.2:3b", "qwen3.5:8b"
-  provider   String   // "ollama", "openrouter", "openai"
-  durationMs Int      // latencia total
-  tokensUsed Int?     // tokens consumidos
+  toolsUsed  String? // JSON serializado: ["weather", "rag", "memory"]
+  modelUsed  String // "llama3.2:3b", "qwen3.5:8b"
+  provider   String // "ollama", "openrouter", "openai"
+  durationMs Int // latencia total
+  tokensUsed Int? // tokens consumidos
   success    Boolean  @default(true)
   errorMsg   String?
   createdAt  DateTime @default(now())
@@ -332,36 +367,36 @@ model AgentRun {
 // Catálogo de fuentes priorizadas por categoría con TTL y keywords semánticas
 
 model Source {
-  id                Int            @id @default(autoincrement())
-  name              String         // "TyC Sports", "Farmacity", "Familia Bercomat"
-  urlBase           String         // "https://www.tycsports.com"
-  category          String         // "deportes", "salud", "ferreteria", "electronica"
-  priority          Int            @default(5) // 1-10, mayor = más prioritario
-  ttlHours          Int            @default(6) // TTL en horas para contenido de esta fuente
-  active            Boolean        @default(true)
-  
+  id       Int     @id @default(autoincrement())
+  name     String // "TyC Sports", "Farmacity", "Familia Bercomat"
+  urlBase  String // "https://www.tycsports.com"
+  category String // "deportes", "salud", "ferreteria", "electronica"
+  priority Int     @default(5) // 1-10, mayor = más prioritario
+  ttlHours Int     @default(6) // TTL en horas para contenido de esta fuente
+  active   Boolean @default(true)
+
   // ── SEMÁNTICA: keywords para matching sin scraping ───────────────────────
-  keywords          String         @default("[]") // JSON serializado: ["medicamentos", "recetas", "salud"]
-  
+  keywords String @default("[]") // JSON serializado: ["medicamentos", "recetas", "salud"]
+
   // ── CAPABILIDADES: qué operaciones están habilitadas ──────────────────────
-  scrapeEnabled     Boolean        @default(true)  // ¿se puede scrapear?
-  embeddingEnabled  Boolean        @default(false) // ¿tiene embeddings vectoriales?
-  
+  scrapeEnabled    Boolean @default(true) // ¿se puede scrapear?
+  embeddingEnabled Boolean @default(false) // ¿tiene embeddings vectoriales?
+
   // ── METRICS: tracking de eficiencia ───────────────────────────────────────
-  lastScraped       DateTime?      // última vez que se scrapeó
-  lastEmbedding     DateTime?      // última vez que se generó embedding
-  successRate       Float          @default(1.0) // % de scraping exitoso (0.0-1.0)
-  avgResponseTimeMs Int?           // tiempo promedio de respuesta
-  cacheHits         Int            @default(0) // cuántas veces se usó desde caché
-  
+  lastScraped       DateTime? // última vez que se scrapeó
+  lastEmbedding     DateTime? // última vez que se generó embedding
+  successRate       Float     @default(1.0) // % de scraping exitoso (0.0-1.0)
+  avgResponseTimeMs Int? // tiempo promedio de respuesta
+  cacheHits         Int       @default(0) // cuántas veces se usó desde caché
+
   // ── CONFIGURACIÓN ─────────────────────────────────────────────────────────
-  scrapingConfig    String?        // JSON serializado
-  embeddingConfig   String?        // JSON serializado
-  
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  pages             ScrapedPage[]
-  
+  scrapingConfig  String? // JSON serializado
+  embeddingConfig String? // JSON serializado
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  pages     ScrapedPage[]
+
   @@unique([urlBase])
   @@index([category])
   @@index([active])
@@ -372,20 +407,20 @@ model Source {
 // Cache inteligente de contenido web con soporte para embeddings
 
 model ScrapedPage {
-  id              Int              @id @default(autoincrement())
-  sourceId        Int
-  url             String           // URL completa
-  title           String?
-  contentHash     String           // hash SHA-256 del contenido para detectar cambios
-  scrapedAt       DateTime         @default(now())
-  publishedAt     DateTime?        // fecha de publicación del contenido
-  expiresAt       DateTime         // scrapedAt + source.ttlHours
-  status          String           @default("valid") // "valid" | "expired" | "failed"
-  cacheHits       Int              @default(0) // cuántas veces se usó desde caché
-  lastAccessedAt  DateTime?        // última vez que se sirvió desde caché
-  embeddingId     String?          // referencia a embedding vectorial (cuando se active pgvector)
-  source          Source           @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  content         ScrapedContent?
+  id             Int             @id @default(autoincrement())
+  sourceId       Int
+  url            String // URL completa
+  title          String?
+  contentHash    String // hash SHA-256 del contenido para detectar cambios
+  scrapedAt      DateTime        @default(now())
+  publishedAt    DateTime? // fecha de publicación del contenido
+  expiresAt      DateTime // scrapedAt + source.ttlHours
+  status         String          @default("valid") // "valid" | "expired" | "failed"
+  cacheHits      Int             @default(0) // cuántas veces se usó desde caché
+  lastAccessedAt DateTime? // última vez que se sirvió desde caché
+  embeddingId    String? // referencia a embedding vectorial (cuando se active pgvector)
+  source         Source          @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  content        ScrapedContent?
 
   @@unique([url])
   @@index([sourceId])
@@ -400,13 +435,13 @@ model ScrapedPage {
 // Almacenamiento del contenido crudo + procesado
 
 model ScrapedContent {
-  id           Int          @id @default(autoincrement())
-  pageId       Int          @unique
-  htmlRaw      String?      // HTML crudo (opcional, solo para páginas importantes)
-  textExtracted String      // Texto limpio extraído
-  jsonExtracted String?      // JSON serializado
-  metadata     String?       // JSON serializado: { wordCount, headlines, links, images, etc }
-  page         ScrapedPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  id            Int         @id @default(autoincrement())
+  pageId        Int         @unique
+  htmlRaw       String? // HTML crudo (opcional, solo para páginas importantes)
+  textExtracted String // Texto limpio extraído
+  jsonExtracted String? // JSON serializado
+  metadata      String? // JSON serializado: { wordCount, headlines, links, images, etc }
+  page          ScrapedPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@index([pageId])
 }
@@ -415,13 +450,13 @@ model ScrapedContent {
 // Tracking de patrones de uso para optimización
 
 model Query {
-  id            Int      @id @default(autoincrement())
-  question      String
-  category      String   // detectada por intent router
-  sourcesUsed   String?  // JSON serializado: ["tycsports", "espn"]
-  cacheHit      Boolean  @default(false) // si se sirvió desde caché
-  responseTimeMs Int     // latencia total
-  createdAt     DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  question       String
+  category       String // detectada por intent router
+  sourcesUsed    String? // JSON serializado: ["tycsports", "espn"]
+  cacheHit       Boolean  @default(false) // si se sirvió desde caché
+  responseTimeMs Int // latencia total
+  createdAt      DateTime @default(now())
 
   @@index([category])
   @@index([cacheHit])
@@ -433,8 +468,8 @@ model Query {
 
 model TopicSnapshot {
   id         Int      @id @default(autoincrement())
-  topic      String   // "Qwen", "NestJS", "arquitectura backend"
-  conclusion String   // qué se aprendió / concluyó en ese momento
+  topic      String // "Qwen", "NestJS", "arquitectura backend"
+  conclusion String // qué se aprendió / concluyó en ese momento
   tags       String   @default("[]") // JSON serializado: ["llm", "rendimiento", "local"]
   sessionId  String?
   createdAt  DateTime @default(now())
@@ -452,7 +487,7 @@ model BalanceSession {
   createdAt           DateTime        @default(now())
   completedAt         DateTime?
   type                String          @default("manual") // "manual" | "periodic"
-  astrologicalContext Json?           // natal chart and transits context
+  astrologicalContext Json? // natal chart and transits context
   summary             String?
   scoreGeneral        Float?
   nextRecommendedAt   DateTime?
@@ -461,20 +496,20 @@ model BalanceSession {
 }
 
 model BalanceAnswer {
-  id         Int            @id @default(autoincrement())
-  sessionId  Int
-  question   String
-  answer     String
-  metadata   Json?
-  session    BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  id        Int            @id @default(autoincrement())
+  sessionId Int
+  question  String
+  answer    String
+  metadata  Json?
+  session   BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
 
 model BalanceReport {
   id                 Int            @id @default(autoincrement())
   sessionId          Int
-  analysis           String         // JSON text containing strengths, blind spot, etc.
-  recommendations    String         // JSON text containing focus action, reflection questions, seed
-  energyDistribution Json           // JSON score map: {"expansion": X, "disciplina": Y, ...}
+  analysis           String // JSON text containing strengths, blind spot, etc.
+  recommendations    String // JSON text containing focus action, reflection questions, seed
+  energyDistribution Json // JSON score map: {"expansion": X, "disciplina": Y, ...}
   createdAt          DateTime       @default(now())
   session            BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }

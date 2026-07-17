@@ -6,6 +6,8 @@ import { EmbeddingsService } from './embeddings.service';
 import { OllamaProvider } from '../llm/ollama.provider';
 import { DocumentEnrichmentService } from './document-enrichment.service';
 import { PDFDocument, PDFName, PDFDict, PDFArray } from 'pdf-lib';
+import { PrismaService } from '../../prisma/prisma.service';
+import { HierarchicalParserService, ParsedChapter } from './hierarchical-parser.service';
 
 // pdf-parse v2: API basada en clase — new PDFParse({ data: buffer }).getText()
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -31,6 +33,8 @@ export class DocumentIngestService {
     private readonly embeddingsService: EmbeddingsService,
     private readonly ollamaProvider: OllamaProvider,
     private readonly enrichmentService: DocumentEnrichmentService,
+    private readonly hierarchicalParser: HierarchicalParserService,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ── Ingesta desde texto plano o markdown ────────────────────────────────────
@@ -51,15 +55,16 @@ export class DocumentIngestService {
       content: cleanContent,
       category: detectedCategory,
       source,
-      status: 'indexing',
+      status: 'quarantined',
     });
 
-    const savedChunks = await this.buildAndSaveChunks(doc.id, cleanContent);
-    this.processDocumentEmbeddings(doc.id, savedChunks)
-      .catch((err) => this.logger.warn(`[ingest:text] Error procesando embeddings para docId=${doc.id}: ${err?.message ?? err}`));
+    if (process.env.SKIP_QUARANTINE === 'true') {
+      this.logger.log(`Bypassing quarantine for text "${cleanTitle}" because SKIP_QUARANTINE is true`);
+      await this.approveDocument(doc.id);
+    }
 
-    this.logger.log(`[library] ingestado "${cleanTitle}" — categoría: ${detectedCategory} — ${savedChunks.length} chunks`);
-    return { documentId: doc.id, title: cleanTitle, chunks: savedChunks.length, category: detectedCategory };
+    this.logger.log(`[library] ingestado "${cleanTitle}" en cuarentena — categoría: ${detectedCategory}`);
+    return { documentId: doc.id, title: cleanTitle, chunks: 0, category: detectedCategory };
   }
 
   // ── Ingesta desde buffer de PDF ─────────────────────────────────────────────
@@ -102,24 +107,20 @@ export class DocumentIngestService {
       content: text,
       category: detectedCategory,
       source,
-      status: 'indexing',
+      status: 'quarantined',
     });
 
-    const savedChunks = await this.buildAndSaveChunks(doc.id, text);
-    this.logger.log(`[library] PDF "${cleanTitle}" ingestado — categoría: ${detectedCategory} — ${savedChunks.length} chunks`);
+    this.logger.log(`[library] PDF "${cleanTitle}" ingestado en cuarentena — categoría: ${detectedCategory}`);
 
-    // Enriquecimiento en background — no bloquea la respuesta al usuario
-    this.enrichmentService.enrich(doc.id, cleanTitle, text).catch((err) => {
-      this.logger.warn(`[enrichment] error background en "${cleanTitle}": ${err?.message ?? err}`);
-    });
-
-    this.processDocumentEmbeddings(doc.id, savedChunks)
-      .catch((err) => this.logger.warn(`[ingest:pdf] Error procesando embeddings para docId=${doc.id}: ${err?.message ?? err}`));
+    if (process.env.SKIP_QUARANTINE === 'true') {
+      this.logger.log(`Bypassing quarantine for PDF "${cleanTitle}" because SKIP_QUARANTINE is true`);
+      await this.approveDocument(doc.id);
+    }
 
     // Generar respuesta con el contenido del PDF
     const answer = await this.answerFromText(text, cleanTitle, question);
 
-    return { documentId: doc.id, title: cleanTitle, chunks: savedChunks.length, category: detectedCategory, answer };
+    return { documentId: doc.id, title: cleanTitle, chunks: 0, category: detectedCategory, answer };
   }
 
   // ── Ingesta desde URL (Scraping) ─────────────────────────────────────────────
@@ -606,5 +607,233 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
       this.logger.error(`[pdf:security] Error en validación estructural de "${title}":`, e);
       throw new BadRequestException(mensaje);
     }
+  }
+
+  async approveDocument(documentId: number): Promise<void> {
+    const doc = await this.documentRepo.getDocumentWithChunks(documentId);
+    if (!doc) throw new BadRequestException(`Documento con ID ${documentId} no encontrado`);
+    
+    // Cambiar estado a indexing
+    await this.documentRepo.updateDocumentStatus(documentId, 'indexing');
+    
+    // Lanzar enriquecimiento en background (existente)
+    this.enrichmentService.enrich(doc.id, doc.title, doc.content).catch((err) => {
+      this.logger.warn(`[enrichment] error background en "${doc.title}": ${err?.message ?? err}`);
+    });
+
+    // Iniciar procesamiento jerárquico e incremental en segundo plano
+    this.processHierarchicalIndexing(documentId, doc.title, doc.content)
+      .catch(err => this.logger.error(`Error procesando indexación jerárquica para doc ${documentId}: ${err.message}`));
+  }
+
+  private async processHierarchicalIndexing(documentId: number, title: string, content: string): Promise<void> {
+    try {
+      this.logger.log(`Iniciando indexación jerárquica para docId=${documentId} ("${title}")`);
+      
+      // Fase 3: Identificación Estructural
+      const chapters = this.hierarchicalParser.parseDocument(title, content);
+      
+      // Guardar estructura en la base de datos
+      const savedChunks: Array<{ id: number; content: string }> = [];
+      let totalChunks = 0;
+      
+      for (const ch of chapters) {
+        for (const sec of ch.sections) {
+          totalChunks += sec.chunks.length;
+        }
+      }
+      
+      this.logger.log(`Estructurando libro en ${chapters.length} capítulos y ${totalChunks} chunks`);
+      
+      let chunkOrder = 0;
+      for (const ch of chapters) {
+        const dbChapter = await this.documentRepo.createChapter({
+          documentId,
+          title: ch.title,
+          order: ch.order,
+        });
+        
+        for (const sec of ch.sections) {
+          const dbSection = await this.documentRepo.createSection({
+            chapterId: dbChapter.id,
+            title: sec.title,
+          });
+          
+          for (const chunk of sec.chunks) {
+            const dbChunk = await this.documentRepo.createChunk({
+              documentId,
+              sectionId: dbSection.id,
+              content: chunk.content,
+              metadata: { ...chunk.metadata, chunkOrder: chunkOrder++ },
+            });
+            savedChunks.push({ id: dbChunk.id, content: chunk.content });
+          }
+        }
+      }
+      
+      // Actualizar progreso de indexación estructural (Fase 3 finalizada)
+      await this.documentRepo.updateDocumentProgress(documentId, {
+        progressIndex: 100.0,
+      });
+
+      // Fase 4: Cola de Embeddings de Baja Prioridad y Amortiguada en background
+      this.processEmbeddingsSlowly(documentId, savedChunks)
+        .catch(err => this.logger.error(`Error en procesamiento lento de embeddings para doc ${documentId}: ${err.message}`));
+
+      // Fase 5: Resumen Recursivo MapReduce en background
+      this.processRecursiveSummaries(documentId)
+        .catch(err => this.logger.error(`Error en resúmenes recursivos para doc ${documentId}: ${err.message}`));
+
+    } catch (err: any) {
+      this.logger.error(`Error en processHierarchicalIndexing para docId=${documentId}: ${err.message}`, err.stack);
+      await this.documentRepo.updateDocumentStatus(documentId, 'not_indexed');
+    }
+  }
+
+  private async processEmbeddingsSlowly(
+    documentId: number,
+    chunks: Array<{ id: number; content: string }>,
+  ): Promise<void> {
+    this.logger.log(`Iniciando generación lenta de embeddings para docId=${documentId} (${chunks.length} chunks)`);
+    
+    // 1. Generar embeddings macro para Capítulos
+    const dbChapters = await this.documentRepo.getChaptersByDocument(documentId);
+    for (const dbCh of dbChapters) {
+      try {
+        const vector = await this.embeddingsService.generateEmbedding(`Capítulo: ${dbCh.title}`);
+        await this.documentRepo.saveChapterEmbedding(dbCh.id, vector);
+      } catch (err: any) {
+        this.logger.warn(`Error al generar embedding para capítulo ${dbCh.id}: ${err.message}`);
+      }
+    }
+    
+    // 2. Generar embeddings macro para Secciones
+    for (const dbCh of dbChapters) {
+      const sections = await this.prisma.section.findMany({ where: { chapterId: dbCh.id } });
+      for (const dbSec of sections) {
+        try {
+          const vector = await this.embeddingsService.generateEmbedding(`Sección: ${dbSec.title} en el capítulo ${dbCh.title}`);
+          await this.documentRepo.saveSectionEmbedding(dbSec.id, vector);
+        } catch (err: any) {
+          this.logger.warn(`Error al generar embedding para sección ${dbSec.id}: ${err.message}`);
+        }
+      }
+    }
+    
+    // 3. Procesar chunks de forma amortiguada (lotes de 5 con delay de 2 segundos)
+    const batchSize = 5;
+    const delayMs = 2000;
+    let processed = 0;
+    
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (chunk) => {
+          try {
+            const vector = await this.embeddingsService.generateEmbedding(chunk.content);
+            await this.documentRepo.saveChunkEmbedding(chunk.id, vector);
+          } catch (err: any) {
+            this.logger.warn(`Error generando embedding para chunk ${chunk.id}: ${err.message}`);
+          }
+        })
+      );
+      
+      processed += batch.length;
+      const progress = Math.min(100.0, parseFloat(((processed / chunks.length) * 100).toFixed(1)));
+      await this.documentRepo.updateDocumentProgress(documentId, {
+        progressEmbed: progress,
+      });
+      
+      this.logger.log(`Progreso de embeddings para docId=${documentId}: ${progress}% (${processed}/${chunks.length})`);
+      
+      if (i + batchSize < chunks.length) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    
+    this.logger.log(`Finalizada la generación de embeddings para docId=${documentId}`);
+  }
+
+  private async processRecursiveSummaries(documentId: number): Promise<void> {
+    this.logger.log(`Iniciando resúmenes recursivos para docId=${documentId}`);
+    
+    const dbChapters = await this.documentRepo.getChaptersByDocument(documentId);
+    const chapterSummaries: string[] = [];
+    
+    for (let idx = 0; idx < dbChapters.length; idx++) {
+      const dbCh = dbChapters[idx];
+      
+      // Obtener todos los chunks del capítulo
+      const sections = await this.prisma.section.findMany({
+        where: { chapterId: dbCh.id },
+        include: { chunks: true },
+      });
+      
+      const chapterContent = sections
+        .flatMap((s) => s.chunks.map((c) => c.content))
+        .join('\n\n')
+        .slice(0, 8000); // Límite de contexto razonable
+      
+      if (!chapterContent.trim()) {
+        chapterSummaries.push(`Capítulo: ${dbCh.title} - Sin contenido disponible.`);
+        continue;
+      }
+      
+      try {
+        const systemPrompt = `Sos un asistente experto en resumir textos. Generá un resumen estructurado, conciso y preciso del capítulo en español argentino.`;
+        const userPrompt = `Capítulo: "${dbCh.title}"\n\nContenido:\n${chapterContent}\n\nResumen del capítulo:`;
+        
+        const response = await this.ollamaProvider.generate({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user',   content: userPrompt },
+          ],
+          maxTokens: 500,
+        });
+        
+        const summary = response.content.trim();
+        await this.prisma.chapter.update({
+          where: { id: dbCh.id },
+          data:  { summary },
+        });
+        
+        chapterSummaries.push(`- **${dbCh.title}**: ${summary}`);
+        
+        const progress = Math.min(100.0, parseFloat((((idx + 1) / dbChapters.length) * 100).toFixed(1)));
+        await this.documentRepo.updateDocumentProgress(documentId, {
+          progressSummary: progress,
+        });
+      } catch (err: any) {
+        this.logger.warn(`Error generando resumen para capítulo ${dbCh.title}: ${err.message}`);
+        chapterSummaries.push(`- **${dbCh.title}**: [Resumen no disponible]`);
+      }
+    }
+    
+    // Generar el meta-resumen general
+    try {
+      const combinedSummaries = chapterSummaries.join('\n\n');
+      const systemPrompt = `Sos un analista de libros experto. Generá una sinopsis general coherente y completa de la obra completa basándote únicamente en los resúmenes de sus capítulos. Respondé en español argentino.`;
+      const userPrompt = `Resúmenes de los capítulos:\n${combinedSummaries}\n\nGenerá la sinopsis general de la obra:`;
+      
+      const response = await this.ollamaProvider.generate({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt },
+        ],
+        maxTokens: 800,
+      });
+      
+      const metaSummary = response.content.trim();
+      await this.documentRepo.updateDocumentProgress(documentId, {
+        summary: metaSummary,
+      });
+    } catch (err: any) {
+      this.logger.warn(`Error al generar el meta-resumen del documento: ${err.message}`);
+    }
+    
+    // Marcar el documento como listo (ready)
+    await this.documentRepo.updateDocumentStatus(documentId, 'ready');
+    this.logger.log(`Procesamiento jerárquico completado para docId=${documentId}. Estado cambiado a READY.`);
   }
 }

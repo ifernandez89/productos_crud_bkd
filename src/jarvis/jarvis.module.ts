@@ -54,6 +54,8 @@ import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 import { AuditService } from './security/audit.service';
+import { ActionExecutionGateService } from './security/action-execution-gate.service';
+import { HierarchicalParserService } from './library/hierarchical-parser.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule],
@@ -110,6 +112,8 @@ import { AuditService } from './security/audit.service';
     JarvisWebSearchService,
     JarvisPromptBuilderService,
     AuditService,
+    ActionExecutionGateService,
+    HierarchicalParserService,
   ],
   exports: [
     JarvisService,

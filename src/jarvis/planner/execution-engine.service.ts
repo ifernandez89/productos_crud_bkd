@@ -7,6 +7,7 @@ import { DocumentIngestService } from '../library/document-ingest.service';
 import { MemoryRepository } from '../repositories/memory.repository';
 import { DocumentRepository } from '../repositories/document.repository';
 import { EmbeddingsService } from '../library/embeddings.service';
+import { ActionExecutionGateService } from '../security/action-execution-gate.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ export class ExecutionEngine {
     private readonly documentRepo: DocumentRepository,
     @Inject(OllamaProvider) private readonly llm: ILLMProvider,
     private readonly embeddingsService: EmbeddingsService,
+    private readonly actionGate: ActionExecutionGateService,
   ) {}
 
   /**
@@ -140,6 +142,9 @@ export class ExecutionEngine {
         // Marcar step como running
         await this.taskRepo.updateStepStatus(step.id, 'running');
         this.logger.log(`[engine] step ${step.stepNumber}/${plan.steps.length}: ${step.type} — "${step.description.slice(0, 60)}"`);
+
+        // Validar acción a través de la compuerta de seguridad
+        await this.actionGate.checkStep(step);
 
         const output = await this.executeStep(step, accumulatedContext, plan.objective);
 

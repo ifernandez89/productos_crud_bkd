@@ -342,6 +342,16 @@ export class JarvisController {
   }
 
   @Public()
+  @Post('library/document/:id/approve')
+  @ApiOperation({ summary: 'Aprobar un documento en cuarentena e iniciar su indexación jerárquica' })
+  async approveDocument(@Param('id', ParseIntPipe) id: number) {
+    await this.auditService.log('approveDocument.request', { id });
+    await this.ingestService.approveDocument(id);
+    await this.auditService.log('approveDocument.success', { id });
+    return { success: true, message: 'Documento aprobado. Indexación jerárquica e incremental iniciada en segundo plano.' };
+  }
+
+  @Public()
   @Get('library/stats')
   @ApiOperation({ summary: 'Estadísticas de la biblioteca (docs, chunks, categorías, top usados)' })
   async libraryStats() {

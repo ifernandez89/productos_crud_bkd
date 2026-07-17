@@ -97,4 +97,102 @@ export class PgvectorService {
     `;
     return rows;
   }
+
+  async saveChapterEmbedding(chapterId: number, vector: number[]): Promise<void> {
+    this.validateEmbedding(vector);
+    const vectorString = this.vectorToString(vector);
+    await this.prisma.$executeRaw`
+      UPDATE "Chapter"
+      SET "embedding" = ${vectorString}::vector
+      WHERE "id" = ${chapterId}
+    `;
+  }
+
+  async saveSectionEmbedding(sectionId: number, vector: number[]): Promise<void> {
+    this.validateEmbedding(vector);
+    const vectorString = this.vectorToString(vector);
+    await this.prisma.$executeRaw`
+      UPDATE "Section"
+      SET "embedding" = ${vectorString}::vector
+      WHERE "id" = ${sectionId}
+    `;
+  }
+
+  async searchChaptersSemantic(embedding: number[], limit = 5) {
+    this.validateEmbedding(embedding);
+    const vectorString = this.vectorToString(embedding);
+    const rows = await this.prisma.$queryRaw`
+      SELECT
+        ch.id,
+        ch."documentId",
+        ch.title,
+        ch."order",
+        ch.summary,
+        1 - (ch.embedding <=> ${vectorString}::vector) AS similarity
+      FROM "Chapter" ch
+      JOIN "Document" d ON d.id = ch."documentId"
+      WHERE ch.embedding IS NOT NULL
+        AND d.status = 'ready'
+      ORDER BY ch.embedding <=> ${vectorString}::vector
+      LIMIT ${limit};
+    `;
+    return rows;
+  }
+
+  async searchChaptersSemanticInDocuments(embedding: number[], documentIds: number[], limit = 5) {
+    if (documentIds.length === 0) return [];
+    this.validateEmbedding(embedding);
+    const vectorString = this.vectorToString(embedding);
+    const rows = await this.prisma.$queryRaw`
+      SELECT
+        ch.id,
+        ch."documentId",
+        ch.title,
+        ch."order",
+        ch.summary,
+        1 - (ch.embedding <=> ${vectorString}::vector) AS similarity
+      FROM "Chapter" ch
+      JOIN "Document" d ON d.id = ch."documentId"
+      WHERE ch.embedding IS NOT NULL
+        AND d.status = 'ready'
+        AND ch."documentId" = ANY(${documentIds})
+      ORDER BY ch.embedding <=> ${vectorString}::vector
+      LIMIT ${limit};
+    `;
+    return rows;
+  }
+
+  async searchChunksSemanticInChapters(embedding: number[], chapterIds: number[], limit = 10) {
+    if (chapterIds.length === 0) return [];
+    this.validateEmbedding(embedding);
+    const vectorString = this.vectorToString(embedding);
+    const rows = await this.prisma.$queryRaw`
+      SELECT
+        c.id,
+        c."documentId",
+        c.content,
+        c.metadata,
+        c."embeddingId",
+        d."sourceId",
+        d.title,
+        d.content AS "contentDoc",
+        d.category,
+        d.source,
+        d.status,
+        d."timesUsed",
+        d."lastUsed",
+        d."createdAt",
+        d."updatedAt",
+        1 - (c.embedding <=> ${vectorString}::vector) AS similarity
+      FROM "Chunk" c
+      JOIN "Document" d ON d.id = c."documentId"
+      JOIN "Section" s ON s.id = c."sectionId"
+      WHERE c.embedding IS NOT NULL
+        AND d.status = 'ready'
+        AND s."chapterId" = ANY(${chapterIds})
+      ORDER BY c.embedding <=> ${vectorString}::vector
+      LIMIT ${limit};
+    `;
+    return rows;
+  }
 }
