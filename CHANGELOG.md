@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Control de Alucinaciones y Análisis de Confianza (2026-07-17)
+
+- **🛡️ Verificación de Respaldo (`EvidenceService`)**: Implementación de `EvidenceService` para contrastar de manera determinista la respuesta generada por el LLM contra los fragmentos de contexto RAG recuperados. Identifica autores y conceptos clave válidos o alucinados y computa un puntaje de confianza.
+- **📝 Detalle de Confianza en Markdown**: Inclusión automática de un bloque colapsable `<details>` al final de cada respuesta mostrando la métrica de confianza y el desglose de entidades verificadas vs. no presentes.
+- **🚧 Frontera Rígida de Conocimiento**: Restricciones de prompt endurecidas en `JarvisPromptBuilderService` para que el modelo limite sus respuestas estrictamente al contexto y no complemente con conocimiento general a menos que sea explícitamente solicitado y etiquetado.
+- **🏷️ Enriquecimiento de Metadatos RAG**: Mapeo y propagación de propiedades adicionales (`IDIOMA`, `CATEGORÍAS`, `CONCEPTOS PRINCIPALES`) desde `library-index.json` a la plantilla de contexto del prompt builder.
+- **🧪 Cobertura de Tests**: Creación de pruebas unitarias exhaustivas en `evidence.service.spec.ts` para verificar la lógica de respaldo y contraste de entidades.
+
 ### Added & Optimized — RAG Reranking, Context Enrichment and Prompt Safeguards (2026-07-16)
 
 - **🔄 Reranker Híbrido Léxico-Semántico**: Implementación de `rerankChunks` en `JarvisService` y `JarvisPromptBuilderService` que combina coincidencia léxica (40% de peso) y orden semántico (60% de peso) para reordenar los chunks recuperados en consultas RAG.
