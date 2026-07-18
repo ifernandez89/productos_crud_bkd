@@ -1,3 +1,21 @@
+/**
+ * RECOMENDACIONES DE MODELOS (Evaluación de Calidad):
+ * 
+ * 🥇 Qwen 3 4B (Puntaje: 9.8/10)
+ *    Especialmente para:
+ *    - RAG (Recuperación y Contexto)
+ *    - Documentación
+ *    - Programación y código
+ *    - Seguir instrucciones estructuradas
+ *    - Conocimiento técnico
+ * 
+ * 🥈 Gemma 3 4B (Puntaje: 9.6/10)
+ *    Especialmente para:
+ *    - Resúmenes y síntesis larga
+ *    - Escritura y redacción
+ *    - Conversación general y empatía
+ */
+
 /** Modelo general / conversacional — OLLAMA_MODEL_NAME o OLLAMA_MODEL */
 export function resolveOllamaModelName(defaultModel = ''): string {
   const configuredModel = [

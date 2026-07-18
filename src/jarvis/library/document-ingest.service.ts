@@ -87,15 +87,19 @@ export class DocumentIngestService {
     question?: string,
   ): Promise<IngestResult> {
     this.logger.log(
-      `[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes`,
+      `[pdf:incoming] título="${title}" | tamaño=${buffer.length} bytes`
     );
 
-    // Validar seguridad estructural del PDF
-    await this.ensureNoDangerousCatalogActions(buffer, title);
+    // Validar y sanitizar seguridad estructural del PDF
+    const safeBuffer = await this.ensureNoDangerousCatalogActions(
+      buffer,
+      title,
+      source
+    );
 
     let text: string;
     try {
-      const parser = new PDFParse({ data: buffer });
+      const parser = new PDFParse({ data: safeBuffer });
       const result = await parser.getText();
       await parser.destroy();
       this.logger.log(
@@ -674,33 +678,42 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
   private async ensureNoDangerousCatalogActions(
     buffer: Buffer,
     title: string,
-  ): Promise<void> {
+    source?: string
+  ): Promise<Buffer> {
     try {
       const pdfDoc = await PDFDocument.load(buffer);
       const context = pdfDoc.context;
       const catalog = pdfDoc.catalog;
+      let modified = false;
 
-      // 1. Bloqueo estricto de AcroForms completos (Zero-Trust)
+      // 1. Sanitizar AcroForms si existen
       if (catalog.has(PDFName.of('AcroForm'))) {
-        throw new BadRequestException(
-          'El PDF contiene formularios interactivos (AcroForm) no permitidos.',
+        this.logger.warn(
+          `[pdf:security] Removiendo AcroForm interactivo de "${title}" por seguridad.`
         );
+        catalog.delete(PDFName.of('AcroForm'));
+        modified = true;
       }
 
-      // 2. Bloqueo estricto de cualquier OpenAction
+      // 2. Sanitizar OpenAction si existe
       if (catalog.has(PDFName.of('OpenAction'))) {
-        throw new BadRequestException(
-          'El PDF contiene acciones de apertura automática (OpenAction).',
+        this.logger.warn(
+          `[pdf:security] Removiendo OpenAction de "${title}" por seguridad.`
         );
+        catalog.delete(PDFName.of('OpenAction'));
+        modified = true;
       }
 
-      // 3. Buscar acciones adicionales (/AA) en el catálogo y en CADA página
+      // 3. Sanitizar acciones adicionales (/AA) en catálogo
       if (catalog.has(PDFName.of('AA'))) {
-        throw new BadRequestException(
-          'El PDF contiene acciones adicionales automáticas (/AA) en el catálogo.',
+        this.logger.warn(
+          `[pdf:security] Removiendo acciones adicionales (/AA) de "${title}" por seguridad.`
         );
+        catalog.delete(PDFName.of('AA'));
+        modified = true;
       }
 
+      // 4. Buscar acciones adicionales (/AA) en CADA página y removerlas
       const pages = pdfDoc.getPages();
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
@@ -710,9 +723,11 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
         if (!pageDict) continue;
 
         if (pageDict.has(PDFName.of('AA'))) {
-          throw new BadRequestException(
-            `La página ${i + 1} contiene disparadores de acciones automáticas (/AA).`,
+          this.logger.warn(
+            `[pdf:security] Removiendo /AA de la página ${i + 1} de "${title}" por seguridad.`
           );
+          pageDict.delete(PDFName.of('AA'));
+          modified = true;
         }
 
         // Bloquear anotaciones de tipo /Launch, /JavaScript o /Screen (ejecución remota de código)
@@ -734,7 +749,7 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
                     const S = action?.get?.(PDFName.of('S'))?.toString();
                     if (S === '/Launch' || S === '/JavaScript') {
                       throw new BadRequestException(
-                        'El PDF contiene enlaces con acciones ejecutables peligrosas.',
+                        'El PDF contiene enlaces con acciones ejecutables peligrosas.'
                       );
                     }
                   }
@@ -745,17 +760,42 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
         }
       }
 
-      // 4. Bloquear archivos embebidos en el árbol de nombres
+      // 5. Bloquear archivos embebidos en el árbol de nombres
       if (catalog.has(PDFName.of('Names'))) {
         const names = context.lookup(
-          catalog.get(PDFName.of('Names')),
+          catalog.get(PDFName.of('Names'))
         ) as PDFDict;
         if (names && names.has(PDFName.of('EmbeddedFiles'))) {
           throw new BadRequestException(
-            'El PDF contiene archivos adjuntos ocultos (/EmbeddedFiles).',
+            'El PDF contiene archivos adjuntos ocultos (/EmbeddedFiles).'
           );
         }
       }
+
+      if (modified) {
+        const sanitizedBytes = await pdfDoc.save();
+        const newBuffer = Buffer.from(sanitizedBytes);
+
+        // Escribir de vuelta al disco si se proveyó la ruta para que persista
+        if (source) {
+          const fs = require('fs');
+          if (fs.existsSync(source)) {
+            try {
+              fs.writeFileSync(source, newBuffer);
+              this.logger.log(
+                `[pdf:security] PDF "${title}" sanitizado y guardado en disco: ${source}`
+              );
+            } catch (writeErr: any) {
+              this.logger.warn(
+                `[pdf:security] No se pudo guardar el PDF sanitizado en disco: ${writeErr.message}`
+              );
+            }
+          }
+        }
+        return newBuffer;
+      }
+
+      return buffer;
     } catch (e: any) {
       if (e instanceof BadRequestException) throw e;
 
@@ -766,7 +806,7 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
 
       this.logger.error(
         `[pdf:security] Error en validación estructural de "${title}":`,
-        e,
+        e
       );
       throw new BadRequestException(mensaje);
     }
