@@ -58,8 +58,10 @@ import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
 
+import { CognitiveModule } from './cognitive/cognitive.module';
+
 @Module({
-  imports: [PrismaModule, GoogleModule],
+  imports: [PrismaModule, GoogleModule, CognitiveModule],
   controllers: [JarvisController],
   providers: [
     JarvisService,

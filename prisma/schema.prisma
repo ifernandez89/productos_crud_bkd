@@ -513,3 +513,23 @@ model BalanceReport {
   createdAt          DateTime       @default(now())
   session            BalanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 }
+
+// ── 15) COGNITIVE STATE LAYER (QICA) ──────────────────────────────────────────
+// Campos de activación conceptual continua y memoria dinámica asociativa.
+
+model CognitiveState {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  sessionId       String
+  concept         String   // ej: "arquitectura", "agentes", "seguridad"
+  activation      Float    @default(0.5) // nivel 0.0 a 1.0
+  decayRate       Float    @default(0.05) // tasa de decaimiento temporal
+  contextTags     String   @default("[]") // JSON serializado: ["nest", "rag"]
+  lastActivatedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([sessionId, concept])
+  @@index([activation])
+  @@index([lastActivatedAt])
+}
+

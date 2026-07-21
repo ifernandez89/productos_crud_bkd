@@ -1,5 +1,5 @@
 # JarBees — Arquitectura del Sistema
-**Última revisión:** Julio 2026  
+**Última revisión:** 21 de Julio 2026 (Actualizado post git pull: EvidenceService, Control de Alucinaciones, Sanitización PDF y Model Rankings)  
 **Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
 **Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
 
@@ -321,9 +321,13 @@ interface ILLMProvider {
 | `OllamaQwenModelService` | `qwen3:4b` | Técnico (NestJS, SQL, código) |
 | `OpenRouterProvider` | `mistral-7b-instruct:free` | Externo, flag `provider: "openrouter"` |
 
+### 9.1 Ranking y Evaluación de Modelos (julio 2026)
+- **🥇 Qwen 3 4B (Puntaje: 9.8/10)**: Modelo recomendado para RAG (Recuperación y Contexto), Documentación, Programación y Código, Seguimiento de Instrucciones Estructuradas y Conocimiento Técnico.
+- **🥈 Gemma 3 4B (Puntaje: 9.6/10)**: Modelo recomendado para Resúmenes y Síntesis Larga, Escritura y Redacción Creativa, Conversación General y Empatía.
+
 **Model Router** en `/aichat` — elige automáticamente entre modelos:
 - 100+ keywords técnicas → `qwen3:4b`
-- Conversación general → `llama3.2:3b`
+- Conversación general → `llama3.2:3b` / `gemma3:4b`
 
 Mañana podés agregar `OpenAIProvider`, `GeminiProvider`, `ClaudeProvider` sin tocar el resto.
 
@@ -479,6 +483,22 @@ El pipeline de recuperación RAG en `JarvisService` y `JarvisPromptBuilderServic
   - Tenga prohibición absoluta de inventar libros, autores o capítulos que no existan en la biblioteca.
   - Preserve la integridad de los marcos intelectuales, separando claramente las perspectivas de distintos autores/escuelas sin mezclarlas.
 - **Auto-aprobación en Lazy Load**: Durante las búsquedas en caliente y carga diferida en `CorpusSelectorService`, si un documento existente coincide pero está en estado `quarantined` o `not_indexed`, el sistema aprueba e inicia la indexación jerárquica automáticamente para garantizar que su contenido esté disponible.
+
+### 11.8 Verificación de Respaldo y Control de Alucinaciones — EvidenceService (nuevo)
+
+Para garantizar la precisión de las respuestas generadas por el RAG y eliminar alucinaciones de autores o conceptos inexistentes en la biblioteca:
+- **Verificación Determinista (`EvidenceService`)**: Contrasta la respuesta generada por el LLM contra los fragmentos (chunks) de contexto RAG efectivamente recuperados y contra el índice de biblioteca (`library-index.json`).
+- **Puntaje de Confianza (Confidence Score)**: Computa un valor de confianza (0% a 100%) analizando la proporción de entidades (autores, términos específicos y conceptos clave) que tienen respaldo explícito en el contexto frente a entidades alucinadas.
+- **Desglose en Markdown**: Inyecta automáticamente un bloque colapsable `<details>` al final de cada respuesta RAG mostrando la métrica de confianza y el desglose de entidades verificadas vs. no presentes.
+- **Frontera Rígida de Conocimiento**: Restricciones de prompt en `JarvisPromptBuilderService` para forzar al modelo a delimitar su conocimiento estrictamente al corpus cargado.
+
+### 11.9 Sanitización Estructural y Seguridad en la Ingesta de PDFs (nuevo)
+
+El servicio `DocumentIngestService` incorpora un motor de inspección y sanitización de archivos PDF previa a la extracción de texto para prevenir vectores de ataque:
+- **Remoción de Acciones Adicionales (`/AA`)**: Detecta y remueve automáticamente disparadores de acciones en el catálogo del documento y en cada una de sus páginas.
+- **Bloqueo de Ejecución Peligrosa**: Lanza excepción e interrumpe la ingesta ante la presencia de enlaces o acciones de tipo `/Launch`, `/JavaScript` o `/Screen`.
+- **Bloqueo de Adjuntos Ocultos**: Rechaza archivos PDF con objetos adjuntos embebidos (`/EmbeddedFiles`).
+- **Persistencia Sanitizada**: Si se remueven acciones sospechosas pero no fatales, guarda la versión limpia en disco para asegurar que el almacenamiento sea seguro.
 
 **RssIngestService** — procesa feeds RSS:
 - Limpia HTML con Cheerio
@@ -655,17 +675,37 @@ Cobertura total  ~79%
 
 ---
 
-## 18. Próximos pasos recomendados
+## 19. Arquitectura Cognitiva Inspirada en Mecánica Cuántica (QICA) (nuevo)
 
-**Alta prioridad:**
-1. **pgvector** — activar `embedding vector(768)` en `Chunk` y `MemoryChunk`. Los embeddings ya se generan con `nomic-embed-text`, solo falta el campo y la función de búsqueda por coseno. Desbloquea todo el RAG semántico.
-2. **Watcher de carpeta** — monitorear `docs_inbox/` con `fs.watch()` para ingesta automática de PDFs nuevos.
-3. **Notificaciones** — Telegram bot para que el Morning Briefing llegue al celular.
+JarBees implementa un motor cognitivo de frontera desprendido de metáforas físicas ineficientes y traducido a patrones reales de ingeniería cognitiva sobre NestJS + Prisma:
 
-**Media prioridad:**
-4. **Búsqueda web real-time** — integrar Brave Search API o SerpAPI para Research sin depender de scraping.
-5. **Más modelos OpenRouter** — selector dinámico de modelo externo (GPT-4o, Claude, Gemini).
+```
+                  Pregunta del Usuario
+                           ↓
+                  Intent Router / Query
+                           ↓
+           CognitiveOrchestratorService
+                           ↓
+     ┌─────────────────────┴─────────────────────┐
+     ↓                                           ↓
+[Consulta Simples / Tools]             [Consulta Compleja]
+(0 ms de sobrecosto clásico)                     ↓
+                                    CognitiveFieldService
+                               (Activa campo asociativo de memoria)
+                                                 ↓
+                                    HypothesisEngineService
+                                (Genera superposición: 3-4 hipótesis)
+                                                 ↓
+                                   InterferenceEngineService
+                             (Interferencia constructiva/destructiva
+                                      y colapso de estado)
+                                                 ↓
+                                          LLM Provider
+                                   (Síntesis de estado colapsado)
+```
 
-**Baja prioridad:**
-6. **Vision** — LLaVA o Moondream via Ollama para análisis de imágenes.
-7. **GitHub** — autenticación y indexación de repos.
+### Componentes de QICA:
+- **`CognitiveState` (Modelo Prisma) + `CognitiveFieldService`**: Registro de estados conceptuales en PostgreSQL con niveles de activación (0.0 a 1.0) y decaimiento pasivo temporal.
+- **`HypothesisEngineService` (Superposición)**: Genera paralelamente múltiples perspectivas de análisis (*Analítica*, *Pragmática*, *Innovadora*, *Crítica*) para preguntas complejas.
+- **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo y validación de [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts). Cancela hipótesis inconclusas y fusiona las supervivientes.
+- **`CognitiveOrchestratorService` (Desacoplamiento Adaptativo)**: Garantiza latencia cero para consultas simples/herramientas e invoca el motor profundo únicamente ante consultas estratégicas o arquitectónicas.

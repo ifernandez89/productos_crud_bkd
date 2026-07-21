@@ -35,6 +35,7 @@ import { EmbeddingsService } from './library/embeddings.service';
 import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { EvidenceService } from './knowledge/evidence.service';
+import { CognitiveOrchestratorService } from './cognitive/cognitive-orchestrator.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -86,6 +87,7 @@ export class JarvisService {
     private readonly corpusSelector: CorpusSelectorService,
     private readonly ingestService: DocumentIngestService,
     private readonly evidenceService: EvidenceService,
+    private readonly cognitiveOrchestrator: CognitiveOrchestratorService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -907,7 +909,7 @@ export class JarvisService {
     if (usedMemory) toolsUsed.push('memory');
     if (usedDocs) toolsUsed.push('rag');
 
-    const finalSystemPrompt = webContext
+    let finalSystemPrompt = webContext
       ? systemPrompt
           .replace(
             '7. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
@@ -918,6 +920,22 @@ export class JarvisService {
             '3. Usá SOLO los datos del contexto web. PROHIBIDO inventar eventos planetarios, nombres de personas, o fechas que no estén en el texto extraído.',
           )
       : systemPrompt;
+
+    // ── QICA: Procesamiento cognitivo cuántico-inspirado ──────────────────────
+    const qicaResult = await this.cognitiveOrchestrator.processCognitiveQuery(
+      sessionId,
+      userMessage,
+      retrievedChunks,
+    );
+
+    if (qicaResult.cognitiveFieldContext) {
+      finalSystemPrompt += qicaResult.cognitiveFieldContext;
+    }
+
+    if (qicaResult.activated && qicaResult.collapseResult) {
+      toolsUsed.push('qica_superposition');
+      finalSystemPrompt += `\n=== DIRECTIVAS DE ÁNGULOS COGNITIVOS ===\n${qicaResult.collapseResult.collapsedPromptDirectives}\n`;
+    }
 
     const response = await provider.generate({
       messages: [
@@ -930,7 +948,10 @@ export class JarvisService {
       provider,
     );
 
-    let finalAnswer = responseContent;
+    let finalAnswer =
+      qicaResult.activated && qicaResult.collapseResult
+        ? responseContent + qicaResult.collapseResult.interferenceSummaryMarkdown
+        : responseContent;
     let confidenceScore = 100;
 
     const isEvasiveResponse =
