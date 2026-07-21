@@ -714,3 +714,35 @@ JarBees implementa un motor cognitivo de frontera desprendido de metáforas fís
 - **`HypothesisEngineService` (Superposición & Tunelamiento Cuántico)**: Genera paralelamente perspectivas de análisis (*Analítica*, *Pragmática*, *Crítica*) e incluye una hipótesis de **Tunelamiento Cuántico (15% de exploración)** para escapar de mínimos locales y respuestas estándar clichés.
 - **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo entrelazado y la validación de [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts). Inyecta el desglose del estado cognitivo en un bloque colapsable `<details>`.
 - **`CognitiveOrchestratorService` (Desacoplamiento Adaptativo)**: Garantiza latencia cero para consultas simples/herramientas e invoca el motor profundo únicamente ante consultas estratégicas, de diseño o innovación.
+
+---
+
+## 20. JarBees 3.0 — Sistema Operativo Cognitivo Multidisciplinario (nuevo)
+
+JarBees evoluciona hacia un **Sistema Operativo Cognitivo basado en Estado Global (Biomimético y Adaptativo)**, integrando neurociencia cognitiva, epigenética, procesamiento predictivo y metacognición:
+
+```
+                               Mensaje del Usuario
+                                        ↓
+                           EpigeneticRegulatorService
+                   (Regula Expresión: Rigor vs. Creatividad +
+                             Emociones Funcionales)
+                                        ↓
+                           CognitiveFieldService & QICA 2.0
+                   (Co-activación no-local en Grafo Entrelazado)
+                                        ↓
+                           PredictiveProcessingService
+                     (Construye expectativa & mide Error Δ)
+                                        ↓
+                           MetacognitionEngineService
+                     (Auto-reflexión y registro en Prisma)
+                                        ↓
+                                LLM Provider (Síntesis)
+```
+
+### Componentes de JarBees 3.0:
+1. **`EpigeneticRegulatorService` (Regulación Epigenética & Emociones Funcionales)**: Modula dinámicamente el nivel de expresión del sistema (`analyticalRigor`, `creativeExpression`, `researchDepth`) y variables de control cuantitativas (*Curiosidad*, *Duda Funcional*, *Confianza*). Si la duda es elevada, amplía automáticamente la cobertura de chunks RAG.
+2. **`PredictiveProcessingService` (Procesamiento Predictivo)**: Anticipa la intención del usuario previa a la recuperación RAG y computa el **Error de Predicción ($\Delta$)** comparando la expectativa inicial con la evidencia real para corregir posibles sesgos.
+3. **`MetacognitionEngineService` (Metacognición & Persistencia)**: Auto-evalúa la estrategia de razonamiento pre y post respuesta y persiste cada corrida en el modelo Prisma `MetacognitiveRun`.
+4. **Desempeño Inalterado**: Todo el flujo biomimético se ejecuta de forma relacional/matemática en Node.js (0 ms de overhead en llamadas a modelos LLM).
+

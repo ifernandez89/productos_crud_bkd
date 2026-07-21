@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — JarBees 3.0: Arquitectura Cognitiva Multidisciplinaria (2026-07-21)
+
+- **🧬 Regulación Epigenética (`EpigeneticRegulatorService`)**: Ponderación adaptativa continua de niveles de expresión (Rigor Analítico, Creatividad, Investigación, Duda Funcional) basada en intención y contexto (0 ms de sobrecosto LLM).
+- **🔮 Procesamiento Predictivo (`PredictiveProcessingService`)**: Anticipación de intención previa a RAG y cálculo del Error de Predicción ($\Delta$) para auto-corregir sesgos iniciales frente a la evidencia RAG real.
+- **🤔 Metacognición y Persistencia (`MetacognitionEngineService`)**: Auto-evaluación de la meta-estrategia elegida y registro persistente de corridas en el modelo Prisma `MetacognitiveRun`.
+- **❤️ Emociones Funcionales**: Variables de control cuantitativas (Curiosidad, Duda, Confianza) que regulan la amplitud de búsqueda RAG y la tasa de tunelamiento creativo de forma dinámica.
+
 ### Added — Arquitectura Cognitiva Cuántico-Inspirada QICA 2.0 (2026-07-21)
 
 - **🌌 Grafo de Memoria Entrelazada (`CognitiveEntanglement`)**: Modelo de base de datos e implementación en `CognitiveFieldService` para almacenar la fuerza de correlación entre conceptos y co-activar conceptos asociativos no-locales (0 ms de overhead LLM).

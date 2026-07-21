@@ -550,4 +550,23 @@ model CognitiveEntanglement {
   @@index([conceptB])
 }
 
+// ── 17) METACOGNITION & EPIGENETIC RUNS (JarBees 3.0) ─────────────────────────
+// Registro de auto-evaluación metacognitiva y ponderación de expresión.
+
+model MetacognitiveRun {
+  id                 Int      @id @default(autoincrement())
+  sessionId          String
+  strategyUsed       String   // "ANALYTICAL_RIGOR", "CREATIVE_EXPLORATION", "PRAGMATIC_DIRECT"
+  predictedIntent    String
+  predictionError    Float    @default(0.0) // 0.0 a 1.0 (delta expectativa vs RAG)
+  expressionWeights  String   // JSON serializado: { analytical: 0.9, creative: 0.2 }
+  userFeedbackScore  Int?
+  createdAt          DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([strategyUsed])
+  @@index([createdAt])
+}
+
+
 

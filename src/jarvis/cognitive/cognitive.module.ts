@@ -4,6 +4,9 @@ import { CognitiveFieldService } from '../memory/cognitive-field.service';
 import { HypothesisEngineService } from './hypothesis-engine.service';
 import { InterferenceEngineService } from './interference-engine.service';
 import { UncertaintyEngineService } from './uncertainty-engine.service';
+import { EpigeneticRegulatorService } from './epigenetic-regulator.service';
+import { PredictiveProcessingService } from './predictive-processing.service';
+import { MetacognitionEngineService } from './metacognition-engine.service';
 import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
 
 @Module({
@@ -13,6 +16,9 @@ import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
     HypothesisEngineService,
     InterferenceEngineService,
     UncertaintyEngineService,
+    EpigeneticRegulatorService,
+    PredictiveProcessingService,
+    MetacognitionEngineService,
     CognitiveOrchestratorService,
   ],
   exports: [
@@ -20,6 +26,9 @@ import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
     HypothesisEngineService,
     InterferenceEngineService,
     UncertaintyEngineService,
+    EpigeneticRegulatorService,
+    PredictiveProcessingService,
+    MetacognitionEngineService,
     CognitiveOrchestratorService,
   ],
 })
