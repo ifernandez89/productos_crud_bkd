@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Arquitectura Cognitiva Cuántico-Inspirada QICA 2.0 (2026-07-21)
+
+- **🌌 Grafo de Memoria Entrelazada (`CognitiveEntanglement`)**: Modelo de base de datos e implementación en `CognitiveFieldService` para almacenar la fuerza de correlación entre conceptos y co-activar conceptos asociativos no-locales (0 ms de overhead LLM).
+- **⏳ Decoherencia y Olvido Inteligente Avanzado**: Motor de decaimiento conceptual dinámico basado en la fórmula ponderada `(recency * importance * utility) - noise` en `CognitiveFieldService`.
+- **🎯 Motor de Incertidumbre y Fronteras de Conocimiento (`UncertaintyEngineService`)**: Identificación determinista de variables no verificadas (`unknowns`) e inyección de alertas de certidumbre en respuestas RAG/complejas.
+- **🌀 Tunelamiento Cuántico de Creatividad**: Inserción de una hipótesis disruptiva/lateral del 15% dentro de la superposición de `HypothesisEngineService` para escapar de respuestas estándar o valles locales.
+- **⚛️ Orquestación Adaptativa e Interferencia**: Orquestador `CognitiveOrchestratorService` con latencia cero en consultas simples e interferencia constructiva/destructiva colapsada en un reporte colapsable `<details>` en la respuesta final.
+
 ### Added — Control de Alucinaciones y Análisis de Confianza (2026-07-17)
 
 - **🛡️ Verificación de Respaldo (`EvidenceService`)**: Implementación de `EvidenceService` para contrastar de manera determinista la respuesta generada por el LLM contra los fragmentos de contexto RAG recuperados. Identifica autores y conceptos clave válidos o alucinados y computa un puntaje de confianza.

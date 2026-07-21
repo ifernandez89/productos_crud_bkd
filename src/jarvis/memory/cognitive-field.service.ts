@@ -5,6 +5,7 @@ export interface ConceptActivation {
   concept: string;
   activation: number;
   tags: string[];
+  isEntangled?: boolean;
 }
 
 @Injectable()
@@ -14,7 +15,7 @@ export class CognitiveFieldService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Extrae conceptos clave del texto y actualiza su nivel de activación en la sesión.
+   * Extrae conceptos clave del texto, los activa y busca conceptos entrelazados (QICA 2.0).
    */
   async activateConcepts(
     sessionId: string,
@@ -28,15 +29,16 @@ export class CognitiveFieldService {
 
     const now = new Date();
     const updatedState: ConceptActivation[] = [];
+    const activatedConceptsList: string[] = [];
 
     for (const item of extracted) {
       try {
+        activatedConceptsList.push(item.concept);
         const existing = await this.prisma.cognitiveState.findFirst({
           where: { sessionId, concept: item.concept },
         });
 
         if (existing) {
-          // Reforzar activación (hasta un máximo de 1.0)
           const newActivation = Math.min(1.0, existing.activation + 0.25);
           const updated = await this.prisma.cognitiveState.update({
             where: { id: existing.id },
@@ -52,7 +54,6 @@ export class CognitiveFieldService {
             tags: item.tags,
           });
         } else {
-          // Crear nuevo estado conceptual inicial (0.5)
           const created = await this.prisma.cognitiveState.create({
             data: {
               sessionId,
@@ -75,26 +76,114 @@ export class CognitiveFieldService {
       }
     }
 
-    // Aplicar decaimiento pasivo a otros conceptos
-    await this.applyDecay(sessionId);
+    // ── QICA 2.0: Entrelazamiento Cognitivo & Co-activación No-Local ───────────
+    await this.processEntanglement(sessionId, activatedConceptsList, updatedState);
+
+    // ── QICA 2.0: Decoherencia y Olvido Inteligente Avanzado ─────────────────
+    await this.applyAdvancedDecoherence(sessionId);
 
     return updatedState;
   }
 
   /**
-   * Aplica decaimiento temporal pasivo a los conceptos de la sesión.
+   * QICA 2.0: Busca conceptos entrelazados en la base de datos y los co-activa automáticamente.
    */
-  async applyDecay(sessionId: string): Promise<void> {
+  private async processEntanglement(
+    sessionId: string,
+    activeConcepts: string[],
+    updatedState: ConceptActivation[],
+  ): Promise<void> {
+    if (activeConcepts.length === 0) return;
+
+    try {
+      // 1. Reforzar el entrelazamiento entre pares de conceptos activados juntos
+      for (let i = 0; i < activeConcepts.length; i++) {
+        for (let j = i + 1; j < activeConcepts.length; j++) {
+          const cA = activeConcepts[i] < activeConcepts[j] ? activeConcepts[i] : activeConcepts[j];
+          const cB = activeConcepts[i] < activeConcepts[j] ? activeConcepts[j] : activeConcepts[i];
+
+          const existingEnt = await this.prisma.cognitiveEntanglement.findUnique({
+            where: { conceptA_conceptB: { conceptA: cA, conceptB: cB } },
+          });
+
+          if (existingEnt) {
+            await this.prisma.cognitiveEntanglement.update({
+              where: { id: existingEnt.id },
+              data: {
+                correlationStrength: Math.min(1.0, existingEnt.correlationStrength + 0.05),
+                interactionCount: existingEnt.interactionCount + 1,
+                lastCoActivatedAt: new Date(),
+              },
+            });
+          } else {
+            await this.prisma.cognitiveEntanglement.create({
+              data: {
+                conceptA: cA,
+                conceptB: cB,
+                correlationStrength: 0.5,
+                interactionCount: 1,
+              },
+            });
+          }
+        }
+      }
+
+      // 2. Co-activar conceptos no-locales entrelazados con los activos
+      const entanglements = await this.prisma.cognitiveEntanglement.findMany({
+        where: {
+          OR: [
+            { conceptA: { in: activeConcepts } },
+            { conceptB: { in: activeConcepts } },
+          ],
+          correlationStrength: { gte: 0.4 },
+        },
+        orderBy: { correlationStrength: 'desc' },
+        take: 5,
+      });
+
+      for (const ent of entanglements) {
+        const targetConcept = activeConcepts.includes(ent.conceptA) ? ent.conceptB : ent.conceptA;
+        if (!updatedState.some((s) => s.concept === targetConcept)) {
+          const boost = ent.correlationStrength * 0.4;
+          updatedState.push({
+            concept: targetConcept,
+            activation: Math.min(1.0, boost),
+            tags: ['entrelazado'],
+            isEntangled: true,
+          });
+          this.logger.log(
+            `[QICA:Entrelazamiento] Co-activado "${targetConcept}" por relación con impulso ${boost.toFixed(2)}`,
+          );
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Error en procesamiento de entrelazamiento: ${err.message}`);
+    }
+  }
+
+  /**
+   * QICA 2.0: Decoherencia y Olvido Inteligente Avanzado
+   * Formula: activation = (recency * importance * utility) - noise
+   */
+  async applyAdvancedDecoherence(sessionId: string): Promise<void> {
     try {
       const states = await this.prisma.cognitiveState.findMany({
-        where: { sessionId, activation: { gt: 0.1 } },
+        where: { sessionId, activation: { gt: 0.05 } },
       });
 
       const now = Date.now();
       for (const state of states) {
-        const elapsedMinutes = (now - state.lastActivatedAt.getTime()) / (1000 * 60);
-        if (elapsedMinutes > 5) {
-          const newActivation = Math.max(0.0, state.activation - state.decayRate);
+        const elapsedHours = (now - state.lastActivatedAt.getTime()) / (1000 * 3600);
+        
+        // Ponderación de recencia (0.0 a 1.0)
+        const recency = Math.exp(-0.1 * elapsedHours);
+        const importance = 0.8;
+        const utility = state.activation;
+        const environmentalNoise = 0.02 * elapsedHours;
+
+        const newActivation = Math.max(0.0, recency * importance * utility - environmentalNoise);
+
+        if (Math.abs(newActivation - state.activation) > 0.02) {
           await this.prisma.cognitiveState.update({
             where: { id: state.id },
             data: { activation: newActivation },
@@ -102,17 +191,17 @@ export class CognitiveFieldService {
         }
       }
     } catch (err: any) {
-      this.logger.warn(`Error aplicando decaimiento en sesión ${sessionId}: ${err.message}`);
+      this.logger.warn(`Error aplicando decoherencia avanzada en sesión ${sessionId}: ${err.message}`);
     }
   }
 
   /**
    * Recupera el campo de activación actual ordenado por relevancia.
    */
-  async getActiveField(sessionId: string, limit = 8): Promise<ConceptActivation[]> {
+  async getActiveField(sessionId: string, limit = 10): Promise<ConceptActivation[]> {
     try {
       const states = await this.prisma.cognitiveState.findMany({
-        where: { sessionId, activation: { gte: 0.2 } },
+        where: { sessionId, activation: { gte: 0.15 } },
         orderBy: { activation: 'desc' },
         take: limit,
       });
@@ -135,11 +224,12 @@ export class CognitiveFieldService {
     const active = await this.getActiveField(sessionId);
     if (active.length === 0) return '';
 
-    const lines = active.map(
-      (a) => `- ${a.concept} (activación: ${(a.activation * 100).toFixed(0)}%)`,
-    );
+    const lines = active.map((a) => {
+      const tagLabel = a.isEntangled ? ' (⚡ entrelazado)' : '';
+      return `- ${a.concept}${tagLabel} (activación: ${(a.activation * 100).toFixed(0)}%)`;
+    });
 
-    return `\n=== CAMPO COGNITIVO ACTIVO (Foco dinámico del usuario) ===\n${lines.join('\n')}\n`;
+    return `\n=== CAMPO COGNITIVO Y GRAFO ENTRELAZADO (Foco dinámico) ===\n${lines.join('\n')}\n`;
   }
 
   // ── Métodos Auxiliares ──────────────────────────────────────────────────────
@@ -152,6 +242,7 @@ export class CognitiveFieldService {
       'nestjs', 'prisma', 'postgresql', 'pgvector', 'ollama', 'qwen', 'gemma',
       'typescript', 'javascript', 'docker', 'playwright', 'rag', 'embeddings',
       'arquitectura', 'microservicios', 'seguridad', 'balance', 'astrologia',
+      'conciencia', 'autonomia', 'agentes', 'inteligencia', 'entrelazamiento',
     ];
 
     for (const kw of techKeywords) {
@@ -160,7 +251,6 @@ export class CognitiveFieldService {
       }
     }
 
-    // Extracción básica de sustantivos clave capitalizados
     const capitalizedWords = text.match(/\b[A-ZÁÉÍÓÚÑ][a-záéíóúüñ]{3,}\b/g) || [];
     for (const word of capitalizedWords) {
       const wLower = word.toLowerCase();

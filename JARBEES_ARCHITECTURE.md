@@ -675,9 +675,9 @@ Cobertura total  ~79%
 
 ---
 
-## 19. Arquitectura Cognitiva Inspirada en Mecánica Cuántica (QICA) (nuevo)
+## 19. Arquitectura Cognitiva Inspirada en Mecánica Cuántica (QICA 2.0) (nuevo)
 
-JarBees implementa un motor cognitivo de frontera desprendido de metáforas físicas ineficientes y traducido a patrones reales de ingeniería cognitiva sobre NestJS + Prisma:
+JarBees implementa un motor cognitivo de frontera desprendido de metáforas físicas ineficientes y traducido a patrones reales de ingeniería cognitiva sobre NestJS + Prisma. **Diseñado estrictamente para 0 ms de sobrecosto en llamadas LLM adicionales**:
 
 ```
                   Pregunta del Usuario
@@ -691,10 +691,14 @@ JarBees implementa un motor cognitivo de frontera desprendido de metáforas fís
 [Consulta Simples / Tools]             [Consulta Compleja]
 (0 ms de sobrecosto clásico)                     ↓
                                     CognitiveFieldService
-                               (Activa campo asociativo de memoria)
+                               (Activa campo asociativo de memoria +
+                                Grafo de Entrelazamiento Cognitivo)
+                                                 ↓
+                                    UncertaintyEngineService
+                               (Fronteras de Incertidumbre y Unknowns)
                                                  ↓
                                     HypothesisEngineService
-                                (Genera superposición: 3-4 hipótesis)
+                             (Superposición de 4 hipótesis + Tunelamiento)
                                                  ↓
                                    InterferenceEngineService
                              (Interferencia constructiva/destructiva
@@ -704,8 +708,9 @@ JarBees implementa un motor cognitivo de frontera desprendido de metáforas fís
                                    (Síntesis de estado colapsado)
 ```
 
-### Componentes de QICA:
-- **`CognitiveState` (Modelo Prisma) + `CognitiveFieldService`**: Registro de estados conceptuales en PostgreSQL con niveles de activación (0.0 a 1.0) y decaimiento pasivo temporal.
-- **`HypothesisEngineService` (Superposición)**: Genera paralelamente múltiples perspectivas de análisis (*Analítica*, *Pragmática*, *Innovadora*, *Crítica*) para preguntas complejas.
-- **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo y validación de [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts). Cancela hipótesis inconclusas y fusiona las supervivientes.
-- **`CognitiveOrchestratorService` (Desacoplamiento Adaptativo)**: Garantiza latencia cero para consultas simples/herramientas e invoca el motor profundo únicamente ante consultas estratégicas o arquitectónicas.
+### Componentes de QICA 2.0:
+- **`CognitiveState` & `CognitiveEntanglement` (Prisma) + `CognitiveFieldService`**: Registro de estados conceptuales en PostgreSQL y **Grafo de Memoria Entrelazada** para co-activación asociativa no-local de conceptos relacionados (ej. *conciencia* ⚡ *arquitectura*). Incorpora **Decoherencia y Olvido Inteligente Avanzado** mediante la fórmula ponderada `(recency * importance * utility) - noise`.
+- **`UncertaintyEngineService` (Motor de Incertidumbre)**: Determina la certidumbre de la respuesta (0% a 100%) e identifica variables o información no respaldada en el corpus (`unknowns`), inyectando directivas de prevención de sobreconfianza.
+- **`HypothesisEngineService` (Superposición & Tunelamiento Cuántico)**: Genera paralelamente perspectivas de análisis (*Analítica*, *Pragmática*, *Crítica*) e incluye una hipótesis de **Tunelamiento Cuántico (15% de exploración)** para escapar de mínimos locales y respuestas estándar clichés.
+- **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo entrelazado y la validación de [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts). Inyecta el desglose del estado cognitivo en un bloque colapsable `<details>`.
+- **`CognitiveOrchestratorService` (Desacoplamiento Adaptativo)**: Garantiza latencia cero para consultas simples/herramientas e invoca el motor profundo únicamente ante consultas estratégicas, de diseño o innovación.

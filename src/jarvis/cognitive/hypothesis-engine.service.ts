@@ -3,9 +3,10 @@ import { Injectable, Logger } from '@nestjs/common';
 export interface HypothesisCandidate {
   id: string;
   name: string;
-  angle: 'ANALYTICAL' | 'PRAGMATIC' | 'EXPERIMENTAL' | 'CRITICAL';
+  angle: 'ANALYTICAL' | 'PRAGMATIC' | 'EXPERIMENTAL' | 'CRITICAL' | 'TUNNELING';
   perspectiveDescription: string;
   seedPrompt: string;
+  isQuantumTunneling?: boolean;
 }
 
 @Injectable()
@@ -13,12 +14,12 @@ export class HypothesisEngineService {
   private readonly logger = new Logger(HypothesisEngineService.name);
 
   /**
-   * Genera una superposición de 3 a 4 hipótesis iniciales para consultas de alta complejidad.
+   * Genera una superposición de 4 a 5 hipótesis iniciales (incluyendo Tunelamiento Cuántico).
    */
-  generateHypothesisSuperposition(query: string): HypothesisCandidate[] {
+  generateHypothesisSuperposition(query: string, explorationRate = 0.15): HypothesisCandidate[] {
     this.logger.log(`[QICA:Superposición] Generando estados de hipótesis para: "${query.substring(0, 60)}..."`);
 
-    return [
+    const baseHypotheses: HypothesisCandidate[] = [
       {
         id: 'hyp_analytical',
         name: 'Perspectiva Analítica y Estructural',
@@ -34,13 +35,6 @@ export class HypothesisEngineService {
         seedPrompt: 'Prioriza la viabilidad directa, minimizar la complejidad, evitar sobre-ingeniería y reducir riesgos.',
       },
       {
-        id: 'hyp_experimental',
-        name: 'Perspectiva Innovadora y de Frontera',
-        angle: 'EXPERIMENTAL',
-        perspectiveDescription: 'Enfoque en soluciones de vanguardia, automatización avanzada y patrones emergentes.',
-        seedPrompt: 'Explora ideas disruptivas, autonomía de agentes, integraciones modernas y optimización de frontera.',
-      },
-      {
         id: 'hyp_critical',
         name: 'Perspectiva Crítica y Falsación (Frontera de Seguridad)',
         angle: 'CRITICAL',
@@ -48,5 +42,17 @@ export class HypothesisEngineService {
         seedPrompt: 'Cuestiona los supuestos, busca puntos ciegos, vulnerabilidades de seguridad y limitaciones operativas.',
       },
     ];
+
+    // QICA 2.0: Tunelamiento Cuántico (Exploración para escapar de mínimos locales / respuestas estándar)
+    baseHypotheses.push({
+      id: 'hyp_tunneling',
+      name: 'Perspectiva de Tunelamiento Cuántico (Exploración Disruptiva)',
+      angle: 'TUNNELING',
+      isQuantumTunneling: true,
+      perspectiveDescription: 'Atraviesa barreras convencionales y valles locales para proponer soluciones poco probables pero de alto valor.',
+      seedPrompt: 'Explora un enfoque contraintuitivo, lateral o altamente innovador que desafíe el paradigma estándar.',
+    });
+
+    return baseHypotheses;
   }
 }

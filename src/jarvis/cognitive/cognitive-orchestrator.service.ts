@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CognitiveFieldService } from '../memory/cognitive-field.service';
 import { HypothesisEngineService } from './hypothesis-engine.service';
 import { InterferenceEngineService, CognitiveCollapseResult } from './interference-engine.service';
+import { UncertaintyEngineService } from './uncertainty-engine.service';
 import { EvidenceReport } from '../knowledge/evidence.service';
 
 export interface QICAProcessingResult {
@@ -19,10 +20,11 @@ export class CognitiveOrchestratorService {
     private readonly cognitiveField: CognitiveFieldService,
     private readonly hypothesisEngine: HypothesisEngineService,
     private readonly interferenceEngine: InterferenceEngineService,
+    private readonly uncertaintyEngine: UncertaintyEngineService,
   ) {}
 
   /**
-   * Determina si la consulta requiere activación cognitiva cuántico-inspirada y ejecuta el pipeline.
+   * QICA 2.0: Determina si la consulta requiere activación cognitiva cuántico-inspirada y ejecuta el pipeline.
    */
   async processCognitiveQuery(
     sessionId: string,
@@ -32,35 +34,45 @@ export class CognitiveOrchestratorService {
   ): Promise<QICAProcessingResult> {
     const start = Date.now();
 
-    // 1. Activar conceptos y actualizar el Campo Cognitivo asociativo
+    // 1. Activar conceptos y procesar Grafo de Memoria Entrelazada (co-activación no-local)
     const activeConcepts = await this.cognitiveField.activateConcepts(sessionId, userMessage);
 
-    // 2. Determinar si se activa la superposición e interferencia profunda
+    // 2. Evaluar Incertidumbre y Desconocidos (Uncertainty Engine)
+    const uncertaintyReport = this.uncertaintyEngine.evaluateUncertainty(
+      userMessage,
+      retrievedChunks,
+      evidenceReport,
+    );
+
+    // 3. Determinar si se activa la superposición e interferencia profunda
     const isComplex = this.shouldActivateDeepCognition(userMessage);
 
     if (!isComplex) {
       const fieldCtx = await this.cognitiveField.formatFieldForContext(sessionId);
       return {
         activated: false,
-        cognitiveFieldContext: fieldCtx,
+        cognitiveFieldContext: fieldCtx + uncertaintyReport.uncertaintyWarningDirectives,
         processingTimeMs: Date.now() - start,
       };
     }
 
-    this.logger.log(`[QICA:Orquestador] Activando modo cognitivo profundo para consulta de alta complejidad en sesión ${sessionId}`);
+    this.logger.log(`[QICA 2.0:Orquestador] Modo cognitivo profundo activado en sesión ${sessionId}`);
 
-    // 3. Superposición: Generación de hipótesis
+    // 4. Superposición: Generación de hipótesis (incluyendo Tunelamiento Cuántico)
     const hypotheses = this.hypothesisEngine.generateHypothesisSuperposition(userMessage);
 
-    // 4. Interferencia y Colapso de Estado
+    // 5. Interferencia y Colapso de Estado
     const collapseResult = this.interferenceEngine.processInterference(
       hypotheses,
       retrievedChunks,
       activeConcepts,
       evidenceReport,
+      uncertaintyReport,
     );
 
-    const cognitiveFieldContext = await this.cognitiveField.formatFieldForContext(sessionId);
+    const cognitiveFieldContext =
+      (await this.cognitiveField.formatFieldForContext(sessionId)) +
+      uncertaintyReport.uncertaintyWarningDirectives;
 
     return {
       activated: true,
@@ -75,7 +87,6 @@ export class CognitiveOrchestratorService {
   private shouldActivateDeepCognition(text: string): boolean {
     if (!text) return false;
 
-    // Desactivar para preguntas cortas o directas
     if (text.trim().length < 45) return false;
 
     const lower = text.toLowerCase();
@@ -84,6 +95,7 @@ export class CognitiveOrchestratorService {
       'estrategia', 'diseño', 'diseño', 'sistema operativo', 'patrón', 'patron',
       'decisión', 'decision', 'ventajas', 'desventajas', 'comparación', 'comparacion',
       'cuántico', 'cuantico', 'cognitivo', 'filosofía', 'filosofia', 'futuro',
+      'innovación', 'innovacion', 'creatividad', 'entrelazamiento', 'incertidumbre',
     ];
 
     return deepKeywords.some((kw) => lower.includes(kw));

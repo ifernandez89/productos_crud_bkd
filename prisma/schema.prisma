@@ -533,3 +533,21 @@ model CognitiveState {
   @@index([lastActivatedAt])
 }
 
+// ── 16) COGNITIVE ENTANGLEMENT GRAPH (QICA 2.0) ──────────────────────────────
+// Relaciones de entrelazamiento asociativo no-local entre conceptos.
+
+model CognitiveEntanglement {
+  id                  Int      @id @default(autoincrement())
+  conceptA            String   // ej: "conciencia"
+  conceptB            String   // ej: "arquitectura"
+  correlationStrength Float    @default(0.5) // fuerza de entrelazamiento (0.0 a 1.0)
+  interactionCount    Int      @default(1)
+  lastCoActivatedAt   DateTime @default(now())
+
+  @@unique([conceptA, conceptB])
+  @@index([correlationStrength])
+  @@index([conceptA])
+  @@index([conceptB])
+}
+
+
