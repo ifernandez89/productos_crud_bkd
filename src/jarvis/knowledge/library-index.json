@@ -294,7 +294,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Arquetipos EI inconsciente Colectivo 3\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -326,7 +326,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Conflictos Del Alma Infantil\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -358,7 +358,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El hombre y sus simbolos\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -422,7 +422,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Interpretacion De La Naturaleza Y La Psique\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -454,7 +454,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Psicologia De La Transferencia 1\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -486,7 +486,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Psicologia De La Transferencia 2\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -518,7 +518,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Complejos y el Inconsciente\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -614,7 +614,7 @@
         "persona"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Tipos Psicologicos Tomo 2\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
@@ -624,9 +624,9 @@
       ]
     },
     {
-      "id": "lib-carta-astral-ignacio-gabriel-fernandez-p",
+      "id": "lib-carta-natal-ignacio-fernandez-carta-astr",
       "titulo": "Carta astral Ignacio Gabriel Fernandez",
-      "archivo": "Carta astral Ignacio Gabriel Fernandez.pdf",
+      "archivo": "Carta natal Ignacio Fernandez/Carta astral Ignacio Gabriel Fernandez.pdf",
       "tipo": "libro",
       "formato": "pdf",
       "autor": "Desconocido",
@@ -640,6 +640,27 @@
       "capitulos": [],
       "embeddings": "pending",
       "descripcionBreve": "Libro \"Carta astral Ignacio Gabriel Fernandez\" de Desconocido registrado en la biblioteca local.",
+      "tags": [
+        "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-carta-natal-ignacio-fernandez-carta-jpeg",
+      "titulo": "carta.jpeg",
+      "archivo": "Carta natal Ignacio Fernandez/carta.jpeg",
+      "tipo": "libro",
+      "formato": "jpeg",
+      "autor": "Desconocido",
+      "idioma": "es",
+      "categorias": [
+        "Otros"
+      ],
+      "conceptosClave": [
+        "carta.jpeg"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"carta.jpeg\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
       ]
@@ -3679,7 +3700,7 @@
         "munay ki espacio sagrado"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Munay Ki ESPACIO SAGRADO\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
@@ -3700,7 +3721,7 @@
         "munay ki"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Munay ki\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
