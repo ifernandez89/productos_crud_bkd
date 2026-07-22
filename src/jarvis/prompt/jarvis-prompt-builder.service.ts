@@ -123,6 +123,8 @@ export class JarvisPromptBuilderService {
 
     const contextParts: string[] = [];
     let usedMemory = false;
+    let usedDocs = false;
+    let requestedDocTitle: string | null = null;
 
     // ── Local JSON Knowledge lookup ──────────────────────────────────────────
     const localKnowledgeCtx =
@@ -130,7 +132,6 @@ export class JarvisPromptBuilderService {
     if (localKnowledgeCtx) {
       contextParts.push(localKnowledgeCtx);
     }
-    let usedDocs = false;
 
     if (relevantSkills.length > 0) {
       const skillText = relevantSkills
@@ -161,6 +162,7 @@ export class JarvisPromptBuilderService {
         const docSummary = await this.detectDocumentSummaryRequest(userMessage);
 
         if (docSummary.isRequest && docSummary.title) {
+          requestedDocTitle = docSummary.title;
           this.logger.log(
             `[rag:document] detectado resumen de documento: "${docSummary.title}"`,
           );
@@ -314,9 +316,14 @@ export class JarvisPromptBuilderService {
         ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
         : '';
 
+    const docInstruction =
+      usedDocs && requestedDocTitle
+        ? `\n\n📌 INSTRUCCIÓN DE RESUMEN DE DOCUMENTO: El usuario solicitó/mencionó la obra "${requestedDocTitle}". Presentá una respuesta clara, directa y estructurada que sintetice la obra, detallando su resumen ejecutivo, sus puntos clave principales y los ejes o capítulos conceptuales más importantes basándote en la información estructurada provista arriba.`
+        : '';
+
     const userPrompt =
       contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}`
         : userMessage;
 
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
@@ -370,6 +377,14 @@ export class JarvisPromptBuilderService {
 
     const actionMatch = title.match(ACTION_PREFIXES);
     if (!actionMatch) {
+      // 🌟 Si el mensaje no contiene prefijo de acción (ej: el usuario escribió "Energetica Psiquica y Esencia Del Sueño"),
+      // pero coincide directamente con una obra/documento disponible en la biblioteca:
+      if (title.length >= 3) {
+        const matchedDocTitle = await this.findMatchingDocumentTitle(title);
+        if (matchedDocTitle) {
+          return { title: matchedDocTitle, maxItems };
+        }
+      }
       return null;
     }
 
@@ -396,52 +411,61 @@ export class JarvisPromptBuilderService {
     return null;
   }
 
-  private async dbOrIndexHasDocument(title: string): Promise<boolean> {
-    const index = this.corpusSelector.getIndex();
+  private async findMatchingDocumentTitle(title: string): Promise<string | null> {
+    // 1. Probar en el índice de la biblioteca (CorpusSelector)
+    if (this.corpusSelector) {
+      const matches = this.corpusSelector.findRelevantDocuments(title, 1);
+      if (matches.length > 0 && matches[0].score >= 2.0) {
+        return matches[0].document.titulo;
+      }
+    }
+
+    // 2. Probar en la base de datos o por coincidencia directa de título
+    const normSearch = title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    if (normSearch.length < 3) return null;
+
+    const index = this.corpusSelector?.getIndex();
     if (index && index.documentos) {
-      const normSearch = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
-      const inIndex = index.documentos.some((doc) => {
+      const foundInIndex = index.documentos.find((doc) => {
         const normDocTitle = doc.titulo
           .toLowerCase()
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
-        return (
-          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
-        );
+        return normDocTitle === normSearch || normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
       });
-      if (inIndex) return true;
+      if (foundInIndex) return foundInIndex.titulo;
     }
+
     try {
       const existing = await this.documentRepo.findDocumentByExactTitle(title);
-      if (existing) return true;
+      if (existing) return existing.title;
 
-      const candidates = await this.documentRepo.searchDocumentsByTitle(
-        title,
-        3,
-      );
-      const normSearch = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
-      return candidates.some((doc) => {
+      const candidates = await this.documentRepo.searchDocumentsByTitle(title, 3);
+      const match = candidates.find((doc) => {
         const normDocTitle = doc.title
           .toLowerCase()
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
-        return (
-          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
-        );
+        return normDocTitle === normSearch || normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
       });
+      if (match) return match.title;
     } catch {
-      return false;
+      // ignore
     }
+
+    return null;
+  }
+
+  private async dbOrIndexHasDocument(title: string): Promise<boolean> {
+    const matched = await this.findMatchingDocumentTitle(title);
+    return !!matched;
   }
 
   private detectCategorySummaryRequest(message: string): {
