@@ -210,15 +210,35 @@ export class JarvisService {
       let prefetchedRagContext: string | undefined = undefined;
       let hasRagHits = false;
       let retrievedChunksList: any[] = [];
+      let libraryMatches: any[] = [];
+
+      if (useDocuments) {
+        libraryMatches = this.corpusSelector.findRelevantDocuments(
+          userMessage,
+          3,
+        );
+        if (libraryMatches.length > 0 && libraryMatches[0].score >= 2.0) {
+          const isAstrologyOrWeb =
+            intent.intent === 'ASTROLOGY' || intent.intent === 'WEB';
+          const isLowConfidenceLocal =
+            intent.intent === 'LOCAL' && intent.confidence !== 'high';
+
+          if (isAstrologyOrWeb || isLowConfidenceLocal) {
+            this.logger.log(
+              `[intent-override] Coincidencia en biblioteca detectada (${libraryMatches[0].document.titulo}, score: ${libraryMatches[0].score}). Forzando RAG desde ${intent.intent}`,
+            );
+            intent.intent = 'RAG';
+            intent.confidence = 'high';
+            intent.reason = `library match: ${libraryMatches[0].document.titulo}`;
+          }
+        }
+      }
 
       if (useDocuments) {
         let chunks = [] as any[];
         try {
           // 1. Consultar el índice de la biblioteca para encontrar documentos relevantes
-          const matches = this.corpusSelector.findRelevantDocuments(
-            userMessage,
-            3,
-          );
+          const matches = libraryMatches;
           const targetDocIds: number[] = [];
 
           if (matches.length > 0) {
@@ -357,6 +377,29 @@ export class JarvisService {
             `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
             formattedParts.join('\n\n');
         }
+      }
+
+      // Si el intent es RAG (o fue anulado a RAG), pero no se encontraron fragmentos (ej: no hay conexión a la BD, la BD no está aquí, o no hubo coincidencias en absoluto),
+      // retornamos un mensaje de error descriptivo amigable para el usuario.
+      if (intent.intent === 'RAG' && (!prefetchedRagContext || retrievedChunksList.length === 0)) {
+        const noRagMsg = 'No encontré el documento solicitado o suficiente información al respecto en la biblioteca personal (o la base de datos no está disponible).';
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: noRagMsg,
+          metadata: { source: 'rag_fail_fail-safe' },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: noRagMsg,
+          toolsUsed: [...toolsUsed, 'rag_fail'],
+          modelUsed: 'none',
+          provider: 'none',
+          durationMs: Date.now() - startTime,
+          success: false,
+        });
+        return noRagMsg;
       }
 
       // ── 7. Decidir si buscar en la web en primera instancia ───────────────

@@ -2,7 +2,7 @@ import { CorpusSelectorService } from '../src/jarvis/knowledge/corpus-selector.s
 
 function main() {
   const service = new CorpusSelectorService();
-  const query = "Busca en mis documentos sexualidad";
+  const query = "Energetica Psiquica y Esencia Del Sueño";
   console.log(`Testing query: "${query}"`);
   
   const matches = service.findRelevantDocuments(query, 5);

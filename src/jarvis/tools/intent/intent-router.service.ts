@@ -140,7 +140,7 @@ export class IntentRouterService {
 
     // TASKS — alta confianza
     if (
-      /(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes)/i.test(
+      /(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes|que tenemos pendiente|que quedo pendiente|cuales son los pendientes|que tengo pendiente)/i.test(
         n,
       )
     ) {
@@ -410,7 +410,7 @@ export class IntentRouterService {
 
     // LOCAL — alta confianza (conversación trivial, identidad del asistente)
     const trivialPattern =
-      /^(hola|buenas|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios)[\s!?.]*$/i;
+      /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios|como estas|como andas|que tal|como va|hola como estas|hola que tal|hola como andas)[\s!?.,]*$/i;
     if (trivialPattern.test(n.trim())) {
       return {
         intent: 'LOCAL',
@@ -418,6 +418,29 @@ export class IntentRouterService {
         reason: 'trivial greeting',
       };
     }
+
+    // Chistes — alta confianza (LOCAL)
+    if (/^(chiste|contame un chiste|cuentame un chiste|decime un chiste|hace un chiste|decime algo gracioso)$/i.test(n.trim().replace(/[?¿!¡.]/g, ''))) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'joke request',
+      };
+    }
+
+    // Historial de conversación — alta confianza (LOCAL)
+    if (
+      /(donde quedamos|donde habiamos quedado|donde quedamos ayer|que estabamos haciendo|de que hablabamos|que vimos ayer|que hicimos ayer)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'conversation history query',
+      };
+    }
+
     if (
       /(quien eres|como te llamas|que eres|que podes hacer|sos un bot|eres un bot)/i.test(
         n,
@@ -446,9 +469,9 @@ export class IntentRouterService {
       };
     }
 
-    // WEB — señales claras pero no definitivas
+    // WEB — señales claras pero no definitivas (excluye 'hoy' y 'ayer' para evitar falsos positivos)
     if (
-      /(noticias|noticia|ultima hora|novedades|hoy|ayer|esta semana|precio de|cotizacion|cuando es|donde queda)/i.test(
+      /(noticias|noticia|ultima hora|novedades|esta semana|precio de|cotizacion|cuando es|donde queda)/i.test(
         n,
       )
     ) {
