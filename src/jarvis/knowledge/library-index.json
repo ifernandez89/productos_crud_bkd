@@ -2103,7 +2103,14 @@
         "pulsión",
         "ego",
         "ello",
-        "superyó"
+        "superyó",
+        "sexualidad",
+        "sexual",
+        "libido",
+        "sexo",
+        "histeria",
+        "neurosis",
+        "placer"
       ],
       "capitulos": [],
       "embeddings": "ready",
@@ -3388,7 +3395,7 @@
         "cábala"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
@@ -4151,7 +4158,7 @@
         "wilson"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Mensaje Oculto de la Esfinge\" de Colin Wilson registrado en la biblioteca local.",
       "tags": [
         "wilson",

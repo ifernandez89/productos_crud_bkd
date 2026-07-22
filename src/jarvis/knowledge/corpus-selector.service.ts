@@ -278,6 +278,17 @@ export class CorpusSelectorService {
 
   // ── Scoring de relevancia ────────────────────────────────────────────────────
 
+  private matchTerm(target: string, term: string): boolean {
+    if (!target || !term) return false;
+    const normTarget = target.toLowerCase();
+    const normTerm = term.toLowerCase();
+    if (normTerm.length <= 4) {
+      const escaped = normTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`\\b${escaped}\\b`, 'i').test(normTarget);
+    }
+    return normTarget.includes(normTerm);
+  }
+
   private scoreDocument(
     doc: LibraryDocument,
     queryTerms: string[],
@@ -290,7 +301,7 @@ export class CorpusSelectorService {
     // 1. Coincidencia en título (peso alto)
     const titleLower = doc.titulo.toLowerCase();
     for (const term of queryTerms) {
-      if (titleLower.includes(term)) {
+      if (this.matchTerm(titleLower, term)) {
         score += 3;
         matchedOn.push(`título:${term}`);
       }
@@ -299,7 +310,7 @@ export class CorpusSelectorService {
     // 2. Coincidencia en autor (peso muy alto — "Jung" → todos los libros de Jung)
     const autorLower = doc.autor.toLowerCase();
     for (const term of queryTerms) {
-      if (autorLower.includes(term)) {
+      if (this.matchTerm(autorLower, term)) {
         score += 4;
         matchedOn.push(`autor:${term}`);
       }
@@ -309,7 +320,7 @@ export class CorpusSelectorService {
     for (const concepto of doc.conceptosClave) {
       const conceptoLower = concepto.toLowerCase();
       for (const term of queryTerms) {
-        if (conceptoLower.includes(term) || term.includes(conceptoLower)) {
+        if (this.matchTerm(conceptoLower, term) || this.matchTerm(term, conceptoLower)) {
           score += 2.5;
           matchedOn.push(`concepto:${concepto}`);
           break;
@@ -326,7 +337,7 @@ export class CorpusSelectorService {
     for (const cat of doc.categorias) {
       const catLower = cat.toLowerCase();
       for (const term of queryTerms) {
-        if (catLower.includes(term) || term.includes(catLower)) {
+        if (this.matchTerm(catLower, term) || this.matchTerm(term, catLower)) {
           score += 2;
           matchedOn.push(`categoría:${cat}`);
           break;
@@ -338,7 +349,7 @@ export class CorpusSelectorService {
     for (const tag of doc.tags) {
       const tagLower = tag.toLowerCase();
       for (const term of queryTerms) {
-        if (tagLower === term || queryLower.includes(tagLower)) {
+        if (this.matchTerm(tagLower, term) || queryLower.includes(tagLower)) {
           score += 1.5;
           matchedOn.push(`tag:${tag}`);
           break;
@@ -350,7 +361,7 @@ export class CorpusSelectorService {
     for (const cap of doc.capitulos) {
       const capTitulo = cap.titulo.toLowerCase();
       for (const term of queryTerms) {
-        if (capTitulo.includes(term)) {
+        if (this.matchTerm(capTitulo, term)) {
           score += 3;
           matchedOn.push(`capítulo:${cap.titulo}`);
           break;
@@ -448,7 +459,7 @@ export class CorpusSelectorService {
       doc.embeddings = 'ready';
       this.saveIndexToDisk();
       this.logger.log(
-        `[corpus] embeddings marcados como ready: "${doc.titulo}"`,
+        `[corpus] documento ID "${id}" marcado como ready en disco`,
       );
     }
   }
@@ -457,15 +468,9 @@ export class CorpusSelectorService {
    * Guarda el índice de la biblioteca en disco (library-index.json).
    */
   private saveIndexToDisk(): void {
+    if (!this.index) return;
     try {
-      fs.writeFileSync(
-        this.indexPath,
-        JSON.stringify(this.index, null, 2),
-        'utf-8',
-      );
-      this.logger.log(
-        `[corpus] Índice de biblioteca guardado en disco: ${this.indexPath}`,
-      );
+      fs.writeFileSync(this.indexPath, JSON.stringify(this.index, null, 2));
     } catch (err: any) {
       this.logger.error(
         `[corpus] Error guardando library-index.json: ${err.message}`,

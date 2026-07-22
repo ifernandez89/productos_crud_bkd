@@ -754,29 +754,47 @@ export class JarvisCommandService {
       return null;
     }
 
+    if (
+      /^(?:resumen|resumir|resumime|resumeme|resume|puntos|compara|comparar|relaciona|relacionar|busca|buscar|buscame|dame|muestra|mostrame|explica|explicame|explicá|analiza|describe|describime|detalla|detallame|profundiza|profundizame|profundizar|diagnostico|test|probe|configurar|modo|eliminar|borrar|repetir|repite|hola|help|ayuda)\b/i.test(
+        trimmed,
+      )
+    ) {
+      return null;
+    }
+
     const explicitMatch = trimmed.match(
       /^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i,
     );
     if (explicitMatch?.[1]?.trim()) {
-      return { author: explicitMatch[1].trim() };
+      const candidate = explicitMatch[1].trim();
+      const matchedAuthor = this.findAuthorInIndex(candidate);
+      if (matchedAuthor) {
+        return { author: matchedAuthor };
+      }
     }
 
-    const simpleAuthor = trimmed.match(
-      /^([A-ZÁÉÍÓÚÑ][\wÁÉÍÓÚÑáéíóúñ\s.\-]{2,80})$/u,
-    );
-    if (simpleAuthor?.[1]) {
-      const candidate = simpleAuthor[1].trim();
-      if (
-        /^(?:resumen|puntos|compara|comparar|relaciona|relacionar|busca|dame|muestra|mostrame|explica|analiza|describe|diagnostico|test|probe|configurar|modo|eliminar|borrar|repetir|repite|hola|help|ayuda)/i.test(
-          candidate,
-        )
-      ) {
-        return null;
-      }
-      const words = candidate.split(/\s+/).filter(Boolean);
-      if (words.length >= 2) {
-        return { author: candidate };
-      }
+    const matchedAuthor = this.findAuthorInIndex(trimmed);
+    if (matchedAuthor) {
+      return { author: matchedAuthor };
+    }
+
+    return null;
+  }
+
+  private findAuthorInIndex(query: string): string | null {
+    const index = this.corpusSelector?.getIndex?.();
+    const docs = index?.documentos ?? [];
+    if (docs.length === 0) return null;
+
+    const normQuery = this.normalizeText(query);
+    if (normQuery.length < 3) return null;
+
+    for (const doc of docs) {
+      if (!doc.autor) continue;
+      const normAutor = this.normalizeText(doc.autor);
+      if (normAutor === normQuery) return doc.autor;
+      if (normAutor.includes(normQuery) && normQuery.length >= 4) return doc.autor;
+      if (normQuery.includes(normAutor) && normAutor.length >= 4) return doc.autor;
     }
 
     return null;
@@ -1021,9 +1039,9 @@ export class JarvisCommandService {
       : 10;
 
     const ACTION_PREFIXES =
-      /^(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|explica(?:me)?|explicá)\b/i;
+      /^(?:resumen|resumir|resumime|resumeme|resume|puntos\s*clave|puntos|items|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|detalla|detallame|detallar|explica(?:me)?|explicá|profundiza|profundizame|profundizar|profundizá|hablame\s+de|hablame\s+sobre|hablá\s+de|hablá\s+sobre|cuentame\s+de|cuentame\s+sobre|contame\s+de|contame\s+sobre)\b/i;
     const CONNECTORS =
-      /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|de(?:l)?|sobre)\s+/i;
+      /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|(?:los\s+libros\s+de\s+)?(?:de|del|sobre|en))\s+/i;
     const GENERIC_STARTERS =
       /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
     const GREETINGS =
@@ -1048,6 +1066,20 @@ export class JarvisCommandService {
     title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
 
     if (title.length >= 2) {
+      // Si el título extraído es el nombre de un autor, buscar la obra principal de ese autor
+      const authorName = this.findAuthorInIndex(title);
+      if (authorName) {
+        const index = this.corpusSelector?.getIndex?.();
+        const docs = index?.documentos ?? [];
+        const authorDocs = docs.filter((d) =>
+          this.normalizeText(d.autor ?? '').includes(this.normalizeText(authorName)),
+        );
+        if (authorDocs.length > 0) {
+          title = authorDocs[0].titulo;
+          return { title, maxItems };
+        }
+      }
+
       const titleLower = title
         .toLowerCase()
         .normalize('NFD')

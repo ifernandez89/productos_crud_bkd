@@ -82,8 +82,12 @@ export class DocumentSummaryService {
       `[document-summary] documento encontrado: id=${document.id}, title="${document.title}", chunks=${document.chunks?.length ?? 0}`,
     );
 
-    // Si ya existe una Ficha de Conocimiento (Knowledge Card) en DB, servirla directamente
-    if (document.summary && document.summary.trim().length > 100) {
+    // Si ya existe una Ficha de Conocimiento (Knowledge Card) en DB, servirla directamente (siempre que sea válida)
+    if (
+      document.summary &&
+      document.summary.trim().length > 100 &&
+      !this.isBadSummary(document.summary)
+    ) {
       this.logger.log(
         `[document-summary] sirviendo Ficha de Conocimiento ya almacenada en base de datos`,
       );
@@ -93,7 +97,7 @@ export class DocumentSummaryService {
       let inKeyPointsSection = false;
       for (const line of lines) {
         if (
-          /Preguntas que puede responder|Conceptos Clave|Conceptos Detectados/i.test(
+          /Preguntas que puede responder|Conceptos Clave|Conceptos Detectados|Núcleos Temáticos/i.test(
             line,
           )
         ) {
@@ -109,9 +113,10 @@ export class DocumentSummaryService {
               trimmed.startsWith('-') ||
               trimmed.startsWith('*') ||
               trimmed.startsWith('✔') ||
-              trimmed.startsWith('✓')
+              trimmed.startsWith('✓') ||
+              /^\d+\./.test(trimmed)
             ) {
-              keyPoints.push(trimmed.replace(/^[-*✔✓\s]+/, '').trim());
+              keyPoints.push(trimmed.replace(/^[-*✔✓\d.\s]+/, '').trim());
             }
           }
         }
@@ -537,5 +542,19 @@ ${keyPoints.map((p) => `✔ ¿${p.endsWith('?') ? p.slice(0, -1) : p}?`).join('\
       summary,
       keyPoints,
     };
+  }
+
+  private isBadSummary(text: string | null | undefined): boolean {
+    if (!text || text.trim().length < 50) return true;
+    const lower = text.toLowerCase();
+    return (
+      lower.includes('lo siento') ||
+      lower.includes('error en mi respuesta') ||
+      lower.includes('no pude proporcionar') ||
+      lower.includes('limitación en la información') ||
+      lower.includes('hubo un error') ||
+      lower.includes('no puedo ofrecer') ||
+      lower.includes('debido a una limitación')
+    );
   }
 }
