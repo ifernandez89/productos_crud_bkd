@@ -155,53 +155,60 @@ export class JarvisPromptBuilderService {
 
     // RAG de documentos
     if (useDocuments) {
-      if (prefetchedRagContext) {
+      const docSummary = await this.detectDocumentSummaryRequest(userMessage);
+
+      if (docSummary.isRequest && docSummary.title) {
+        requestedDocTitle = docSummary.title;
+        this.logger.log(
+          `[rag:document] detectado resumen de documento: "${docSummary.title}"`,
+        );
+
+        try {
+          const result =
+            await this.documentSummaryService.generateDocumentSummary(
+              docSummary.title,
+              docSummary.maxKeyPoints,
+            );
+
+          usedDocs = true;
+
+          const docInIndex = this.corpusSelector.getIndex()?.documentos?.find(
+            (d) => d.titulo.toLowerCase() === result.title.toLowerCase(),
+          );
+          const author =
+            docInIndex?.autor ||
+            this.corpusSelector.getAuthorAndSchoolByTitle(result.title).author;
+
+          const formattedSummary = [
+            `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
+            author && author !== 'Autor Desconocido' ? `**Autor:** ${author}` : '',
+            result.category ? `**Categoría:** ${result.category}` : '',
+            result.wordCount > 0
+              ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}`
+              : '',
+            '',
+            '**RESUMEN EJECUTIVO:**',
+            result.summary,
+            '',
+            '**PUNTOS CLAVE Y CONCEPTOS:**',
+            ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
+          ]
+            .filter((line) => line !== '')
+            .join('\n');
+
+          contextParts.push(formattedSummary);
+        } catch (err: any) {
+          this.logger.warn(
+            `[rag:document] error al generar resumen: ${err.message}`,
+          );
+          contextParts.push(`### DOCUMENTOS\n${err.message}`);
+        }
+      } else if (prefetchedRagContext) {
         usedDocs = true;
         contextParts.push(prefetchedRagContext);
       } else {
-        const docSummary = await this.detectDocumentSummaryRequest(userMessage);
-
-        if (docSummary.isRequest && docSummary.title) {
-          requestedDocTitle = docSummary.title;
-          this.logger.log(
-            `[rag:document] detectado resumen de documento: "${docSummary.title}"`,
-          );
-
-          try {
-            const result =
-              await this.documentSummaryService.generateDocumentSummary(
-                docSummary.title,
-                docSummary.maxKeyPoints,
-              );
-
-            usedDocs = true;
-
-            const formattedSummary = [
-              `### RESUMEN DEL DOCUMENTO: "${result.title}"`,
-              result.category ? `**Categoría:** ${result.category}` : '',
-              result.wordCount > 0
-                ? `**Palabras:** ~${result.wordCount} | **Chunks:** ${result.chunkCount}`
-                : '',
-              '',
-              '**RESUMEN EJECUTIVO:**',
-              result.summary,
-              '',
-              '**PUNTOS CLAVE:**',
-              ...result.keyPoints.map((point, idx) => `${idx + 1}. ${point}`),
-            ]
-              .filter((line) => line !== '')
-              .join('\n');
-
-            contextParts.push(formattedSummary);
-          } catch (err: any) {
-            this.logger.warn(
-              `[rag:document] error al generar resumen: ${err.message}`,
-            );
-            contextParts.push(`### DOCUMENTOS\n${err.message}`);
-          }
-        } else {
-          const categorySummary =
-            this.detectCategorySummaryRequest(userMessage);
+        const categorySummary =
+          this.detectCategorySummaryRequest(userMessage);
 
           if (categorySummary.isRequest && categorySummary.category) {
             this.logger.log(
@@ -283,7 +290,6 @@ export class JarvisPromptBuilderService {
             }
           }
         }
-      }
     }
 
     if (browserContext) {

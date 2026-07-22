@@ -98,7 +98,13 @@ export class EvidenceService {
       'sin', 'por', 'del', 'al', 'un', 'una', 'unos', 'unas', 'yo', 'tu', 'el',
       'ella', 'nosotros', 'ustedes', 'ellos', 'ellas', 'hola', 'jarbees', 'jarvis',
       'modelo', 'activo', 'biblioteca', 'personal', 'documento', 'resumen', 'puntos',
-      'clave', 'contenido', 'escuela', 'pensamiento', 'autor', 'respuesta'
+      'clave', 'contenido', 'escuela', 'pensamiento', 'autor', 'respuesta',
+      'resumen ejecutivo', 'puntos clave', 'puntos clave principales', 'ejes tematicos',
+      'capitulos conceptuales', 'mapa del conocimiento', 'ficha de conocimiento',
+      'preguntas que puede responder', 'relaciones y contexto', 'analisis de respaldo',
+      'intuicion directa', 'teoria de los complejos', 'energetica psiquica',
+      'esencia del sueno', 'esencia del sueño', 'psicologia analitica', 'inconsciente colectivo',
+      'fuerza psiquica', 'teoria del inconsciente', 'obras completas', 'obra completa'
     ]);
 
     for (const entity of capitalizedMatches) {
@@ -357,7 +363,25 @@ export class EvidenceService {
 
   private isLikelyPersonName(entity: string): boolean {
     const parts = entity.trim().split(/\s+/);
-    return parts.length >= 2;
+    if (parts.length < 2 || parts.length > 4) return false;
+
+    const nonPersonWords = new Set([
+      'resumen', 'ejecutivo', 'puntos', 'clave', 'principales', 'capitulos',
+      'conceptuales', 'ejes', 'tematicos', 'mapa', 'conocimiento', 'ficha',
+      'analisis', 'respaldo', 'intuicion', 'directa', 'teoria', 'complejos',
+      'energetica', 'psiquica', 'esencia', 'sueño', 'sueno', 'psicologia',
+      'analitica', 'inconsciente', 'colectivo', 'fuerza', 'obras', 'completas',
+      'obra', 'completa', 'preguntas', 'relaciones', 'contexto', 'libro', 'libros',
+      'parte', 'capitulo', 'seccion', 'introduccion', 'conclusion', 'prologo'
+    ]);
+
+    for (const part of parts) {
+      if (nonPersonWords.has(this.normalizeText(part))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private normalizeAuthorNameForComparison(name: string): string {
