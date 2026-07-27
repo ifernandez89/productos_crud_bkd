@@ -1,5 +1,5 @@
 # JarBees — Arquitectura del Sistema
-**Última revisión:** 21 de Julio 2026 (Actualizado post git pull: EvidenceService, Control de Alucinaciones, Sanitización PDF y Model Rankings)  
+**Última revisión:** 22 de Julio 2026 (Actualizado post git pull: Intent Override, RAG Fail-Safe, Ingesta de Carl & Sigmund, EvidenceService improvements)  
 **Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
 **Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
 
@@ -137,9 +137,9 @@ Mensaje del usuario
 
 El router ya no solo clasifica comandos simples: ahora funciona como un orquestador híbrido para múltiples superficies de interacción. El flujo actual combina:
 
-- clasificación rápida por reglas y keywords,
+- clasificación rápida por reglas y keywords (con expresiones regulares extendidas para cubrir saludos triviales como `"buen dia"`, solicitudes de chistes y consultas de historial conversacional),
 - routing a servicios especializados como Google Calendar, Gmail, Drive y YouTube,
-- activación de skills cognitivas cuando la consulta requiere razonamiento modular,
+- activar de skills cognitivas cuando la consulta requiere razonamiento modular,
 - selección de modo de búsqueda persistente: `OFFLINE`, `LOCAL_FIRST`, `HYBRID` o `WEB_FIRST`.
 
 **Intents añadidos recientemente:**
@@ -151,6 +151,11 @@ El router ya no solo clasifica comandos simples: ahora funciona como un orquesta
 | `YOUTUBE` | "busca un video de NestJS" | `YouTubeService` |
 
 Esta evolución permite que Jarvis responda tanto desde memoria y RAG local como desde servicios externos, respetando el contexto del usuario y el modo de ejecución elegido.
+
+**Optimizaciones y robustez del orquestador:**
+- **Intent Override (Coerción a RAG):** Si la consulta coincide fuertemente con algún documento registrado en la biblioteca (score $\ge 2.0$), `JarvisService` anula dinámicamente los intents `ASTROLOGY`, `WEB`, o `LOCAL` (de baja confianza) para forzar la ruta `RAG`, garantizando la consulta al corpus local.
+- **Fail-Safe de RAG sin fragmentos:** Si se determina el intent `RAG` pero la base de datos no está disponible o no hay coincidencias de chunks, el sistema responde de forma descriptiva previniendo que el LLM genere alucinaciones.
+- **Filtro del Intent Router:** Se excluyeron los términos genéricos `"hoy"` y `"ayer"` del detector `WEB` para evitar consultas innecesarias a internet.
 
 ---
 
@@ -471,6 +476,7 @@ Los resúmenes generales de los documentos evolucionaron hacia un formato estruc
   - **Relaciones y Contexto**: Definición de límites y aplicabilidad.
   - **Grafo de Relaciones**: Un mapa conceptual en formato ASCII de las dependencias lógicas dentro del documento.
 - **Acceso Optimizado**: Al solicitar el resumen de un documento, `DocumentSummaryService` comprueba si ya existe la Ficha de Conocimiento almacenada para servirla directamente y extrae de ella los puntos clave de manera resiliente.
+- **Validación y Saneamiento (`isBadSummary`)**: Si la ficha guardada contiene disculpas o mensajes de error, el servicio de resumen la invalida y fuerza su regeneración en caliente. Asimismo, se adaptó el parser de puntos clave para extraerlos adecuadamente de las secciones de *"Núcleos Temáticos"*.
 
 ### 11.7 Recuperación Enriquecida, Reranking Híbrido y Salvaguardas de RAG (nuevo)
 
@@ -483,6 +489,8 @@ El pipeline de recuperación RAG en `JarvisService` y `JarvisPromptBuilderServic
   - Tenga prohibición absoluta de inventar libros, autores o capítulos que no existan en la biblioteca.
   - Preserve la integridad de los marcos intelectuales, separando claramente las perspectivas de distintos autores/escuelas sin mezclarlas.
 - **Auto-aprobación en Lazy Load**: Durante las búsquedas en caliente y carga diferida en `CorpusSelectorService`, si un documento existente coincide pero está en estado `quarantined` o `not_indexed`, el sistema aprueba e inicia la indexación jerárquica automáticamente para garantizar que su contenido esté disponible.
+- **Detección de Resúmenes sin Prefijo**: El prompt builder reconoce solicitudes de resumen de libros directamente a través de sus títulos, sin requerir prefijos de acción explícitos.
+- **Instrucción de Resumen de Documento**: Se inyecta una directiva de formato estructurado (`docInstruction`) para que el LLM organice su respuesta en base a resumen ejecutivo, puntos clave y ejes conceptuales.
 
 ### 11.8 Verificación de Respaldo y Control de Alucinaciones — EvidenceService (nuevo)
 
@@ -491,6 +499,7 @@ Para garantizar la precisión de las respuestas generadas por el RAG y eliminar 
 - **Puntaje de Confianza (Confidence Score)**: Computa un valor de confianza (0% a 100%) analizando la proporción de entidades (autores, términos específicos y conceptos clave) que tienen respaldo explícito en el contexto frente a entidades alucinadas.
 - **Desglose en Markdown**: Inyecta automáticamente un bloque colapsable `<details>` al final de cada respuesta RAG mostrando la métrica de confianza y el desglose de entidades verificadas vs. no presentes.
 - **Frontera Rígida de Conocimiento**: Restricciones de prompt en `JarvisPromptBuilderService` para forzar al modelo a delimitar su conocimiento estrictamente al corpus cargado.
+- **Mitigación de Falsas Alucinaciones**: El analizador en `EvidenceService` cuenta con filtros y exclusiones para términos estructurales del sistema (ej: *"resumen ejecutivo"*, *"puntos clave"*) y palabras clave específicas de marcos teóricos para evitar catalogarlos erróneamente como alucinaciones de nombres de personas.
 
 ### 11.9 Sanitización Estructural y Seguridad en la Ingesta de PDFs (nuevo)
 

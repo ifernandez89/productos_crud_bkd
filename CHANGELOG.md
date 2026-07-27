@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Optimized — Diagnóstico, Resumen Inteligente y Mitigación de Alucinaciones (2026-07-22)
+
+- **🤔 Resumen y Detección de Obras sin Prefijo**: Se mejoró [JarvisPromptBuilderService](file:///c:/nest/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) para identificar solicitudes de resúmenes de documentos mediante la coincidencia directa de títulos sin requerir prefijos de acción (ej. escribir solo el nombre de la obra en la biblioteca).
+- **📝 Instrucción de Resumen de Documento**: Se añadió una directiva estructurada (`docInstruction`) al prompt para guiar al LLM en la generación de resúmenes ejecutivos claros, puntos clave y núcleos temáticos de la obra en cuestión.
+- **🛡️ Mitigación de Alucinaciones en Evidence**: Se actualizó [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts) para evitar calificar falsamente términos conceptuales y frases del sistema (como *"resumen ejecutivo"*, *"puntos clave"*, *"esencia del sueño"*, *"inconsciente colectivo"*) como nombres de personas alucinados.
+- **⚙️ Resolución Precisa del Autor**: Corrección en [JarvisPromptBuilderService](file:///c:/nest/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) para resolver correctamente el autor de un documento al formatear el contexto utilizando el índice de la biblioteca o el asignador de escuelas de pensamiento.
+
+### Added & Optimized — Coerción de Intents y Robustez del Router (2026-07-22)
+
+- **🔄 Intent Override (Coerción a RAG)**: Si una consulta tiene una alta coincidencia en el índice de biblioteca (score $\ge 2.0$), [JarvisService](file:///c:/nest/productos_crud_bkd/src/jarvis/jarvis.service.ts) anula automáticamente los intents `ASTROLOGY`, `WEB`, o `LOCAL` (de baja confianza) para forzar la ruta `RAG`, garantizando que la respuesta provenga de la documentación local.
+- **🛡️ Fail-Safe en RAG sin Fragmentos**: Si el motor decide ir por la ruta `RAG` pero no se encuentra información en la base de datos (o esta no está disponible), el sistema responde con un mensaje descriptivo y amigable en vez de proceder con el LLM, previniendo alucinaciones severas.
+- **🗣️ Regex mejoradas en el Intent Router**: Se extendieron las reglas de coincidencia rápida de [IntentRouterService](file:///c:/nest/productos_crud_bkd/src/jarvis/tools/intent/intent-router.service.ts) para soportar saludos comunes adicionales ("buen dia", "como estas"), chistes y solicitudes de historial conversacional ("donde quedamos").
+- **🚫 Filtrado de Ruido en Búsqueda Web**: Se excluyeron los términos genéricos *"hoy"* y *"ayer"* en la detección de `WEB` del router para evitar falsas salidas a internet.
+
+### Added & Fixed — Ingesta de Carl & Sigmund y Saneamiento de Fichas (2026-07-21)
+
+- **📚 Ingesta de Carl Jung y Sigmund Freud**: Se crearon herramientas de automatización (`scripts/ingest-carl-jung.ts` e `scripts/ingest-author.ts`) para parsear e indexar múltiples obras de Carl Jung y Sigmund Freud en la biblioteca personal.
+- **🧬 Saneamiento de Resúmenes e Indización**:
+  - Detección de Fichas de Conocimiento corruptas u obsoletas (que contienen disculpas o errores de generación anteriores) mediante `isBadSummary` en [DocumentSummaryService](file:///c:/nest/productos_crud_bkd/src/jarvis/library/document-summary.service.ts), forzando su regeneración automática.
+  - Parseador mejorado de `keyPoints` en resúmenes para extraer viñetas y listas numéricas de las secciones de *"Núcleos Temáticos"*.
+  - Filtro estricto `matchTerm` en [CorpusSelectorService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/corpus-selector.service.ts) para consultas de términos cortos ($\le 4$ caracteres) empleando límites de palabra (`\b`), eliminando falsos positivos en el indexado y búsqueda.
+
 ### Added — JarBees 3.0: Arquitectura Cognitiva Multidisciplinaria (2026-07-21)
 
 - **🧬 Regulación Epigenética (`EpigeneticRegulatorService`)**: Ponderación adaptativa continua de niveles de expresión (Rigor Analítico, Creatividad, Investigación, Duda Funcional) basada en intención y contexto (0 ms de sobrecosto LLM).
