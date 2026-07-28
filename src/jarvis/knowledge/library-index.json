@@ -304,6 +304,38 @@
       ]
     },
     {
+      "id": "lib-carl-gustav-jung-carl-gustav-jung-psicol",
+      "titulo": "Psicologia de la religion oriental",
+      "archivo": "Carl Gustav Jung/Carl Gustav Jung - Psicologia de la religion oriental.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Psicologia de la religion oriental\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
       "id": "lib-carl-gustav-jung-conflictos-del-alma-inf",
       "titulo": "Conflictos Del Alma Infantil",
       "archivo": "Carl Gustav Jung/Conflictos Del Alma Infantil.PDF",
@@ -392,6 +424,38 @@
       "capitulos": [],
       "embeddings": "ready",
       "descripcionBreve": "Libro \"Energetica Psiquica y Esencia Del Sueño\" de Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "Jung",
+        "psicología",
+        "inconsciente",
+        "arquetipo"
+      ]
+    },
+    {
+      "id": "lib-carl-gustav-jung-jung-dream-interpretaci",
+      "titulo": "Dream Interpretacion Ancient & Modern 1936 1941 (2014)",
+      "archivo": "Carl Gustav Jung/JUNG Dream Interpretacion Ancient & Modern 1936-1941 (2014).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicología analítica",
+        "arquetipos",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "arquetipos",
+        "sombra",
+        "ánima",
+        "ánimus",
+        "inconsciente colectivo",
+        "sí-mismo",
+        "persona"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Dream Interpretacion Ancient & Modern 1936 1941 (2014)\" de Carl Gustav Jung registrado en la biblioteca local.",
       "tags": [
         "Jung",
         "psicología",
@@ -624,48 +688,6 @@
       ]
     },
     {
-      "id": "lib-carta-natal-ignacio-fernandez-carta-astr",
-      "titulo": "Carta astral Ignacio Gabriel Fernandez",
-      "archivo": "Carta natal Ignacio Fernandez/Carta astral Ignacio Gabriel Fernandez.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Desconocido",
-      "idioma": "es",
-      "categorias": [
-        "Otros"
-      ],
-      "conceptosClave": [
-        "carta astral ignacio gabriel fernandez"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Carta astral Ignacio Gabriel Fernandez\" de Desconocido registrado en la biblioteca local.",
-      "tags": [
-        "biblioteca"
-      ]
-    },
-    {
-      "id": "lib-carta-natal-ignacio-fernandez-carta-jpeg",
-      "titulo": "carta.jpeg",
-      "archivo": "Carta natal Ignacio Fernandez/carta.jpeg",
-      "tipo": "libro",
-      "formato": "jpeg",
-      "autor": "Desconocido",
-      "idioma": "es",
-      "categorias": [
-        "Otros"
-      ],
-      "conceptosClave": [
-        "carta.jpeg"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"carta.jpeg\" de Desconocido registrado en la biblioteca local.",
-      "tags": [
-        "biblioteca"
-      ]
-    },
-    {
       "id": "lib-charles-fort-el-libro-de-los-condenados-",
       "titulo": "Charles Fort El Libro de los Condenados",
       "archivo": "Charles Fort  El Libro de los Condenados.pdf",
@@ -814,39 +836,6 @@
       "descripcionBreve": "Libro \"Curso Básico AutoDefensa Psíquica (2 de 2)\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
-      ]
-    },
-    {
-      "id": "lib-doctrina-secreta-pdf",
-      "titulo": "La Doctrina Secreta",
-      "archivo": "doctrina_secreta.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Helena Petrovna Blavatsky",
-      "idioma": "es",
-      "categorias": [
-        "teosofía",
-        "esoterismo",
-        "ocultismo",
-        "origen del cosmos"
-      ],
-      "conceptosClave": [
-        "teosofía",
-        "blavatsky",
-        "estancias de dzyan",
-        "evolución cósmica",
-        "razas raíz"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"La Doctrina Secreta\" de Helena Petrovna Blavatsky registrado en la biblioteca local.",
-      "tags": [
-        "teosofía",
-        "blavatsky",
-        "ocultismo",
-        "esoterismo",
-        "cosmos",
-        "filosofía"
       ]
     },
     {
@@ -2081,53 +2070,6 @@
       ]
     },
     {
-      "id": "lib-freud-sigmund-obras-completas-pdf",
-      "titulo": "Obras Completas",
-      "archivo": "Freud, Sigmund. - Obras completas.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Sigmund Freud",
-      "idioma": "es",
-      "categorias": [
-        "psicoanálisis",
-        "psicología",
-        "inconsciente",
-        "ensayo"
-      ],
-      "conceptosClave": [
-        "psicoanálisis",
-        "inconsciente",
-        "sueños",
-        "represión",
-        "complejo de edipo",
-        "pulsión",
-        "ego",
-        "ello",
-        "superyó",
-        "sexualidad",
-        "sexual",
-        "libido",
-        "sexo",
-        "histeria",
-        "neurosis",
-        "placer"
-      ],
-      "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Obras Completas\" de Sigmund Freud registrado en la biblioteca local.",
-      "tags": [
-        "freud",
-        "sigmund",
-        "psicoanálisis",
-        "psicología",
-        "inconsciente",
-        "sexualidad",
-        "yo",
-        "ello",
-        "superyó"
-      ]
-    },
-    {
       "id": "lib-fundamentos-racionales-de-la-astrolog-a-",
       "titulo": "Fundamentos Racionales de la Astrología",
       "archivo": "Fundamentos Racionales de la Astrología.pdf",
@@ -2167,6 +2109,36 @@
       "descripcionBreve": "Libro \"Hacking Taller Attacking AD\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-helena-petrovna-blavatsky-helena-petrovn",
+      "titulo": "doctrina secreta",
+      "archivo": "Helena Petrovna Blavatsky/Helena Petrovna Blavatsky - doctrina secreta.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Helena Petrovna Blavatsky",
+      "idioma": "es",
+      "categorias": [
+        "teosofía",
+        "esoterismo",
+        "ocultismo"
+      ],
+      "conceptosClave": [
+        "doctrina secreta",
+        "teosofía",
+        "cosmogénesis",
+        "antropogénesis",
+        "esoterismo"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"doctrina secreta\" de Helena Petrovna Blavatsky registrado en la biblioteca local.",
+      "tags": [
+        "blavatsky",
+        "teosofía",
+        "esoterismo",
+        "ocultismo"
       ]
     },
     {
@@ -2280,6 +2252,90 @@
         "cantos",
         "ayahuasca",
         "medicina"
+      ]
+    },
+    {
+      "id": "lib-ignacio-fernandez-carta-astral-ignacio-g",
+      "titulo": "Carta astral Ignacio Gabriel Fernandez",
+      "archivo": "Ignacio Fernandez/Carta astral Ignacio Gabriel Fernandez.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Ignacio Gabriel Fernández",
+      "idioma": "es",
+      "categorias": [
+        "astrología",
+        "psicología",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "astrología",
+        "carta astral",
+        "inconsciente",
+        "mareas"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Carta astral Ignacio Gabriel Fernandez\" de Ignacio Gabriel Fernández registrado en la biblioteca local.",
+      "tags": [
+        "fernandez",
+        "astrología",
+        "inconsciente"
+      ]
+    },
+    {
+      "id": "lib-ignacio-fernandez-carta-jpeg",
+      "titulo": "carta.jpeg",
+      "archivo": "Ignacio Fernandez/carta.jpeg",
+      "tipo": "libro",
+      "formato": "jpeg",
+      "autor": "Ignacio Gabriel Fernández",
+      "idioma": "es",
+      "categorias": [
+        "astrología",
+        "psicología",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "astrología",
+        "carta astral",
+        "inconsciente",
+        "mareas"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"carta.jpeg\" de Ignacio Gabriel Fernández registrado en la biblioteca local.",
+      "tags": [
+        "fernandez",
+        "astrología",
+        "inconsciente"
+      ]
+    },
+    {
+      "id": "lib-ignacio-fernandez-las-mareas-del-inconsc",
+      "titulo": "las mareas del inconsciente.docx",
+      "archivo": "Ignacio Fernandez/las mareas del inconsciente.docx.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Ignacio Gabriel Fernández",
+      "idioma": "es",
+      "categorias": [
+        "astrología",
+        "psicología",
+        "inconsciente"
+      ],
+      "conceptosClave": [
+        "astrología",
+        "carta astral",
+        "inconsciente",
+        "mareas"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"las mareas del inconsciente.docx\" de Ignacio Gabriel Fernández registrado en la biblioteca local.",
+      "tags": [
+        "fernandez",
+        "astrología",
+        "inconsciente"
       ]
     },
     {
@@ -2447,7 +2503,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El poder curativo de la mente Tulku Thondup\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2517,7 +2573,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Sabor de la Iluminacion 1994\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2552,7 +2608,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Vehiculo de las Transformaciones\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2587,7 +2643,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Fluir en El sin yo by\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2622,7 +2678,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La conquista del templo\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2657,7 +2713,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Construccion de La Realidad\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2692,7 +2748,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Experiencia interna\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2727,7 +2783,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Fuerza Creativa del Amor\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2762,7 +2818,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La fuerza vital del cielo anterior\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2797,7 +2853,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La percepcion de la realidad\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2832,7 +2888,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Real Tecnologia\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2914,41 +2970,6 @@
     },
     {
       "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-El-Cerebro-y-los-Chamanes-Vol-5-2.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
       "titulo": "Los Chamanes de Mexico PACHITA Vol 3",
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-PACHITA-Vol-3.pdf",
       "tipo": "libro",
@@ -2972,7 +2993,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico PACHITA Vol 3\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3007,7 +3028,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 1\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3042,7 +3063,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 2\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3077,78 +3098,8 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 4\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico Vol 6",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-6.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 6\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico Vol 7",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-7.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 7\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
         "chamanismo",
@@ -3182,7 +3133,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Cristales de la Galaxia\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3252,7 +3203,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"MEDITACION AUTOALUSIVA\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3322,7 +3273,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Retorno a la Luz\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3370,46 +3321,6 @@
       ]
     },
     {
-      "id": "lib-keter-mario-javier-sab-n-pdf",
-      "titulo": "Keter: El éxtasis de la nada",
-      "archivo": "Keter - Mario Javier Sabán.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Mario Javier Sabán",
-      "idioma": "es",
-      "categorias": [
-        "cábala",
-        "misticismo judío",
-        "teología",
-        "filosofía"
-      ],
-      "conceptosClave": [
-        "keter",
-        "sefirot",
-        "árbol de la vida",
-        "nada mística",
-        "ein sof",
-        "corona",
-        "misticismo",
-        "saban",
-        "cábala"
-      ],
-      "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
-      "tags": [
-        "cábala",
-        "sabán",
-        "keter",
-        "sefirot",
-        "árbol de la vida",
-        "misticismo",
-        "nada",
-        "corona",
-        "judaísmo"
-      ]
-    },
-    {
       "id": "lib-la-historia-del-tiempo-pdf",
       "titulo": "LA HISTORIA DEL TIEMPO",
       "archivo": "LA HISTORIA DEL TIEMPO.pdf",
@@ -3452,7 +3363,7 @@
         "simbología"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Vía del Tarot\" de Alejandro Jodorowsky & Marianne Costa registrado en la biblioteca local.",
       "tags": [
         "tarot",
@@ -3495,27 +3406,6 @@
         "recetas",
         "ayurveda",
         "consciente"
-      ]
-    },
-    {
-      "id": "lib-las-mareas-del-inconsciente-docx-pdf",
-      "titulo": "las mareas del inconsciente.docx",
-      "archivo": "las mareas del inconsciente.docx.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Desconocido",
-      "idioma": "es",
-      "categorias": [
-        "Otros"
-      ],
-      "conceptosClave": [
-        "las mareas del inconsciente.docx"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"las mareas del inconsciente.docx\" de Desconocido registrado en la biblioteca local.",
-      "tags": [
-        "biblioteca"
       ]
     },
     {
@@ -3572,43 +3462,6 @@
       ]
     },
     {
-      "id": "lib-los-secretos-de-dios-sefer-atzilut-mario",
-      "titulo": "Los Secretos de Dios: Sefer Atzilut",
-      "archivo": "Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Mario Javier Sabán",
-      "idioma": "es",
-      "categorias": [
-        "cábala",
-        "misticismo judío",
-        "teología",
-        "filosofía"
-      ],
-      "conceptosClave": [
-        "sefer atzilut",
-        "mundo de la emanación",
-        "sefirot",
-        "árbol de la vida",
-        "teosofía hebrea",
-        "secretos de dios",
-        "saban"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
-      "tags": [
-        "cábala",
-        "sabán",
-        "atzilut",
-        "sefirot",
-        "misticismo",
-        "dios",
-        "emanación",
-        "secretos"
-      ]
-    },
-    {
       "id": "lib-malezas-comestibles-del-cono-sur-pdf",
       "titulo": "Malezas Comestibles Del Cono Sur",
       "archivo": "Malezas Comestibles Del Cono Sur.pdf",
@@ -3648,6 +3501,145 @@
       "descripcionBreve": "Libro \"MANUAL SANACIONES POPULARES\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-mario-javier-sab-n-keter-mario-javier-sa",
+      "titulo": "Keter: El éxtasis de la nada",
+      "archivo": "Mario Javier Sabán/Keter - Mario Javier Sabán.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "teología",
+        "filosofía"
+      ],
+      "conceptosClave": [
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "nada mística",
+        "ein sof",
+        "corona",
+        "misticismo",
+        "saban",
+        "cábala"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "misticismo",
+        "nada",
+        "corona",
+        "judaísmo"
+      ]
+    },
+    {
+      "id": "lib-mario-javier-sab-n-los-secretos-de-dios-",
+      "titulo": "Los Secretos de Dios: Sefer Atzilut",
+      "archivo": "Mario Javier Sabán/Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "teología",
+        "filosofía"
+      ],
+      "conceptosClave": [
+        "sefer atzilut",
+        "mundo de la emanación",
+        "sefirot",
+        "árbol de la vida",
+        "teosofía hebrea",
+        "secretos de dios",
+        "saban"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "atzilut",
+        "sefirot",
+        "misticismo",
+        "dios",
+        "emanación",
+        "secretos"
+      ]
+    },
+    {
+      "id": "lib-mario-javier-sab-n-maas-bereshith-mario-",
+      "titulo": "Maasé Bereshith",
+      "archivo": "Mario Javier Sabán/Maasé Bereshith - Mario Javier Sabán.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "sefirot"
+      ],
+      "conceptosClave": [
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "sefer atzilut",
+        "daat",
+        "maase bereshith"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Maasé Bereshith\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "sefirot",
+        "misticismo"
+      ]
+    },
+    {
+      "id": "lib-mario-javier-sab-n-mario-saban-daat-el-c",
+      "titulo": "DAAT El Conocimiento",
+      "archivo": "Mario Javier Sabán/Mario Saban-DAAT El Conocimiento.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Mario Javier Sabán",
+      "idioma": "es",
+      "categorias": [
+        "cábala",
+        "misticismo judío",
+        "sefirot"
+      ],
+      "conceptosClave": [
+        "keter",
+        "sefirot",
+        "árbol de la vida",
+        "sefer atzilut",
+        "daat",
+        "maase bereshith"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"DAAT El Conocimiento\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "tags": [
+        "cábala",
+        "sabán",
+        "sefirot",
+        "misticismo"
       ]
     },
     {
@@ -3735,24 +3727,67 @@
       ]
     },
     {
-      "id": "lib-nikola-tesla-illustrated-autobiography-p",
-      "titulo": "Nikola Tesla Illustrated Autobiography",
-      "archivo": "Nikola Tesla - Illustrated Autobiography.pdf",
+      "id": "lib-nikola-tesla-nikola-tesla-illustrated-au",
+      "titulo": "Illustrated Autobiography",
+      "archivo": "Nikola Tesla/Nikola Tesla - Illustrated Autobiography.pdf",
       "tipo": "libro",
       "formato": "pdf",
-      "autor": "Desconocido",
+      "autor": "Nikola Tesla",
       "idioma": "es",
       "categorias": [
-        "Otros"
+        "energía libre",
+        "física",
+        "autobiografía",
+        "invenciones"
       ],
       "conceptosClave": [
-        "nikola tesla illustrated autobiography"
+        "energía libre",
+        "antigravedad",
+        "patentes",
+        "invenciones",
+        "corriente alterna"
       ],
       "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Nikola Tesla Illustrated Autobiography\" de Desconocido registrado en la biblioteca local.",
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Illustrated Autobiography\" de Nikola Tesla registrado en la biblioteca local.",
       "tags": [
-        "biblioteca"
+        "tesla",
+        "nikola",
+        "energía",
+        "invenciones"
+      ]
+    },
+    {
+      "id": "lib-nikola-tesla-tesla-energia-libre-pdf",
+      "titulo": "Nikola Tesla: Energía Libre y Antigravedad",
+      "archivo": "Nikola Tesla/Tesla, Energia libre.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Nikola Tesla / Recopilación",
+      "idioma": "es",
+      "categorias": [
+        "física",
+        "energía libre",
+        "electromagnetismo",
+        "patentes"
+      ],
+      "conceptosClave": [
+        "energía libre",
+        "bobina de tesla",
+        "corriente alterna",
+        "antigravedad",
+        "patentes"
+      ],
+      "capitulos": [],
+      "embeddings": "pending",
+      "descripcionBreve": "Libro \"Nikola Tesla: Energía Libre y Antigravedad\" de Nikola Tesla / Recopilación registrado en la biblioteca local.",
+      "tags": [
+        "tesla",
+        "electricidad",
+        "energía",
+        "física",
+        "inventos",
+        "ciencia"
       ]
     },
     {
@@ -3951,6 +3986,82 @@
       ]
     },
     {
+      "id": "lib-sigmund-freud-freud-sigmund-obras-comple",
+      "titulo": "Obras Completas",
+      "archivo": "Sigmund Freud/Freud, Sigmund. - Obras completas.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Sigmund Freud",
+      "idioma": "es",
+      "categorias": [
+        "psicoanálisis",
+        "psicología",
+        "inconsciente",
+        "ensayo"
+      ],
+      "conceptosClave": [
+        "psicoanálisis",
+        "inconsciente",
+        "sueños",
+        "represión",
+        "complejo de edipo",
+        "pulsión",
+        "ego",
+        "ello",
+        "superyó"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Obras Completas\" de Sigmund Freud registrado en la biblioteca local.",
+      "tags": [
+        "freud",
+        "sigmund",
+        "psicoanálisis",
+        "psicología",
+        "inconsciente",
+        "sexualidad",
+        "yo",
+        "ello",
+        "superyó"
+      ]
+    },
+    {
+      "id": "lib-sigmund-freud-freud-jung-correspondencia",
+      "titulo": "Correspondencia Freud - Jung",
+      "archivo": "Sigmund Freud/FREUD-JUNG Correspondencia.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Sigmund Freud & Carl Gustav Jung",
+      "idioma": "es",
+      "categorias": [
+        "psicoanálisis",
+        "psicología",
+        "inconsciente",
+        "ensayo"
+      ],
+      "conceptosClave": [
+        "psicoanálisis",
+        "inconsciente",
+        "sueños",
+        "represión",
+        "complejo de edipo",
+        "pulsión",
+        "ego",
+        "ello",
+        "superyó"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Correspondencia Freud - Jung\" de Sigmund Freud & Carl Gustav Jung registrado en la biblioteca local.",
+      "tags": [
+        "freud",
+        "sigmund",
+        "psicoanálisis",
+        "psicología",
+        "inconsciente"
+      ]
+    },
+    {
       "id": "lib-significado-de-las-22-letras-del-alfabet",
       "titulo": "SIGNIFICADO DE LAS 22 LETRAS DEL ALFABETO HEBREO",
       "archivo": "SIGNIFICADO_DE_LAS_22_LETRAS_DEL_ALFABETO HEBREO.pdf",
@@ -4011,39 +4122,6 @@
       "descripcionBreve": "Libro \"telektonon manual\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
-      ]
-    },
-    {
-      "id": "lib-tesla-energia-libre-pdf",
-      "titulo": "Nikola Tesla: Energía Libre y Antigravedad",
-      "archivo": "Tesla, Energia libre.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Nikola Tesla / Recopilación",
-      "idioma": "es",
-      "categorias": [
-        "física",
-        "energía libre",
-        "electromagnetismo",
-        "patentes"
-      ],
-      "conceptosClave": [
-        "energía libre",
-        "bobina de tesla",
-        "corriente alterna",
-        "antigravedad",
-        "patentes"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Nikola Tesla: Energía Libre y Antigravedad\" de Nikola Tesla / Recopilación registrado en la biblioteca local.",
-      "tags": [
-        "tesla",
-        "electricidad",
-        "energía",
-        "física",
-        "inventos",
-        "ciencia"
       ]
     },
     {

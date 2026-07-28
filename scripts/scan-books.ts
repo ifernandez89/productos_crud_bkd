@@ -304,6 +304,8 @@ function run() {
       const cleanTitle = fileNameOnly
         .replace(/\.(pdf|docx?|epub)$/i, '')
         .replace(/^\d+_/, '') // quitar "1_", "2_"
+        .replace(/^Carl Gustav Jung\s*-\s*/i, '')
+        .replace(/^JUNG\s*/i, '')
         .replace(/[-_]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
@@ -313,6 +315,80 @@ function run() {
         categorias: ['psicología analítica', 'arquetipos', 'inconsciente'],
         conceptosClave: ['arquetipos', 'sombra', 'ánima', 'ánimus', 'inconsciente colectivo', 'sí-mismo', 'persona'],
         tags: ['Jung', 'psicología', 'inconsciente', 'arquetipo']
+      };
+    } else if (normFile.includes('Sigmund Freud/')) {
+      // Autocompletar libros de Freud
+      const isCorrespondencia = fileNameOnly.toLowerCase().includes('correspondencia');
+      const cleanTitle = isCorrespondencia
+        ? 'Correspondencia Freud - Jung'
+        : fileNameOnly
+          .replace(/\.(pdf|docx?|epub)$/i, '')
+          .replace(/^Freud,?\s*Sigmund\.?\s*-\s*/i, '')
+          .replace(/[-_]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: isCorrespondencia ? 'Sigmund Freud & Carl Gustav Jung' : 'Sigmund Freud',
+        categorias: ['psicoanálisis', 'psicología', 'inconsciente', 'ensayo'],
+        conceptosClave: ['psicoanálisis', 'inconsciente', 'sueños', 'represión', 'complejo de edipo', 'pulsión', 'ego', 'ello', 'superyó'],
+        tags: ['freud', 'sigmund', 'psicoanálisis', 'psicología', 'inconsciente']
+      };
+    } else if (normFile.includes('Helena Petrovna Blavatsky/')) {
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/^Helena Petrovna Blavatsky\s*-\s*/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Helena Petrovna Blavatsky',
+        categorias: ['teosofía', 'esoterismo', 'ocultismo'],
+        conceptosClave: ['doctrina secreta', 'teosofía', 'cosmogénesis', 'antropogénesis', 'esoterismo'],
+        tags: ['blavatsky', 'teosofía', 'esoterismo', 'ocultismo']
+      };
+    } else if (normFile.includes('Ignacio Fernandez/')) {
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Ignacio Gabriel Fernández',
+        categorias: ['astrología', 'psicología', 'inconsciente'],
+        conceptosClave: ['astrología', 'carta astral', 'inconsciente', 'mareas'],
+        tags: ['fernandez', 'astrología', 'inconsciente']
+      };
+    } else if (normFile.includes('Mario Javier Sabán/')) {
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/\s*-\s*Mario Javier Sabán/i, '')
+        .replace(/^Mario Saban-/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Mario Javier Sabán',
+        categorias: ['cábala', 'misticismo judío', 'sefirot'],
+        conceptosClave: ['keter', 'sefirot', 'árbol de la vida', 'sefer atzilut', 'daat', 'maase bereshith'],
+        tags: ['cábala', 'sabán', 'sefirot', 'misticismo']
+      };
+    } else if (normFile.includes('Nikola Tesla/')) {
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/^Nikola Tesla\s*-\s*/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      metadata = {
+        titulo: cleanTitle,
+        autor: 'Nikola Tesla',
+        categorias: ['energía libre', 'física', 'autobiografía', 'invenciones'],
+        conceptosClave: ['energía libre', 'antigravedad', 'patentes', 'invenciones', 'corriente alterna'],
+        tags: ['tesla', 'nikola', 'energía', 'invenciones']
       };
     } else if (normFile.includes('Jacobo-Grinberg-Zylberbaum/')) {
       // Autocompletar libros de Jacobo Grinberg
