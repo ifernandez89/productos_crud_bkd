@@ -1,5 +1,5 @@
 # JarBees — Arquitectura del Sistema
-**Última revisión:** 22 de Julio 2026 (Actualizado post git pull: Intent Override, RAG Fail-Safe, Ingesta de Carl & Sigmund, EvidenceService improvements)  
+**Última revisión:** 28 de Julio 2026 (Actualizado: Ollama Auto-Healing + Knowledge Graph KGRAPH v1 — schema Prisma, EntityGraphRepository, EntityGraphService, KnowledgeExtractionService)  
 **Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
 **Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
 
@@ -20,11 +20,15 @@ IntentRouter + Planner + ExecutionEngine
   ↓
 Tools Layer (AssistantTools · Google Workspace · Browser · Astrology · Sports · Tasks)
   ↓
-Knowledge Layer (RAG local · embeddings · documentos · fuentes web)
+Knowledge Layer
+  ├─ RAG local (chunks · pgvector · embeddings · Fichas de Conocimiento)
+  └─ Knowledge Graph / KGRAPH v1 (entidades · relaciones · Context Fusion)  ← NUEVO
   ↓
 Memory Layer (memorias · resumen de sesión · knowledge evolution)
   ↓
-LLM Provider (Ollama / OpenRouter)
+Cognitive Layer (QICA 2.0 · JarBees 3.0 Biomímético)
+  ↓
+LLM Provider (Ollama / OpenRouter) ← auto-healing si cae
   ↓
 Respuesta
 ```
@@ -684,6 +688,44 @@ Cobertura total  ~79%
 
 ---
 
+## 18. Ollama Auto-Healing — Circuit Breaker y Recuperación Automática *(nuevo — 28 jul 2026)*
+
+JarBees puede recuperarse automáticamente cuando Ollama cae, sin intervención manual del usuario.
+
+### Flujo de recuperación:
+
+```
+OllamaProvider.generate() / embed()
+        |
+   ECONNREFUSED detectado
+        |
+   OllamaRecoveryService.recover()
+        |
+        ├── ¿El proceso gestionado sigue vivo? → continúa
+        ├── ¿Ollama responde externamente? → continúa
+        └── spawn('ollama', ['serve']) → poll /api/tags cada 500ms (timeout: 15s)
+        |
+   Retry único de la request original
+        |
+   Respuesta normal al usuario (sin intervención)
+```
+
+### Componentes:
+
+| Archivo | Responsabilidad |
+|---------|-----------------|
+| [`ollama.recovery.service.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.recovery.service.ts) | Singleton que gestiona el ciclo de vida del proceso Ollama: spawn, poll de disponibilidad y circuit breaker |
+| [`ollama.state.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.state.ts) | Enum `OllamaState` con estados: `UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED` |
+| [`ollama.provider.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts) | Detecta `ECONNREFUSED`, llama a `recover()` y hace retry único antes de lanzar error |
+
+### Circuit Breaker:
+- **Máximo 3 intentos** de restart en una ventana de **5 minutos**.
+- Si se supera el límite → estado `FAILED` → el usuario recibe un mensaje descriptivo con el último error y las instrucciones precisas en lugar de un error técnico genérico.
+- La ventana se **resetea automáticamente** al expirar.
+- Spawn controlado con `{ shell: true, windowsHide: true }` y sin `detached`, guardando referencia al `ChildProcess` para evitar instancias duplicadas en el puerto 11434.
+
+---
+
 ## 19. Arquitectura Cognitiva Inspirada en Mecánica Cuántica (QICA 2.0) (nuevo)
 
 JarBees implementa un motor cognitivo de frontera desprendido de metáforas físicas ineficientes y traducido a patrones reales de ingeniería cognitiva sobre NestJS + Prisma. **Diseñado estrictamente para 0 ms de sobrecosto en llamadas LLM adicionales**:
@@ -754,4 +796,110 @@ JarBees evoluciona hacia un **Sistema Operativo Cognitivo basado en Estado Globa
 2. **`PredictiveProcessingService` (Procesamiento Predictivo)**: Anticipa la intención del usuario previa a la recuperación RAG y computa el **Error de Predicción ($\Delta$)** comparando la expectativa inicial con la evidencia real para corregir posibles sesgos.
 3. **`MetacognitionEngineService` (Metacognición & Persistencia)**: Auto-evalúa la estrategia de razonamiento pre y post respuesta y persiste cada corrida en el modelo Prisma `MetacognitiveRun`.
 4. **Desempeño Inalterado**: Todo el flujo biomimético se ejecuta de forma relacional/matemática en Node.js (0 ms de overhead en llamadas a modelos LLM).
+
+---
+
+## 21. Knowledge Graph — KGRAPH v1 *(nuevo — 28 jul 2026)*
+
+> **El paso de *"JarBees sabe cosas"* a *"JarBees entiende estructuras"*.**
+>
+> RAG responde: *"¿Dónde está la información?"*  
+> Grafo responde: *"¿Cómo está conectado el mundo?"*
+
+### 21.1 Arquitectura de integración — Context Fusion
+
+```
+                   Pregunta del usuario
+                           ↓
+                     IntentRouter
+                           ↓
+                   Entity Detection
+                  (EntityGraphService)
+                           ↓
+            ┌──────────────┴──────────────┐
+            ↓                             ↓
+      Knowledge Graph                 RAG Pipeline
+      (subgrafo N-hop)                (pgvector chunks)
+      EntityGraphService              PgvectorService
+            ↓                             ↓
+            └──────────────┬──────────────┘
+                           ↓
+                    Context Fusion
+                  (JarvisService)
+                           ↓
+                JarvisPromptBuilder
+                (sección ENTITY_CONTEXT)
+```
+
+- **Si hay entidades pero no grafo** → solo RAG
+- **Si hay texto pero no entidades** → solo RAG
+- **Si hay ambos** → contexto fusionado (el escenario ideal)
+- El grafo no reemplaza el RAG: los resuelven preguntas distintas
+
+### 21.2 Modelos Prisma
+
+| Modelo | Propósito |
+|--------|-----------|
+| `KnowledgeEntity` | Entidades tipadas: personas, conceptos, obras, proyectos, tecnologías, lugares, eventos |
+| `KnowledgeRelation` | Relaciones aprobadas con evidencia: `sourceDocId` + `chunkId` + `quote` |
+| `PendingRelation` | Cuarentena anti-alucinación: relaciones extraídas por LLM, pendientes de validación |
+
+**Enums:**
+
+```
+KnowledgeEntityType:   PERSON · CONCEPT · WORK · PROJECT · TECHNOLOGY · PLACE · EVENT
+KnowledgeRelationType: DEVELOPED · INFLUENCED · CREATED · USES · RELATED_TO · PART_OF · BELONGS_TO · OPPOSITE_OF
+```
+
+**Diferencia `confidence` vs `strength`:**
+- `confidence`: certeza de que la relación es correcta (0.0–1.0, no cambia salvo re-validación)
+- `strength`: intensidad de la conexión (+0.1 por cada co-ocurrencia, cap: 5.0)
+
+### 21.3 Servicios
+
+| Servicio | Archivo | Responsabilidad |
+|----------|---------|-----------------|
+| `EntityGraphRepository` | `src/jarvis/repositories/entity-graph.repository.ts` | CRUD Prisma: upsert, subgrafo BFS, gestión PENDING→APPROVED/REJECTED |
+| `EntityGraphService` | `src/jarvis/knowledge/entity-graph.service.ts` | Detección de entidades en texto, serialización del subgrafo para el prompt |
+| `KnowledgeExtractionService` | `src/jarvis/knowledge/knowledge-extraction.service.ts` | Extracción automática post-ingesta con Qwen3:4B + validación de quotes |
+
+### 21.4 Flujo anti-alucinación
+
+```
+Documento indexado (status: ready)
+        ↓
+KnowledgeExtractionService.extractFromDocument()
+        ↓
+Qwen3:4B (temp=0): extrae entidades + relaciones con citas literales
+        ↓
+Por cada relación → PendingRelation (status: PENDING)
+        ↓
+Validación: confidence ≥ 0.7 + quote verificable en chunks del doc
+        ↓
+  APROBADA → KnowledgeRelation (grafo permanente)
+  RECHAZADA → PendingRelation (status: REJECTED, con reason)
+```
+
+**Diferencia clave con CognitiveEntanglement:**
+| | CognitiveEntanglement | KnowledgeRelation |
+|---|---|---|
+| Naturaleza | Dinámico (sesión) | Estable (global) |
+| Contenido | Conceptos genéricos co-activados | Relaciones tipadas con evidencia |
+| Persistencia | Decae con el tiempo | Permanente, se refuerza |
+| Origen | Co-ocurrencia en conversación | Extracción de documentos |
+
+### 21.5 Estado de implementación
+
+| Componente | Estado |
+|------------|--------|
+| `schema.prisma` (modelos + enums) | ✅ Escrito — pendiente migración al llegar a casa |
+| `EntityGraphRepository` | ✅ Escrito |
+| `EntityGraphService` | ✅ Escrito |
+| `KnowledgeExtractionService` | ✅ Escrito |
+| `JarvisModule` (registro de providers) | ✅ Actualizado |
+| Integración en `JarvisService` (Context Fusion) | 🏠 Pendiente — al llegar a casa |
+| Integración en `JarvisPromptBuilderService` | 🏠 Pendiente — al llegar a casa |
+| Disparo automático en `DocumentIngestService` | 🏠 Pendiente — al llegar a casa |
+| Endpoints REST (V2) | 🏠 Pendiente |
+| Visualización tipo Obsidian (V3) | 🔮 Futuro |
 

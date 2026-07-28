@@ -568,5 +568,122 @@ model MetacognitiveRun {
   @@index([createdAt])
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// KNOWLEDGE GRAPH — KGRAPH v1 (JarBees v3.1)
+// Entidades tipadas y relaciones semánticas con evidencia.
+// Complementa (no reemplaza) el RAG de pgvector.
+// RAG responde: "¿Dónde está la información?"
+// Grafo responde: "¿Cómo está conectado el mundo?"
+// ══════════════════════════════════════════════════════════════════════════════
 
+enum KnowledgeEntityType {
+  PERSON       // Jung, Campbell, Freud, Nietzsche
+  CONCEPT      // Arquetipo, Inconsciente colectivo, Héroe, Sombra
+  WORK         // El hombre y sus símbolos, El héroe de las mil caras
+  PROJECT      // JarBees, ArcheoScope, Oxlahun Cauac
+  TECHNOLOGY   // NestJS, Ollama, Qwen3, pgvector, Prisma
+  PLACE        // Puma Punku, Tiwanaku, Giza
+  EVENT        // Migración Drizzle, Refactor RAG jul 2026
+}
 
+enum KnowledgeRelationType {
+  DEVELOPED     // Jung → DEVELOPED → Arquetipo
+  INFLUENCED    // Nietzsche → INFLUENCED → Jung
+  CREATED       // Jung → CREATED → "El hombre y sus símbolos"
+  USES          // JarBees → USES → Qwen3
+  RELATED_TO    // Arquetipo → RELATED_TO → Inconsciente colectivo
+  PART_OF       // RAG → PART_OF → JarBees
+  BELONGS_TO    // Arquetipo → BELONGS_TO → Psicología Analítica
+  OPPOSITE_OF   // Consciente → OPPOSITE_OF → Inconsciente
+}
+
+// ── 18.1) ENTIDADES DEL CONOCIMIENTO ─────────────────────────────────────────
+// Personas, conceptos, obras, proyectos y tecnologías conocidos por JarBees.
+
+model KnowledgeEntity {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  type        KnowledgeEntityType
+  description String?             // descripción breve generada o manual
+  aliases     String              @default("[]") // JSON: ["Jung", "C.G. Jung"]
+  tags        String              @default("[]") // JSON: ["psicología", "inconsciente"]
+  confidence  Float               @default(1.0)  // certeza de que la entidad es válida (0.0–1.0)
+  timesUsed   Int                 @default(0)    // cuántas veces fue recuperada en queries
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  relationsFrom KnowledgeRelation[] @relation("RelationSource")
+  relationsTo   KnowledgeRelation[] @relation("RelationTarget")
+  pendingFrom   PendingRelation[]   @relation("PendingSource")
+  pendingTo     PendingRelation[]   @relation("PendingTarget")
+
+  @@unique([name, type])
+  @@index([type])
+  @@index([name])
+  @@index([confidence])
+  @@index([timesUsed])
+}
+
+// ── 18.2) RELACIONES DEL GRAFO ────────────────────────────────────────────────
+// Relaciones aprobadas y con evidencia. Llegaron desde PendingRelation.
+
+model KnowledgeRelation {
+  id           Int                   @id @default(autoincrement())
+  sourceId     Int
+  targetId     Int
+  relationType KnowledgeRelationType
+  label        String?               // descripción legible: "desarrolló el concepto de"
+  confidence   Float                 @default(1.0) // certeza de que la relación es correcta
+  strength     Float                 @default(1.0) // intensidad de la conexión (se refuerza con co-ocurrencias)
+  bidirectional Boolean              @default(false)
+  // Evidencia: de dónde vino esta relación
+  sourceDocId  Int?                  // ID del Document que originó la relación
+  chunkId      Int?                  // ID del Chunk específico (para trazabilidad con EvidenceService)
+  quote        String?               // fragmento textual de respaldo del documento
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  source KnowledgeEntity @relation("RelationSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target KnowledgeEntity @relation("RelationTarget", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, targetId, relationType])
+  @@index([sourceId])
+  @@index([targetId])
+  @@index([relationType])
+  @@index([confidence])
+  @@index([strength])
+  @@index([sourceDocId])
+}
+
+// ── 18.3) RELACIONES PENDIENTES (anti-alucinación) ───────────────────────────
+// Las relaciones extraídas por el LLM llegan aquí primero.
+// EvidenceService las valida y las promueve a KnowledgeRelation o las rechaza.
+// Esto previene que alucinaciones del LLM contaminen el grafo permanente.
+
+model PendingRelation {
+  id             Int      @id @default(autoincrement())
+  sourceName     String   // nombre textual (la entidad puede no existir aún en KnowledgeEntity)
+  targetName     String
+  relationType   String   // String aquí — aún no validado contra el enum
+  label          String?
+  confidence     Float    @default(0.5)
+  status         String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  rejectedReason String?
+  // Evidencia de origen
+  sourceDocId    Int?
+  chunkId        Int?
+  quote          String?  // la cita exacta que generó esta relación candidata
+  extractedAt    DateTime @default(now())
+  reviewedAt     DateTime?
+
+  // Si se aprueba, se vincula a las entidades reales resueltas
+  resolvedSourceId Int?
+  resolvedTargetId Int?
+  resolvedSource   KnowledgeEntity? @relation("PendingSource", fields: [resolvedSourceId], references: [id])
+  resolvedTarget   KnowledgeEntity? @relation("PendingTarget", fields: [resolvedTargetId], references: [id])
+
+  @@index([status])
+  @@index([confidence])
+  @@index([sourceDocId])
+  @@index([extractedAt])
+}

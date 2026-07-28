@@ -58,6 +58,9 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
 import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
+import { EntityGraphRepository } from './repositories/entity-graph.repository';
+import { EntityGraphService } from './knowledge/entity-graph.service';
+import { KnowledgeExtractionService } from './knowledge/knowledge-extraction.service';
 
 import { CognitiveModule } from './cognitive/cognitive.module';
 
@@ -120,6 +123,10 @@ import { CognitiveModule } from './cognitive/cognitive.module';
     AuditService,
     ActionExecutionGateService,
     HierarchicalParserService,
+    // ── Knowledge Graph (KGRAPH v1) ──────────────────────────────────────────
+    EntityGraphRepository,
+    EntityGraphService,
+    KnowledgeExtractionService,
   ],
   exports: [
     JarvisService,
