@@ -212,9 +212,23 @@ export class CorpusSelectorService {
     const queryTerms = this.tokenize(query);
     const scored: CorpusMatch[] = [];
 
+    // ── REGLA DE ORO: el score mínimo para considerar relevante un documento es 5.0.
+    // Esto previene que 1-2 palabras genéricas ("tiempo", "maya", etc.) en un mensaje
+    // conversacional disparen la carga o ingesta de libros.
+    // ⚠️ BUG histórico 2026-07-28: "como estas tanto tiempo amigo?" = score 6.0 en
+    //    "El Factor Maya" gracias a concepto:tiempo + categoría:tiempo. CORREGIDO.
+    const MIN_SCORE_TO_TRIGGER = 5.0;
+
     for (const doc of index.documentos) {
       const result = this.scoreDocument(doc, queryTerms, query);
-      if (result.score > 0) {
+
+      // REGLA CRÍTICA: si no hay ningún match en el título del documento,
+      // descartar sin importar cuántos conceptos/tags coincidan.
+      // El título es la señal más fuerte de intención real del usuario.
+      const hasTitleMatch = result.matchedOn.some((m) => m.startsWith('título:') || m.startsWith('autor:') || m.startsWith('escuela:'));
+      if (!hasTitleMatch) continue;
+
+      if (result.score >= MIN_SCORE_TO_TRIGGER) {
         scored.push(result);
       }
     }
@@ -585,89 +599,36 @@ export class CorpusSelectorService {
 
 // ── Stopwords en español ──────────────────────────────────────────────────────
 const STOPWORDS = new Set([
-  'que',
-  'qué',
-  'como',
-  'cómo',
-  'cual',
-  'cuál',
-  'cuando',
-  'cuándo',
-  'donde',
-  'dónde',
-  'quien',
-  'quién',
-  'por',
-  'para',
-  'con',
-  'sin',
-  'sobre',
-  'entre',
-  'desde',
-  'hasta',
-  'hacia',
-  'ante',
-  'bajo',
-  'tras',
-  'una',
-  'uno',
-  'unos',
-  'unas',
-  'los',
-  'las',
-  'del',
-  'los',
-  'sus',
-  'este',
-  'esta',
-  'estos',
-  'estas',
-  'ese',
-  'esa',
-  'esos',
-  'esas',
-  'hay',
-  'ser',
-  'estar',
-  'tiene',
-  'tienen',
-  'puedo',
-  'puede',
-  'pueden',
-  'decir',
-  'dice',
-  'dices',
-  'habla',
-  'hablan',
-  'sabe',
-  'saben',
-  'más',
-  'muy',
-  'tan',
-  'todo',
-  'toda',
-  'todos',
-  'todas',
-  'algo',
-  'alguien',
-  'algún',
-  'alguna',
-  'ningún',
-  'ninguna',
-  'me',
-  'te',
-  'se',
-  'nos',
-  'les',
-  'him',
-  'her',
-  'them',
-  'the',
-  'and',
-  'for',
-  'with',
-  'about',
-  'what',
-  'how',
-  'who',
+  // ── Interrogativos / relativos ────────────────────────────────────────────
+  'que', 'qué', 'como', 'cómo', 'cual', 'cuál', 'cuando', 'cuándo',
+  'donde', 'dónde', 'quien', 'quién', 'cuanto', 'cuánto', 'cuanta', 'cuánta',
+  // ── Preposiciones ────────────────────────────────────────────────────────
+  'por', 'para', 'con', 'sin', 'sobre', 'entre', 'desde', 'hasta',
+  'hacia', 'ante', 'bajo', 'tras', 'según',
+  // ── Artículos / determinantes ─────────────────────────────────────────────
+  'una', 'uno', 'unos', 'unas', 'los', 'las', 'del', 'sus',
+  'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
+  'aquel', 'aquella', 'aquellos', 'aquellas', 'mi', 'mis', 'tu', 'tus',
+  // ── Verbos auxiliares / comunes ───────────────────────────────────────────
+  'hay', 'ser', 'estar', 'tiene', 'tienen', 'puedo', 'puede', 'pueden',
+  'decir', 'dice', 'dices', 'habla', 'hablan', 'sabe', 'saben',
+  'eres', 'sos', 'estás', 'estoy', 'estamos', 'quiero', 'quiere', 'quieren',
+  'voy', 'vas', 'vamos', 'van', 'hago', 'hace', 'hacen', 'haces',
+  // ── Adverbios / cuantificadores ───────────────────────────────────────────
+  'más', 'muy', 'tan', 'tanto', 'tanta', 'tantos', 'tantas',
+  'todo', 'toda', 'todos', 'todas', 'algo', 'alguien',
+  'algún', 'alguna', 'ningún', 'ninguna', 'mucho', 'mucha', 'muchos', 'muchas',
+  'poco', 'poca', 'pocos', 'pocas', 'bien', 'mal', 'mejor', 'peor',
+  // ── Pronombres ────────────────────────────────────────────────────────────
+  'me', 'te', 'se', 'nos', 'les', 'lo', 'la', 'le',
+  // ── Tiempo / saludos conversacionales ────────────────────────────────────
+  // ⚠️ CRÍTICO: estas palabras aparecen en mensajes conversacionales y NO
+  //    deben activar búsqueda de documentos sobre "tiempo", "amigo", etc.
+  'tiempo', 'rato', 'momento', 'vez', 'veces', 'dia', 'días', 'hoy',
+  'ayer', 'mañana', 'semana', 'mes', 'año', 'años',
+  'amigo', 'amiga', 'amigos', 'amigas', 'bueno', 'buena',
+  'hola', 'chau', 'adios', 'gracias', 'saludo', 'saludos',
+  'hace', 'rato', 'largo', 'corto',
+  // ── Inglés ────────────────────────────────────────────────────────────────
+  'him', 'her', 'them', 'the', 'and', 'for', 'with', 'about', 'what', 'how', 'who',
 ]);
