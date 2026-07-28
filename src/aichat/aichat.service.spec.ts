@@ -6,6 +6,7 @@ import { OllamaModelService } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { ModelRouterService } from './utils/model-router.service';
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
+import { SafeExecService } from '../jarvis/security/safe-exec.service';
 import { Product, Pregunta } from '@prisma/client';
 
 describe('AichatService', () => {
@@ -82,6 +83,13 @@ describe('AichatService', () => {
         {
           provide: LLAMA_MODEL_TOKEN,
           useValue: mockOllamaModel,
+        },
+        {
+          provide: SafeExecService,
+          useValue: {
+            isCommandAllowed: jest.fn().mockReturnValue(true),
+            runToolCommand: jest.fn().mockResolvedValue('output'),
+          },
         },
         {
           provide: QWEN_MODEL_TOKEN,

@@ -9,17 +9,20 @@ import { DocumentRepository } from '../repositories/document.repository';
 export interface LibraryDocument {
   id: string;
   titulo: string;
+  tituloAlternativo?: string;
   archivo: string;
   tipo: string;
   formato: string;
   autor: string;
   idioma: string;
+  escuela?: string;
   categorias: string[];
   conceptosClave: string[];
   capitulos: Array<{ numero: number; titulo: string; paginas: string }>;
   embeddings: 'ready' | 'pending' | 'processing';
   descripcionBreve: string;
   tags: string[];
+  dbId?: number; // ID directo en BD para lookup sin lazy-load
 }
 
 export interface LibraryIndex {
@@ -132,6 +135,41 @@ export const SCHOOLS_OF_THOUGHT: Record<
       'campo energetico luminoso',
       'sendas del chaman',
       'chamanico',
+    ],
+  },
+  cabala: {
+    authors: [
+      'mario javier saban',
+      'mario saban',
+      'saban',
+      'sabán',
+      'abulafia',
+      'abraham abulafia',
+      'luria',
+      'isaac luria',
+      'moshe cordovero',
+    ],
+    keywords: [
+      'cábala',
+      'kabbalah',
+      'kabalá',
+      'sefirot',
+      'árbol de la vida',
+      'ein sof',
+      'keter',
+      'atzilut',
+      'sefer',
+      'misticismo judío',
+      'judaísmo esotérico',
+      'torá',
+      'zohar',
+      'daat',
+      'binah',
+      'biná',
+      'emunà',
+      'emanación divina',
+      'mario saban',
+      'saban',
     ],
   },
 };
@@ -318,6 +356,19 @@ export class CorpusSelectorService {
       if (this.matchTerm(titleLower, term)) {
         score += 3;
         matchedOn.push(`título:${term}`);
+      }
+    }
+
+    // 1b. Coincidencia en título alternativo (mismo peso)
+    if (doc.tituloAlternativo) {
+      const titleAltLower = doc.tituloAlternativo.toLowerCase();
+      for (const term of queryTerms) {
+        if (this.matchTerm(titleAltLower, term)) {
+          score += 3;
+          if (!matchedOn.includes(`título:${term}`)) {
+            matchedOn.push(`título:${term}`);
+          }
+        }
       }
     }
 
@@ -520,8 +571,33 @@ export class CorpusSelectorService {
       `[lazy-load] Iniciando carga perezosa para: "${doc.titulo}" (${doc.archivo})`,
     );
 
-    // 1. Verificar si ya existe en la base de datos (por título exacto)
+    // 1. Si el documento tiene dbId, buscarlo directamente en BD
+    if ((doc as any).dbId) {
+      const byId = await documentRepo.getDocumentWithChunks((doc as any).dbId);
+      if (byId) {
+        this.logger.log(
+          `[lazy-load] "${doc.titulo}" encontrado por dbId=${(doc as any).dbId}`,
+        );
+        doc.embeddings = 'ready';
+        this.saveIndexToDisk();
+        return byId.id;
+      }
+    }
+
+    // 2. Verificar si ya existe en la base de datos (por título exacto)
     const existing = await documentRepo.findDocumentByExactTitle(doc.titulo);
+    if (!existing && doc.tituloAlternativo) {
+      // Intentar con el título alternativo
+      const existingAlt = await documentRepo.findDocumentByExactTitle(doc.tituloAlternativo);
+      if (existingAlt) {
+        this.logger.log(
+          `[lazy-load] "${doc.titulo}" encontrado por título alternativo: "${doc.tituloAlternativo}" (ID ${existingAlt.id})`,
+        );
+        doc.embeddings = 'ready';
+        this.saveIndexToDisk();
+        return existingAlt.id;
+      }
+    }
     if (existing) {
       this.logger.log(
         `[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id} (Status: ${existing.status}).`,

@@ -3505,12 +3505,14 @@
     },
     {
       "id": "lib-mario-javier-sab-n-keter-mario-javier-sa",
-      "titulo": "Keter: El éxtasis de la nada",
+      "titulo": "Keter: El éxtasis de la eternidad — Mario Javier Saban",
+      "tituloAlternativo": "Keter: El éxtasis de la nada",
       "archivo": "Mario Javier Sabán/Keter - Mario Javier Sabán.pdf",
       "tipo": "libro",
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
+      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3526,31 +3528,44 @@
         "corona",
         "misticismo",
         "saban",
+        "mario javier saban",
+        "biná",
+        "emuná",
+        "éxtasis",
+        "eternidad",
         "cábala"
       ],
       "capitulos": [],
       "embeddings": "ready",
-      "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "dbId": 3,
+      "descripcionBreve": "Obra de cábala práctica de Mario Javier Sabán sobre Keter, la importancia de la Biná, el poder de la Emuná y la relación del alma con el Ein Sof. Editorial Kairós, 2023.",
       "tags": [
         "cábala",
         "sabán",
+        "saban",
+        "mario saban",
+        "mario javier saban",
         "keter",
         "sefirot",
         "árbol de la vida",
         "misticismo",
         "nada",
         "corona",
-        "judaísmo"
+        "judaísmo",
+        "kairos",
+        "2023"
       ]
     },
     {
       "id": "lib-mario-javier-sab-n-los-secretos-de-dios-",
-      "titulo": "Los Secretos de Dios: Sefer Atzilut",
+      "titulo": "Los Secretos de Dios: Sefer Atzilut — Mario Javier Saban",
+      "tituloAlternativo": "Los Secretos de Dios: Sefer Atzilut",
       "archivo": "Mario Javier Sabán/Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf",
       "tipo": "libro",
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
+      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3564,14 +3579,19 @@
         "árbol de la vida",
         "teosofía hebrea",
         "secretos de dios",
-        "saban"
+        "saban",
+        "mario javier saban"
       ],
       "capitulos": [],
       "embeddings": "ready",
-      "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "dbId": 5,
+      "descripcionBreve": "Obra de Mario Javier Sabán sobre los secretos del Sefer Atzilut, el mundo de la emanación divina y los misterios de los sefiroth en la cábala judía.",
       "tags": [
         "cábala",
         "sabán",
+        "saban",
+        "mario saban",
+        "mario javier saban",
         "atzilut",
         "sefirot",
         "misticismo",
@@ -3588,6 +3608,7 @@
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
+      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3599,16 +3620,23 @@
         "árbol de la vida",
         "sefer atzilut",
         "daat",
-        "maase bereshith"
+        "maase bereshith",
+        "saban",
+        "mario javier saban"
       ],
       "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Maasé Bereshith\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "embeddings": "pending",
+      "descripcionBreve": "Obra de Mario Javier Sabán sobre el Maasé Bereshith, la obra de la creación en la cábala judía.",
       "tags": [
         "cábala",
         "sabán",
+        "saban",
+        "mario saban",
+        "mario javier saban",
         "sefirot",
-        "misticismo"
+        "misticismo",
+        "bereshith",
+        "creacion"
       ]
     },
     {
@@ -3619,6 +3647,7 @@
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
+      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3630,14 +3659,21 @@
         "árbol de la vida",
         "sefer atzilut",
         "daat",
-        "maase bereshith"
+        "conocimiento",
+        "saban",
+        "mario javier saban"
       ],
       "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"DAAT El Conocimiento\" de Mario Javier Sabán registrado en la biblioteca local.",
+      "embeddings": "pending",
+      "descripcionBreve": "Obra de Mario Javier Sabán sobre el Daat (Conocimiento) en la cábala judía y su rol en el árbol de la vida.",
       "tags": [
         "cábala",
         "sabán",
+        "saban",
+        "mario saban",
+        "mario javier saban",
+        "daat",
+        "conocimiento",
         "sefirot",
         "misticismo"
       ]

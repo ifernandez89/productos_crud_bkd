@@ -157,9 +157,38 @@ export class DocumentRepository {
       .filter((t) => t.length >= 4);
     if (terms.length === 0) return [];
 
+    // ── Estrategia 1: buscar documentos cuyo TÍTULO contenga los términos ──
+    // Esto evita falsos positivos donde "mario" o "saban" aparecen
+    // en el cuerpo de un documento diferente por coincidencia.
+    const titleMatchDocs = await this.prisma.document.findMany({
+      where: {
+        OR: terms.map((term) => ({
+          title: { contains: term, mode: 'insensitive' as const },
+        })),
+      },
+      select: { id: true },
+    });
+
+    if (titleMatchDocs.length > 0) {
+      const docIds = titleMatchDocs.map((d) => d.id);
+      const chunks = (await this.prisma.chunk.findMany({
+        where: { documentId: { in: docIds } },
+        include: { document: true },
+        take: limit,
+      })) as (Chunk & { document: Document })[];
+
+      if (chunks.length > 0) {
+        await this.prisma.document.updateMany({
+          where: { id: { in: docIds } },
+          data: { timesUsed: { increment: 1 }, lastUsed: new Date() },
+        });
+        return chunks;
+      }
+    }
+
+    // ── Estrategia 2: buscar en contenido de chunks (fallback) ──
     const chunks = (await this.prisma.chunk.findMany({
       where: {
-        document: { status: 'ready' }, // solo documentos completamente indexados
         OR: terms.map((term) => ({
           content: { contains: term },
         })),
