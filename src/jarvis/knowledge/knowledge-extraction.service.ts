@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { KnowledgeEntityType, KnowledgeRelationType } from '@prisma/client';
 import { OllamaProvider } from '../llm/ollama.provider';
 import { DocumentRepository } from '../repositories/document.repository';
@@ -82,7 +82,7 @@ export class KnowledgeExtractionService {
    * No bloquea ninguna respuesta al usuario.
    */
   async extractFromDocument(documentId: number): Promise<ExtractionResult> {
-    this.logger.log(Iniciando extracción de Knowledge Graph para doc #);
+    this.logger.log(`Iniciando extracción de Knowledge Graph para doc #${documentId}`);
 
     const result: ExtractionResult = {
       documentId,
@@ -94,9 +94,9 @@ export class KnowledgeExtractionService {
 
     try {
       // Obtener chunks del documento (los primeros 5 para no saturar el LLM)
-      const doc = await this.documentRepo.findById(documentId);
+      const doc = await this.documentRepo.getDocumentWithChunks(documentId);
       if (!doc || doc.status !== 'ready') {
-        this.logger.warn(Doc # no está listo para extracción);
+        this.logger.warn(`Doc #${documentId} no está listo para extracción`);
         return result;
       }
 
@@ -123,8 +123,8 @@ export class KnowledgeExtractionService {
           );
           entityMap.set(rawEntity.name.toLowerCase(), entity.id);
           result.entitiesCreated++;
-        } catch (err) {
-          this.logger.warn(No se pudo crear entidad "": );
+        } catch (err: any) {
+          this.logger.warn(`No se pudo crear entidad "${rawEntity.name}": ${err?.message ?? err}`);
         }
       }
 
@@ -152,7 +152,7 @@ export class KnowledgeExtractionService {
         if (!sourceId || !targetId || !relationType || rawRel.confidence < 0.7) {
           await this.graphRepo.rejectPending(
             pending.id,
-            Confianza insuficiente () o entidades no resueltas,
+            `Confianza insuficiente (${rawRel?.confidence ?? 0}) o entidades no resueltas`,
           );
           result.relationsRejected++;
           result.relationsPending--;
@@ -178,12 +178,12 @@ export class KnowledgeExtractionService {
       }
 
       this.logger.log(
-        Doc #:  entidades,  +
-        ${result.relationsApproved} relaciones aprobadas,  +
-        ${result.relationsRejected} rechazadas,
+        `Doc #${documentId}: ${result.entitiesCreated} entidades, ` +
+        `${result.relationsApproved} relaciones aprobadas, ` +
+        `${result.relationsRejected} rechazadas`,
       );
-    } catch (err) {
-      this.logger.error(Error en extracción de doc #: );
+    } catch (err: any) {
+      this.logger.error(`Error en extracción de doc #${documentId}: ${err?.message ?? err}`);
     }
 
     return result;
@@ -197,12 +197,12 @@ export class KnowledgeExtractionService {
     text: string,
     title: string,
   ): Promise<RawExtraction | null> {
-    const prompt = Analizá el siguiente texto y extraé entidades y relaciones.
+    const prompt = `Analizá el siguiente texto y extraé entidades y relaciones.
 
-TÍTULO: 
+TÍTULO: ${title}
 
 TEXTO:
-
+${text}
 
 Retorná ÚNICAMENTE un JSON válido con este esquema exacto (sin texto adicional):
 {
@@ -220,19 +220,18 @@ REGLAS CRÍTICAS:
 - NO inventes relaciones que no estén explícitas en el texto.
 - confidence debe reflejar la claridad con que el texto expresa la relación.
 - Ignorá relaciones genéricas o triviales.
-- Máximo 10 entidades y 15 relaciones.;
+- Máximo 10 entidades y 15 relaciones.`;
 
     try {
       const response = await this.ollama.generate({
-        model: 'qwen3:4b',
-        prompt,
-        options: { temperature: 0, num_predict: 2000 },
+        messages: [{ role: 'user', content: prompt }],
+        maxTokens: 2000,
       });
 
-      const raw = response.text?.trim() ?? '';
+      const raw = response.content?.trim() ?? '';
       return this.parseExtractionResponse(raw);
-    } catch (err) {
-      this.logger.warn(LLM extraction falló: );
+    } catch (err: any) {
+      this.logger.warn(`LLM extraction falló: ${err?.message ?? err}`);
       return null;
     }
   }
@@ -243,7 +242,7 @@ REGLAS CRÍTICAS:
   private parseExtractionResponse(raw: string): RawExtraction | null {
     try {
       // Limpiar bloques markdown si el LLM los agrega
-      const clean = raw.replace(/^{3}(?:json)?\n?/m, '').replace(/\n?{3}$/m, '');
+      const clean = raw.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '');
 
       // Extraer JSON del texto (por si el LLM agrega texto antes o después)
       const jsonMatch = clean.match(/\{[\s\S]*\}/);

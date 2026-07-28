@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { KnowledgeEntity, KnowledgeEntityType } from '@prisma/client';
 import {
   EntityGraphRepository,
@@ -87,9 +87,9 @@ export class EntityGraphService {
     for (const node of nodes) {
       for (const { relation, target } of node.outgoing) {
         const conf = relation.confidence.toFixed(2);
-        const label = relation.label ?  ("") : '';
+        const label = relation.label ? ` (${relation.label})` : '';
         lines.add(
-          ${node.entity.name} →  →  [conf: ],
+          `${node.entity.name} → ${relation.relationType}${label} → ${target.name} [conf: ${conf}]`,
         );
       }
     }
