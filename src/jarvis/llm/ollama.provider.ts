@@ -13,11 +13,14 @@ import {
   LLMMessage,
 } from './llm-provider.interface';
 import { resolveOllamaModelName } from '../../shared/ollama-config';
+import { OllamaRecoveryService } from './ollama.recovery.service';
 
 @Injectable()
 export class OllamaProvider implements ILLMProvider {
   private readonly logger = new Logger(OllamaProvider.name);
   private model: ChatOllama | null = null;
+
+  constructor(private readonly recoveryService: OllamaRecoveryService) {}
 
   getProviderName(): string {
     return 'ollama';
@@ -68,19 +71,36 @@ export class OllamaProvider implements ILLMProvider {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
 
-      // Error de conexión — Ollama no está corriendo
+      // Error de conexión — intentar recuperación automática antes de rendirse
       if (
         msg.includes('fetch failed') ||
         msg.includes('ECONNREFUSED') ||
         msg.includes('connect')
       ) {
-        this.logger.error(
-          `[ollama] No se puede conectar con Ollama en localhost:11434. ¿Está corriendo?`,
+        this.logger.warn(
+          `[ollama] ECONNREFUSED detectado — intentando recuperación automática...`,
         );
-        throw new Error(
-          '⚠️ No puedo responder en este momento porque el modelo de IA local (Ollama) no está disponible. ' +
-            'Por favor iniciá Ollama ejecutando "ollama serve" en una terminal y volvé a intentar.',
-        );
+
+        // OllamaRecoveryService levanta Ollama y espera hasta que responda.
+        // Si el circuit breaker está abierto, lanza un error descriptivo.
+        await this.recoveryService.recover();
+
+        // Retry único — si Ollama respondió, esto debería funcionar
+        this.logger.log('[ollama] Retry después de recovery exitoso');
+        const retryResponse = await model.invoke(messages);
+        const retryContent =
+          typeof retryResponse.content === 'string'
+            ? retryResponse.content
+            : Array.isArray(retryResponse.content)
+              ? retryResponse.content.map((p: any) => p.text || '').join(' ')
+              : 'Sin respuesta';
+
+        return {
+          content: retryContent,
+          model: this.getDefaultModel(),
+          provider: this.getProviderName(),
+          latencyMs: Date.now() - startTime,
+        };
       }
 
       // Modelo no encontrado

@@ -6,7 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Ollama Auto-Healing: Recuperación Automática y Circuit Breaker (2026-07-28)
+
+- **🔄 OllamaRecoveryService**: Nuevo servicio singleton ([ollama.recovery.service.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.recovery.service.ts)) que maneja la recuperación automática de Ollama cuando cae. Implementa:
+  - **Spawn controlado**: `spawn('ollama', ['serve'], { shell: true, windowsHide: true })` sin `detached`, guardando referencia al `ChildProcess` para evitar instancias duplicadas en el puerto 11434.
+  - **Detección de proceso vivo**: Antes de hacer spawn, verifica si el proceso gestionado por JarBees sigue activo, o si Ollama ya está respondiendo externamente.
+  - **Poll de disponibilidad**: Hace requests a `/api/tags` cada 500ms hasta confirmar que Ollama está listo (timeout: 15s).
+  - **Circuit Breaker**: Máximo 3 intentos de restart en ventana de 5 minutos. Si se supera, activa estado `FAILED` y emite un mensaje descriptivo al usuario en lugar de un error técnico genérico. La ventana se resetea automáticamente al expirar.
+- **🧠 OllamaState**: Nuevo enum y tipos ([ollama.state.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.state.ts)) que representan el estado interno que JarBees mantiene sobre Ollama (`UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED`). Base para futuros endpoints de diagnóstico y el OllamaHealthService (Fase 2).
+- **⚡ Retry reactivo en OllamaProvider**: Se modificó [ollama.provider.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts) para que ante un `ECONNREFUSED`, en lugar de lanzar error inmediatamente, llame a `OllamaRecoveryService.recover()` y haga un retry único de la request original. El usuario recibe la respuesta normal sin intervención manual.
+- **💬 Mensajes de error mejorados**: Cuando el circuit breaker se activa (3 fallos), el mensaje al usuario incluye el último error capturado e instrucciones precisas, reemplazando el anterior mensaje genérico de "ejecutá ollama serve".
+
 ### Added & Optimized — Diagnóstico, Resumen Inteligente y Mitigación de Alucinaciones (2026-07-22)
+
 
 - **🤔 Resumen y Detección de Obras sin Prefijo**: Se mejoró [JarvisPromptBuilderService](file:///c:/nest/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) para identificar solicitudes de resúmenes de documentos mediante la coincidencia directa de títulos sin requerir prefijos de acción (ej. escribir solo el nombre de la obra en la biblioteca).
 - **📝 Instrucción de Resumen de Documento**: Se añadió una directiva estructurada (`docInstruction`) al prompt para guiar al LLM en la generación de resúmenes ejecutivos claros, puntos clave y núcleos temáticos de la obra en cuestión.

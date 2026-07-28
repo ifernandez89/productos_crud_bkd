@@ -14,6 +14,7 @@ import { AssistantToolsService } from '../aichat/utils/assistant-tools.service';
 
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
+import { OllamaRecoveryService } from './llm/ollama.recovery.service';
 import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
@@ -91,6 +92,7 @@ import { CognitiveModule } from './cognitive/cognitive.module';
     SkillRegistryService,
     ToolRegistryService,
     OllamaProvider,
+    OllamaRecoveryService,
     OpenRouterProvider,
     EmbeddingsService,
     DocumentIngestService,

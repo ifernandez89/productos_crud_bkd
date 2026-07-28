@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BrowserToolService } from '../browser/browser-tool.service';
 import { DocumentIngestService } from '../../library/document-ingest.service';
 import { extractInvestigationCommand } from './investigation.utils';
+import { OllamaProvider } from '../../llm/ollama.provider';
 
 export interface InvestigationResult {
   title: string;
@@ -19,6 +20,7 @@ export class InvestigationService {
   constructor(
     private readonly browserTool: BrowserToolService,
     private readonly ingestService: DocumentIngestService,
+    private readonly ollamaProvider: OllamaProvider,
   ) {}
 
   extractUrl(message: string): string | null {
@@ -74,9 +76,7 @@ export class InvestigationService {
     const prompt = `Extrae hasta 8 temas o conceptos clave en español a partir de este contenido web. Responde SOLO con una lista JSON válida de strings.\n\nTitulo: ${title}\n\nContenido: ${content.slice(0, 5000)}\n\nAPIs detectadas: ${JSON.stringify(apis.slice(0, 5))}`;
 
     try {
-      const { OllamaProvider } = await import('../../llm/ollama.provider');
-      const provider = new OllamaProvider();
-      const response = await provider.generate({
+      const response = await this.ollamaProvider.generate({
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
         maxTokens: 250,
