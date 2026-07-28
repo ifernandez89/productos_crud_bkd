@@ -150,7 +150,7 @@ async function main() {
       if (db) {
         docId = db.id;
         console.log(`El documento ya existe en la BD (ID: ${docId}). Estado: ${db.status}.`);
-        if (db.status === 'quarantined' || db.status === 'not_indexed') {
+        if (db.status !== 'ready') {
           console.log(`Re-aprobando e iniciando indexación jerárquica...`);
           await ingestService.approveDocument(docId);
         } else {

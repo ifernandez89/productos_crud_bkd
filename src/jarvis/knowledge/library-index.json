@@ -2132,7 +2132,7 @@
         "esoterismo"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"doctrina secreta\" de Helena Petrovna Blavatsky registrado en la biblioteca local.",
       "tags": [
         "blavatsky",
@@ -2503,7 +2503,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El poder curativo de la mente Tulku Thondup\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2573,7 +2573,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Sabor de la Iluminacion 1994\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2608,7 +2608,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"El Vehiculo de las Transformaciones\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2643,7 +2643,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Fluir en El sin yo by\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2678,7 +2678,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La conquista del templo\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2713,7 +2713,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Construccion de La Realidad\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2748,7 +2748,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Experiencia interna\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2783,7 +2783,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Fuerza Creativa del Amor\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2818,7 +2818,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La fuerza vital del cielo anterior\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2853,7 +2853,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La percepcion de la realidad\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2888,7 +2888,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"La Real Tecnologia\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -2970,41 +2970,6 @@
     },
     {
       "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-El-Cerebro-y-los-Chamanes-Vol-5-2.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "ready",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico El Cerebro y los Chamanes Vol 5 2\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
       "titulo": "Los Chamanes de Mexico PACHITA Vol 3",
       "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-PACHITA-Vol-3.pdf",
       "tipo": "libro",
@@ -3028,7 +2993,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico PACHITA Vol 3\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3063,7 +3028,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 1\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3098,7 +3063,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 2\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3133,78 +3098,8 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 4\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico Vol 6",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-6.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 6\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
-      "tags": [
-        "Grinberg",
-        "chamanismo",
-        "conciencia",
-        "sintérgica",
-        "neurofisiología"
-      ]
-    },
-    {
-      "id": "lib-jacobo-grinberg-zylberbaum-los-chamanes-",
-      "titulo": "Los Chamanes de Mexico Vol 7",
-      "archivo": "Jacobo-Grinberg-Zylberbaum/Los-Chamanes-de-Mexico-Vol-7.pdf",
-      "tipo": "libro",
-      "formato": "pdf",
-      "autor": "Jacobo Grinberg-Zylberbaum",
-      "idioma": "es",
-      "categorias": [
-        "teoría sintérgica",
-        "chamanismo",
-        "conciencia",
-        "neurofisiología"
-      ],
-      "conceptosClave": [
-        "teoría sintérgica",
-        "sintérgica",
-        "chamanismo",
-        "Pachita",
-        "potencial transferido",
-        "meditación autoalusiva",
-        "el cerebro consciente",
-        "experiencia interna"
-      ],
-      "capitulos": [],
-      "embeddings": "pending",
-      "descripcionBreve": "Libro \"Los Chamanes de Mexico Vol 7\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
         "chamanismo",
@@ -3238,7 +3133,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Cristales de la Galaxia\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3308,7 +3203,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"MEDITACION AUTOALUSIVA\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3378,7 +3273,7 @@
         "experiencia interna"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Retorno a la Luz\" de Jacobo Grinberg-Zylberbaum registrado en la biblioteca local.",
       "tags": [
         "Grinberg",
@@ -3672,7 +3567,7 @@
         "saban"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
@@ -3707,7 +3602,7 @@
         "maase bereshith"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"Maasé Bereshith\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
@@ -3738,7 +3633,7 @@
         "maase bereshith"
       ],
       "capitulos": [],
-      "embeddings": "pending",
+      "embeddings": "ready",
       "descripcionBreve": "Libro \"DAAT El Conocimiento\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",

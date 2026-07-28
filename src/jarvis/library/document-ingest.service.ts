@@ -850,6 +850,10 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
         `Iniciando indexación jerárquica para docId=${documentId} ("${title}")`,
       );
 
+      // Limpiar estructura preexistente si se está re-indexando el documento
+      await this.prisma.chapter.deleteMany({ where: { documentId } });
+      await this.prisma.chunk.deleteMany({ where: { documentId } });
+
       // Fase 3: Identificación Estructural
       const chapters = this.hierarchicalParser.parseDocument(title, content);
 
