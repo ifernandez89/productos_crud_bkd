@@ -189,7 +189,6 @@ describe('AichatService', () => {
         pregunta: 'hola',
       } as any);
 
-      expect(result).toContain('Modelo activo');
       expect(result).toContain('qwen3.5:4b');
       expect(result).toContain('Respuesta de prueba');
     });

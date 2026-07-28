@@ -1175,7 +1175,7 @@ export class JarvisService {
     if (!normalizedContent) {
       return normalizedContent;
     }
-    return `Modelo activo: ${modelName} \n\n${normalizedContent}`;
+    return `${modelName} \n\n${normalizedContent}`;
   }
 
   private looksEvasive(text: string): boolean {
