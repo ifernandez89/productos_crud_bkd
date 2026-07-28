@@ -409,6 +409,7 @@ export class IntentRouterService {
     }
 
     // LOCAL — alta confianza (conversación trivial, identidad del asistente)
+    // Patrón base: saludos simples
     const trivialPattern =
       /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches|gracias|de nada|ok|dale|si|no|perfecto|genial|excelente|entendido|claro|listo|ciao|chau|adios|como estas|como andas|que tal|como va|hola como estas|hola que tal|hola como andas)[\s!?.,]*$/i;
     if (trivialPattern.test(n.trim())) {
@@ -416,6 +417,39 @@ export class IntentRouterService {
         intent: 'LOCAL',
         confidence: 'high',
         reason: 'trivial greeting',
+      };
+    }
+
+    // LOCAL — saludos sociales con contexto temporal o afectivo
+    // Captura: "como estas tanto tiempo!", "cuánto tiempo sin hablar!",
+    //           "hace mucho que no te escribía", "que tal, ya pasó tiempo", etc.
+    // ⚠️ CRÍTICO: sin este bloque, el LLM puede clasificar estos mensajes como RAG
+    //             y disparar ingesta de documentos — BUG reportado 2026-07-28.
+    if (
+      /\b(tanto tiempo|cuanto tiempo|hace mucho|cuánto tiempo|hace rato|tiempo sin|sin hablar|sin escribir|sin escribirte|sin hablarnos|sin vernos)\b/i.test(
+        n,
+      ) &&
+      !/(busca|buscar|documenta|archivo|pdf|informacion|info|noticias|partido|resultado)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'social greeting with temporal context',
+      };
+    }
+
+    // LOCAL — frases de cierre o emoción conversacional
+    if (
+      /^(que bien|que bueno|me alegra|me alegro|que pena|que mal|lo siento|disculpa|perdon|gracias por|igual gracias|te entiendo|entendido|tiene sentido|me parece bien|me parece|suena bien|dale va|va por eso)[\s!?.,]*/i.test(
+        n.trim(),
+      )
+    ) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'social/emotional conversational phrase',
       };
     }
 

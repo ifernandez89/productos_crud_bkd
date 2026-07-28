@@ -212,7 +212,13 @@ export class JarvisService {
       let retrievedChunksList: any[] = [];
       let libraryMatches: any[] = [];
 
-      if (useDocuments) {
+      // ⚠️ GUARD ANTI-INGESTA: si el intent es LOCAL con alta confianza (saludo, charla casual),
+      // NUNCA ejecutar el pipeline RAG ni disparar lazy-load de documentos.
+      // BUG reportado 2026-07-28: "como estas tanto tiempo!" disparó ingesta de libros.
+      const isLocalHighConfidence =
+        intent.intent === 'LOCAL' && intent.confidence === 'high';
+
+      if (!isLocalHighConfidence) {
         libraryMatches = this.corpusSelector.findRelevantDocuments(
           userMessage,
           3,
@@ -232,9 +238,13 @@ export class JarvisService {
             intent.reason = `library match: ${libraryMatches[0].document.titulo}`;
           }
         }
+      } else {
+        this.logger.log(
+          `[rag:skip] Intent LOCAL/high — omitiendo pipeline RAG y lazy-load. Mensaje: "${userMessage.slice(0, 60)}"`,
+        );
       }
 
-      if (useDocuments) {
+      if (useDocuments && !isLocalHighConfidence) {
         let chunks = [] as any[];
         try {
           // 1. Consultar el índice de la biblioteca para encontrar documentos relevantes
