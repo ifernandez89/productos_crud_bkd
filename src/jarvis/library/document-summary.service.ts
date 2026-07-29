@@ -214,31 +214,20 @@ export class DocumentSummaryService {
           `[document-summary:search] Encontrado en índice: "${doc.titulo}" (score=${match.score}). Verificando en DB...`,
         );
         try {
-          let dbDocId: number;
-          if (doc.embeddings !== 'ready') {
-            dbDocId = await this.corpusSelector.lazyLoadDocument(
-              doc,
-              this.ingestService,
-              this.documentRepo,
-            );
+          let dbDocId: number | null = null;
+          const existing = await this.documentRepo.findDocumentByExactTitle(
+            doc.titulo,
+          );
+          if (existing) {
+            dbDocId = existing.id;
           } else {
-            const existing = await this.documentRepo.findDocumentByExactTitle(
-              doc.titulo,
+            this.logger.log(
+              `[document-summary:search] Documento "${doc.titulo}" no está cargado en BD. Se usará búsqueda textual / conocimiento sin disparar ingesta de PDF.`,
             );
-            if (existing) {
-              dbDocId = existing.id;
-            } else {
-              this.logger.warn(
-                `[document-summary:search] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`,
-              );
-              dbDocId = await this.corpusSelector.lazyLoadDocument(
-                doc,
-                this.ingestService,
-                this.documentRepo,
-              );
-            }
           }
-          return this.documentRepo.getDocumentWithChunks(dbDocId);
+          if (dbDocId !== null) {
+            return this.documentRepo.getDocumentWithChunks(dbDocId);
+          }
         } catch (err: any) {
           this.logger.error(
             `[document-summary:search] Error en lazy loading de "${doc.titulo}": ${err.message}`,

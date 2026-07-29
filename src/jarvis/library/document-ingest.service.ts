@@ -902,6 +902,12 @@ Respondé SOLO con la categoría (una palabra, sin explicaciones).`;
         progressIndex: 100.0,
       });
 
+      // Marcar documento como READY de inmediato para que esté disponible para búsquedas RAG y Lazy Embeddings
+      await this.documentRepo.updateDocumentStatus(documentId, 'ready');
+      this.logger.log(
+        `[ingest] Documento docId=${documentId} marcado como READY inmediatamente tras extracción estructural`,
+      );
+
       // Fase 4: Cola de Embeddings de Baja Prioridad y Amortiguada en background
       this.processEmbeddingsSlowly(documentId, savedChunks).catch((err) =>
         this.logger.error(

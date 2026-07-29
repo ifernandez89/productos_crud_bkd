@@ -212,11 +212,16 @@ export class JarvisService {
       let retrievedChunksList: any[] = [];
       let libraryMatches: any[] = [];
 
-      // ⚠️ GUARD ANTI-INGESTA: si el intent es LOCAL con alta confianza (saludo, charla casual),
-      // NUNCA ejecutar el pipeline RAG ni disparar lazy-load de documentos.
+      // ⚠️ GUARD ANTI-INGESTA: si el intent es LOCAL con alta confianza Y el mensaje
+      // es corto/conversacional, NUNCA ejecutar el pipeline RAG ni disparar lazy-load.
       // BUG reportado 2026-07-28: "como estas tanto tiempo!" disparó ingesta de libros.
+      const isShortConversational = userMessage.trim().length < 40 &&
+        /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido)/i.test(userMessage.trim());
+
       const isLocalHighConfidence =
-        intent.intent === 'LOCAL' && intent.confidence === 'high';
+        intent.intent === 'LOCAL' &&
+        intent.confidence === 'high' &&
+        isShortConversational;
 
       if (!isLocalHighConfidence) {
         libraryMatches = this.corpusSelector.findRelevantDocuments(
@@ -224,23 +229,26 @@ export class JarvisService {
           3,
         );
         if (libraryMatches.length > 0 && libraryMatches[0].score >= 2.0) {
-          const isAstrologyOrWeb =
-            intent.intent === 'ASTROLOGY' || intent.intent === 'WEB';
-          const isLowConfidenceLocal =
-            intent.intent === 'LOCAL' && intent.confidence !== 'high';
+          const shouldOverride =
+            intent.intent === 'ASTROLOGY' ||
+            intent.intent === 'WEB' ||
+            (intent.intent === 'LOCAL' && intent.confidence !== 'high') ||
+            // Override siempre si hay match fuerte (score >= 5) — incluso LOCAL/high
+            // Ej: "Quien es Jacobo Grinberg?" clasifica LOCAL/high pero hay doc en biblioteca
+            libraryMatches[0].score >= 5.0;
 
-          if (isAstrologyOrWeb || isLowConfidenceLocal) {
+          if (shouldOverride) {
             this.logger.log(
-              `[intent-override] Coincidencia en biblioteca detectada (${libraryMatches[0].document.titulo}, score: ${libraryMatches[0].score}). Forzando RAG desde ${intent.intent}`,
+              `[intent-override] Coincidencia en biblioteca detectada (${libraryMatches[0].document.titulo}, score: ${libraryMatches[0].score}). Forzando RAG desde ${intent.intent}/${intent.confidence}`,
             );
             intent.intent = 'RAG';
             intent.confidence = 'high';
-            intent.reason = `library match: ${libraryMatches[0].document.titulo}`;
+            intent.reason = `library match: ${libraryMatches[0].document.titulo} (score: ${libraryMatches[0].score})`;
           }
         }
       } else {
         this.logger.log(
-          `[rag:skip] Intent LOCAL/high — omitiendo pipeline RAG y lazy-load. Mensaje: "${userMessage.slice(0, 60)}"`,
+          `[rag:skip] Intent LOCAL/high + mensaje conversacional corto — omitiendo RAG. Mensaje: "${userMessage.slice(0, 60)}"`,
         );
       }
 
@@ -258,36 +266,21 @@ export class JarvisService {
             for (const match of matches) {
               const doc = match.document;
               try {
-                if (doc.embeddings !== 'ready') {
-                  const dbId = await this.corpusSelector.lazyLoadDocument(
-                    doc,
-                    this.ingestService,
-                    this.documentRepo,
+                // Verificar existencia real en base de datos
+                const existing =
+                  await this.documentRepo.findDocumentByExactTitle(
+                    doc.titulo,
                   );
-                  targetDocIds.push(dbId);
+                if (existing) {
+                  targetDocIds.push(existing.id);
                 } else {
-                  // Verificar existencia real en base de datos
-                  const existing =
-                    await this.documentRepo.findDocumentByExactTitle(
-                      doc.titulo,
-                    );
-                  if (existing) {
-                    targetDocIds.push(existing.id);
-                  } else {
-                    this.logger.warn(
-                      `[rag] "${doc.titulo}" marcado como ready pero no hallado en BD. Recargando...`,
-                    );
-                    const dbId = await this.corpusSelector.lazyLoadDocument(
-                      doc,
-                      this.ingestService,
-                      this.documentRepo,
-                    );
-                    targetDocIds.push(dbId);
-                  }
+                  this.logger.log(
+                    `[rag] Documento "${doc.titulo}" no está cargado en BD. Se responderá con conocimiento general / búsqueda textual sin disparar ingesta de PDF.`,
+                  );
                 }
               } catch (err: any) {
                 this.logger.error(
-                  `[rag] Error en lazy loading de "${doc.titulo}": ${err.message}`,
+                  `[rag] Error al verificar documento "${doc.titulo}": ${err.message}`,
                 );
               }
             }
@@ -975,11 +968,21 @@ export class JarvisService {
       : systemPrompt;
 
     // ── QICA: Procesamiento cognitivo cuántico-inspirado ──────────────────────
-    const qicaResult = await this.cognitiveOrchestrator.processCognitiveQuery(
-      sessionId,
-      userMessage,
-      retrievedChunks,
-    );
+    // Saltear en mensajes triviales (saludos, confirmaciones) para no hacer queries innecesarias
+    const isTrivialMessage = /^(hola|buenas|hey|ok|dale|si|no|gracias|chau|bye|listo|entendido|perfecto|claro|genial|excelente|bien|re bien|todo bien|de nada|nada|porfa|porfavor)[\s!?.]*$/i.test(userMessage.trim());
+    
+    let qicaResult: { cognitiveFieldContext: string; activated: boolean; collapseResult?: any } = {
+      cognitiveFieldContext: '',
+      activated: false,
+    };
+
+    if (!isTrivialMessage) {
+      qicaResult = await this.cognitiveOrchestrator.processCognitiveQuery(
+        sessionId,
+        userMessage,
+        retrievedChunks,
+      );
+    }
 
     if (qicaResult.cognitiveFieldContext) {
       finalSystemPrompt += qicaResult.cognitiveFieldContext;

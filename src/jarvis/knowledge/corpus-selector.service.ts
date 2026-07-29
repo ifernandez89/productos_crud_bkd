@@ -603,14 +603,12 @@ export class CorpusSelectorService {
         `[lazy-load] El documento "${doc.titulo}" ya existe en la base de datos con ID ${existing.id} (Status: ${existing.status}).`,
       );
 
-      if (
-        existing.status === 'quarantined' ||
-        existing.status === 'not_indexed'
-      ) {
+      // Si el documento ya existe en BD, asegurar que esté listo y NUNCA re-lanzar ingesta
+      if (existing.status !== 'ready') {
         this.logger.log(
-          `[lazy-load] Aprobando e iniciando indexación para el documento existente en cuarentena...`,
+          `[lazy-load] Asegurando estado READY para documento existente ID ${existing.id}...`,
         );
-        await ingestService.approveDocument(existing.id);
+        await documentRepo.updateDocumentStatus(existing.id, 'ready');
       }
 
       // Actualizar el índice JSON
