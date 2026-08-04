@@ -27,7 +27,7 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   getDefaultModel(): string {
-    return resolveOllamaModelName('llama3.2:3b');
+    return resolveOllamaModelName('qwen3:1.7b');
   }
 
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {
@@ -134,38 +134,40 @@ export class OllamaProvider implements ILLMProvider {
     if (this.model && this.currentNumPredict === numPredict) {
       return this.model;
     }
-    // Para el modelo "default" (400 tokens) cacheamos
-    if (numPredict === 400) {
+    // Para el modelo "default" (512 tokens) cacheamos
+    if (numPredict === 512) {
       if (!this.model) await this.initialize();
       return this.model!;
     }
     // Para llamadas con tokens distintos, crear instancia temporal
     return new ChatOllama({
       model: this.getDefaultModel(),
-      temperature: 0.2,
+      temperature: 0.10,
       topP: 0.85,
-      topK: 15,
+      topK: 20,
       numPredict,
-      repeatPenalty: 1.1,
-      numCtx: 4096,
+      repeatPenalty: 1.10,
+      numCtx: 8192,
       stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
     });
   }
 
-  private currentNumPredict = 400;
+  private currentNumPredict = 512;
 
   private async initialize(): Promise<void> {
-    this.currentNumPredict = 400;
+    this.currentNumPredict = 512;
     this.model = new ChatOllama({
       model: this.getDefaultModel(),
-      temperature: 0.2,
+      temperature: 0.10,
       topP: 0.85,
-      topK: 15,
-      numPredict: 400,
-      repeatPenalty: 1.1,
-      numCtx: 4096,
+      topK: 20,
+      numPredict: 512,
+      repeatPenalty: 1.10,
+      numCtx: 8192,
       stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
     });
-    this.logger.log(`Ollama provider initialized: ${this.getDefaultModel()}`);
+    this.logger.log(
+      `Ollama provider initialized (Qwen3:1.7B base profile: temp=0.10, topK=20, topP=0.85, ctx=8192): ${this.getDefaultModel()}`,
+    );
   }
 }

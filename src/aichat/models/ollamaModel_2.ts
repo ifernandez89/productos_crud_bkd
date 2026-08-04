@@ -114,20 +114,19 @@ COMPORTAMIENTO:
      */
     this.model = new ChatOllama({
       baseUrl: 'http://localhost:11434',
-      model: resolveTechModel(), // OLLAMA_MODEL_TEST3_NAME en .env (qwen3:4b por defecto)
-      temperature: 0.2, // Muy bajo: reduce alucinaciones y respuestas creativas
+      model: resolveTechModel('qwen3:1.7b'), // OLLAMA_MODEL_TEST3_NAME en .env (qwen3:1.7b por defecto)
+      temperature: 0.10, // Recomendado JarBees general: 0.10 para menor alucinación
       topP: 0.85,
-      topK: 5, // Conservador: solo los 5 tokens más probables
-      numPredict: 500,
-      repeatPenalty: 1.1,
-      numCtx: 4096, // Contexto amplio para análisis de código
-      // Stop tokens para cortar cuando el modelo intenta "seguir hablando"
+      topK: 20,
+      numPredict: 512,
+      repeatPenalty: 1.10,
+      numCtx: 8192,
       stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:', '---'],
     });
 
     this.logger.log(
-      `🔧 Tech Expert Model initialized: ${resolveTechModel()} | ` +
-        'Config: temp=0.2, topK=5, ctx=4096, RAG: chunk=1000, overlap=200, embedding=bge-m3',
+      `🔧 Tech Expert Model initialized: ${resolveTechModel('qwen3:1.7b')} | ` +
+        'Qwen3:1.7B Base Profile: temp=0.10, topK=20, topP=0.85, repeatPenalty=1.10, ctx=8192, predict=512',
     );
   }
 }

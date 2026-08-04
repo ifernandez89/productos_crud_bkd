@@ -54,18 +54,17 @@ export class OllamaModelService implements IModelService {
 
   private async create(): Promise<void> {
     this.model = new ChatOllama({
-      model: resolveOllamaModelName(), //en cloud, EXCELENTE RENDIMIENTO: qwen3-coder-next:cloud //qwen2.5:1.5b aun mas rapido // llama3.2:3b rápido para chat //qwen3.5:4b más preciso para tareas complejas
-      temperature: 0.2, // bajado de 0.3 → más determinista
-      topP: 0.85,
-      topK: 15,
-      numPredict: 400,
-      repeatPenalty: 1.1,
-      numCtx: 4096, // subido de 2048 → mejor comprensión de contexto largo
-      // Stop tokens ampliados: cortan antes si el modelo intenta "seguir hablando"
+      model: resolveOllamaModelName('qwen3:1.7b'),
+      temperature: 0.10, // Recomendado general: alta precisión, resp. deterministas, menor alucinación
+      topP: 0.85, // Diversidad controlada
+      topK: 20, // Limita opciones del modelo
+      numPredict: 512, // Longitud de respuesta estándar
+      repeatPenalty: 1.10, // Evita repeticiones
+      numCtx: 8192, // Context window recomendado
       stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:'],
     });
     this.logger.log(
-      'Ollama model initialized (Jarvis config: temp=0.2, ctx=4096)',
+      'Ollama model initialized (Qwen3:1.7B base profile: temp=0.10, topK=20, topP=0.85, repeatPenalty=1.10, ctx=8192, predict=512)',
     );
   }
 }

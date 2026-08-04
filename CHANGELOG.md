@@ -6,6 +6,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Configured — Configuración Recomendada JarBees + Qwen3:1.7B (2026-08-04)
+
+- **⚡ Configuración Recomendada y Perfiles para Qwen3:1.7B**: Configuración optimizada para reducir alucinaciones, lograr respuestas deterministas y priorizar RAG/herramientas con menor uso de RAM y latencia ultra baja en [ollama-config.ts](file:///c:/Projects/productos_crud_bkd/src/shared/ollama-config.ts), [ollamaModel.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts):
+  - **Modelo Base**: `qwen3:1.7b` (`think: false` por defecto, sin razonamiento interno expuesto).
+  - **Configuración Base General**: `temperature: 0.10`, `top_p: 0.85`, `top_k: 20`, `repeat_penalty: 1.10`, `presence_penalty: 0`, `frequency_penalty: 0`, `num_ctx: 8192`, `num_predict: 512`, `mirostat: off (0)`.
+  - **Perfil Chat Simple 💬**: `temperature: 0.25`, `top_p: 0.90`, `top_k: 30`, `num_predict: 300` (para conversación normal y preguntas simples).
+  - **Perfil RAG / Conocimiento 📚**: `temperature: 0.05`, `top_p: 0.80`, `top_k: 10`, `num_predict: 700` (para documentos y consultas sobre base de conocimiento).
+  - **Directivas de System Prompt**: Prioridad RAG y herramientas como fuente de verdad, sin inventar información, respuestas breves y precisas.
+
+### Configured — Perfil Intermedio Chat/RAG para JarBees + Qwen3.5:4B (2026-08-04)
+
+- **⚙️ Perfil Intermedio Híbrido (Chat + RAG)**: Configuración equilibrada para el modelo `qwen3.5:4b` ajustada en [ollama-config.ts](file:///c:/Projects/productos_crud_bkd/src/shared/ollama-config.ts), [ollamaModel.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts):
+  - **Modelo**: `qwen3.5:4b` (Thinking Mode `think: false` por defecto; activado únicamente para Planner en tareas complejas).
+  - **Temperature**: `0.20` (Equilibrio optimizado entre precisión/baja alucinación de RAG [0.15] y fluidez conversacional de Chat [0.35]).
+  - **Top P**: `0.85` (Mantiene naturalidad en las respuestas).
+  - **Top K**: `20` (Equilibrio ideal entre variedad y control).
+  - **Repeat Penalty**: `1.12` (Prevención activa de repeticiones).
+  - **Presence / Frequency Penalty**: `0` / `0`.
+  - **Context Window (`num_ctx`)**: `8192` tokens (ampliado de 4096 para soportar memoria contextual y RAG).
+  - **Num Predict**: `512` tokens dinámicos para el perfil intermedio (256 corta, 512 chat/rag, 1024 análisis, 2048 docs).
+  - **Seed**: `42` (Desarrollo).
+
 ### Added — Ollama Auto-Healing: Recuperación Automática y Circuit Breaker (2026-07-28)
 
 - **🔄 OllamaRecoveryService**: Nuevo servicio singleton ([ollama.recovery.service.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.recovery.service.ts)) que maneja la recuperación automática de Ollama cuando cae. Implementa:
