@@ -360,6 +360,26 @@ export class IntentRouterService {
       };
     }
 
+    // RAG — consultas sobre contenido de la biblioteca personal (autores y temas conocidos)
+    // ⚠️ CRÍTICO: sin este bloque, preguntas como "¿qué dice Monroe sobre X?" o
+    //             "qué es el plano astral?" van a WEB (gemma3:1b las manda a noticias).
+    //             Este bloque matchea ANTES del clasificador LLM → alta confianza garantizada.
+    if (
+      /(plano astral|proyeccion astral|proyección astral|viaje astral|viajes astrales|cuerpo astral|cordon de plata|cordón de plata|desdoblamiento astral|out of body|experiencia fuera del cuerpo|\bobe\b)/i.test(n) ||
+      /(monroe|leadbeater|muldoon|ziewe|oliver fox|sylvan muldoon|hereward carrington|jurgen ziewe)/i.test(n) ||
+      /(jung|carl jung|freud|sigmund freud|nietzsche|blavatsky|grinberg|krishnamurti|levi|eliphas)/i.test(n) ||
+      /(inconsciente colectivo|arquetipo|sombra jungiana|anima animus|psicologia analitica|psicología analítica)/i.test(n) ||
+      /(cabala|cábala|kabbalah|sefirot|arbol de la vida|árbol de la vida|zohar|misticismo)/i.test(n) ||
+      /(teosofia|teosofía|teosófica|teosofica|madame blavatsky|hermética|hermetica|hermetismo)/i.test(n)
+    ) {
+      return {
+        intent: 'RAG',
+        confidence: 'high',
+        reason: 'library topic keyword matched (corpus known)',
+      };
+    }
+
+
     // RAG con categoría específica — resumen temático
     if (
       /(resumen|resumir|resumime|que dice|que dicen|informacion|info)\s+(sobre|de|acerca de)\s+\w+/i.test(

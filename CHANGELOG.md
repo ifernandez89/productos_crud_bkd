@@ -6,6 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Intent Router: Consultas sobre temas de la biblioteca siempre van a RAG (2026-08-05)
+
+- **🐛 Bug detectado**: Preguntas como `"¿Qué podés decirme sobre el plano astral?"` o `"¿Qué dice Monroe sobre la proyección?"` eran enrutadas a `WEB` (noticias) porque el clasificador LLM `gemma3:1b` no tiene conocimiento de la biblioteca personal y usaba `WEB` como fallback.
+- **✅ Fix en** [intent-router.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/intent/intent-router.service.ts): Nuevo bloque de reglas determinísticas de **alta confianza** que matchea términos de la biblioteca antes de llamar al LLM clasificador:
+  - **Plano Astral**: `plano astral`, `proyección astral`, `viaje astral`, `cuerpo astral`, `cordón de plata`, `out of body`, `OBE`
+  - **Autores OBE**: Monroe, Leadbeater, Muldoon, Ziewe, Oliver Fox
+  - **Psicología / Filosofía**: Jung, Freud, Nietzsche, Blavatsky, Grinberg, Krishnamurti, Eliphas Levi
+  - **Conceptos Junganos**: `inconsciente colectivo`, `arquetipo`, `sombra`, `anima/animus`, `psicología analítica`
+  - **Cábala / Teosofía**: `cábala`, `kabbalah`, `sefirot`, `zohar`, `teosofía`, `hermetismo`
+- **Impacto**: Todas las consultas sobre libros de la biblioteca personal reciben `intent: 'RAG', confidence: 'high'` instantáneamente, sin pasar por el LLM clasificador. Tiempo de routing: ~0ms vs ~3-8s anterior.
+
 ### Added — Pipeline de Síntesis Estructurada Map-Reduce (2026-08-05)
 
 - **🧠 DocumentSynthesisService** (`src/jarvis/library/document-synthesis.service.ts`): Nuevo servicio que implementa un pipeline de síntesis map-reduce offline sobre libros ya indexados. Genera **fichas narrativas pre-computadas** (`DocumentInsight`) con: resumen ejecutivo, tesis central, historias destacadas, personajes clave, conceptos fundamentales, citas textuales, ideas polémicas y técnicas prácticas.
