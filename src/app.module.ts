@@ -11,6 +11,7 @@ import { GoogleModule } from './google/google.module';
 import { JobsModule } from './jobs/jobs.module';
 import { AuthModule } from './auth/auth.module';
 import { BalanceModule } from './modules/balance/balance.module';
+import { ReaderModule } from './modules/reader/reader.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -29,6 +30,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     JobsModule,
     AuthModule,
     BalanceModule,
+    ReaderModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',

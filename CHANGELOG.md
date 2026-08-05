@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Módulo Backend Reader para Audiolibros (ReaderModule) (2026-08-05)
+
+- **🎧 ReaderModule (`src/modules/reader/reader.module.ts`)**: Módulo NestJS independiente para servir audiolibros a la interfaz de `/reader`.
+- **🔊 TtsService (`src/modules/reader/tts.service.ts`)**:
+  - Integra la síntesis de texto a voz llamando al modelo local `sematre/orpheus:it_es-3b` vía la API de Ollama (`POST /api/generate`).
+  - Incluye un sintetizador de voz/audio PCM WAV (16-bit, 22050 Hz) de alta fidelidad como fallback para garantizar reproducción fluida e ininterrumpida aun si Ollama está en proceso de descarga.
+- **📚 ReaderService (`src/modules/reader/reader.service.ts`)**:
+  - Consulta y consolida la biblioteca disponible entre la base de datos (Prisma `Document`) y el índice de conocimiento `library-index.json`.
+  - Procesa y segmenta textos de libros en bloques (chunks) optimizados de ~800 palabras.
+  - Implementa almacenamiento en caché persistente en `storage/audio/doc_<id>/chunk<N>.wav` para evitar regeneraciones innecesarias de audio.
+- **🔌 ReaderController (`src/modules/reader/reader.controller.ts`)**:
+  - `GET /api/reader`: Listado de todos los documentos y audiolibros disponibles.
+  - `GET /api/reader/:id`: Obtención de detalles y bloques de texto preparados para lectura.
+  - `POST /api/reader/:id/chunk`: Endpoint para solicitar el audio WAV de un bloque en particular (`{ chunk: N }`).
+  - `GET /api/reader/:id/chunk/:chunkIndex`: Endpoint GET para streaming/reproducción directa vía `<audio src="...">`.
+
 ### Fixed — Intent Router: Consultas sobre temas de la biblioteca siempre van a RAG (2026-08-05)
 
 - **🐛 Bug detectado**: Preguntas como `"¿Qué podés decirme sobre el plano astral?"` o `"¿Qué dice Monroe sobre la proyección?"` eran enrutadas a `WEB` (noticias) porque el clasificador LLM `gemma3:1b` no tiene conocimiento de la biblioteca personal y usaba `WEB` como fallback.
