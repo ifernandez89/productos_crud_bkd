@@ -355,16 +355,28 @@ export class DocumentSummaryService {
       contentToAnalyze = `${start}\n\n[... contenido medio omitido para análisis ...]\n\n${end}`;
     }
 
+    // Resolver autor y escuela real desde el índice de la biblioteca (CorpusSelector)
+    const docInIndex = this.corpusSelector.getIndex()?.documentos?.find(
+      (d) => d.titulo.toLowerCase() === title.toLowerCase(),
+    );
+    const resolvedAuthor =
+      docInIndex?.autor ||
+      this.corpusSelector.getAuthorAndSchoolByTitle(title).author ||
+      'Desconocido';
+    const resolvedSchool =
+      this.corpusSelector.getAuthorAndSchoolByTitle(title).school || 'General';
+
     const systemPrompt = `Sos un epistemólogo y bibliotecario experto. Tu tarea es generar una **Ficha de Conocimiento (Knowledge Card)** estructurada y profesional sobre la obra para integrarla en una base de conocimientos.
 Respondé en español argentino y utilizá un estilo sobrio, claro y de alto valor conceptual.
+⚠️ AUTOR REGISTRADO DE LA OBRA: "${resolvedAuthor}". Debes usar OBLIGATORIAMENTE este nombre de autor. PROHIBIDO inventar otro nombre de autor (como José María Caro).
 
 La ficha debe estructurarse exactamente con las siguientes secciones markdown:
 
 # 📖 [Título de la Obra]
 
-- **Autor:** [Nombre del autor o "Desconocido"]
-- **Categoría/Dominio:** [Dominio de la obra, ej: Psicoanálisis, Astronomía, Desarrollo]
-- **Corriente/Escuela:** [Escuela de pensamiento, ej: Psicoanálisis clásico, Astrofísica, Programación Reactiva]
+- **Autor:** ${resolvedAuthor}
+- **Categoría/Dominio:** ${category || 'General'}
+- **Corriente/Escuela:** ${resolvedSchool}
 - **Nivel de Dificultad:** [Nivel entre ★ y ★★★★★]
 - **Idioma:** [Idioma del texto]
 - **Tamaño:** [Cantidad de palabras estimada en base al texto completo]
@@ -543,7 +555,9 @@ ${keyPoints.map((p) => `✔ ¿${p.endsWith('?') ? p.slice(0, -1) : p}?`).join('\
       lower.includes('limitación en la información') ||
       lower.includes('hubo un error') ||
       lower.includes('no puedo ofrecer') ||
-      lower.includes('debido a una limitación')
+      lower.includes('debido a una limitación') ||
+      lower.includes('josé maría caro') ||
+      lower.includes('planeta astral')
     );
   }
 }
