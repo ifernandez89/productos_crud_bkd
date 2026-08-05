@@ -206,6 +206,7 @@ model Document {
   chapters        Chapter[]
   knowledgeSource KnowledgeSource?     @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   collections     CollectionDocument[]
+  insight         DocumentInsight?
 
   @@index([category])
   @@index([status])
@@ -686,4 +687,48 @@ model PendingRelation {
   @@index([confidence])
   @@index([sourceDocId])
   @@index([extractedAt])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SYNTHESIS PIPELINE — DocumentInsight (JarBees v3.2)
+// Resúmenes estructurados pre-computados por el pipeline map-reduce.
+// Reemplaza búsqueda vectorial densa para consultas de "mejores historias /
+// personajes / conceptos por autor", produciendo respuestas más rápidas
+// y precisas que procesar chunks crudos en tiempo real.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── 19) DOCUMENT INSIGHT ─────────────────────────────────────────────────────
+// Ficha narrativa de un documento, generada offline por DocumentSynthesisService.
+
+model DocumentInsight {
+  id         Int      @id @default(autoincrement())
+  documentId Int      @unique // 1-to-1 con Document
+  title      String   // título del documento (desnormalizado para queries rápidas)
+  author     String   // autor (desnormalizado)
+  collection String?  // colección temática (ej. "plano_astral")
+
+  // ── Resúmenes ───────────────────────────────────────────────────────────
+  executiveSummary String  // 2-3 párrafos — síntesis del libro completo
+  centralThesis    String? // tesis o mensaje central del autor
+
+  // ── Extractos narrativos (JSON serializado) ───────────────────────────
+  // Cada campo es un JSON array de strings o {title, description} objects
+  highlightedStories String @default("[]") // Las 3-5 historias/episodios más destacados
+  keyCharacters      String @default("[]") // Personajes, entidades o figuras centrales
+  coreConcepts       String @default("[]") // Conceptos fundamentales del autor/libro
+  notableQuotes      String @default("[]") // Citas textuales destacadas (máx 5)
+  controversialIdeas String @default("[]") // Ideas polémicas o contraintuitivas
+  practicalTechniques String @default("[]") // Técnicas o métodos aplicables
+  contradictions     String @default("[]") // Contradicciones internas o con otros autores
+
+  // ── Control ──────────────────────────────────────────────────────────────
+  synthesisVersion Int      @default(1)   // versión del pipeline que lo generó
+  generatedAt      DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([author])
+  @@index([collection])
+  @@index([generatedAt])
 }

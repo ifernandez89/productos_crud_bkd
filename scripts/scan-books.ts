@@ -206,6 +206,41 @@ const META_MAP: Record<string, BookMetadata> = {
     categorias: ['mitología', 'cultura maya', 'cosmovisión', 'literatura clásica'],
     conceptosClave: ['popol vuh', 'quiché', 'creación', 'hunahpú', 'ixbalanqué', 'inframundo', 'xibalbá', 'dioses'],
     tags: ['maya', 'mitología', 'quiché', 'historia', 'sagrado', 'literatura']
+  },
+  '1929__muldoon_carrington___the_projection_of_the_astral_body.pdf': {
+    titulo: 'The Projection of the Astral Body',
+    autor: 'Sylvan Muldoon & Hereward Carrington',
+    categorias: ['plano astral', 'proyección astral', 'experiencias fuera del cuerpo', 'esoterismo'],
+    conceptosClave: ['proyección astral', 'cuerpo astral', 'cordón de plata', 'experiencias fuera del cuerpo', 'desdoblamiento corporal', 'conciencia astral'],
+    tags: ['muldoon', 'carrington', 'proyección astral', 'astral', 'cuerpo astral', 'cordón de plata', 'desdoblamiento']
+  },
+  'AP FOX.pdf': {
+    titulo: 'Astral Projection: A Record of Out-of-Body Experiences',
+    autor: 'Oliver Fox',
+    categorias: ['proyección astral', 'experiencias fuera del cuerpo', 'sueño lúcido', 'plano astral'],
+    conceptosClave: ['proyección astral', 'sueño lúcido', 'oliver fox', 'experiencias fuera del cuerpo', 'plano astral', 'cuerpo astral'],
+    tags: ['fox', 'oliver fox', 'proyección astral', 'astral', 'sueño lúcido', 'desdoblamiento']
+  },
+  'Journeys Out of the Body - Robert A. Monroe.pdf': {
+    titulo: 'Journeys Out of the Body',
+    autor: 'Robert A. Monroe',
+    categorias: ['experiencias fuera del cuerpo', 'proyección astral', 'investigación de la conciencia', 'plano astral'],
+    conceptosClave: ['obe', 'viajes fuera del cuerpo', 'robert monroe', 'plano astral', 'cuerpo astral', 'monroe institute', 'estado de transe'],
+    tags: ['monroe', 'robert monroe', 'viajes astrales', 'astral', 'experiencias fuera del cuerpo', 'desdoblamiento', 'conciencia']
+  },
+  'Leadbeater, Charles Webster - Planul astral - ctrl.pdf': {
+    titulo: 'El Plano Astral',
+    autor: 'Charles Webster Leadbeater',
+    categorias: ['teosofía', 'plano astral', 'esoterismo', 'mundos invisibles'],
+    conceptosClave: ['plano astral', 'materia astral', 'habitantes del plano astral', 'teosofía', 'leadbeater', 'formas pensamiento', 'cuerpo emocional'],
+    tags: ['leadbeater', 'plano astral', 'teosofía', 'astral', 'esoterismo', 'habitantes astrales']
+  },
+  'Ziewe Jurgen + Multi-dimensional man. An authentic eyewitness account of the world that awaits us after death (Guilhermo Luna) (z-lib.org).pdf': {
+    titulo: 'Multi-Dimensional Man: An authentic eyewitness account of the world that awaits us after death',
+    autor: 'Jürgen Ziewe',
+    categorias: ['plano astral', 'experiencias fuera del cuerpo', 'multidimensionalidad', 'vida después de la muerte'],
+    conceptosClave: ['multidimensional man', 'jürgen ziewe', 'dimensiones astrales', 'vida tras la muerte', 'experiencias fuera del cuerpo', 'conciencia superior'],
+    tags: ['ziewe', 'jürgen ziewe', 'multidimensional', 'plano astral', 'post-mortem', 'astral', 'desdoblamiento']
   }
 };
 
@@ -419,6 +454,27 @@ function run() {
         categorias: ['esoterismo', 'magia práctica', 'ocultismo'],
         conceptosClave: ['esoterismo', 'magia', 'astral', 'autodefensa', 'lección ' + leccionNum],
         tags: ['esoterismo', 'curso', 'lección', 'magia', 'ocultismo']
+      };
+    } else if (normFile.includes('Plano Astral/')) {
+      let autor = 'Desconocido';
+      if (fileNameOnly.toLowerCase().includes('monroe')) autor = 'Robert A. Monroe';
+      else if (fileNameOnly.toLowerCase().includes('leadbeater')) autor = 'Charles Webster Leadbeater';
+      else if (fileNameOnly.toLowerCase().includes('muldoon')) autor = 'Sylvan Muldoon & Hereward Carrington';
+      else if (fileNameOnly.toLowerCase().includes('fox')) autor = 'Oliver Fox';
+      else if (fileNameOnly.toLowerCase().includes('ziewe')) autor = 'Jürgen Ziewe';
+
+      const cleanTitle = fileNameOnly
+        .replace(/\.(pdf|docx?|epub)$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      metadata = {
+        titulo: cleanTitle,
+        autor: autor,
+        categorias: ['plano astral', 'proyección astral', 'experiencias fuera del cuerpo', 'esoterismo'],
+        conceptosClave: ['plano astral', 'proyección astral', 'cuerpo astral', 'desdoblamiento', 'experiencias fuera del cuerpo'],
+        tags: ['plano astral', 'proyección astral', 'desdoblamiento', 'cuerpo astral', 'astral']
       };
     } else {
       // Fallback genérico

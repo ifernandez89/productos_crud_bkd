@@ -6,6 +6,42 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Pipeline de Síntesis Estructurada Map-Reduce (2026-08-05)
+
+- **🧠 DocumentSynthesisService** (`src/jarvis/library/document-synthesis.service.ts`): Nuevo servicio que implementa un pipeline de síntesis map-reduce offline sobre libros ya indexados. Genera **fichas narrativas pre-computadas** (`DocumentInsight`) con: resumen ejecutivo, tesis central, historias destacadas, personajes clave, conceptos fundamentales, citas textuales, ideas polémicas y técnicas prácticas.
+  - **MAP**: divide el texto del documento en secciones y extrae extractos parciales mediante prompts estructurados al LLM local.
+  - **REDUCE**: consolida y deduplica los arrays de todas las secciones; genera un resumen ejecutivo final y detecta automáticamente el autor.
+  - **Cross-Author Comparison**: al procesar una colección completa con 2 o más libros, genera automáticamente una comparación cross-autor que identifica puntos de acuerdo y diferencias entre los autores.
+  - **queryInsights()**: método de consulta directa a `DocumentInsight` sin búsqueda vectorial — ideal para "dame las 2 mejores historias de Monroe" sin procesar miles de chunks en tiempo real.
+
+- **🗄️ Modelo `DocumentInsight`** (`prisma/schema.prisma`): Nueva tabla 1-to-1 con `Document` que almacena la ficha narrativa pre-computada. Campos: `executiveSummary`, `centralThesis`, `highlightedStories`, `keyCharacters`, `coreConcepts`, `notableQuotes`, `controversialIdeas`, `practicalTechniques`, `contradictions` (todos JSON arrays serializados), más `synthesisVersion` para control de re-generación. Índices en `author`, `collection`, `generatedAt`.
+
+- **🔌 Nuevos endpoints REST** (en `JarvisController`):
+  - `POST /jarbees/library/synthesis/document` — Sintetiza un documento individual por ID.
+  - `POST /jarbees/library/synthesis/collection` — Sintetiza toda una colección secuencialmente y genera comparación cross-autor.
+  - `POST /jarbees/library/synthesis/query` — Consulta insights pre-computados por colección, autor o campo (`highlightedStories`, `keyCharacters`, `coreConcepts`, `notableQuotes`, `practicalTechniques`).
+
+- **📜 Script** `scripts/synthesize-plano-astral.ts`: Script NestJS que ejecuta el pipeline map-reduce sobre los 5 libros de Plano Astral ya indexados, imprime el detalle de cada ficha generada y produce la comparación cross-autor final.
+
+- **⚙️ Migración Prisma** `20260805191200_add_document_insight`: Crea la tabla `DocumentInsight` con clave foránea en cascada hacia `Document`.
+
+### Added — Ingesta de Libros "Plano Astral" (2026-08-05)
+
+- **📚 5 nuevos libros indexados** en la colección `Plano Astral` (`docs/libros/Plano Astral/`), todos en estado `ready` con chunks y embeddings completos en PostgreSQL:
+  - **ID 11** — *The Projection of the Astral Body* (Sylvan Muldoon & Hereward Carrington, 1929) — categoría `plano astral`
+  - **ID 12** — *Astral Projection: A Record of Out-of-Body Experiences* (Oliver Fox) — categoría `proyección astral`
+  - **ID 13** — *Journeys Out of the Body* (Robert A. Monroe) — categoría `experiencias fuera del cuerpo`
+  - **ID 14** — *El Plano Astral* (Charles Webster Leadbeater) — categoría `teosofía`
+  - **ID 15** — *Multi-Dimensional Man* (Jürgen Ziewe) — categoría `plano astral`
+
+- **🔍 Categoría `plano_astral`** añadida en `detectCategoryFromKeywords()` de [document-ingest.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/library/document-ingest.service.ts) para detectar automáticamente términos como `proyección astral`, `cuerpo astral`, `cordón de plata`, `desdoblamiento`, `OBE`.
+
+- **🎓 Escuela de pensamiento `proyeccion_astral`** añadida a `SCHOOLS_OF_THOUGHT` en [corpus-selector.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/knowledge/corpus-selector.service.ts) con todos los autores (Muldoon, Carrington, Fox, Monroe, Leadbeater, Ziewe) y sus palabras clave para precisión en el Corpus Selector.
+
+- **📖 Escáner actualizado** ([scan-books.ts](file:///c:/Projects/productos_crud_bkd/scripts/scan-books.ts)): añadida heurística para la carpeta `Plano Astral/` con metadatos completos de los 5 libros. El índice `library-index.json` ahora totaliza 145 documentos catalogados.
+
+- **📄 Script** `scripts/ingest-plano-astral-db.ts`: Script NestJS de ingesta masiva que procesa los libros de Plano Astral en la base de datos PostgreSQL con monitoreo de progreso en tiempo real.
+
 ### Configured — Configuración Recomendada JarBees + Qwen3:1.7B (2026-08-04)
 
 - **⚡ Configuración Recomendada y Perfiles para Qwen3:1.7B**: Configuración optimizada para reducir alucinaciones, lograr respuestas deterministas y priorizar RAG/herramientas con menor uso de RAM y latencia ultra baja en [ollama-config.ts](file:///c:/Projects/productos_crud_bkd/src/shared/ollama-config.ts), [ollamaModel.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts):

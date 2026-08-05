@@ -63,6 +63,7 @@ import { EntityGraphService } from './knowledge/entity-graph.service';
 import { KnowledgeExtractionService } from './knowledge/knowledge-extraction.service';
 
 import { CognitiveModule } from './cognitive/cognitive.module';
+import { DocumentSynthesisService } from './library/document-synthesis.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -127,6 +128,8 @@ import { CognitiveModule } from './cognitive/cognitive.module';
     EntityGraphRepository,
     EntityGraphService,
     KnowledgeExtractionService,
+    // ── Synthesis Pipeline (v3.2) ──────────────────────────────────────────
+    DocumentSynthesisService,
   ],
   exports: [
     JarvisService,

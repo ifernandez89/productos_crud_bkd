@@ -31,6 +31,7 @@ import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
 import { AuditService } from './security/audit.service';
+import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 
@@ -52,6 +53,7 @@ export class JarvisController {
     private readonly documentSummaryService: DocumentSummaryService,
     private readonly knowledgeTestService: KnowledgeTestService,
     private readonly auditService: AuditService,
+    private readonly synthesisService: DocumentSynthesisService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -495,6 +497,71 @@ export class JarvisController {
     );
     const formatted = this.knowledgeTestService.formatProbeResult(result);
     return { success: true, ...result, formatted };
+  }
+
+  // ── Biblioteca — Synthesis Pipeline (Map-Reduce) ───────────────────────────
+
+  @Public()
+  @Post('library/synthesis/document')
+  @ApiOperation({
+    summary: 'Generar o actualizar ficha narrativa de un documento (map-reduce)',
+    description:
+      'Ejecuta el pipeline de síntesis estructurada sobre un documento ya indexado. ' +
+      'Extrae: resumen ejecutivo, historias destacadas, personajes, conceptos clave, ' +
+      'citas y técnicas prácticas. Guarda en DocumentInsight para consulta directa. ' +
+      'Body: { documentId: number, collection?: string, force?: boolean }',
+  })
+  async synthesizeDocument(
+    @Body() body: { documentId: number; collection?: string; force?: boolean },
+  ) {
+    if (!body.documentId) throw new BadRequestException('Se requiere documentId');
+    const result = await this.synthesisService.synthesizeDocument(
+      body.documentId,
+      body.collection,
+      body.force ?? false,
+    );
+    return { success: result.status !== 'error', ...result };
+  }
+
+  @Public()
+  @Post('library/synthesis/collection')
+  @ApiOperation({
+    summary: 'Sintetizar todos los libros de una colección (map-reduce)',
+    description:
+      'Procesa todos los documentos de una colección temática de forma secuencial. ' +
+      'Al finalizar genera una comparación cross-autor si hay 2 o más libros. ' +
+      'Body: { collection: string, force?: boolean } — collection ej: "plano_astral"',
+  })
+  async synthesizeCollection(
+    @Body() body: { collection: string; force?: boolean },
+  ) {
+    if (!body.collection) throw new BadRequestException('Se requiere collection');
+    const result = await this.synthesisService.synthesizeCollection(
+      body.collection,
+      body.force ?? false,
+    );
+    return { success: true, ...result };
+  }
+
+  @Public()
+  @Post('library/synthesis/query')
+  @ApiOperation({
+    summary: 'Consultar insights pre-computados por colección o autor',
+    description:
+      'Recupera fichas narrativas pre-computadas sin búsqueda vectorial. ' +
+      'Ideal para: "dame las mejores historias de Monroe" o "qué técnicas enseña Leadbeater". ' +
+      'Body: { collection?: string, author?: string, field?: "highlightedStories|keyCharacters|coreConcepts|notableQuotes|practicalTechniques", limit?: number }',
+  })
+  async queryInsights(
+    @Body() body: {
+      collection?: string;
+      author?: string;
+      field?: 'highlightedStories' | 'keyCharacters' | 'coreConcepts' | 'notableQuotes' | 'practicalTechniques';
+      limit?: number;
+    },
+  ) {
+    const results = await this.synthesisService.queryInsights(body);
+    return { success: true, count: results.length, results };
   }
 
   // ── Biblioteca — Colecciones ────────────────────────────────────────────────

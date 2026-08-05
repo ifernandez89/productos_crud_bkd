@@ -423,6 +423,15 @@ Si no hizo pregunta, generá un resumen completo del documento.`;
       return 'ia';
     }
 
+    // ── PLANO ASTRAL / PROYECCIÓN ASTRAL (va ANTES que astrología para desambiguar "astral") ──
+    if (
+      /(plano astral|proyeccion astral|proyección astral|viaje astral|cuerpo astral|cordon de plata|cordón de plata|desdoblamiento|experiencia fuera del cuerpo|out-of-body|\bobe\b)/i.test(
+        normalized,
+      )
+    ) {
+      return 'plano_astral';
+    }
+
     // ── ASTROLOGÍA (va ANTES que astronomía para evitar falsos matches) ──
     if (
       /(astrologia|carta astral|carta natal|signo zodiacal|horoscopo|ascendente|casa astrologica|luna natal|sol natal|paracelso|alquimia|hermetismo|hermes trimegisto|tarot|numerologia|kabbalah|ocultismo|botanica oculta|magia|esoter)/i.test(

@@ -3505,14 +3505,12 @@
     },
     {
       "id": "lib-mario-javier-sab-n-keter-mario-javier-sa",
-      "titulo": "Keter: El éxtasis de la eternidad — Mario Javier Saban",
-      "tituloAlternativo": "Keter: El éxtasis de la nada",
+      "titulo": "Keter: El éxtasis de la nada",
       "archivo": "Mario Javier Sabán/Keter - Mario Javier Sabán.pdf",
       "tipo": "libro",
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
-      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3528,44 +3526,31 @@
         "corona",
         "misticismo",
         "saban",
-        "mario javier saban",
-        "biná",
-        "emuná",
-        "éxtasis",
-        "eternidad",
         "cábala"
       ],
       "capitulos": [],
       "embeddings": "ready",
-      "dbId": 3,
-      "descripcionBreve": "Obra de cábala práctica de Mario Javier Sabán sobre Keter, la importancia de la Biná, el poder de la Emuná y la relación del alma con el Ein Sof. Editorial Kairós, 2023.",
+      "descripcionBreve": "Libro \"Keter: El éxtasis de la nada\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
         "sabán",
-        "saban",
-        "mario saban",
-        "mario javier saban",
         "keter",
         "sefirot",
         "árbol de la vida",
         "misticismo",
         "nada",
         "corona",
-        "judaísmo",
-        "kairos",
-        "2023"
+        "judaísmo"
       ]
     },
     {
       "id": "lib-mario-javier-sab-n-los-secretos-de-dios-",
-      "titulo": "Los Secretos de Dios: Sefer Atzilut — Mario Javier Saban",
-      "tituloAlternativo": "Los Secretos de Dios: Sefer Atzilut",
+      "titulo": "Los Secretos de Dios: Sefer Atzilut",
       "archivo": "Mario Javier Sabán/Los Secretos de Dios. Sefer Atzilut - Mario Javier Sabán.pdf",
       "tipo": "libro",
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
-      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3579,19 +3564,14 @@
         "árbol de la vida",
         "teosofía hebrea",
         "secretos de dios",
-        "saban",
-        "mario javier saban"
+        "saban"
       ],
       "capitulos": [],
       "embeddings": "ready",
-      "dbId": 5,
-      "descripcionBreve": "Obra de Mario Javier Sabán sobre los secretos del Sefer Atzilut, el mundo de la emanación divina y los misterios de los sefiroth en la cábala judía.",
+      "descripcionBreve": "Libro \"Los Secretos de Dios: Sefer Atzilut\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
         "sabán",
-        "saban",
-        "mario saban",
-        "mario javier saban",
         "atzilut",
         "sefirot",
         "misticismo",
@@ -3608,7 +3588,6 @@
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
-      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3620,23 +3599,16 @@
         "árbol de la vida",
         "sefer atzilut",
         "daat",
-        "maase bereshith",
-        "saban",
-        "mario javier saban"
+        "maase bereshith"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Obra de Mario Javier Sabán sobre el Maasé Bereshith, la obra de la creación en la cábala judía.",
+      "descripcionBreve": "Libro \"Maasé Bereshith\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
         "sabán",
-        "saban",
-        "mario saban",
-        "mario javier saban",
         "sefirot",
-        "misticismo",
-        "bereshith",
-        "creacion"
+        "misticismo"
       ]
     },
     {
@@ -3647,7 +3619,6 @@
       "formato": "pdf",
       "autor": "Mario Javier Sabán",
       "idioma": "es",
-      "escuela": "CABALA",
       "categorias": [
         "cábala",
         "misticismo judío",
@@ -3659,21 +3630,14 @@
         "árbol de la vida",
         "sefer atzilut",
         "daat",
-        "conocimiento",
-        "saban",
-        "mario javier saban"
+        "maase bereshith"
       ],
       "capitulos": [],
       "embeddings": "pending",
-      "descripcionBreve": "Obra de Mario Javier Sabán sobre el Daat (Conocimiento) en la cábala judía y su rol en el árbol de la vida.",
+      "descripcionBreve": "Libro \"DAAT El Conocimiento\" de Mario Javier Sabán registrado en la biblioteca local.",
       "tags": [
         "cábala",
         "sabán",
-        "saban",
-        "mario saban",
-        "mario javier saban",
-        "daat",
-        "conocimiento",
         "sefirot",
         "misticismo"
       ]
@@ -3941,6 +3905,181 @@
       "descripcionBreve": "Libro \"pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte\" de Desconocido registrado en la biblioteca local.",
       "tags": [
         "biblioteca"
+      ]
+    },
+    {
+      "id": "lib-plano-astral-1929-muldoon-carrington-the",
+      "titulo": "The Projection of the Astral Body",
+      "archivo": "Plano Astral/1929__muldoon_carrington___the_projection_of_the_astral_body.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Sylvan Muldoon & Hereward Carrington",
+      "idioma": "es",
+      "categorias": [
+        "plano astral",
+        "proyección astral",
+        "experiencias fuera del cuerpo",
+        "esoterismo"
+      ],
+      "conceptosClave": [
+        "proyección astral",
+        "cuerpo astral",
+        "cordón de plata",
+        "experiencias fuera del cuerpo",
+        "desdoblamiento corporal",
+        "conciencia astral"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"The Projection of the Astral Body\" de Sylvan Muldoon & Hereward Carrington registrado en la biblioteca local.",
+      "tags": [
+        "muldoon",
+        "carrington",
+        "proyección astral",
+        "astral",
+        "cuerpo astral",
+        "cordón de plata",
+        "desdoblamiento"
+      ]
+    },
+    {
+      "id": "lib-plano-astral-ap-fox-pdf",
+      "titulo": "Astral Projection: A Record of Out-of-Body Experiences",
+      "archivo": "Plano Astral/AP FOX.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Oliver Fox",
+      "idioma": "es",
+      "categorias": [
+        "proyección astral",
+        "experiencias fuera del cuerpo",
+        "sueño lúcido",
+        "plano astral"
+      ],
+      "conceptosClave": [
+        "proyección astral",
+        "sueño lúcido",
+        "oliver fox",
+        "experiencias fuera del cuerpo",
+        "plano astral",
+        "cuerpo astral"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Astral Projection: A Record of Out-of-Body Experiences\" de Oliver Fox registrado en la biblioteca local.",
+      "tags": [
+        "fox",
+        "oliver fox",
+        "proyección astral",
+        "astral",
+        "sueño lúcido",
+        "desdoblamiento"
+      ]
+    },
+    {
+      "id": "lib-plano-astral-journeys-out-of-the-body-ro",
+      "titulo": "Journeys Out of the Body",
+      "archivo": "Plano Astral/Journeys Out of the Body - Robert A. Monroe.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Robert A. Monroe",
+      "idioma": "es",
+      "categorias": [
+        "experiencias fuera del cuerpo",
+        "proyección astral",
+        "investigación de la conciencia",
+        "plano astral"
+      ],
+      "conceptosClave": [
+        "obe",
+        "viajes fuera del cuerpo",
+        "robert monroe",
+        "plano astral",
+        "cuerpo astral",
+        "monroe institute",
+        "estado de transe"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Journeys Out of the Body\" de Robert A. Monroe registrado en la biblioteca local.",
+      "tags": [
+        "monroe",
+        "robert monroe",
+        "viajes astrales",
+        "astral",
+        "experiencias fuera del cuerpo",
+        "desdoblamiento",
+        "conciencia"
+      ]
+    },
+    {
+      "id": "lib-plano-astral-leadbeater-charles-webster-",
+      "titulo": "El Plano Astral",
+      "archivo": "Plano Astral/Leadbeater, Charles Webster - Planul astral - ctrl.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Charles Webster Leadbeater",
+      "idioma": "es",
+      "categorias": [
+        "teosofía",
+        "plano astral",
+        "esoterismo",
+        "mundos invisibles"
+      ],
+      "conceptosClave": [
+        "plano astral",
+        "materia astral",
+        "habitantes del plano astral",
+        "teosofía",
+        "leadbeater",
+        "formas pensamiento",
+        "cuerpo emocional"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"El Plano Astral\" de Charles Webster Leadbeater registrado en la biblioteca local.",
+      "tags": [
+        "leadbeater",
+        "plano astral",
+        "teosofía",
+        "astral",
+        "esoterismo",
+        "habitantes astrales"
+      ]
+    },
+    {
+      "id": "lib-plano-astral-ziewe-jurgen-multi-dimensio",
+      "titulo": "Multi-Dimensional Man: An authentic eyewitness account of the world that awaits us after death",
+      "archivo": "Plano Astral/Ziewe Jurgen + Multi-dimensional man. An authentic eyewitness account of the world that awaits us after death (Guilhermo Luna) (z-lib.org).pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Jürgen Ziewe",
+      "idioma": "es",
+      "categorias": [
+        "plano astral",
+        "experiencias fuera del cuerpo",
+        "multidimensionalidad",
+        "vida después de la muerte"
+      ],
+      "conceptosClave": [
+        "multidimensional man",
+        "jürgen ziewe",
+        "dimensiones astrales",
+        "vida tras la muerte",
+        "experiencias fuera del cuerpo",
+        "conciencia superior"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Libro \"Multi-Dimensional Man: An authentic eyewitness account of the world that awaits us after death\" de Jürgen Ziewe registrado en la biblioteca local.",
+      "tags": [
+        "ziewe",
+        "jürgen ziewe",
+        "multidimensional",
+        "plano astral",
+        "post-mortem",
+        "astral",
+        "desdoblamiento"
       ]
     },
     {
