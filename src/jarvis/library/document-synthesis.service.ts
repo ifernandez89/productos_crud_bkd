@@ -244,18 +244,21 @@ export class DocumentSynthesisService {
     text: string,
   ): Promise<Partial<DocumentInsightData> | null> {
     const prompt = `Analizá este fragmento del libro "${title}".
-Devolvé SOLO JSON válido sin markdown ni explicaciones.
+⚠️ FRONTERA RÍGIDA DE CONOCIMIENTO: Extraé ÚNICAMENTE información, conceptos y entidades presentes explícitamente en el texto a continuación.
+PROHIBIDO agregar o asociar conceptos de otros autores o materias que NO estén en el texto (como arquetipos, inconsciente, psicología junguiana, filosofía china, o autores ajenos).
+
+Devolvé SOLO JSON válido sin markdown ni explicaciones:
 
 {
   "stories": ["historia o episodio destacado 1", "historia 2"],
-  "characters": ["persona o entidad mencionada"],
-  "concepts": ["concepto central"],
+  "characters": ["entidad, ser o figura mencionada explícitamente"],
+  "concepts": ["concepto o término clave presente en el texto"],
   "quotes": ["cita textual exacta si existe"],
-  "techniques": ["técnica o método aplicable si existe"],
-  "controversialIdeas": ["idea polémica o contraintuitiva si existe"]
+  "techniques": ["técnica o método mencionado si existe"],
+  "controversialIdeas": ["idea contraintuitiva o particular mencionada si existe"]
 }
 
-Si no encontrás alguna categoría, dejá el array vacío.
+Si no encontrás alguna categoría en este fragmento específico, dejá el array vacío.
 Respondé en español argentino.
 
 Fragmento:
@@ -305,8 +308,17 @@ ${text.slice(0, this.SECTION_CHAR_LIMIT)}`;
       controversialIdeas: this.dedup(partials.flatMap(p => p.controversialIdeas ?? [])).slice(0, 5),
     };
 
+    // Resolver autor oficial de la obra desde el repositorio / índice
+    const author =
+      this.documentRepo['corpusSelector']?.getAuthorAndSchoolByTitle(doc.title).author ||
+      'Desconocido';
+
     // Generar resumen ejecutivo y tesis central
-    const { summary, thesis, author } = await this.generateExecutiveSummary(doc.title, merged);
+    const { summary, thesis } = await this.generateExecutiveSummary(
+      doc.title,
+      author,
+      merged,
+    );
 
     return {
       documentId: doc.id,
@@ -322,19 +334,21 @@ ${text.slice(0, this.SECTION_CHAR_LIMIT)}`;
 
   private async generateExecutiveSummary(
     title: string,
+    author: string,
     merged: Pick<DocumentInsightData, 'coreConcepts' | 'keyCharacters' | 'highlightedStories'>,
-  ): Promise<{ summary: string; thesis: string; author: string }> {
-    const prompt = `Generá una ficha ejecutiva del libro "${title}" basándote en estos datos:
+  ): Promise<{ summary: string; thesis: string }> {
+    const prompt = `Generá una ficha ejecutiva de la obra "${title}" del autor "${author}" basándote EXCLUSIVAMENTE en estos datos extraídos del texto:
 
 Conceptos clave: ${merged.coreConcepts.join(', ') || 'no extraídos'}
-Personajes: ${merged.keyCharacters.join(', ') || 'no extraídos'}
-Historias destacadas: ${merged.highlightedStories.slice(0, 3).join(' | ') || 'no extraídas'}
+Entidades/Figuras: ${merged.keyCharacters.join(', ') || 'no extraídos'}
+Historias/Episodios: ${merged.highlightedStories.slice(0, 3).join(' | ') || 'no extraídas'}
+
+⚠️ REGLA DE FIDELIDAD ABSOLUTA: Resume únicamente usando información explícitamente presente en estos datos. PROHIBIDO incluir conceptos ajenos al autor (como arquetipos, inconsciente, psicología junguiana, filosofía china o masonería).
 
 Devolvé SOLO JSON válido:
 {
-  "author": "nombre del autor principal deducido del contenido o del título",
-  "summary": "Resumen ejecutivo de 2-3 párrafos del libro completo.",
-  "thesis": "Una oración que capture la tesis o mensaje central del autor."
+  "summary": "Resumen ejecutivo de 2-3 párrafos del libro completo enfocado en sus conceptos reales.",
+  "thesis": "Una oración que capture la tesis o mensaje central del autor en esta obra."
 }
 
 Respondé en español argentino.`;
@@ -354,7 +368,6 @@ Respondé en español argentino.`;
       if (match) {
         const parsed = JSON.parse(match[0]);
         return {
-          author: parsed.author ?? 'Desconocido',
           summary: parsed.summary ?? `Libro "${title}" procesado por pipeline de síntesis.`,
           thesis: parsed.thesis ?? '',
         };
@@ -364,7 +377,6 @@ Respondé en español argentino.`;
     }
 
     return {
-      author: 'Desconocido',
       summary: `Libro "${title}" procesado por pipeline de síntesis estructurada.`,
       thesis: '',
     };
