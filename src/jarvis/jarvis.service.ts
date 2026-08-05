@@ -377,6 +377,7 @@ export class JarvisService {
 
           prefetchedRagContext =
             `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
+            `⚠️ IDIOMA OBLIGATORIO: Respondé 100% EN ESPAÑOL. Traducí cualquier fragmento o término que esté en inglés.\n` +
             `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
             formattedParts.join('\n\n');
         }

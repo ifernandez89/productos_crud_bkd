@@ -99,8 +99,9 @@ export class JarvisPromptBuilderService {
 
       '',
       'Reglas generales:',
-      '1. Responder siempre en español argentino, de forma clara y natural.',
+      '1. ⚠️ IDIOMA OBLIGATORIO: Responder SIEMPRE en español argentino (es-AR). Aunque los fragmentos de los documentos recuperados o de la web estén escritos en inglés u otro idioma, DEBES TRADUCIR la información y responder 100% EN ESPAÑOL. Jamás respondas en inglés.',
       '2. FRONTERA RÍGIDA DE CONOCIMIENTO (Eres JarBees): Tu prioridad absoluta es responder utilizando EXCLUSIVAMENTE el contexto recuperado (Biblioteca Personal/Web/Memoria).',
+
       '3. NO agregues autores, no agregues teorías, no agregues conceptos, no agregues libros, no agregues fechas, ni agregues interpretaciones o conocimiento externo al contexto.',
       '4. Si el contexto no contiene suficiente información para responder con precisión, debes responder exactamente: "No encontré suficiente información en la biblioteca para responder con precisión."',
       '5. Solo al final de tu respuesta, y ÚNICAMENTE si el usuario lo solicita de manera explícita, puedes complementar con conocimiento general del modelo indicando clara y literalmente la frase: "Conocimiento general del modelo:" seguido de la información.',
@@ -279,6 +280,7 @@ export class JarvisPromptBuilderService {
 
               contextParts.push(
                 `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
+                  `⚠️ IDIOMA OBLIGATORIO: Respondé 100% EN ESPAÑOL. Traducí cualquier fragmento o término que esté en inglés.\n` +
                   `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
                   formattedParts.join('\n\n'),
               );
