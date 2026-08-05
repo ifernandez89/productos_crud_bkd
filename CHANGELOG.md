@@ -15,7 +15,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Psicología / Filosofía**: Jung, Freud, Nietzsche, Blavatsky, Grinberg, Krishnamurti, Eliphas Levi
   - **Conceptos Junganos**: `inconsciente colectivo`, `arquetipo`, `sombra`, `anima/animus`, `psicología analítica`
   - **Cábala / Teosofía**: `cábala`, `kabbalah`, `sefirot`, `zohar`, `teosofía`, `hermetismo`
-- **Impacto**: Todas las consultas sobre libros de la biblioteca personal reciben `intent: 'RAG', confidence: 'high'` instantáneamente, sin pasar por el LLM clasificador. Tiempo de routing: ~0ms vs ~3-8s anterior.
+- **Fix en System Prompt** (`src/jarvis/prompt/jarvis-prompt-builder.service.ts`): Se eliminó la inyección literal del mensaje de fallback de noticias (`"No pude obtener las noticias en este momento... El Once"`) en prompts no web, la cual causaba que modelos pequeños (ej. `gemma3:1b`) sufrieran colapso de instrucciones durante consultas RAG y parrotearan la frase de error literal de noticias en lugar de responder con los fragmentos de la biblioteca.
+- **Impacto**: Todas las consultas sobre libros de la biblioteca personal reciben `intent: 'RAG', confidence: 'high'` instantáneamente, sin pasar por el LLM clasificador, y el modelo responde limpiamente utilizando los fragmentos del contexto RAG. Tiempo de routing: ~0ms vs ~3-8s anterior.
 
 ### Added — Pipeline de Síntesis Estructurada Map-Reduce (2026-08-05)
 

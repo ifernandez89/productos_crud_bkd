@@ -95,13 +95,8 @@ export class JarvisPromptBuilderService {
       '🚨 REGLAS CRÍTICAS — NOTICIAS Y DATOS ACTUALES:',
       browserContext
         ? '- Tenés contenido web real en este prompt. Usálo. Hacé el resumen con los datos reales disponibles.'
-        : '- NO tenés noticias del día en este prompt. Si el usuario pide noticias actuales/de hoy, respondé EXACTAMENTE:',
-      browserContext
-        ? ''
-        : '  "No pude obtener las noticias en este momento. Por favor intentá de nuevo en unos segundos o consultá elonce.com directamente."',
-      browserContext
-        ? ''
-        : '- NUNCA inventes titulares, eventos, ni menciones funcionarios locales sin datos web en el prompt.',
+        : '- NUNCA inventes titulares, eventos, ni noticias de actualidad si no hay contenido web en el prompt.',
+
       '',
       'Reglas generales:',
       '1. Responder siempre en español argentino, de forma clara y natural.',
