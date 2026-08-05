@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TtsService } from './tts.service';
 import * as fs from 'fs';
@@ -53,16 +53,20 @@ export class ReaderService {
           createdAt: true,
           _count: { select: { chunks: true } },
         },
+        orderBy: { id: 'asc' },
       });
 
       for (const d of dbDocs) {
+        const chunkCount = d._count?.chunks || 1;
+        // Aproximadamente 5-6 chunks por bloque de 800 palabras
+        const estimatedBlocks = Math.max(1, Math.ceil(chunkCount / 5));
         list.push({
           id: d.id,
           titulo: d.title,
           autor: d.category ? `Categoría: ${d.category}` : 'Biblioteca JarBees',
           formato: 'pdf',
-          paginas: Math.max(10, (d._count?.chunks || 1) * 3),
-          cantidadChunks: d._count?.chunks || 1,
+          paginas: Math.max(15, chunkCount * 3),
+          cantidadChunks: estimatedBlocks,
         });
       }
     } catch (err) {
@@ -77,7 +81,6 @@ export class ReaderService {
         const parsed = JSON.parse(raw);
         const docs = parsed.documentos || [];
         for (const item of docs) {
-          // Evitar duplicados por título si ya existe en la lista
           if (!list.some((existing) => existing.titulo.toLowerCase() === item.titulo.toLowerCase())) {
             list.push({
               id: item.id || item.titulo,
@@ -112,36 +115,57 @@ export class ReaderService {
    * Obtiene la información detallada de un documento y divide su contenido en bloques (chunks).
    */
   async getDocument(id: string | number): Promise<ReaderDocumentDetails> {
-    const rawId = String(id);
+    const rawId = String(id).trim();
     let title = rawId;
     let author = 'Autor Desconocido';
     let paginas = 150;
     let contentText = '';
 
-    // 1. Buscar en BD si es numérico o ID entero
+    // 1. Buscar en BD por ID entero
     const numericId = parseInt(rawId, 10);
+    let dbDoc: any = null;
+
     if (!isNaN(numericId)) {
       try {
-        const dbDoc = await this.prisma.document.findUnique({
+        dbDoc = await this.prisma.document.findUnique({
           where: { id: numericId },
-          include: { chunks: true },
+          include: { chunks: { orderBy: { id: 'asc' } } },
         });
-        if (dbDoc) {
-          title = dbDoc.title;
-          author = dbDoc.category ? `Categoría: ${dbDoc.category}` : 'Biblioteca JarBees';
-          paginas = Math.max(15, dbDoc.chunks.length * 3);
-          if (dbDoc.chunks && dbDoc.chunks.length > 0) {
-            contentText = dbDoc.chunks.map((c) => c.content).join('\n\n');
-          } else if (dbDoc.content) {
-            contentText = dbDoc.content;
-          }
-        }
       } catch (err) {
-        this.logger.warn(`[ReaderService] Error consultando documento ${numericId} en BD: ${err}`);
+        this.logger.warn(`[ReaderService] Error buscando por ID numérico ${numericId}: ${err}`);
       }
     }
 
-    // 2. Buscar en library-index.json o archivos locales si no se encontró en BD
+    // 1.1 Si no es un entero o no se encontró por ID, buscar en BD por coincidencia de título
+    if (!dbDoc) {
+      try {
+        dbDoc = await this.prisma.document.findFirst({
+          where: {
+            title: {
+              contains: rawId,
+              mode: 'insensitive',
+            },
+          },
+          include: { chunks: { orderBy: { id: 'asc' } } },
+        });
+      } catch (err) {
+        this.logger.warn(`[ReaderService] Error buscando por título "${rawId}": ${err}`);
+      }
+    }
+
+    // Si se encontró en la BD
+    if (dbDoc) {
+      title = dbDoc.title;
+      author = dbDoc.category ? `Categoría: ${dbDoc.category}` : 'Biblioteca JarBees';
+      paginas = Math.max(15, dbDoc.chunks.length * 3);
+      if (dbDoc.chunks && dbDoc.chunks.length > 0) {
+        contentText = dbDoc.chunks.map((c: any) => c.content).join('\n\n');
+      } else if (dbDoc.content) {
+        contentText = dbDoc.content;
+      }
+    }
+
+    // 2. Buscar en library-index.json o archivos de conocimiento en disco
     if (!contentText) {
       try {
         const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
@@ -149,17 +173,37 @@ export class ReaderService {
           const raw = fs.readFileSync(indexPath, 'utf-8');
           const parsed = JSON.parse(raw);
           const docs: any[] = parsed.documentos || [];
-          const item = docs.find((d) => String(d.id) === rawId || d.titulo.toLowerCase() === rawId.toLowerCase());
+          const item = docs.find((d) => String(d.id) === rawId || d.titulo.toLowerCase().includes(rawId.toLowerCase()) || rawId.toLowerCase().includes(d.titulo.toLowerCase()));
           if (item) {
             title = item.titulo;
             author = item.autor || 'JarBees Knowledge';
             paginas = item.paginas || 120;
 
-            // Buscar si hay archivo .json o .md correspondiente en src/jarvis/knowledge
-            if (item.archivo) {
-              const fileLoc = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', item.archivo);
+            // Intentar cargar archivo .json o .md correspondiente
+            const potentialFiles = [
+              item.archivo,
+              `${rawId}.json`,
+              `${rawId}.md`,
+              'munay_ki.json',
+              'plantas_medicinales.json',
+              'sanaciones_populares.json',
+            ].filter(Boolean);
+
+            for (const filename of potentialFiles) {
+              const fileLoc = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', filename);
               if (fs.existsSync(fileLoc)) {
-                contentText = fs.readFileSync(fileLoc, 'utf-8');
+                const fileRaw = fs.readFileSync(fileLoc, 'utf-8');
+                if (filename.endsWith('.json')) {
+                  try {
+                    const parsedJson = JSON.parse(fileRaw);
+                    contentText = this.flattenJsonToText(parsedJson);
+                  } catch {
+                    contentText = fileRaw;
+                  }
+                } else {
+                  contentText = fileRaw;
+                }
+                if (contentText.trim()) break;
               }
             }
           }
@@ -169,7 +213,7 @@ export class ReaderService {
       }
     }
 
-    // 3. Si no hay contenido, generar bloques narrativos estructurados del documento
+    // 3. Dividir texto en bloques
     let blocks: string[];
     if (contentText.trim().length > 0) {
       blocks = this.splitIntoBlocks(contentText, 800);
@@ -183,7 +227,7 @@ export class ReaderService {
     }
 
     return {
-      documentId: id,
+      documentId: dbDoc ? dbDoc.id : id,
       title,
       author,
       paginas,
@@ -228,6 +272,30 @@ export class ReaderService {
     }
 
     return audioBuffer;
+  }
+
+  /**
+   * Transforma recursivamente una estructura JSON en prosa de texto continuo para síntesis de voz.
+   */
+  private flattenJsonToText(obj: any): string {
+    if (!obj) return '';
+    if (typeof obj === 'string') return obj;
+    if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.flattenJsonToText(item)).join('. ');
+    }
+    if (typeof obj === 'object') {
+      const parts: string[] = [];
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === 'metadata' || key === 'id' || key === 'version') continue;
+        const valText = this.flattenJsonToText(value);
+        if (valText.trim()) {
+          parts.push(`${key}: ${valText}`);
+        }
+      }
+      return parts.join('\n\n');
+    }
+    return '';
   }
 
   /**
