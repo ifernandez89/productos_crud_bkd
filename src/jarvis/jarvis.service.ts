@@ -261,9 +261,27 @@ export class JarvisService {
 
           if (matches.length > 0) {
             this.logger.log(
-              `[rag] Corpus Selector detectó ${matches.length} documentos relevantes.`,
+              `[rag] Corpus Selector detectó ${matches.length} documentos relevantes. Top match: "${matches[0].document.titulo}" (score: ${matches[0].score})`,
             );
-            for (const match of matches) {
+
+            // 🎯 METADATA FILTERING RIGUROSO:
+            // Si hay un documento dominante (score >= 5.0 o score > 1.5 * segundo match),
+            // restringir la búsqueda EXCLUSIVAMENTE a ese document_id para evitar contaminación
+            // de fragmentos de otros libros de la biblioteca.
+            const dominantMatch =
+              matches.length === 1 ||
+              matches[0].score >= 5.0 ||
+              (matches[1] && matches[0].score >= matches[1].score * 1.5);
+
+            const selectedMatches = dominantMatch ? [matches[0]] : matches;
+
+            if (dominantMatch) {
+              this.logger.log(
+                `[rag:isolation] Documento dominante identificado: "${matches[0].document.titulo}". Aislando búsqueda semántica a document_id único.`,
+              );
+            }
+
+            for (const match of selectedMatches) {
               const doc = match.document;
               try {
                 // Verificar existencia real en base de datos

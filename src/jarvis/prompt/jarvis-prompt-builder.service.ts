@@ -324,9 +324,12 @@ export class JarvisPromptBuilderService {
         ? `\n\n📌 INSTRUCCIÓN DE RESUMEN DE DOCUMENTO: El usuario solicitó/mencionó la obra "${requestedDocTitle}". Presentá una respuesta clara, directa y estructurada que sintetice la obra, detallando su resumen ejecutivo, sus puntos clave principales y los ejes o capítulos conceptuales más importantes basándote en la información estructurada provista arriba.`
         : '';
 
+    const languageReminder =
+      '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA DE IDIOMA: Respondé 100% EN ESPAÑOL (es-AR). Aunque los fragmentos de la biblioteca o la web presentados arriba estén en inglés u otro idioma, DEBES TRADUCIR TODO Y RESPONDER EN ESPAÑOL. Está PROHIBIDO responder en inglés.';
+
     const userPrompt =
       contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}${languageReminder}`
         : userMessage;
 
     return { systemPrompt, userPrompt, usedMemory, usedDocs };
