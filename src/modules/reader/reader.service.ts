@@ -326,41 +326,54 @@ export class ReaderService {
   }
 
   /**
-   * Traduce un bloque de texto del inglés al español usando el LLM local en Ollama.
+   * Traduce un bloque de texto del inglés al español usando el LLM local ultra-rápido (gemma3:1b / qwen3:1.7b).
    */
   private async translateBlockToSpanish(text: string): Promise<string> {
     const ollamaHost = process.env.OLLAMA_HOST || 'http://localhost:11434';
+    // Priorizar gemma3:1b o qwen3:1.7b para velocidad ultra-rápida (cero costo, respuesta en ~2s)
     const translationModel =
-      process.env.OLLAMA_MODEL_TEST2_NAME ||
-      process.env.OLLAMA_MODEL_NAME ||
+      process.env.OLLAMA_MODEL_TEST4_NAME ||
+      process.env.OLLAMA_MODEL_TEST5_NAME ||
       'gemma3:1b';
 
-    try {
-      const prompt = `Translate the following book excerpt into clear, natural Spanish for an audiobook narrator. Output ONLY the Spanish translation, no introduction or commentary:\n\n${text}`;
+    // Dividir en párrafos para evitar timeouts en Ollama con textos largos
+    const paragraphs = text.split(/\n+/).filter((p) => p.trim().length > 0);
+    const translatedParts: string[] = [];
 
-      const res = await axios.post(
-        `${ollamaHost}/api/generate`,
-        {
-          model: translationModel,
-          prompt,
-          stream: false,
-          options: {
-            temperature: 0.3,
-          },
-        },
-        { timeout: 25000 }
-      );
-
-      if (res.data && res.data.response && res.data.response.trim().length > 0) {
-        const translated = res.data.response.trim();
-        this.logger.log(`[ReaderService] Traducción completada con éxito vía Ollama (${translationModel})`);
-        return translated;
+    for (const para of paragraphs) {
+      if (!this.isEnglishText(para)) {
+        translatedParts.push(para);
+        continue;
       }
-    } catch (err: any) {
-      this.logger.warn(`[ReaderService] No se pudo traducir bloque con Ollama (${err?.message || err}). Usando texto original.`);
+
+      try {
+        const prompt = `Translate the following excerpt into clear, natural Spanish for an audiobook narrator. Output ONLY the Spanish translation without introduction or quotes:\n\n${para}`;
+
+        const res = await axios.post(
+          `${ollamaHost}/api/generate`,
+          {
+            model: translationModel,
+            prompt,
+            stream: false,
+            options: {
+              temperature: 0.2,
+            },
+          },
+          { timeout: 30000 }
+        );
+
+        if (res.data && res.data.response && res.data.response.trim().length > 0) {
+          translatedParts.push(res.data.response.trim());
+        } else {
+          translatedParts.push(para);
+        }
+      } catch (err: any) {
+        this.logger.warn(`[ReaderService] Fallo traducción de párrafo con modelo ${translationModel} (${err?.message || err}).`);
+        translatedParts.push(para);
+      }
     }
 
-    return text;
+    return translatedParts.join('\n\n');
   }
 
   /**
