@@ -29,12 +29,13 @@ async function bootstrap() {
       'http://localhost:4000', // Backend local
       'https://ifernandez89.github.io', // GitHub Pages producción
       /https:\/\/.*\.ngrok\.io$/, // Cualquier URL de ngrok
-      /https:\/\/.*\.ngrok-free\.app$/, // Nuevo dominio de ngrok
+      /https:\/\/.*\.ngrok-free\.app$/, // Dominio app de ngrok
+      /https:\/\/.*\.ngrok-free\.dev$/, // Dominio dev de ngrok
       /https:\/\/.*\.loca\.lt$/, // Localtunnel
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'ngrok-skip-browser-warning'],
   });
 
   const config = new DocumentBuilder()
