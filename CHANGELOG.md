@@ -6,6 +6,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Lector de Audiolibros: Lectura Lineal Completa del PDF en lugar de Chunks RAG (2026-08-06)
+
+- **📚 Fix en `ReaderService` (`src/modules/reader/reader.service.ts`)**:
+  - Se modificó la resolución del contenido en `getDocument()` para priorizar el texto completo crudo del documento (`dbDoc.content`) por sobre los fragmentos vectoriales RAG (`dbDoc.chunks`).
+  - Anteriormente, al haber `dbDoc.chunks` en la base de datos, el servicio concatenaba los fragmentos RAG (creados para búsqueda semántica), provocando que libros como *"Keter: El éxtasis de la eternidad — Mario Sabán"* iniciaran la lectura con voz en párrafos o secciones avanzadas (ej: párrafo 33).
+  - Al priorizar `dbDoc.content`, el lector procesa y segmenta la totalidad del libro de forma continua y secuencial desde la página 1 en bloques de lectura.
+
 ### Added — Módulo Backend Reader para Audiolibros (ReaderModule) (2026-08-05)
 
 - **🎧 ReaderModule (`src/modules/reader/reader.module.ts`)**: Módulo NestJS independiente para servir audiolibros a la interfaz de `/reader`.

@@ -158,10 +158,10 @@ export class ReaderService {
       title = dbDoc.title;
       author = dbDoc.category ? `Categoría: ${dbDoc.category}` : 'Biblioteca JarBees';
       paginas = Math.max(15, dbDoc.chunks.length * 3);
-      if (dbDoc.chunks && dbDoc.chunks.length > 0) {
-        contentText = dbDoc.chunks.map((c: any) => c.content).join('\n\n');
-      } else if (dbDoc.content) {
+      if (dbDoc.content && dbDoc.content.trim().length > 0) {
         contentText = dbDoc.content;
+      } else if (dbDoc.chunks && dbDoc.chunks.length > 0) {
+        contentText = dbDoc.chunks.map((c: any) => c.content).join('\n\n');
       }
     }
 
