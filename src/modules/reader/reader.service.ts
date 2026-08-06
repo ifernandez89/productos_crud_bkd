@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TtsService } from './tts.service';
+import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -246,6 +247,13 @@ export class ReaderService {
       ];
     }
 
+    if (this.isEnglishText(contentText)) {
+      this.logger.log(`[ReaderService] Documento "${title}" detectado en inglés. Traduciendo bloques iniciales al español...`);
+      for (let i = 0; i < Math.min(blocks.length, 3); i++) {
+        blocks[i] = await this.translateBlockToSpanish(blocks[i]);
+      }
+    }
+
     return {
       documentId: dbDoc ? dbDoc.id : id,
       title,
@@ -278,7 +286,12 @@ export class ReaderService {
 
     // 2. Si no existe, obtener el texto del bloque
     const docDetails = await this.getDocument(id);
-    const textToSynthesize = docDetails.blocks[chunkIndex] || docDetails.blocks[0] || `Bloque ${chunkIndex} de ${docDetails.title}`;
+    let textToSynthesize = docDetails.blocks[chunkIndex] || docDetails.blocks[0] || `Bloque ${chunkIndex} de ${docDetails.title}`;
+
+    if (this.isEnglishText(textToSynthesize)) {
+      this.logger.log(`[ReaderService] Texto en inglés detectado para bloque ${chunkIndex} de "${docDetails.title}". Traduciendo al español antes de la síntesis...`);
+      textToSynthesize = await this.translateBlockToSpanish(textToSynthesize);
+    }
 
     this.logger.log(`[ReaderService] Generando audio para bloque ${chunkIndex} de "${docDetails.title}"...`);
     const audioBuffer = await this.ttsService.generateAudio(textToSynthesize);
@@ -292,6 +305,62 @@ export class ReaderService {
     }
 
     return audioBuffer;
+  }
+
+  /**
+   * Detecta si un fragmento de texto está en inglés mediante análisis de vocabulario frecuente.
+   */
+  private isEnglishText(text: string): boolean {
+    if (!text) return false;
+    const sample = text.slice(0, 1500).toLowerCase();
+    const englishWords = [
+      ' the ', ' and ', ' of ', ' to ', ' in ', ' that ', ' is ', ' was ',
+      ' for ', ' with ', ' as ', ' by ', ' on ', ' at ', ' from ', ' an ',
+      ' have ', ' this ', ' produces ', ' chapter ', ' book ', ' experience '
+    ];
+    let matchCount = 0;
+    for (const w of englishWords) {
+      if (sample.includes(w)) matchCount++;
+    }
+    return matchCount >= 4;
+  }
+
+  /**
+   * Traduce un bloque de texto del inglés al español usando el LLM local en Ollama.
+   */
+  private async translateBlockToSpanish(text: string): Promise<string> {
+    const ollamaHost = process.env.OLLAMA_HOST || 'http://localhost:11434';
+    const translationModel =
+      process.env.OLLAMA_MODEL_TEST2_NAME ||
+      process.env.OLLAMA_MODEL_NAME ||
+      'gemma3:1b';
+
+    try {
+      const prompt = `Translate the following book excerpt into clear, natural Spanish for an audiobook narrator. Output ONLY the Spanish translation, no introduction or commentary:\n\n${text}`;
+
+      const res = await axios.post(
+        `${ollamaHost}/api/generate`,
+        {
+          model: translationModel,
+          prompt,
+          stream: false,
+          options: {
+            temperature: 0.3,
+          },
+        },
+        { timeout: 25000 }
+      );
+
+      if (res.data && res.data.response && res.data.response.trim().length > 0) {
+        const translated = res.data.response.trim();
+        this.logger.log(`[ReaderService] Traducción completada con éxito vía Ollama (${translationModel})`);
+        return translated;
+      }
+    } catch (err: any) {
+      this.logger.warn(`[ReaderService] No se pudo traducir bloque con Ollama (${err?.message || err}). Usando texto original.`);
+    }
+
+    return text;
   }
 
   /**
