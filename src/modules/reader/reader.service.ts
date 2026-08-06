@@ -148,6 +148,27 @@ export class ReaderService {
           },
           include: { chunks: { orderBy: { id: 'asc' } } },
         });
+
+        // Si no se encontró exacto, buscar por palabras clave principales del título
+        if (!dbDoc) {
+          const keywords = rawId
+            .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]/g, ' ')
+            .split(/\s+/)
+            .filter((w) => w.length >= 4);
+
+          for (const kw of keywords) {
+            dbDoc = await this.prisma.document.findFirst({
+              where: {
+                title: {
+                  contains: kw,
+                  mode: 'insensitive',
+                },
+              },
+              include: { chunks: { orderBy: { id: 'asc' } } },
+            });
+            if (dbDoc) break;
+          }
+        }
       } catch (err) {
         this.logger.warn(`[ReaderService] Error buscando por título "${rawId}": ${err}`);
       }
@@ -179,15 +200,14 @@ export class ReaderService {
             author = item.autor || 'JarBees Knowledge';
             paginas = item.paginas || 120;
 
-            // Intentar cargar archivo .json o .md correspondiente
+            // Intentar cargar archivo .json o .md correspondiente únicamente a este documento
             const potentialFiles = [
               item.archivo,
               `${rawId}.json`,
               `${rawId}.md`,
-              'munay_ki.json',
-              'plantas_medicinales.json',
-              'sanaciones_populares.json',
-            ].filter(Boolean);
+              item.id ? `${item.id}.json` : null,
+              item.id ? `${item.id}.md` : null,
+            ].filter((f): f is string => Boolean(f));
 
             for (const filename of potentialFiles) {
               const fileLoc = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', filename);
