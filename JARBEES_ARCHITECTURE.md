@@ -1,5 +1,5 @@
 # JarBees — Arquitectura del Sistema
-**Última revisión:** 28 de Julio 2026 (Actualizado: Ollama Auto-Healing + Knowledge Graph KGRAPH v1 — schema Prisma, EntityGraphRepository, EntityGraphService, KnowledgeExtractionService)  
+**Última revisión:** 9 de Agosto 2026 (Actualizado: TranslatorModule — Traducción de PDFs al Español con Qwen3:4b + ReaderModule filtrado de documentos ocultos)  
 **Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
 **Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
 
@@ -50,6 +50,8 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 | `UploadModule` | `src/upload/` | `POST /upload/image` → Base64 |
 | **`JarvisModule`** | `src/jarvis/` | **Agente principal — todo lo nuevo va aquí** |
 | **`BalanceModule`** | `src/modules/balance/` | **Balance Energético turn-by-turn adaptativo y basado en ciclos** |
+| **`ReaderModule`** | `src/modules/reader/` | **Audiolibros: lista de libros, bloques de texto, TTS con Orpheus, caché WAV. Filtra documentos con `hidden=true`.** |
+| **`TranslatorModule`** | `src/modules/translator/translator.service.ts` | **Pipeline de traducción: PDF/Texto → `RogerBen/hy-mt1.5-1.8b` → persistencia incremental a disco (`.txt`/`.json`) → PDF en español en `storage/translated`. Sin ingesta a BD.** |
 | `JobsModule` | `src/jobs/` | Crons diarios (Morning Briefing, Nightly Processing) |
 | `HRM` | `src/hrm/` | Python ML standalone (invocado por spawn) |
 
@@ -79,7 +81,7 @@ El esquema de Prisma está orientado a PostgreSQL y contiene los modelos que el 
 | Modelo | Propósito |
 |--------|-----------|
 | `KnowledgeSource` | Fuentes tipadas: `pdf`, `markdown`, `web`, `rss`, `github`, `api` |
-| `Document` | Documentos ingestados con título, contenido, categoría y status (`not_indexed`, `indexing`, `ready`, `quarantined`). Rastrea progreso de indexado (`progressIndex`, `progressEmbed`, `progressSummary`) y almacena la Ficha de Conocimiento en `summary`. |
+| `Document` | Documentos ingestados. Campos clave: `title`, `content`, `category`, `status` (`not_indexed\|indexing\|ready\|quarantined`), progreso de indexado (`progressIndex/Embed/Summary`), resumen `summary`. **Campos del Translator (2026-08-09):** `hidden Boolean` (oculta del Reader sin borrar — permite versiones en idioma extranjero invisibles), `language String?` (ISO del idioma detectado: `"es"`, `"en"`, `"ro"`…), `translatedFromId Int?` (trazabilidad al documento original pre-traducción). |
 | `Chapter` | Capítulos estructurados del documento para la ingesta jerárquica con embeddings macro. |
 | `Section` | Secciones jerárquicas vinculando fragmentos de texto (chunks) para búsquedas en dos capas. |
 | `Chunk` | Fragmentos embeddables de texto con vinculación opcional a secciones y soporte nativo pgvector (`vector(1024)`). |
@@ -109,7 +111,97 @@ El esquema de Prisma está orientado a PostgreSQL y contiene los modelos que el 
 
 ---
 
-## 4. Intent Router — el clasificador central
+## 4. TranslatorModule + ReaderModule — Biblioteca de Audiolibros en Español
+
+### Filosofía
+
+El Reader sirve los libros **completos** (no fragmentos RAG). El Translator se encarga de que todos los libros en la biblioteca estén en español antes de llegar al lector.
+
+### Pipeline del Translator
+
+```
+POST /translator/translate-pdf  (multipart PDF)
+         │
+         ▼
+TranslatorService.translatePdfBuffer()
+         │
+         ├─ 1. pdf-parse → texto completo
+         │
+         ├─ 2. detectLanguage() → heurística por palabras funcionales (7 idiomas)
+         │
+         ├─ 3. splitTextIntoTranslationChunks(1500 chars) → preserva párrafos
+         │
+         ├─ 4. translateChunkWithQwen() × N chunks
+         │      └─ POST /api/generate → qwen3:4b (OLLAMA_TRANSLATOR_MODEL)
+         │         temperature=0.15 | timeout=2min/chunk
+         │
+         ├─ 5. buildTranslatedPdf()
+         │      └─ pdf-lib: portada A4 + contenido paginado + header/footer
+         │         → storage/translated/<titulo>_es.pdf
+         │
+         ├─ 6. prisma.document.create({ status:'ready', language:'es' })
+         │      → disponible INMEDIATAMENTE en el Reader
+         │
+         └─ 7. prisma.document.update({ hidden: true }) del original
+                → desaparece de la lista sin borrarse
+```
+
+### Tracking de jobs (en memoria)
+
+```typescript
+Map<jobId, TranslationJob> {
+  status:  'pending' | 'translating' | 'building_pdf' | 'ingesting' | 'done' | 'error'
+  progress: 0-100 (%)
+  documentId: number  // ID del nuevo doc en español
+  translatedFromId: number  // ID del original ocultado
+}
+```
+
+Consulta: `GET /translator/status/:jobId`
+
+### Reader — Endpoints y filtrado
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /reader` | Lista libros con `hidden=false` de la BD + library-index.json |
+| `GET /reader/:id` | Texto completo del libro en bloques de 800 palabras |
+| `POST /reader/:id/chunk` | Audio WAV del bloque N (TTS con Orpheus o fallback PCM) |
+| `GET /reader/:id/chunk/:N` | Idem vía GET para `<audio src>` directo |
+
+### Translator — Endpoints
+
+| Endpoint | Descripción |
+|----------|-------------|
+| `POST /translator/translate-pdf` | Sube PDF, devuelve jobId |
+| `POST /translator/translate-document/:id` | Traduce doc indexado por ID |
+| `GET /translator/status/:jobId` | Progreso del job |
+| `GET /translator/jobs` | Historial en memoria |
+| `GET /translator/list` | Libros traducidos disponibles |
+| `POST /translator/hide/:id` | Oculta doc manualmente |
+| `POST /translator/detect-language` | Diagnóstico de idioma |
+
+### Almacenamiento
+
+```
+storage/
+  audio/
+    doc_<id>/
+      chunk0.wav      ← caché TTS (no regenera si existe)
+      chunk1.wav
+  translated/
+    <titulo>_es.pdf   ← PDF completo traducido por JarBees AI
+```
+
+### Modelo Qwen3:4b — Rol en el sistema
+
+| Variable | Valor | Uso |
+|----------|-------|-----|
+| `OLLAMA_TRADUCTOR_MODEL` | `qwen3:4b` | Traducción de libros (TranslatorService + ReaderService fallback) |
+
+---
+
+## 5. Intent Router — el clasificador central
+
 
 Cada mensaje pasa por `IntentRouterService` **antes** de cualquier acción:
 
@@ -456,6 +548,14 @@ El pipeline de RAG fue reforzado para que no dependa exclusivamente de un único
 
 - intenta automáticamente modelos alternativos de embeddings,
 - conserva el flujo de recuperación aunque el embedding no esté disponible,
+
+### 11.5 Reglas de Traducción y Persistencia Incremental en Disco (nuevo)
+
+El módulo de traducción (`TranslatorModule`) opera bajo dos reglas de arquitectura estrictas:
+
+1. **Persistencia Incremental en Disco Obligatoria (`.txt` / `.json`):** Durante la traducción de cualquier libro o documento largo, el sistema guardará inmediatamente cada chunk traducido en disco. Queda estrictamente prohibido mantener las traducciones únicamente en memoria RAM durante el procesamiento. Si la generación del PDF o cualquier paso posterior falla, el 100% de la traducción procesada debe quedar preservado en disco para su reutilización inmediata.
+2. **Cero Ingestión a BD durante Traducción:** El pipeline de traducción no ingresará chunks, embeddings ni datos a PostgreSQL/Prisma. Se limita a traducir el texto, respaldarlo incrementalmente en disco y generar el archivo PDF en `storage/translated`.
+
 - cae de forma segura a la búsqueda textual por contenido cuando la búsqueda semántica no puede ejecutarse.
 
 Este cambio mejora la estabilidad general del sistema y reduce los fallos de respuesta cuando la instalación local de Ollama no incluye el modelo esperado.

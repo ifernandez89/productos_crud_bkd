@@ -6,7 +6,42 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Fixed — Lector de Audiolibros: Lectura Lineal Completa del PDF en lugar de Chunks RAG (2026-08-06)
+### Added — Módulo Translator: Traducción de PDFs al Español con Qwen3:4b (2026-08-09)
+
+- **🌐 TranslatorModule (`src/modules/translator/translator.module.ts`)**: Nuevo módulo NestJS dedicado a la traducción automática de libros en idiomas extranjeros al español utilizando el modelo `qwen3:4b` vía Ollama. Integra `MulterModule` con almacenamiento en memoria para recibir PDFs de hasta 100 MB.
+
+- **⚙️ TranslatorService (`src/modules/translator/translator.service.ts`)**: Servicio principal con pipeline de traducción asíncrono en 6 pasos:
+  1. **Extracción de texto**: Usa `pdf-parse` (ya disponible) para extraer el texto completo del PDF original.
+  2. **Detección de idioma**: Heurística basada en frecuencia de palabras funcionales para identificar 7 idiomas (inglés, rumano, francés, alemán, portugués, italiano, español).
+  3. **Traducción por chunks**: Divide el texto en fragmentos de ~1500 caracteres respetando párrafos y los traduce de forma secuencial con `qwen3:4b` preservando estructura literaria, puntuación y tono del autor.
+  4. **Generación de PDF traducido**: Construye un PDF A4 completo con `pdf-lib` incluyendo portada con título, badge "Traducido al Español", sello JarBees AI, fecha y modelo usado; y contenido páginado con header/footer, detección automática de capítulos, tipografía diferenciada y acentos de color.
+  5. **Ingesta en BD**: Crea el documento traducido con `status = 'ready'`, `language = 'es'` y referencia al original (`translatedFromId`) — disponible de inmediato en el Reader sin necesidad de aprobación manual.
+  6. **Ocultamiento del original**: Marca el documento original con `hidden = true` para que desaparezca de la lista del Reader sin eliminarse de la base de datos.
+  - El pipeline corre en **background no bloqueante**: la API devuelve un `jobId` inmediatamente y el proceso continúa en segundo plano.
+  - Sistema de tracking en memoria: `Map<jobId, TranslationJob>` con campos `status`, `progress` (0-100%), `startedAt`, `finishedAt`, `documentId` y `error`.
+
+- **🔌 TranslatorController (`src/modules/translator/translator.controller.ts`)**:
+  - `POST /translator/translate-pdf`: Sube un PDF multipart y lanza la traducción asíncrona. Devuelve `jobId`.
+  - `POST /translator/translate-document/:id`: Traduce un documento ya indexado en la BD por su ID.
+  - `GET /translator/status/:jobId`: Consulta el progreso de una traducción en curso (polling).
+  - `GET /translator/jobs`: Lista todos los jobs en memoria con su historial.
+  - `GET /translator/list`: Lista todos los documentos traducidos al español disponibles.
+  - `POST /translator/hide/:id`: Oculta manualmente un documento del Reader sin borrarlo.
+  - `POST /translator/detect-language`: Detecta el idioma de un texto (utilidad de diagnóstico).
+
+- **🗃️ Schema Prisma — Modelo `Document`**: Tres nuevos campos agregados para la feature:
+  - `hidden Boolean @default(false)`: Oculta el documento del Reader sin borrarlo de la BD (útil para versiones en idioma extranjero una vez traducidas).
+  - `language String?`: Código ISO del idioma detectado del documento (`"es"`, `"en"`, `"ro"`, etc.).
+  - `translatedFromId Int?`: Referencia al ID del documento original del que se tradujo (trazabilidad).
+  - Índice `@@index([hidden])` para rendimiento en el filtrado del Reader.
+
+- **📚 ReaderService — Filtrado de ocultos**: `listDocuments()` ahora filtra `where: { hidden: false }` en la query Prisma y `item.hidden !== true` en el índice `library-index.json`. Los libros en idiomas extranjeros desaparecen automáticamente de la lista una vez traducidos.
+
+- **🔧 Variables de entorno**: Agregada `OLLAMA_TRANSLATOR_MODEL="qwen3:4b"` en `.env`. El Reader también la usa como primer fallback en `translateBlockToSpanish()` si Qwen3:4b está disponible.
+
+- **📁 Directorio de salida**: `storage/translated/` — los PDFs traducidos se guardan aquí con nombre `<titulo_sanitizado>_es.pdf`.
+
+
 
 - **📚 Fix en `ReaderService` (`src/modules/reader/reader.service.ts`)**:
   - Se modificó la resolución del contenido en `getDocument()` para priorizar el texto completo crudo del documento (`dbDoc.content`) por sobre los fragmentos vectoriales RAG (`dbDoc.chunks`).

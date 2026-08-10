@@ -202,6 +202,11 @@ model Document {
   progressSummary Float   @default(0.0) // % de capítulos con resumen generado
   summary         String? // Meta-resumen final del libro
 
+  // ── Translator fields ─────────────────────────────────────────────────────
+  hidden           Boolean @default(false) // ocultar del Reader sin borrar (ej: versión en idioma extranjero)
+  language         String? // código ISO del idioma detectado (ej: "es", "en", "ro")
+  translatedFromId Int?    // ID del documento original del que se tradujo
+
   chunks          Chunk[]
   chapters        Chapter[]
   knowledgeSource KnowledgeSource?     @relation(fields: [sourceId], references: [id], onDelete: SetNull)
@@ -213,6 +218,7 @@ model Document {
   @@index([sourceId])
   @@index([timesUsed])
   @@index([lastUsed])
+  @@index([hidden])
 }
 
 // ── 5) CHUNKS VECTORIALES ─────────────────────────────────────────────────────

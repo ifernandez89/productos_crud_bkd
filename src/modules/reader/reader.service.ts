@@ -44,13 +44,16 @@ export class ReaderService {
   async listDocuments(): Promise<DocumentItem[]> {
     const list: DocumentItem[] = [];
 
-    // 1. Obtener de la BD (Prisma)
+    // 1. Obtener de la BD (Prisma) — excluir documentos ocultos (hidden=true)
     try {
       const dbDocs = await this.prisma.document.findMany({
+        where: { hidden: false },
         select: {
           id: true,
           title: true,
           category: true,
+          language: true,
+          translatedFromId: true,
           createdAt: true,
           _count: { select: { chunks: true } },
         },
@@ -74,7 +77,7 @@ export class ReaderService {
       this.logger.warn(`[ReaderService] Error consultando BD para lista de documentos: ${err}`);
     }
 
-    // 2. Obtener de library-index.json
+    // 2. Obtener de library-index.json — excluir items marcados como hidden
     try {
       const indexPath = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'library-index.json');
       if (fs.existsSync(indexPath)) {
@@ -82,6 +85,8 @@ export class ReaderService {
         const parsed = JSON.parse(raw);
         const docs = parsed.documentos || [];
         for (const item of docs) {
+          // Saltar documentos ocultos del índice
+          if (item.hidden === true) continue;
           if (!list.some((existing) => existing.titulo.toLowerCase() === item.titulo.toLowerCase())) {
             list.push({
               id: item.id || item.titulo,
@@ -330,8 +335,9 @@ export class ReaderService {
    */
   private async translateBlockToSpanish(text: string): Promise<string> {
     const ollamaHost = process.env.OLLAMA_HOST || 'http://localhost:11434';
-    // Priorizar gemma3:1b o qwen3:1.7b para velocidad ultra-rápida (cero costo, respuesta en ~2s)
+    // Priorizar qwen3:4b (traductor dedicado) o fallback a modelos menores para velocidad
     const translationModel =
+      process.env.OLLAMA_TRADUCTOR_MODEL ||
       process.env.OLLAMA_MODEL_TEST4_NAME ||
       process.env.OLLAMA_MODEL_TEST5_NAME ||
       'gemma3:1b';
