@@ -2,6 +2,8 @@
 
 Backend API para gestión de productos con integración de IA (Ollama) y sistema de chat inteligente.
 
+**Ahora con funciones de "Bibliotecario": ingestión y búsqueda en libros/PDFs, pipeline de RAG (retrieval-augmented generation) y lecturas automatizadas (TTS) para contenidos almacenados.**
+
 ---
 
 ## 📋 Tabla de Contenidos
@@ -13,6 +15,7 @@ Backend API para gestión de productos con integración de IA (Ollama) y sistema
 - [Uso](#-uso)
 - [Conectar con Frontend en GitHub Pages](#-conectar-con-frontend-en-github-pages)
 - [API Endpoints](#-api-endpoints)
+- [Library / Bibliotecario (RAG & TTS)](#-library--bibliotecario-rag--tts)
 - [Scripts Disponibles](#-scripts-disponibles)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 
@@ -21,7 +24,8 @@ Backend API para gestión de productos con integración de IA (Ollama) y sistema
 ## ✨ Características
 
 - ✅ **CRUD Completo** de productos con TypeORM/Prisma
-- 🤖 **Integración con IA** (Ollama) para chat inteligente
+- 🤖 **Integración con IA** (Ollama) para chat inteligente y agentes
+- 📚 **Funciones de bibliotecario**: ingestión de documentos (PDF), extracción de texto, generación de embeddings y búsqueda semántica (RAG) para responder consultas con contexto; endpoints para lectura por voz (TTS) y streaming de audio en respuestas.
 - 📊 **Validación robusta** con class-validator
 - 🔐 **CORS configurado** para desarrollo y producción
 - 📝 **Documentación automática** con Swagger/OpenAPI
@@ -37,7 +41,9 @@ Backend API para gestión de productos con integración de IA (Ollama) y sistema
 - **Framework:** NestJS 10.x
 - **Lenguaje:** TypeScript 5.x
 - **Base de Datos:** PostgreSQL + Prisma ORM
-- **IA:** Ollama (Llama3.2) + LangChain
+- **IA:** Ollama (Llama3.2) + LangChain (workflows RAG)
+- **Embeddings / Vector Store:** pipeline configurable (vector DB o soluciones locales)
+- **TTS:** integración con motores TTS para lectura automatizada (configurable)
 - **Validación:** class-validator + class-transformer
 - **Documentación:** Swagger/OpenAPI
 - **Logging:** Winston + nest-winston
@@ -73,6 +79,16 @@ DATABASE_URL="postgresql://postgres:password@localhost:5433/productos?schema=pub
 # O base de datos en la nube (Neon)
 POSTGRES_PRISMA_URL="postgres://user:pass@host/db?pgbouncer=true"
 POSTGRES_URL_NON_POOLING="postgres://user:pass@host/db"
+
+# Ollama / LLM
+OLLAMA_HOST="http://localhost:11434"
+OLLAMA_MODEL="llama3.2"
+
+# Vector store (opcional)
+VECTOR_STORE_URL="http://localhost:8200" # ejemplo
+
+# TTS engine config (opcional)
+TTS_PROVIDER="local|external"
 
 # Puerto del servidor (opcional, default: 4000)
 PORT=4000
@@ -193,7 +209,28 @@ npm run tunnel
 |--------|----------|-------------|
 | `POST` | `/api/upload` | Subir archivo |
 
-📚 **Documentación completa en Swagger:** `http://localhost:4000/api/docs`
+---
+
+## 📚 Library / Bibliotecario (RAG & TTS)
+
+Este módulo provee capacidades para convertir colecciones de documentos (PDFs, libros, manuales) en fuentes consultables y en lecturas automatizadas:
+
+- Ingestión y extracción de texto desde PDFs y otros formatos.
+- Normalización y limpieza del texto (segmentación, metadatos).
+- Generación de embeddings y almacenamiento en un vector store para búsqueda semántica (RAG).
+- Endpoints para búsqueda semántica: `/api/library/search` — devuelve documentos y fragmentos relevantes con contextos para RAG.
+- Endpoints para lectura por voz: `/api/library/read` — convierte texto a audio (TTS) y entrega streaming o URL temporal para reproducción.
+- Integración con el chat IA para respuestas aumentadas (RAG): el agente puede recuperar fragmentos relevantes y generar respuestas con contexto referenciado.
+
+Ejemplo de flujo de ingestión (simplificado):
+
+1. `POST /api/library/ingest` con archivo PDF → extracción de texto (OCR si aplica) → chunking y embeddings → almacenar en vector store.
+2. `POST /api/aichat` con pregunta del usuario → búsqueda semántica en vector store → contexto devuelto al LLM (Ollama + LangChain) → respuesta enriquecida.
+3. `POST /api/library/read` con `documentId` y `fragmentId` → generar audio TTS y servir para reproducción.
+
+Consideraciones:
+- El pipeline es configurable: se puede usar un vector store externo o local; el proveedor de TTS es intercambiable.
+- Se recomienda limitar la ingesta automática (filtrado) para evitar contenido con derechos de autor no autorizado.
 
 ---
 
@@ -243,6 +280,7 @@ productos_crud_bkd/
 │   │   ├── products.service.ts
 │   │   └── products.module.ts
 │   ├── aichat/           # Módulo de chat IA
+│   ├── library/          # Módulo de ingestión, embeddings, búsqueda y TTS
 │   ├── upload/           # Módulo de uploads
 │   ├── app.module.ts     # Módulo principal
 │   └── main.ts           # Entry point (CORS aquí)
@@ -319,4 +357,4 @@ Ignacio Fernández - [@ifernandez89](https://github.com/ifernandez89)
 - [Prisma Docs](https://www.prisma.io/docs)
 - [Ollama](https://ollama.com/)
 - [ngrok](https://ngrok.com/)
-- [GitHub Pages](https://pages.github.com/)
+
