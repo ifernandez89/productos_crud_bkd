@@ -18,7 +18,7 @@ export interface MobileCommandDto {
 }
 
 @Public()
-@Controller('api/mobile/v1')
+@Controller('mobile/v1')
 export class MobileGatewayController {
   private readonly logger = new Logger(MobileGatewayController.name);
 
