@@ -26,6 +26,7 @@ Backend API para gestión de productos con integración de IA (Ollama) y sistema
 - ✅ **CRUD Completo** de productos con TypeORM/Prisma
 - 🤖 **Integración con IA** (Ollama) para chat inteligente y agentes
 - 📚 **Funciones de bibliotecario**: ingestión de documentos (PDF), extracción de texto, generación de embeddings y búsqueda semántica (RAG) para responder consultas con contexto; endpoints para lectura por voz (TTS) y streaming de audio en respuestas.
+- 🌐 **Motor Traductor Universal (Libros & Subtítulos SRT)**: Pipeline de traducción local de alto rendimiento con Ollama (`RogerBen/hy-mt1.5-1.8b` / `Qwen3:4b`). Soporta libros (PDF) y archivos de subtítulos (`.srt`) garantizando tiempos de aparición 100% idénticos al original y respaldo incremental en disco (`.json`).
 - 📊 **Validación robusta** con class-validator
 - 🔐 **CORS configurado** para desarrollo y producción
 - 📝 **Documentación automática** con Swagger/OpenAPI
