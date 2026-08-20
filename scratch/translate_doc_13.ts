@@ -6,6 +6,11 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const prisma = new PrismaClient();
 const cacheFilePath = path.join(__dirname, 'doc_13_chunks_cache.json');
+const translatedDir = path.join(process.cwd(), 'storage', 'translated');
+if (!fs.existsSync(translatedDir)) fs.mkdirSync(translatedDir, { recursive: true });
+
+const txtPath = path.join(translatedDir, 'Viajes_fuera_del_cuerpo_es.txt');
+const pdfPath = path.join(translatedDir, 'Viajes_fuera_del_cuerpo_es.pdf');
 
 function sanitizeWinAnsi(text: string): string {
   if (!text) return '';
@@ -14,21 +19,28 @@ function sanitizeWinAnsi(text: string): string {
     .replace(/[\u2018\u2019]/g, "'")
     .replace(/[\u2013\u2014]/g, '-')
     .replace(/\u2026/g, '...')
-    .replace(/[^\u0000-\u00FF]/g, '') // remove non-WinAnsi characters
+    .replace(/[\u00A0]/g, ' ')
+    .replace(/[^\u0000-\u00FF]/g, '')
     .trim();
 }
 
 async function main() {
   const docId = 13;
+  console.log(`[Traducción] Leyendo Documento ID ${docId} de PostgreSQL para traducción...`);
   const doc = await prisma.document.findUnique({ where: { id: docId } });
   if (!doc || !doc.content) {
     console.error(`Documento ${docId} no encontrado o sin contenido.`);
     process.exit(1);
   }
 
-  const originalTitle = doc.title;
+  const originalTitle = doc.title || 'Journeys Out of the Body';
   const finalTitle = 'Viajes fuera del cuerpo (Journeys Out of the Body)';
-  console.log(`[Traducción] Iniciando traducción completa para: "${originalTitle}" (Doc ID: ${docId})`);
+  console.log(`[Traducción] Documento original: "${originalTitle}" (${doc.content.length} caracteres).`);
+
+  // Desconectar Prisma inmediatamente después de leer el documento original
+  // CUMPLIMIENTO REGLA: Cero ingesta o escrituras en Base de Datos durante la traducción
+  await prisma.$disconnect();
+  console.log('[BD] Desconectado de la Base de Datos. No se realizarán escrituras en BD.');
 
   const text = doc.content;
   const paragraphs = text.split(/\n+/).filter((p) => p.trim().length > 0);
@@ -48,25 +60,33 @@ async function main() {
   console.log(`[Traducción] Total de chunks a traducir: ${chunks.length}`);
   const model = process.env.OLLAMA_TRADUCTOR_MODEL || 'RogerBen/hy-mt1.5-1.8b:latest';
   const ollamaHost = process.env.OLLAMA_HOST || 'http://localhost:11434';
-  console.log(`[Traducción] Modelo activo: ${model}`);
+  console.log(`[Traducción] Modelo de Ollama activo: ${model}`);
 
-  // Cargar caché si existe
+  // Cargar caché si existe en disco
   let cache: Record<number, string> = {};
   if (fs.existsSync(cacheFilePath)) {
     try {
       cache = JSON.parse(fs.readFileSync(cacheFilePath, 'utf8'));
-      console.log(`[Caché] Se cargaron ${Object.keys(cache).length} chunks guardados en disco.`);
+      console.log(`[Caché] Se cargaron ${Object.keys(cache).length} chunks previamente guardados en disco.`);
     } catch {
       cache = {};
     }
   }
 
   const translatedChunks: string[] = new Array(chunks.length).fill('');
-  const startTime = Date.now();
-
+  
+  // Rellenar chunks traducidos desde la caché
   for (let i = 0; i < chunks.length; i++) {
     if (cache[i] && cache[i].trim().length > 0) {
       translatedChunks[i] = cache[i];
+    }
+  }
+
+  const startTime = Date.now();
+  let newlyTranslatedCount = 0;
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (translatedChunks[i] && translatedChunks[i].trim().length > 0) {
       continue;
     }
 
@@ -91,7 +111,7 @@ async function main() {
               num_predict: 4096,
             },
           },
-          { timeout: 90000 },
+          { timeout: 120000 },
         );
 
         let response = res.data?.response?.trim();
@@ -104,36 +124,45 @@ async function main() {
           break;
         }
       } catch (err: any) {
-        console.warn(`[Chunk ${i + 1}] Reintento ${attempt}/${maxRetries} falló: ${err.message}`);
+        console.warn(`[Chunk ${i + 1}/${chunks.length}] Reintento ${attempt}/${maxRetries} falló: ${err.message}`);
         if (attempt < maxRetries) {
-          await new Promise((r) => setTimeout(r, 3000 * attempt));
+          await new Promise((r) => setTimeout(r, 2000 * attempt));
         } else {
-          translated = chunks[i]; // Fallback al original si falla tras reintentos
+          console.error(`[Chunk ${i + 1}/${chunks.length}] Falló tras ${maxRetries} reintentos. Usando original como fallback.`);
+          translated = chunks[i];
         }
       }
     }
 
     translatedChunks[i] = translated;
     cache[i] = translated;
-    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2));
+    newlyTranslatedCount++;
+
+    // PERSISTENCIA INCREMENTAL OBLIGATORIA EN DISCO:
+    // Guardar inmediatamente tras CADA chunk procesado en JSON y TXT
+    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf8');
+
+    const currentFullText = translatedChunks.filter((c) => c && c.length > 0).join('\n\n');
+    fs.writeFileSync(txtPath, currentFullText, 'utf8');
 
     const elapsed = ((Date.now() - chunkStart) / 1000).toFixed(1);
     const progress = Math.round(((i + 1) / chunks.length) * 100);
 
-    if ((i + 1) % 5 === 0 || i + 1 === chunks.length) {
-      const avg = ((Date.now() - startTime) / 1000 / (i + 1)).toFixed(1);
-      const remainingSeconds = Math.round((chunks.length - (i + 1)) * parseFloat(avg));
-      const remMin = Math.floor(remainingSeconds / 60);
-      console.log(
-        `[Traducción] Chunk ${i + 1}/${chunks.length} (${progress}%) - t=${elapsed}s | Promedio: ${avg}s/chunk | Est. restante: ${remMin}m`,
-      );
-    }
+    const avg = ((Date.now() - startTime) / 1000 / newlyTranslatedCount).toFixed(1);
+    const remainingSeconds = Math.round((chunks.length - (i + 1)) * parseFloat(avg));
+    const remMin = Math.floor(remainingSeconds / 60);
+    const remSec = remainingSeconds % 60;
+
+    console.log(
+      `[Traducción] Chunk ${i + 1}/${chunks.length} (${progress}%) completado en ${elapsed}s | Promedio: ${avg}s/chunk | Tiempo est. restante: ${remMin}m ${remSec}s`
+    );
   }
 
   const fullTranslatedText = translatedChunks.join('\n\n');
-  console.log(`[Traducción] ✅ Traducción completa finalizada.`);
+  fs.writeFileSync(txtPath, fullTranslatedText, 'utf8');
+  console.log(`[Traducción] ✅ Traducción completa finalizada. Guardado en texto plano: ${txtPath}`);
 
-  // 1. Generar PDF
+  // Generación de PDF
   console.log('[PDF] Generando archivo PDF con pdf-lib (con sanitización WinAnsi)...');
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -163,7 +192,7 @@ async function main() {
   coverPage.drawText('Traducido al Español', { x: marginLeft + 10, y: pageHeight - 152, size: 12, font: fontBold, color: rgb(1, 1, 1) });
 
   coverPage.drawText(sanitizeWinAnsi(`Título original: ${originalTitle}`), { x: marginLeft, y: pageHeight - 210, size: 12, font: fontItalic, color: colorMeta });
-  coverPage.drawText(sanitizeWinAnsi(`Modelo: ${model} | ${new Date().toLocaleDateString('es-AR')}`), { x: marginLeft, y: pageHeight - 230, size: 10, font: font, color: colorMeta });
+  coverPage.drawText(sanitizeWinAnsi(`Modelo: ${model} | Fecha: ${new Date().toLocaleDateString('es-AR')}`), { x: marginLeft, y: pageHeight - 230, size: 10, font: font, color: colorMeta });
 
   // Párrafos
   const outParagraphs = fullTranslatedText.split(/\n+/).filter((p) => p.trim().length > 0);
@@ -216,38 +245,10 @@ async function main() {
   }
   addFooter(currentPage, pageNumber);
 
-  const translatedDir = path.join(process.cwd(), 'storage', 'translated');
-  if (!fs.existsSync(translatedDir)) fs.mkdirSync(translatedDir, { recursive: true });
-
-  const pdfPath = path.join(translatedDir, 'Viajes_fuera_del_cuerpo_es.pdf');
   const pdfBytes = await pdfDoc.save();
   fs.writeFileSync(pdfPath, Buffer.from(pdfBytes));
-  console.log(`[PDF] PDF guardado exitosamente en: ${pdfPath}`);
-
-  // 2. Ingestar en la Base de Datos
-  console.log('[BD] Guardando nuevo documento en PostgreSQL...');
-  const newDoc = await prisma.document.create({
-    data: {
-      title: finalTitle,
-      content: fullTranslatedText,
-      category: 'experiencias fuera del cuerpo',
-      source: pdfPath,
-      status: 'ready',
-      language: 'es',
-      translatedFromId: docId,
-      progressIndex: 100.0,
-      progressEmbed: 0.0,
-      progressSummary: 0.0,
-    },
-  });
-
-  // 3. Ocultar documento original
-  await prisma.document.update({
-    where: { id: docId },
-    data: { hidden: true, category: 'traducido_al_espanol' },
-  });
-
-  console.log(`[BD] ✅ Documento traducido registrado con éxito en BD (ID: ${newDoc.id}). Documento original ${docId} ocultado.`);
+  console.log(`[PDF] ✅ PDF generado exitosamente en: ${pdfPath}`);
+  console.log('[Traducción] Proceso finalizado con éxito.');
   process.exit(0);
 }
 

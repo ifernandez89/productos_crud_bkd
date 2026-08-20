@@ -6,6 +6,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Módulo MobileGateway: Conectividad Control Remoto Mobile-to-Core (2026-08-20)
+
+- **📱 MobileGatewayModule (`src/mobile-gateway/mobile-gateway.module.ts`)**: Módulo NestJS que expone controladores y servicios de comunicación remota para la aplicación JarBees Mobile.
+- **🔌 MobileGatewayController (`src/mobile-gateway/mobile-gateway.controller.ts`)**:
+  - Rutas bajo el prefijo `@Controller('api/mobile/v1')`.
+  - Endpoint `GET /api/mobile/v1/health`: Verificación de salud y conectividad del Core para actualización de badge en la app mobile.
+  - Endpoint `GET /api/mobile/v1/capabilities`: Exposición de capacidades remota ejecutables en la PC (hora oficial, estado de CPU/RAM, calculadora, control de apps, navegador).
+  - Endpoint `POST /api/mobile/v1/command`: Recepción y despacho de intenciones/comandos estructurados desde dispositivos móviles.
+  - Decorador `@Public()` integrado para permitir verificación pública del estado de salud del gateway.
+- **⚙️ MobileGatewayService (`src/mobile-gateway/mobile-gateway.service.ts`)**: Servicio para despacho determinista de intenciones del sistema (`GET_TIME`, `GET_SYSTEM_STATUS`, `CALCULATE`, `OPEN_APP`, `OPEN_BROWSER`, `OPEN_URL`).
+- **⚙️ AppModule (`src/app.module.ts`)**: Importación y registro de `MobileGatewayModule` en el módulo principal del backend.
+
 ### Added — Módulo Translator: Traducción de PDFs al Español con Qwen3:4b (2026-08-09)
 
 - **🌐 TranslatorModule (`src/modules/translator/translator.module.ts`)**: Nuevo módulo NestJS dedicado a la traducción automática de libros en idiomas extranjeros al español utilizando el modelo `qwen3:4b` vía Ollama. Integra `MulterModule` con almacenamiento en memoria para recibir PDFs de hasta 100 MB.

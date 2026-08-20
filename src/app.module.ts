@@ -13,6 +13,7 @@ import { AuthModule } from './auth/auth.module';
 import { BalanceModule } from './modules/balance/balance.module';
 import { ReaderModule } from './modules/reader/reader.module';
 import { TranslatorModule } from './modules/translator/translator.module';
+import { MobileGatewayModule } from './mobile-gateway/mobile-gateway.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -33,6 +34,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     BalanceModule,
     ReaderModule,
     TranslatorModule,
+    MobileGatewayModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',
