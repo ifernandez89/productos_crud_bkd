@@ -8,7 +8,12 @@ interface SrtBlock {
   lines: string[];
 }
 
-const inputPath = 'C:\\Users\\nacho\\Downloads\\Brassed Off (1996)\\Brassed-Off-1996-1080p-BluRay.srt';
+const candidateInputs = [
+  'C:\\Users\\nacho\\Downloads\\Brassed Off (1996)\\Brassed-Off-1996-1080p-BluRay.ingles.srt',
+  'C:\\Users\\nacho\\Downloads\\Brassed Off (1996)\\Brassed-Off-1996-1080p-BluRay.srt',
+  'C:\\Users\\nacho\\Downloads\\Brassed Off (1996)\\Brassed-Off-1996-1080p-BluRay.srt.txt'
+];
+const inputPath = candidateInputs.find(p => fs.existsSync(p)) || candidateInputs[0];
 const outputDownloadsPath = 'C:\\Users\\nacho\\Downloads\\Brassed Off (1996)\\Brassed-Off-1996-1080p-BluRay.es.srt';
 const outputStoragePath = path.join(process.cwd(), 'storage', 'translated', 'Brassed-Off-1996-1080p-BluRay_es.srt');
 const cachePath = path.join(process.cwd(), 'scratch', 'brassed_off_srt_cache.json');
@@ -194,32 +199,39 @@ async function main() {
     outputLines.push(block.timeframe);
 
     const translatedRaw = cache[block.index] || block.lines.join('\n');
-    // Convert '/' separators back to newlines for multi-line subtitles
     const formattedText = translatedRaw
       .split('/')
       .map(l => l.trim())
       .filter(l => l.length > 0)
       .join('\n');
 
-    outputLines.push(formattedText);
-    outputLines.push(''); // Ligne en blanco separadora
+    // Clean unicode special characters to standard ANSI / Windows-1252 symbols
+    const ansiCleanedText = formattedText
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u2013\u2014]/g, '-')
+      .replace(/\u2026/g, '...')
+      .replace(/[\u00A0]/g, ' ');
+
+    outputLines.push(ansiCleanedText);
+    outputLines.push(''); // Línea en blanco separadora
   }
 
   const finalSrtContent = outputLines.join('\n');
 
-  // Guardar en Downloads
+  // Guardar en Downloads en codificación ANSI (latin1 / Windows-1252)
   const targetDir = path.dirname(outputDownloadsPath);
   if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-  fs.writeFileSync(outputDownloadsPath, finalSrtContent, 'utf-8');
-  console.log(`[Salida 1] Guardado en: ${outputDownloadsPath}`);
+  fs.writeFileSync(outputDownloadsPath, finalSrtContent, 'latin1');
+  console.log(`[Salida 1] Guardado en codificación ANSI (latin1) en: ${outputDownloadsPath}`);
 
-  // Guardar copia en storage/translated
+  // Guardar copia en storage/translated en codificación ANSI (latin1 / Windows-1252)
   const storageDir = path.dirname(outputStoragePath);
   if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
-  fs.writeFileSync(outputStoragePath, finalSrtContent, 'utf-8');
-  console.log(`[Salida 2] Guardado en: ${outputStoragePath}`);
+  fs.writeFileSync(outputStoragePath, finalSrtContent, 'latin1');
+  console.log(`[Salida 2] Guardado en codificación ANSI (latin1) en: ${outputStoragePath}`);
 
-  console.log(`\n🎉 PROCESO FINALIZADO CON ÉXITO.`);
+  console.log(`\n🎉 PROCESO FINALIZADO CON ÉXITO (Codificación ANSI Windows-1252).`);
 }
 
 main().catch(err => {

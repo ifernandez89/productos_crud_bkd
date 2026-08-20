@@ -51,7 +51,7 @@ El LLM es un **componente reemplazable**. La inteligencia real está en las capa
 | **`JarvisModule`** | `src/jarvis/` | **Agente principal — todo lo nuevo va aquí** |
 | **`BalanceModule`** | `src/modules/balance/` | **Balance Energético turn-by-turn adaptativo y basado en ciclos** |
 | **`ReaderModule`** | `src/modules/reader/` | **Audiolibros: lista de libros, bloques de texto, TTS con Orpheus, caché WAV. Filtra documentos con `hidden=true`.** |
-| **`TranslatorModule`** | `src/modules/translator/translator.service.ts` | **Motor Traductor Universal: Libros (PDF/Texto) y Subtítulos cinematográficos (`.srt`) con preservación exacta de timestamps, persistencia incremental obligatoria a disco (`.json`), batching con `RogerBen/hy-mt1.5-1.8b` / `qwen3:4b` y cero ingesta en BD.** |
+| **`TranslatorModule`** | `src/modules/translator/translator.service.ts` | **Motor Traductor Universal: Libros (PDF/Texto) y Subtítulos cinematográficos (`.srt`) con preservación exacta de timestamps, salida en codificación ANSI (Windows-1252) antirotura de caracteres (`¿`, `¡`, `ñ`, acentos), persistencia incremental obligatoria a disco (`.json`), batching con `RogerBen/hy-mt1.5-1.8b` / `qwen3:4b` y cero ingesta en BD.** |
 | `JobsModule` | `src/jobs/` | Crons diarios (Morning Briefing, Nightly Processing) |
 | `HRM` | `src/hrm/` | Python ML standalone (invocado por spawn) |
 

@@ -6,9 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Added — Motor Traductor Universal: Traducción de Subtítulos SRT con Tiempos Exactos y Caché Incremental (2026-08-20)
+### Added — Motor Traductor Universal: Traducción de Subtítulos SRT con Tiempos Exactos, Caché Incremental y Codificación ANSI (2026-08-20)
 
 - **🎬 Traducción Universal de Subtítulos SRT (`scratch/translate_srt_brassed_off.ts`)**: Ampliación del motor traductor local para soportar subtítulos multilingües en formato `.srt`. Garantiza conservación del 100% de los índices y estampas de tiempo originales (`00:00:00,000 --> 00:00:00,000`), reemplazando únicamente el contenido textual por su traducción al español fluido.
+- **🔤 Codificación Nativa ANSI (Windows-1252 / Latin1)**: Los archivos de salida `.srt` se generan explícitamente en codificación ANSI (Windows-1252/Latin1) con sanitización de comillas y símbolos especiales Unicode, evitando la distorsión de caracteres españoles (`¿`, `¡`, `ñ`, acentos `á-ú`) en reproductores multimedia locales, Smart TVs y sistemas legados.
 - **💾 Persistencia Incremental Obligatoria en Disco (`.json`)**: Cumplimiento del estándar de caché persistente en disco (`scratch/*_srt_cache.json`). Cada lote traducido se escribe inmediatamente en el sistema de archivos, garantizando reanudación automática sin reprocesamiento ni pérdida de tiempo ante interrupciones.
 - **⚡ Batching Optimizado & Fallback Individual**: Procesamiento de lotes de 15-20 subtítulos con `RogerBen/hy-mt1.5-1.8b:latest` / `qwen3:4b`, completando largometrajes enteros (~1,050 bloques) en ~12-14 minutos con recuperación automática individual ante líneas complejas o faltantes.
 - **🗣️ Adaptación Cinematográfica & Efectos**: Preservación inteligente de marcas de hablantes (`DANNY:`, `MAN:`) y traducción adecuada de efectos sonoros entre paréntesis (ej: `(HONKING HORN)` → `(BOCINAZO)`).
