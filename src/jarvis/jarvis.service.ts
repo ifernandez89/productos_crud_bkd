@@ -201,6 +201,45 @@ export class JarvisService {
         return taskReminderReply;
       }
 
+      // ── 4.1 Comprobar consultas de inventario de biblioteca/libros del backend ──
+      const isLibraryInventoryQuery =
+        /(cuant[oa]s|lista|tienes|disponibles|total|cuales|cuáles|que hay)\s+.*(libros|documentos|obras|archivos|biblioteca|backend)/i.test(
+          userMessage,
+        );
+      if (isLibraryInventoryQuery) {
+        const count = await this.documentRepo.countDocuments();
+        const docs = await this.documentRepo.listAllDocuments(25);
+        let reply = `📚 Actualmente disponemos de **${count} documentos/libros** indexados en la biblioteca del sistema.`;
+        if (docs.length > 0) {
+          reply +=
+            `\n\nAlgunas de las obras registradas:\n` +
+            docs
+              .slice(0, 15)
+              .map((d) => `• **${d.title}** (${d.category || 'General'})`)
+              .join('\n');
+          if (docs.length > 15) {
+            reply += `\n*... y ${docs.length - 15} más.*`;
+          }
+        }
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: reply,
+          metadata: { source: 'system_library_inventory' },
+        });
+        await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: reply,
+          toolsUsed: ['library_inventory'],
+          modelUsed: 'none',
+          provider: 'system',
+          durationMs: Date.now() - startTime,
+          success: true,
+        });
+        return reply;
+      }
+
       // ── 5. Clasificar intención ───────────────────────────────────────────
       const intent = await this.intentRouter.classify(userMessage);
       this.logger.log(
@@ -900,6 +939,7 @@ export class JarvisService {
             prefetchedRagContext,
             mode,
             retrievedChunksList,
+            options.mode,
           );
         }
       }
@@ -916,6 +956,7 @@ export class JarvisService {
         prefetchedRagContext,
         mode,
         retrievedChunksList,
+        options.mode,
       );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
@@ -959,6 +1000,7 @@ export class JarvisService {
     prefetchedRagContext?: string,
     mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
     retrievedChunks: any[] = [],
+    disciplineMode?: string,
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
@@ -966,10 +1008,11 @@ export class JarvisService {
         sessionId,
         true,
         true,
-        6,
+        16,
         webContext,
         !!webContext,
         prefetchedRagContext,
+        disciplineMode,
       );
 
     if (usedMemory) toolsUsed.push('memory');

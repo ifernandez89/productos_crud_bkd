@@ -65,6 +65,20 @@ export class DocumentRepository {
     return this.pgvector.saveChunkEmbedding(chunkId, vector);
   }
 
+  async countDocuments(): Promise<number> {
+    return this.prisma.document.count();
+  }
+
+  async listAllDocuments(
+    limit = 100,
+  ): Promise<{ id: number; title: string; category: string | null; status: string }[]> {
+    return this.prisma.document.findMany({
+      select: { id: true, title: true, category: true, status: true },
+      orderBy: { title: 'asc' },
+      take: limit,
+    });
+  }
+
   async findDocuments(category?: string): Promise<Document[]> {
     return this.prisma.document.findMany({
       where: category ? { category } : undefined,

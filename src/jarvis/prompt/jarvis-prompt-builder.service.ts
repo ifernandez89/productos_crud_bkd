@@ -42,6 +42,7 @@ export class JarvisPromptBuilderService {
     browserContext?: string,
     hasWebContext?: boolean,
     prefetchedRagContext?: string,
+    mode?: string,
   ): Promise<{
     systemPrompt: string;
     userPrompt: string;
@@ -52,6 +53,11 @@ export class JarvisPromptBuilderService {
     const identity = this.jarvisIdentity.getIdentity();
     const capabilities = this.capabilitiesService.getCapabilities();
     const relevantSkills = this.skillRegistry.findRelevant(userMessage, 3);
+
+    const isChatbotMode = mode === 'chatbot' || mode === 'chat' || !mode || mode === 'auto';
+    const isCoderMode = mode === 'coder' || mode === 'code';
+    const isTranslatorMode = mode === 'traductor' || mode === 'translate';
+    const isReaderMode = mode === 'reader' || mode === 'lector';
 
     const activeCapabilities = Object.entries(capabilities)
       .filter(([, enabled]) => enabled)
@@ -69,53 +75,64 @@ export class JarvisPromptBuilderService {
       .filter(Boolean)
       .join(' | ');
 
-    const systemPrompt = [
-      `Tu nombre es: ${identity.name}, un asistente personal inteligente.`,
-      `Tu tono es ${identity.personality.tone} y tu verbosidad es ${identity.personality.verbosity}.`,
-      '',
-      `Idioma principal: ${identity.language || 'es-AR'}.`,
-      `País: ${identity.country || 'Argentina'}.`,
-      `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
-      '',
-      '⏰ FECHA Y HORA ACTUAL:',
-      `- Año actual: 2026 (NO 2024, NO 2025)`,
-      `- Fecha completa: ${new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`,
-      `- Hora: ${new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: profile.timezone || 'America/Argentina/Buenos_Aires' })}`,
-      '',
-      '📍 CONTEXTO LOCAL — Paraná, Entre Ríos, Argentina:',
-      '- Ciudad capital de Entre Ríos, founded el 25 de junio de 1813',
-      '- NO confundir con el río Paraná (el usuario se refiere a la CIUDAD)',
-      '- Cuando el usuario dice "Paraná" sin contexto → asumir la ciudad',
-      '- Sitios relevantes: Parque Urquiza, Costanera, Puerto Viejo, Plaza 1º de Mayo',
-      '- Fuentes locales: El Once (elonce.com), Mi Paraná (mi.parana.gob.ar), UNO Entre Ríos (unoentrerios.com.ar)',
-      '- ⚠️ AUTORIDADES LOCALES: NO usar conocimiento interno sobre intendentes, gobernadores u otros funcionarios.',
-      '    El cargo de intendente dura 4 años y puede cambiar. SIEMPRE consultar en El Once o Mi Paraná.',
-      '    Si no tenés datos web en este prompt sobre autoridades → debés decir que no podés confirmarlo sin fuente actual.',
-      '',
-      '🚨 REGLAS CRÍTICAS — NOTICIAS Y DATOS ACTUALES:',
-      browserContext
-        ? '- Tenés contenido web real en este prompt. Usálo. Hacé el resumen con los datos reales disponibles.'
-        : '- NUNCA inventes titulares, eventos, ni noticias de actualidad si no hay contenido web en el prompt.',
+    const dateStr = new Date().toLocaleDateString('es-AR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const timeStr = new Date().toLocaleTimeString('es-AR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: profile.timezone || 'America/Argentina/Buenos_Aires',
+    });
 
-      '',
-      'Reglas generales:',
-      '1. ⚠️ IDIOMA OBLIGATORIO: Responder SIEMPRE en español argentino (es-AR). Aunque los fragmentos de los documentos recuperados o de la web estén escritos en inglés u otro idioma, DEBES TRADUCIR la información y responder 100% EN ESPAÑOL. Jamás respondas en inglés.',
-      '2. FRONTERA RÍGIDA DE CONOCIMIENTO (Eres JarBees): Tu prioridad absoluta es responder utilizando EXCLUSIVAMENTE el contexto recuperado (Biblioteca Personal/Web/Memoria).',
+    let systemPrompt = '';
 
-      '3. NO agregues autores, no agregues teorías, no agregues conceptos, no agregues libros, no agregues fechas, ni agregues interpretaciones o conocimiento externo al contexto.',
-      '4. Si el contexto no contiene suficiente información para responder con precisión, debes responder exactamente: "No encontré suficiente información en la biblioteca para responder con precisión."',
-      '5. Solo al final de tu respuesta, y ÚNICAMENTE si el usuario lo solicita de manera explícita, puedes complementar con conocimiento general del modelo indicando clara y literalmente la frase: "Conocimiento general del modelo:" seguido de la información.',
-      '6. PRESERVACIÓN DEL MARCO INTELECTUAL: No mezcles ni fusiones autores de escuelas diferentes como si compartieran la misma teoría. Si respondes usando fragmentos de distintos autores, sepáralos claramente (ej: "Según Freud...", "Desde la perspectiva teosófica de Powell...").',
-      browserContext
-        ? '7. Cuando tenés contenido web extraído, respondé específicamente lo que el usuario preguntó usando ese contenido. No resumas todo — enfocaté en la pregunta.'
-        : '7. Responder en máximo 3 oraciones salvo que se pidan detalles o explicaciones comparativas profundas de RAG.',
-      '8. Si el usuario pide un resumen, usá viñetas o párrafos cortos según corresponda.',
-      '9. Si mencionan "hoy", "actual", "este año" → usar el año 2026, NO 2024.',
-      '',
-      `Timezone: ${identity.timezone}`,
-      `Especialidades: ${identity.specialties?.join(', ') ?? 'ninguna'}`,
-      `Capacidades activas: ${activeCapabilities}`,
-    ].join('\n');
+    if (isCoderMode) {
+      systemPrompt = [
+        `Tu nombre es: ${identity.name}, Especialista en Desarrollo y Arquitectura de Software (Qwen2.5-Coder).`,
+        `Perfil del usuario: ${profileSummary || 'Desarrollador'}`,
+        `Fecha: ${dateStr}, ${timeStr} hs.`,
+        '',
+        'DIRECTRICES DE CÓDIGO:',
+        '1. Responde con código limpio, bien tipado y estructurado.',
+        '2. Proporciona explicaciones técnicas precisas y enfocadas a producción.',
+        '3. Mantén el contexto técnico de la conversación anterior.',
+      ].join('\n');
+    } else if (isTranslatorMode) {
+      systemPrompt = [
+        `Tu nombre es: ${identity.name}, Traductor Profesional Especializado.`,
+        'Traduce el contenido de manera precisa, conservando terminología y formato original.',
+        'Devuelve únicamente la traducción limpia, sin preámbulos.',
+      ].join('\n');
+    } else if (isReaderMode) {
+      systemPrompt = [
+        `Tu nombre es: ${identity.name}, Asistente de Lectura y Síntesis para TTS.`,
+        'Prepara el texto con buena cadencia, puntuación y claridad para ser narrado o leído en voz alta.',
+      ].join('\n');
+    } else {
+      // Modo Chatbot / Asistente General
+      systemPrompt = [
+        `Tu nombre es: ${identity.name}, un asistente personal inteligente, conversacional y empático.`,
+        `Tu tono es ${identity.personality.tone} y tu estilo es cercano, claro y fluido.`,
+        '',
+        `Idioma principal: ${identity.language || 'es-AR'}.`,
+        `País: ${identity.country || 'Argentina'}.`,
+        `Perfil del usuario: ${profileSummary || 'No hay datos de perfil disponibles.'}`,
+        '',
+        '⏰ FECHA Y HORA ACTUAL:',
+        `- Año actual: 2026`,
+        `- Fecha completa: ${dateStr}`,
+        `- Hora: ${timeStr} hs`,
+        '',
+        'DIRECTRICES GENERALES DE CONVERSACIÓN:',
+        '1. Respondé de forma natural, amigable y fluida en español argentino.',
+        '2. Mantené siempre el hilo y contexto de la conversación anterior. Si el usuario hace preguntas de seguimiento, pide explicaciones de algo que dijiste o dice "no entendí", explicálo con sencillez tomando como referencia el mensaje anterior.',
+        '3. Para chistes, humor, consejos, reflexiones o charlas cotidianas, respondé con creatividad sin bloqueos artificiales.',
+        '4. Si no tenés un dato verificado o de actualidad, decílo con sinceridad sin inventar.',
+      ].join('\n');
+    }
 
     const contextParts: string[] = [];
     let usedMemory = false;
@@ -129,7 +146,8 @@ export class JarvisPromptBuilderService {
       contextParts.push(localKnowledgeCtx);
     }
 
-    if (relevantSkills.length > 0) {
+    // Incluir skills solo si no es un modo puramente conversacional
+    if (!isChatbotMode && relevantSkills.length > 0) {
       const skillText = relevantSkills
         .map(
           (skill) =>
@@ -297,21 +315,24 @@ export class JarvisPromptBuilderService {
 
     const summary = await this.sessionSummaryRepo.get(sessionId);
     if (summary) {
-      contextParts.push(`### RESUMEN DE CONVERSACIÓN\n${summary.summary}`);
-    } else {
-      const recentMessages = await this.conversationRepo.getRecentMessages(
-        sessionId,
-        maxHistoryMessages,
+      contextParts.push(`### RESUMEN DE LA SESIÓN ANTERIOR\n${summary.summary}`);
+    }
+
+    const recentMessages = await this.conversationRepo.getRecentMessages(
+      sessionId,
+      maxHistoryMessages || 16,
+    );
+    if (recentMessages.length > 1) {
+      const historyText = recentMessages
+        .slice(0, -1)
+        .map(
+          (m) => `${m.role === 'user' ? 'Usuario' : 'JarBees'}: ${m.content}`,
+        )
+        .join('\n\n');
+      contextParts.push(
+        `### HILO DE LA CONVERSACIÓN PREVIO (CONTEXTO Y MEMORIA DE DIÁLOGO)\n` +
+          `Utilizá el siguiente historial de mensajes anteriores para mantener la coherencia, recordar chistes, datos y responder con exactitud a preguntas de seguimiento:\n\n${historyText}`,
       );
-      if (recentMessages.length > 1) {
-        const historyText = recentMessages
-          .slice(0, -1)
-          .map(
-            (m) => `${m.role === 'user' ? 'Usuario' : 'Jarvis'}: ${m.content}`,
-          )
-          .join('\n');
-        contextParts.push(`### HISTORIAL RECIENTE\n${historyText}`);
-      }
     }
 
     const webInstruction =

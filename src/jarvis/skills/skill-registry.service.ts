@@ -28,25 +28,38 @@ export class SkillRegistryService {
   }
 
   findRelevant(query: string, limit = 5): Skill[] {
+    const STOP_WORDS = new Set([
+      'que', 'del', 'los', 'las', 'por', 'para', 'con', 'una', 'uno', 'unos',
+      'unas', 'sin', 'mas', 'más', 'fue', 'son', 'ser', 'era', 'esto', 'esta',
+      'ese', 'esa', 'aqui', 'aquí', 'alla', 'allá', 'como', 'cómo', 'cuando',
+      'cuándo', 'donde', 'dónde', 'quien', 'quién', 'cual', 'cuál', 'bien',
+      'mal', 'muy', 'tan', 'hay', 'nos', 'les', 'sus', 'mis', 'tus', 'oye',
+      'hey', 'hola', 'chau', 'dime', 'dame', 'puedes', 'sabes', 'sabe',
+      'tienes', 'tienen', 'algo', 'nada', 'todo', 'entendi', 'entendí',
+      'entiendo', 'explicar', 'explica', 'hacer', 'decir', 'ver', 'dar',
+    ]);
+
     const terms = query
       .toLowerCase()
       .split(/\s+/)
-      .filter((term) => term.length >= 3);
+      .map((t) => t.replace(/[^a-záéíóúüñ]/g, ''))
+      .filter((term) => term.length >= 3 && !STOP_WORDS.has(term));
+
+    if (terms.length === 0) return [];
 
     const matched = this.skills
       .map((skill) => {
         const score = terms.reduce((acc, term) => {
-          if (skill.name.toLowerCase().includes(term)) return acc + 3;
-          if (skill.description.toLowerCase().includes(term)) return acc + 2;
+          if (skill.name.toLowerCase().includes(term)) return acc + 5;
           if (skill.keywords.some((kw) => kw.toLowerCase().includes(term)))
             return acc + 4;
-          if (skill.content.toLowerCase().includes(term)) return acc + 1;
+          if (skill.description.toLowerCase().includes(term)) return acc + 2;
           return acc;
         }, 0);
         const effectiveScore = score + (skill.priority ?? 0) / 10;
         return { skill, score: effectiveScore };
       })
-      .filter((item) => item.score > 0)
+      .filter((item) => item.score >= 3) // Requiere al menos una coincidencia real
       .sort(
         (a, b) =>
           b.score - a.score ||
