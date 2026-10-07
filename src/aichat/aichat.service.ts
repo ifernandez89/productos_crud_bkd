@@ -20,6 +20,7 @@ import { existsSync } from 'fs';
 import axios from 'axios';
 import { DateTime } from 'luxon';
 import { resolveOllamaModelName } from '../shared/ollama-config';
+import { normalizeDiscipline } from '../shared/disciplines';
 
 // ── Caché simple de productos para evitar DB roundtrip en cada mensaje ──────────
 interface ProductCache {
@@ -109,29 +110,24 @@ export class AichatService {
   }
 
   /**
-   * Construye el prompt estructurado { system, user } para Ollama.
-   * - system: rol + reglas estrictas (no cambia por pregunta → token cacheado)
-   * - user:   contexto RAG + pregunta del usuario
+   * Construye el prompt estructurado { system, user } para Ollama según la disciplina.
    */
   async promptAgente(
     texto: string,
     sessionId?: string,
+    explicitMode?: string,
   ): Promise<StructuredPrompt> {
-    const [products, preguntasRelevantes] = await Promise.all([
-      this.getProducts(),
-      this.preguntasRepository.findRelevant(texto, 3),
-    ]);
-
+    const discipline = normalizeDiscipline(explicitMode);
     const textoNorm = texto.toLowerCase();
     const esPreguntaProductos =
       /(producto|precio|stock|oferta|marca|comprar|recomendar|disponible|barato|caro|nuevo|descuento)/i.test(
         textoNorm,
       );
 
-    // ── Catálogo filtrado ─────────────────────────────────────────────────────
+    // ── Cargar productos solo si es relevante a productos ─────────────────────
     let catalogoTexto = '';
     if (esPreguntaProductos) {
-      // Intentar filtrar por marca o término mencionado en la pregunta
+      const products = await this.getProducts();
       const palabrasClave = textoNorm.split(/\s+/).filter((w) => w.length >= 4);
 
       let filtrados = products.filter((p) =>
@@ -142,7 +138,6 @@ export class AichatService {
         ),
       );
 
-      // Si no hay coincidencias específicas, usar los primeros 15 con stock
       if (filtrados.length === 0) {
         filtrados = products.filter((p) => p.stock > 0).slice(0, 15);
       }
@@ -159,18 +154,6 @@ export class AichatService {
         .join('\n');
     }
 
-    // ── Historial relevante ───────────────────────────────────────────────────
-    const historialTexto = preguntasRelevantes
-      .map((p) => {
-        // Truncar en el último espacio antes de los 250 chars (no cortar palabras)
-        const resp =
-          p.respuesta.length > 250
-            ? p.respuesta.slice(0, 250).replace(/\s\S+$/, '') + '…'
-            : p.respuesta;
-        return `Q: ${p.texto}\nA: ${resp}`;
-      })
-      .join('\n---\n');
-
     const now = DateTime.now()
       .setZone('America/Argentina/Buenos_Aires')
       .setLocale('es');
@@ -182,35 +165,56 @@ export class AichatService {
       .join('\n');
     const fechaActual = now.toFormat('yyyy-MM-dd');
     const horaActual = now.toFormat('HH:mm');
-    const ubicacionActual = 'Paraná, Entre Ríos';
     const metadata = JSON.stringify({
       fecha_actual: fechaActual,
       hora: horaActual,
-      ubicacion: ubicacionActual,
     });
     const fechaTexto = now.toFormat("dd 'de' LLLL 'de' yyyy");
 
-    // ── System prompt (rol + reglas) ──────────────────────────────────────────
-    const system = [
-      metadata,
-      `Hoy es ${fechaTexto}. Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.`,
-      'Eres un asistente conversacional general, basado en el modelo Ollama. Respondés siempre en español, de forma clara y directa.',
-      'Reglas:',
-      '1. Si la pregunta es sobre productos, usá solo el catálogo provisto. Para otras preguntas, contestá con la información general que tengas disponible.',
-      '2. Si el historial tiene una respuesta relevante, tomala como referencia.',
-      '3. No inventes datos. Si no tenés la información, decilo claramente.',
-      '4. Si te preguntan por la fecha o el día actual, usá la fecha actual provista en el prompt y no inventes otra fecha.',
-      '5. Nunca incluyas en tu respuesta frases como "Según el contexto" o "De acuerdo al historial".',
-      '6. Respondé en máximo 3 oraciones a menos que se pidan detalles.',
-      '7. Si el usuario pregunta por tu identidad, decí que sos un asistente de chat inteligente impulsado por el modelo Ollama, orientado a brindar información y ayuda general.',
-    ].join('\n');
+    // ── System prompt personalizado por disciplina ───────────────────────────
+    let system = '';
+
+    if (discipline === 'coder') {
+      system = [
+        metadata,
+        'Eres un Desarrollador Senior y Arquitecto de Software Experto impulsado por Qwen2.5-Coder.',
+        'Responde siempre con código limpio, bien tipado y explicaciones técnicas claras.',
+        'Genera ejemplos prácticos y enfocados a producción en TypeScript, Python, SQL u otros lenguajes según se requiera.',
+      ].join('\n');
+    } else if (discipline === 'traductor') {
+      system = [
+        'Eres un Traductor Profesional Especializado.',
+        'Traduce el contenido de manera precisa y fluida conservando el formato y la terminología.',
+        'Devuelve únicamente la traducción limpia, sin preámbulos.',
+      ].join('\n');
+    } else if (discipline === 'reader') {
+      system = [
+        metadata,
+        'Eres un Asistente de Lectura y Síntesis de Texto para TTS.',
+        'Prepara el texto con buena cadencia, puntuación y claridad para ser narrado o leído en voz alta.',
+      ].join('\n');
+    } else if (discipline === 'ocr') {
+      system = [
+        'Eres un Especialista en Procesamiento de Documentos y OCR.',
+        'Extrae y resume la información estructurada de documentos de manera concisa y exacta.',
+      ].join('\n');
+    } else {
+      // Chatbot general / Auto
+      system = [
+        metadata,
+        `Hoy es ${fechaTexto}.`,
+        'Eres un asistente conversacional inteligente, empático y versátil impulsado por Qwen2.5.',
+        'Respondés siempre en español de forma natural, clara y tan detallada como el usuario lo solicite.',
+        'Directrices:',
+        '1. Si te preguntan sobre productos, utilizá el catálogo provisto.',
+        '2. Para consultas generales, razonamiento cotidiano o asistencia, brindá respuestas completas y fluidas sin limitaciones artificiales.',
+        '3. Si no sabés algo, indicalo honestamente sin inventar datos.',
+      ].join('\n');
+    }
 
     // ── User prompt (contexto + pregunta) ────────────────────────────────────
     const contextBlocks: string[] = [];
 
-    if (historialTexto) {
-      contextBlocks.push(`### HISTORIAL RELEVANTE\n${historialTexto}`);
-    }
     if (sessionHistoryText) {
       contextBlocks.push(`### HILO DE LA CONVERSACIÓN\n${sessionHistoryText}`);
     }
@@ -219,7 +223,7 @@ export class AichatService {
     }
 
     const user = contextBlocks.length
-      ? `${contextBlocks.join('\n\n')}\n\n### PREGUNTA\n${texto}`
+      ? `${contextBlocks.join('\n\n')}\n\n### MENSAJE\n${texto}`
       : texto;
 
     return { system, user };
@@ -234,7 +238,12 @@ export class AichatService {
       latitude,
       longitude,
       sessionId,
+      mode,
+      discipline,
+      specialist,
     } = createAichatDto;
+
+    const selectedMode = mode || discipline || specialist;
 
     // ── Detectar comandos especiales para repetir el último mensaje ─────────────
     if (this.isRepeatCommand(texto)) {
@@ -244,9 +253,6 @@ export class AichatService {
           HttpStatus.BAD_REQUEST,
         );
       }
-      this.logger.log(
-        `Comando de repetición detectado. Devolviendo: ${this.lastAssistantMessage.slice(0, 50)}...`,
-      );
       return this.lastAssistantMessage;
     }
 
@@ -258,27 +264,32 @@ export class AichatService {
     while (attempts < maxAttempts) {
       attempts++;
       try {
-        const toolAnswer = await this.assistantTools.resolve(texto, {
-          latitude,
-          longitude,
-        });
-        if (toolAnswer) {
-          const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
-          const finalAnswerWithModelNotice = this.formatAnswerWithModelNotice(
-            finalToolAnswer,
-            this.getActiveModelName(),
-          );
-          this.rememberSessionPair(
-            sessionId,
-            texto,
-            finalAnswerWithModelNotice,
-          );
-          this.lastAssistantMessage = finalAnswerWithModelNotice;
-          await this.persistSuccessfulQuestion(
-            texto,
-            finalAnswerWithModelNotice,
-          );
-          return finalAnswerWithModelNotice;
+        // Si no es un modo especializado que requiere LLM directo, revisar tools
+        const normalized = normalizeDiscipline(selectedMode);
+        if (normalized === 'auto' || normalized === 'tools' || normalized === 'chatbot') {
+          const toolAnswer = await this.assistantTools.resolve(texto, {
+            latitude,
+            longitude,
+          });
+          if (toolAnswer) {
+            const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
+            const activeModel = this.getActiveModelName();
+            const finalAnswerWithNotice = this.formatAnswerWithModelNotice(
+              finalToolAnswer,
+              activeModel,
+            );
+            this.rememberSessionPair(
+              sessionId,
+              texto,
+              finalAnswerWithNotice,
+            );
+            this.lastAssistantMessage = finalAnswerWithNotice;
+            await this.persistSuccessfulQuestion(
+              texto,
+              finalAnswerWithNotice,
+            );
+            return finalAnswerWithNotice;
+          }
         }
 
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -289,20 +300,13 @@ export class AichatService {
 
         let taskPromise: Promise<string>;
         if (agente) {
-          console.log('Ejecución con agente');
-          this.logger.log('Ejecución con agente');
-          const prompt = await this.promptAgente(texto, sessionId);
-          // External AI recibe el prompt como string plano concatenado
+          this.logger.log('Ejecución con agente externo');
+          const prompt = await this.promptAgente(texto, sessionId, selectedMode);
           const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
           taskPromise = this.callExternalAI(textoParaIA);
         } else {
-          console.log(
-            'Ejecución modelo local con Ollama: ',
-            this.getActiveModelName(),
-          );
-          this.logger.log('Ejecución modelo local con Ollama');
-          const prompt = await this.promptAgente(texto, sessionId);
-          taskPromise = this.callOllamaModel(prompt, texto);
+          const prompt = await this.promptAgente(texto, sessionId, selectedMode);
+          taskPromise = this.callOllamaModel(prompt, texto, selectedMode);
         }
         respuesta = (await Promise.race([
           taskPromise,
@@ -435,29 +439,21 @@ export class AichatService {
   private async callOllamaModel(
     prompt: StructuredPrompt,
     preguntaOriginal: string,
+    explicitMode?: string,
   ): Promise<string> {
-    // 🔀 Router inteligente: elige modelo según el contenido
-    const routing = this.modelRouter.routeToModel(preguntaOriginal);
-    const modelToUse = routing.model;
-
+    // 🔀 Specialist Router: elige modelo según el selector explícito o el contenido
+    const routing = this.modelRouter.routeToModel(preguntaOriginal, explicitMode);
     this.modelRouter.logRouting(routing, preguntaOriginal);
 
-    // Seleccionar el modelo correcto
     let model: OllamaModelService;
-    if (modelToUse === 'qwen3:4b' && this.qwenModel) {
-      this.logger.log('🧠 Usando Qwen3:4b (Experto Técnico)');
+    if (routing.discipline === 'coder' && this.qwenModel) {
+      this.logger.log(`💻 Invocando Coder (${routing.model})`);
       model = this.qwenModel;
     } else {
-      if (modelToUse === 'qwen3:4b' && !this.qwenModel) {
-        this.logger.warn(
-          '⚠️ Qwen3:4b no disponible, usando fallback llama3.2:3b',
-        );
-      }
-      this.logger.log('🧠 Usando Llama3.2:3b (General)');
+      this.logger.log(`💬 Invocando Chatbot (${routing.model})`);
       model = this.ollamaModel;
     }
 
-    // Invocar el modelo seleccionado
     const aiMessageChunk = await model.invokeWithMessages(prompt);
     const content =
       typeof aiMessageChunk.content === 'string'
@@ -468,12 +464,11 @@ export class AichatService {
               .join(' ')
           : 'Sin respuesta';
 
-    const modelName = this.getActiveModelName();
-    return this.formatAnswerWithModelNotice(content, modelName);
+    return this.formatAnswerWithModelNotice(content, routing.model);
   }
 
   private getActiveModelName(): string {
-    return resolveOllamaModelName('llama3.2:3b');
+    return resolveOllamaModelName('qwen2.5:7b');
   }
 
   private formatAnswerWithModelNotice(

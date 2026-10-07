@@ -5,26 +5,11 @@ import {
   IModelService,
   AIMessageResponse,
 } from '../interfaces/model.interface';
-import { resolveTechModel } from '../../shared/ollama-config';
+import { resolveCoderModel } from '../../shared/ollama-config';
 
 export interface StructuredPrompt {
   system: string;
   user: string;
-}
-
-/**
- * Configuración del Modelo Qwen3:4b como Experto Técnico
- * Especializado en desarrollo de software y arquitectura
- */
-export interface QwenTechExpertConfig {
-  model: 'qwen3:4b';
-  temperature: 0.2;
-  topK: 5;
-  chunkSize: number; // 800-1200
-  chunkOverlap: number; // 150-250
-  embeddingModel: 'bge-m3' | 'nomic-embed-text';
-  reranker: boolean; // false por ahora
-  domains: string[]; // NestJS, PostgreSQL, SQL, Drizzle, Alfresco, etc.
 }
 
 @Injectable()
@@ -33,37 +18,23 @@ export class OllamaQwenModelService implements IModelService {
   private model: ChatOllama | null = null;
 
   /**
-   * Sistema de prompt para Experto Técnico
-   * Reduce alucinaciones con enfoque determinista
+   * Sistema de prompt para Especialista en Código / Programación
    */
-  private readonly TECH_EXPERT_SYSTEM_PROMPT = `Eres un Experto Técnico especializado en desarrollo de software.
+  private readonly TECH_EXPERT_SYSTEM_PROMPT = `Eres un Desarrollador Senior y Arquitecto de Software Experto impulsado por Qwen2.5-Coder.
 
-DOMINIOS DE EXPERTISE:
-- NestJS (Framework & Best Practices)
-- PostgreSQL (SQL avanzado, optimización)
-- Drizzle ORM (Type-safe database)
-- LangChain (Integración IA)
-- pgvector (Búsqueda vectorial)
-- Ollama (LLMs locales)
-- Alfresco (Gestión de contenido empresarial)
-- Arquitectura de software
+HABILIDADES PRINCIPALES:
+- Programación moderna (TypeScript, JavaScript, Python, Rust, Go, SQL, C#, etc.)
+- Frameworks backend y frontend (NestJS, Express, Fastify, React, Next.js, Vue, Angular)
+- Bases de datos y persistencia (PostgreSQL, Drizzle, Prisma, TypeORM, pgvector, Redis)
+- Arquitectura de software, patrones de diseño (SOLID, Clean Architecture, DDD)
+- Debugging, resolución de bugs, refactorización y optimización de rendimiento
+- Pruebas automatizadas (Jest, Supertest, Playwright, Vitest)
 
-DOCUMENTACIÓN BASE:
-- NestJS Official Docs
-- Drizzle ORM Docs
-- PostgreSQL Docs
-- LangChain Docs
-- pgvector Docs
-- Ollama Docs
-- Alfresco Docs
-
-COMPORTAMIENTO:
-- Responde con precisión técnica
-- Evita "alucinaciones": si no sabes, di "No tengo información sobre esto"
-- Proporciona ejemplos de código cuando sea relevante
-- Analiza stacktraces detalladamente
-- Genera código siguiendo best practices
-- Enfoque en soluciones producción-ready`;
+DIRECTRICES DE RESPUESTA:
+1. Responde de forma clara, directa y técnicamente precisa.
+2. Proporciona ejemplos de código completos, limpios y tipados estrictamente (TypeScript/Python/SQL).
+3. Si el usuario te pide resolver un error o bug, analiza la causa raíz y explica la solución paso a paso.
+4. No te limites innecesariamente en la extensión si la explicación técnica o el código lo requieren.`;
 
   async getModel(): Promise<ChatOllama> {
     if (!this.model) {
@@ -83,8 +54,6 @@ COMPORTAMIENTO:
 
   /**
    * Invocación con mensajes estructurados.
-   * Separar System de Human mejora considerablemente la calidad
-   * en qwen3:4b y modelos instrucción-tuneados.
    */
   async invokeWithMessages(
     prompt: StructuredPrompt,
@@ -102,31 +71,21 @@ COMPORTAMIENTO:
   }
 
   private async create(): Promise<void> {
-    /**
-     * CONFIGURACIÓN: Qwen3:4b como Experto Técnico
-     *
-     * Parámetros de RAG (Retrieval-Augmented Generation):
-     * - Chunk size: 1000 (rango 800-1200)
-     * - Chunk overlap: 200 (rango 150-250)
-     * - Embedding model: bge-m3 (recomendado para documents técnicos)
-     * - Top K: 5 (documentos más relevantes)
-     * - Reranker: deshabilitado (para futuro)
-     */
+    const modelName = resolveCoderModel('qwen2.5-coder:7b');
     this.model = new ChatOllama({
       baseUrl: 'http://localhost:11434',
-      model: resolveTechModel('qwen3:1.7b'), // OLLAMA_MODEL_TEST3_NAME en .env (qwen3:1.7b por defecto)
-      temperature: 0.10, // Recomendado JarBees general: 0.10 para menor alucinación
+      model: modelName,
+      temperature: 0.10, // Código determinista
       topP: 0.85,
       topK: 20,
-      numPredict: 512,
+      numPredict: 2048, // Permitir código completo sin truncamiento artificial
       repeatPenalty: 1.10,
       numCtx: 8192,
-      stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:', '---'],
     });
 
     this.logger.log(
-      `🔧 Tech Expert Model initialized: ${resolveTechModel('qwen3:1.7b')} | ` +
-        'Qwen3:1.7B Base Profile: temp=0.10, topK=20, topP=0.85, repeatPenalty=1.10, ctx=8192, predict=512',
+      `💻 Coder Expert Model initialized: ${modelName} | temp=0.10, ctx=8192, predict=2048`,
     );
   }
 }
+

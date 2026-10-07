@@ -44,6 +44,7 @@ export interface JarvisQueryOptions {
   useDocuments?: boolean;
   maxHistoryMessages?: number;
   provider?: 'ollama' | 'openrouter';
+  mode?: string;
 }
 
 @Injectable()

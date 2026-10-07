@@ -34,6 +34,7 @@ import { AuditService } from './security/audit.service';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
+import { getAvailableDisciplines } from '../shared/disciplines';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -94,24 +95,40 @@ export class JarvisController {
     return { sessionId, messages };
   }
 
+  @Public()
+  @Get('disciplines')
+  @ApiOperation({
+    summary: 'Listar disciplinas y especialistas disponibles para JarBees',
+  })
+  getDisciplines() {
+    return {
+      success: true,
+      disciplines: getAvailableDisciplines(),
+    };
+  }
+
   // ── Query principal ─────────────────────────────────────────────────────────
 
   @Public()
   @Post('query')
-  @ApiOperation({ summary: 'Consultar a Jarvis' })
+  @ApiOperation({ summary: 'Consultar a Jarvis con selector de especialista opcional' })
   async query(
     @Body()
     body: {
       message: string;
       sessionId?: string;
       provider?: 'ollama' | 'openrouter';
+      mode?: string;
+      discipline?: string;
+      specialist?: string;
     },
   ) {
     const answer = await this.jarvisService.query(body.message, {
       sessionId: body.sessionId,
       provider: body.provider,
+      mode: body.mode || body.discipline || body.specialist,
     });
-    return { answer, sessionId: body.sessionId };
+    return { answer, sessionId: body.sessionId, mode: body.mode || body.discipline };
   }
 
   // ── Feedback ────────────────────────────────────────────────────────────────

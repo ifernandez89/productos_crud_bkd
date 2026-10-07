@@ -53,4 +53,31 @@ export class CreateAichatDto {
   @IsString()
   @IsOptional()
   sessionId?: string;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'Disciplina o especialista seleccionado por el frontend (ej: chatbot, coder, traductor, reader, ocr, video, rag, auto)',
+    example: 'coder',
+  })
+  @IsString()
+  @IsOptional()
+  mode?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Alias de mode (ej: coder, chatbot, traductor, reader, ocr)',
+  })
+  @IsString()
+  @IsOptional()
+  discipline?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Alias de mode para compatibilidad',
+  })
+  @IsString()
+  @IsOptional()
+  specialist?: string;
 }
+

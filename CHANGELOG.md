@@ -6,6 +6,30 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Arquitectura Modular por Disciplinas & Selector de Especialistas (2026-10-07)
+
+- **🎛️ Catálogo de Especialistas & Disciplinas ([`src/shared/disciplines.ts`](file:///c:/Projects/productos_crud_bkd/src/shared/disciplines.ts))**: Separación formal y desacoplada de capacidades para la UI:
+  - 💬 `chatbot`: Conversación fluida y razonamiento cotidiano con `qwen2.5:7b` (sin restricciones forzadas de catálogo ni límites de 3 oraciones).
+  - 💻 `coder`: Programación, debugging y arquitectura con `qwen2.5-coder:7b`.
+  - 🌐 `traductor`: Traducción especializada y liviana con `RogerBen/hy-mt1.5-1.8b:latest`.
+  - 🎙️ `reader`: Lectura en voz alta de PDFs/libros y TTS con `sematre/orpheus:it_es-3b`.
+  - 📄 `ocr` / `docs`: OCR, extracción y resumen de documentos con `qwen2.5-vl-3b`.
+  - 🎬 `video`: Análisis de frames y descripción multimedia.
+  - 🔎 `rag`: Recuperación y búsqueda vectorial con `bge-m3`.
+  - 🧠 `planner`: Descomposición y orquestación multi-paso de planes JarBees.
+  - 🛠️ `tools`: Procedimientos y acciones del sistema (Google Workspace, clima, web).
+  - 🧭 `auto`: Enrutamiento inteligente automático por modelo pequeño / heurística.
+- **🔌 Endpoints para Selector Frontend**:
+  - `GET /aichat/disciplines` y `GET /jarbees/disciplines`: Exponen el listado estructurado de especialistas con iconos, categorías, modelos y descripciones.
+  - `POST /aichat/preguntar` y `POST /jarbees/query`: Soporte para campo `mode` / `discipline` / `specialist`, permitiendo al frontend etiquetar directamente la intención antes de procesar la respuesta.
+- **🔀 Desacoplamiento de Prompts y Router**: Refactorización de `ModelRouterService` y `AichatService` para eliminar reglas rígidas que restringían las respuestas conversacionales generales.
+
+### Added — Integración y Configuración del Modelo Coder `qwen2.5-coder:7b` (2026-10-07)
+
+- **💻 Modelo Especializado Coder `qwen2.5-coder:7b`**: Configuración de `qwen2.5-coder:7b` como motor de programación, análisis técnico y generación de código en `.env` (`OLLAMA_CODER_MODEL` y `OLLAMA_MODEL_TEST3_NAME`) y `.env.example`.
+- **🔧 Actualización de Resolvers de Modelos (`src/shared/ollama-config.ts`)**: Soporte formal y exportación de `resolveCoderModel` y `resolveTechModel` para leer prioritariamente `OLLAMA_CODER_MODEL` con fallback automático.
+- **⚡ Validación y Benchmarking**: Ejecución de prueba de generación de código TypeScript tipado estricto con inferencia acelerada por GPU a **114.1 tokens/segundo** (~4.7s) con 0 alucinaciones.
+
 ### Added — Integración de Qwen 2.5 7B & Aceleración GPU RTX 5070 (2026-10-06)
 
 - **🤖 Motor LLM Principal `qwen2.5:7b`**: Descarga y configuración de `qwen2.5:7b` en Ollama como motor estándar para el chatbot conversacional y asistente técnico (`OLLAMA_MODEL_NAME` y `OLLAMA_MODEL_TEST3_NAME`).

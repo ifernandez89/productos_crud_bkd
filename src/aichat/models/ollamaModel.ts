@@ -53,18 +53,18 @@ export class OllamaModelService implements IModelService {
   }
 
   private async create(): Promise<void> {
+    const modelName = resolveOllamaModelName('qwen2.5:7b');
     this.model = new ChatOllama({
-      model: resolveOllamaModelName('qwen3:1.7b'),
-      temperature: 0.10, // Recomendado general: alta precisión, resp. deterministas, menor alucinación
-      topP: 0.85, // Diversidad controlada
-      topK: 20, // Limita opciones del modelo
-      numPredict: 512, // Longitud de respuesta estándar
-      repeatPenalty: 1.10, // Evita repeticiones
-      numCtx: 8192, // Context window recomendado
-      stop: ['\n\n\n', 'User:', 'Pregunta:', 'Q:', 'Human:', 'Usuario:'],
+      model: modelName,
+      temperature: 0.20, // Conversación natural
+      topP: 0.85,
+      topK: 20,
+      numPredict: 1024,
+      repeatPenalty: 1.10,
+      numCtx: 8192,
     });
     this.logger.log(
-      'Ollama model initialized (Qwen3:1.7B base profile: temp=0.10, topK=20, topP=0.85, repeatPenalty=1.10, ctx=8192, predict=512)',
+      `💬 Chatbot Model initialized: ${modelName} | temp=0.20, ctx=8192, predict=1024`,
     );
   }
 }

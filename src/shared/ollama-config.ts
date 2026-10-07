@@ -91,12 +91,22 @@ export function resolveIntentModel(defaultModel = 'llama3.2:3b'): string {
 }
 
 /**
- * Modelo técnico / experto — OLLAMA_MODEL_TEST3_NAME
- * Caso de uso: OllamaQwenModelService, tareas de código y análisis (qwen3:1.7b)
+ * Modelo técnico / experto / programador (Coder) — OLLAMA_CODER_MODEL o OLLAMA_MODEL_TEST3_NAME
+ * Caso de uso: OllamaQwenModelService, tareas de código, refactorización y análisis técnico
  */
-export function resolveTechModel(defaultModel = 'qwen3:1.7b'): string {
-  return process.env.OLLAMA_MODEL_TEST3_NAME?.trim() || defaultModel;
+export function resolveTechModel(defaultModel = 'qwen2.5-coder:7b'): string {
+  const configured = [
+    process.env.OLLAMA_CODER_MODEL,
+    process.env.OLLAMA_MODEL_CODER,
+    process.env.OLLAMA_MODEL_TEST3_NAME,
+  ]
+    .map((v) => v?.trim())
+    .find(Boolean);
+
+  return configured || defaultModel;
 }
+
+export const resolveCoderModel = resolveTechModel;
 
 /**
  * Modelo multimodal / visión — OLLAMA_MODEL_VL_NAME
@@ -107,4 +117,39 @@ export function resolveVisionModel(
 ): string {
   return process.env.OLLAMA_MODEL_VL_NAME?.trim() || defaultModel;
 }
+
+/**
+ * Modelo de traducción rápida / especializada — OLLAMA_TRADUCTOR_MODEL
+ * Caso de uso: Traductor rápido sin sobrecargar un 7B
+ */
+export function resolveTranslatorModel(
+  defaultModel = 'RogerBen/hy-mt1.5-1.8b:latest',
+): string {
+  return (
+    process.env.OLLAMA_TRADUCTOR_MODEL?.trim() ||
+    process.env.OLLAMA_MODEL_TEST4_NAME?.trim() ||
+    defaultModel
+  );
+}
+
+/**
+ * Modelo de voz / TTS / Lector — OLLAMA_LECTOR_MODEL o OLLAMA_TTS_MODEL
+ */
+export function resolveTTSModel(
+  defaultModel = 'sematre/orpheus:it_es-3b',
+): string {
+  return (
+    process.env.OLLAMA_LECTOR_MODEL?.trim() ||
+    process.env.OLLAMA_TTS_MODEL?.trim() ||
+    defaultModel
+  );
+}
+
+/**
+ * Modelo de embeddings vectorial — OLLAMA_EMBEDDING_MODEL
+ */
+export function resolveEmbeddingModel(defaultModel = 'bge-m3:latest'): string {
+  return process.env.OLLAMA_EMBEDDING_MODEL?.trim() || defaultModel;
+}
+
 

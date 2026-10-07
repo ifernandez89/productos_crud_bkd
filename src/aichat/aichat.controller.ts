@@ -17,6 +17,8 @@ import { ConverterService } from './utils/converter.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/public.decorator';
 
+import { getAvailableDisciplines } from '../shared/disciplines';
+
 @ApiTags('aichat')
 @Controller('aichat')
 export class AichatController {
@@ -24,6 +26,27 @@ export class AichatController {
     private readonly aichatService: AichatService,
     private readonly converter: ConverterService,
   ) {}
+
+  @Public()
+  @Get('disciplines')
+  @ApiOperation({
+    summary: 'Listar disciplinas y especialistas disponibles para el selector del frontend',
+    description:
+      'Retorna el catálogo de especialistas (chatbot, coder, traductor, reader, ocr, video, rag, planner, tools, auto) con sus modelos y metadatos.',
+  })
+  getDisciplines() {
+    return {
+      success: true,
+      disciplines: getAvailableDisciplines(),
+    };
+  }
+
+  @Public()
+  @Get('specialists')
+  @ApiOperation({ summary: 'Alias de disciplines' })
+  getSpecialists() {
+    return this.getDisciplines();
+  }
 
   @Public()
   @Post('preguntar')
