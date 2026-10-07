@@ -101,7 +101,7 @@ model MemoryChunk {
   memoryId    Int
   content     String
   embeddingId String? // legacy: referencia a vector store externo
-  embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
+  // embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
   memory      Memory                       @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@index([memoryId])
@@ -230,7 +230,7 @@ model Chunk {
   sectionId   Int? // Relación opcional para jerarquía y embeddings perezosos
   content     String
   embeddingId String? // legacy: referencia a vector store externo
-  embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
+  // embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
   metadata    String? // JSON serializado: { page, section, language, etc }
   document    Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
   section     Section?                     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
@@ -246,7 +246,7 @@ model Chapter {
   title      String
   order      Int
   summary    String? // Resumen individual de este capítulo
-  embedding  Unsupported("vector(1024)")? // Embedding macro de la temática del capítulo
+  // embedding  Unsupported("vector(1024)")? // Embedding macro de la temática del capítulo
   sections   Section[]
   document   Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
@@ -258,7 +258,7 @@ model Section {
   chapterId Int
   title     String
   summary   String?
-  embedding Unsupported("vector(1024)")?
+  // embedding Unsupported("vector(1024)")?
   chunks    Chunk[]
   chapter   Chapter                      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 

@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Migración de Base de Datos JarBees Data & Configuración Ngrok Tunnel (2026-10-06)
+
+- **🗄️ Migración de Base de Datos a `jarbees_data`**: Configuración y sincronización del catálogo `jarbees_data` en PostgreSQL 18 local vía Prisma (`db push` y generación de cliente v6.19.3), verificando la integridad de todas las tablas y relaciones del sistema (productos, usuarios, memoria, documentos y observabilidad).
+- **🧩 Compatibilidad de Esquema Prisma (`prisma/schema.prisma`)**: Adecuación temporal de columnas vectoriales para entornos PostgreSQL sin extensión `pgvector` nativa instalada, preservando la trazabilidad de embeddings con `embeddingId String?`.
+- **🌐 Entorno Ngrok y Acceso Global**: Instalación y actualización global del agente `ngrok v3.39.11` en PATH (`~/.bun/bin`), registro de authtoken de cuenta y soporte para inicio conjunto (`start:ngrok`) con túnel seguro y validación OAuth.
+
 ### Added — Motor Traductor Universal: Traducción de Subtítulos SRT con Tiempos Exactos, Caché Incremental y Codificación ANSI (2026-08-20)
 
 - **🎬 Traducción Universal de Subtítulos SRT (`scratch/translate_srt_brassed_off.ts`)**: Ampliación del motor traductor local para soportar subtítulos multilingües en formato `.srt`. Garantiza conservación del 100% de los índices y estampas de tiempo originales (`00:00:00,000 --> 00:00:00,000`), reemplazando únicamente el contenido textual por su traducción al español fluido.
