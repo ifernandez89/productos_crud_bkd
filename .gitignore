@@ -20,6 +20,7 @@ lerna-debug.log*
 /.nyc_output
 
 docs/libros/
+docs/books/
 
 # IDEs and editors
 /.idea
