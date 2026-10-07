@@ -6,6 +6,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Integración de Qwen 2.5 7B & Aceleración GPU RTX 5070 (2026-10-06)
+
+- **🤖 Motor LLM Principal `qwen2.5:7b`**: Descarga y configuración de `qwen2.5:7b` en Ollama como motor estándar para el chatbot conversacional y asistente técnico (`OLLAMA_MODEL_NAME` y `OLLAMA_MODEL_TEST3_NAME`).
+- **⚡ Aceleración Nativa 100% GPU (RTX 5070 12GB)**: Validación exitosa de offload completo en VRAM con tiempos de respuesta de ~0.50s y tasa de generación de **117.1 tokens/segundo** en inferencia local sin contención de memoria.
+- **📄 Sincronización de Entorno (.env & .env.example)**: Actualización de variables de modelo predeterminado para el chatbot y RAG en la configuración del proyecto.
+
 ### Added — Migración de Base de Datos JarBees Data & Configuración Ngrok Tunnel (2026-10-06)
 
 - **🗄️ Migración de Base de Datos a `jarbees_data`**: Configuración y sincronización del catálogo `jarbees_data` en PostgreSQL 18 local vía Prisma (`db push` y generación de cliente v6.19.3), verificando la integridad de todas las tablas y relaciones del sistema (productos, usuarios, memoria, documentos y observabilidad).
