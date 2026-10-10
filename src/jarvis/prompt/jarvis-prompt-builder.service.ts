@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { UserProfileRepository } from '../repositories/user-profile.repository';
 import { JarvisIdentityService } from '../config/jarvis-identity.service';
 import { CapabilitiesService } from '../config/capabilities.service';
@@ -14,6 +14,7 @@ import { EmbeddingsService } from '../library/embeddings.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
+import { DisciplinesCatalogService } from '../knowledge/disciplines-catalog.service';
 
 @Injectable()
 export class JarvisPromptBuilderService {
@@ -35,6 +36,8 @@ export class JarvisPromptBuilderService {
     private readonly corpusSelector: CorpusSelectorService,
     private readonly musicCatalog: MusicCatalogService,
     private readonly gamesCatalog: GamesCatalogService,
+    @Optional()
+    private readonly disciplinesCatalog?: DisciplinesCatalogService,
   ) {}
 
   async buildJarvisContext(
@@ -162,6 +165,13 @@ export class JarvisPromptBuilderService {
       contextParts.push(gamesCtx);
     }
 
+    // ── Disciplines Panoramic Context (Ciencia, Astrología, Física, etc.) ─────
+    const disciplineCtx =
+      this.disciplinesCatalog?.formatContextForQuery(userMessage);
+    if (disciplineCtx) {
+      contextParts.push(disciplineCtx);
+    }
+
     // Incluir skills solo si no es un modo puramente conversacional
     if (!isChatbotMode && relevantSkills.length > 0) {
       const skillText = relevantSkills
@@ -184,7 +194,10 @@ export class JarvisPromptBuilderService {
     }
 
     // RAG de documentos
-    if (useDocuments) {
+    const isDisciplinePanoramic =
+      this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
+
+    if (useDocuments && !isDisciplinePanoramic) {
       const docSummary = await this.detectDocumentSummaryRequest(userMessage);
 
       if (docSummary.isRequest && docSummary.title) {
@@ -361,12 +374,16 @@ export class JarvisPromptBuilderService {
         ? `\n\n📌 INSTRUCCIÓN DE RESUMEN DE DOCUMENTO: El usuario solicitó/mencionó la obra "${requestedDocTitle}". Presentá una respuesta clara, directa y estructurada que sintetice la obra, detallando su resumen ejecutivo, sus puntos clave principales y los ejes o capítulos conceptuales más importantes basándote en la información estructurada provista arriba.`
         : '';
 
+    const disciplineInstruction = isDisciplinePanoramic
+      ? '\n\n💡 INSTRUCCIÓN DE CONSULTA PANORÁMICA: Brindá una respuesta panorámica, reflexiva, erudita y estructurada del campo del saber consultado, siguiendo las directrices del marco provisto arriba. Respondé con calidez y estilo JARVIS e invitá a elegir qué vertiente profundizar.'
+      : '';
+
     const languageReminder =
       '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA DE IDIOMA: Respondé 100% EN ESPAÑOL (es-AR). Aunque los fragmentos de la biblioteca o la web presentados arriba estén en inglés u otro idioma, DEBES TRADUCIR TODO Y RESPONDER EN ESPAÑOL. Está PROHIBIDO responder en inglés.';
 
     const userPrompt =
       contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}${languageReminder}`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}${disciplineInstruction}${languageReminder}`
         : userMessage;
 
     return { systemPrompt, userPrompt, usedMemory, usedDocs };

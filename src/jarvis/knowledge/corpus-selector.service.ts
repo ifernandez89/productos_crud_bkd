@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DocumentIngestService } from '../library/document-ingest.service';
 import { DocumentRepository } from '../repositories/document.repository';
+import { DisciplinesCatalogService } from './disciplines-catalog.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -236,6 +237,11 @@ export class CorpusSelectorService {
     'library-index.json',
   );
 
+  constructor(
+    @Optional()
+    private readonly disciplinesCatalog?: DisciplinesCatalogService,
+  ) {}
+
   // ── Carga del índice ────────────────────────────────────────────────────────
 
   getIndex(): LibraryIndex {
@@ -281,6 +287,16 @@ export class CorpusSelectorService {
   findRelevantDocuments(query: string, topK = 3): CorpusMatch[] {
     const index = this.getIndex();
     if (index.documentos.length === 0) return [];
+
+    // 🛡️ GUARD ANTI-SECUESTRO: Si la consulta es una pregunta abierta/panorámica sobre una disciplina
+    // (ej: "Y si te pregunto sobre ciencia...", "qué opinas de la astrología", "hablemos de física"),
+    // NO debe vincularse a un documento monográfico aislado de la biblioteca.
+    if (this.disciplinesCatalog?.isDisciplinePanoramicQuery(query)) {
+      this.logger.log(
+        `[corpus:skip] Consulta panorámica de disciplina detectada ("${query.slice(0, 60)}"). Omitiendo match con biblioteca local.`,
+      );
+      return [];
+    }
 
     const queryTerms = this.tokenize(query);
     const scored: CorpusMatch[] = [];

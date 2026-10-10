@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import axios from 'axios';
 import { resolveIntentModel } from '../../../shared/ollama-config';
+import { DisciplinesCatalogService } from '../../knowledge/disciplines-catalog.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,11 @@ export class IntentRouterService {
   // Ollama URL para clasificación rápida (llamada directa, sin LangChain overhead)
   private readonly OLLAMA_URL = 'http://localhost:11434/api/generate';
   private readonly CLASSIFIER_MODEL = resolveIntentModel();
+
+  constructor(
+    @Optional()
+    private readonly disciplinesCatalog?: DisciplinesCatalogService,
+  ) {}
 
   // ── API pública ─────────────────────────────────────────────────────────────
 
@@ -261,6 +267,21 @@ export class IntentRouterService {
       /(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)
     ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'calendar tool' };
+    }
+
+    // ── CONSULTAS PANORÁMICAS DE DISCIPLINAS (Ciencia, Astrología, Física, etc.) ──
+    // Deben ir ANTES de ASTROLOGY y RAG para evitar secuestro por herramientas en tiempo real
+    // (ej: AstrologyTool) o fragmentos aislados de la biblioteca.
+    if (this.disciplinesCatalog) {
+      const disciplineMatch =
+        this.disciplinesCatalog.detectDisciplineQuery(classifyText);
+      if (disciplineMatch) {
+        return {
+          intent: 'LOCAL',
+          confidence: 'high',
+          reason: `panoramic discipline query: ${disciplineMatch.key}`,
+        };
+      }
     }
 
     // ── ASTROLOGY — DEBE ir ANTES del bloque WEB para que "hoy"/"esta noche" no sean capturados ──

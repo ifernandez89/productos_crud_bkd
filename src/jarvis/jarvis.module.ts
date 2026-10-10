@@ -65,6 +65,7 @@ import { CognitiveModule } from './cognitive/cognitive.module';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { MusicCatalogService } from './knowledge/music-catalog.service';
 import { GamesCatalogService } from './knowledge/games-catalog.service';
+import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -135,6 +136,8 @@ import { GamesCatalogService } from './knowledge/games-catalog.service';
     MusicCatalogService,
     // ── Games Catalog & Knowledge ──────────────────────────────────────────
     GamesCatalogService,
+    // ── Disciplines Catalog & Knowledge ────────────────────────────────────
+    DisciplinesCatalogService,
   ],
   exports: [
     JarvisService,
@@ -149,6 +152,7 @@ import { GamesCatalogService } from './knowledge/games-catalog.service';
     JarvisPromptBuilderService,
     MusicCatalogService,
     GamesCatalogService,
+    DisciplinesCatalogService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

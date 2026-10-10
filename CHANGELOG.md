@@ -6,7 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Fixed — Prevención de Falso Positivo de Resumen de Carl Jung en Consultas Gamer (2026-10-10)
+### Added & Fixed — Catálogo de Conocimiento Panorámico de Disciplinas y Prevención de Secuestro RAG (2026-10-10)
+
+- **🌌 Catálogo Enciclopédico de Disciplinas (`DisciplinesCatalogService`)**:
+  - **Problema corregido**: Ante preguntas abiertas o reflexivas como *"Y si te pregunto sobre ciencia que me dirías?"*, el sistema emparejaba la palabra *"ciencia"* con un PDF monográfico aislado de la biblioteca (*"Consciencia más allá de la vida (La ciencia de la experiencia cercana a la muerte)"* de Pim van Lommel, score 5.5). La búsqueda forzaba RAG e inyectaba fragmentos que obligaban al LLM a hablar exclusivamente de ECM y Lija Maso, secuestrando una disciplina universal.
+  - **Solución Multidisciplinaria**: Implementación de `DisciplinesCatalogService` con cobertura enciclopédica, estructurada y equilibrada para:
+    - **Ciencia**: Epistemología, método científico (observación, hipótesis, reproducibilidad, falsabilidad), ciencias formales, naturales y sociales; historia (Copérnico, Galileo, Newton, Einstein, cuántica) y fronteras contemporáneas (conciencia, gravedad cuántica, IA).
+    - **Astronomía**: Astrofísica estelar/galáctica, cosmología (Big Bang, materia/energía oscura), exoplanetas, astrobiología y telescopios modernos (James Webb).
+    - **Astrología**: Tradición simbólica, astrología tradicional vs. psicológica (Carl Jung, arquetipos, sincronicidad, mapa natal como mandala del psiquismo) y distinción epistemológica frente a la ciencia empírica.
+    - **Física**: Mecánica clásica, electromagnetismo, termodinámica, relatividad general, física cuántica y teoría de campos.
+    - **Matemáticas**: Estructuras formales, álgebra, geometría, cálculo, topología, probabilidad, teoría de números, teoría del caos y debate sobre descubrimiento vs invención.
+    - **Metafísica**: Ontología, el ser, tiempo, causalidad, el problema mente-cuerpo, presocráticos, Platón, Aristóteles, Kant y ontología contemporánea.
+    - **Parapsicología**: Investigación anómala de la conciencia (ESP, telepatía, clarividencia, psicoquinesis, ECM/OBE, estados alterados), laboratorios históricos (Rhine, PEAR, Ganzfeld) y tensión con el escepticismo metodológico.
+    - **Filosofía**, **Psicología**, **Química**, **Biología**, **Neurociencia**, **Antropología**, **Sociología**, **Historia**, **Epistemología** y **Cosmología**.
+- **🛡️ Enrutamiento de Intención y Protección en Pipeline**:
+  - `IntentRouterService`: Consultas panorámicas clasifican de inmediato como `LOCAL/high`, previniendo que *"qué opinas de la astrología"* active la herramienta en tiempo real `AstrologyTool` (que calculaba tránsitos locales en lugar de explicar la disciplina).
+  - `CorpusSelectorService`: Si la consulta es panorámica, omite vincular documentos aislados (`findRelevantDocuments` devuelve lista vacía).
+  - `JarvisService`: `isDisciplinePanoramicQuery` activa `isLocalHighConfidence`, omitiendo la búsqueda RAG previa y previniendo el secuestro temático.
+  - `JarvisPromptBuilderService`: Inyecta el marco panorámico estructurado con directrices estrictas de estilo JARVIS (erudito, reflexivo, equilibrado e invitando al usuario a elegir vertiente).
 
 - **🛡️ Corrección de Secuestro por Subcadena ("juegos" ➔ "ego" ➔ Jung)**:
   - **Causa Raíz**: En `CorpusSelectorService`, la detección de escuelas de pensamiento utilizaba `queryLower.includes(kw)` sin límites de palabra. La palabra *"juegos"* contenía la subcadena *"ego"*, activando `escuela:psicoanalisis` con +6 puntos y seleccionando *"Arquetipos y el Inconsciente Colectivo"* de Carl Jung. Además, `JarvisPromptBuilderService` asumía que si `findMatchingDocumentTitle` devolvía cualquier obra, el usuario deseaba un resumen ejecutivo del libro, aun tratándose de preguntas abiertas sobre consolas o gaming.

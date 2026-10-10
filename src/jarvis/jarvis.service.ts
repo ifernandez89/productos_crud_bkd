@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import { MemoryRepository } from './repositories/memory.repository';
 import { ConversationRepository } from './repositories/conversation.repository';
 import { DocumentRepository } from './repositories/document.repository';
@@ -36,6 +36,7 @@ import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { EvidenceService } from './knowledge/evidence.service';
 import { CognitiveOrchestratorService } from './cognitive/cognitive-orchestrator.service';
+import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -89,6 +90,8 @@ export class JarvisService {
     private readonly ingestService: DocumentIngestService,
     private readonly evidenceService: EvidenceService,
     private readonly cognitiveOrchestrator: CognitiveOrchestratorService,
+    @Optional()
+    private readonly disciplinesCatalog?: DisciplinesCatalogService,
   ) {
     this.providers = new Map([
       ['ollama', this.ollamaProvider],
@@ -252,16 +255,29 @@ export class JarvisService {
       let retrievedChunksList: any[] = [];
       let libraryMatches: any[] = [];
 
-      // ⚠️ GUARD ANTI-INGESTA: si el intent es LOCAL con alta confianza Y el mensaje
-      // es corto/conversacional, NUNCA ejecutar el pipeline RAG ni disparar lazy-load.
-      // BUG reportado 2026-07-28: "como estas tanto tiempo!" disparó ingesta de libros.
-      const isShortConversational = userMessage.trim().length < 40 &&
-        /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido)/i.test(userMessage.trim());
+      // ⚠️ GUARD ANTI-INGESTA / ANTI-SECUESTRO: si el intent es LOCAL con alta confianza Y el mensaje
+      // es corto/conversacional, O si es una consulta panorámica de disciplina (ciencia, física, etc.),
+      // NUNCA ejecutar el pipeline RAG ni disparar lazy-load.
+      const isShortConversational =
+        userMessage.trim().length < 40 &&
+        /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido)/i.test(
+          userMessage.trim(),
+        );
+
+      const isDisciplinePanoramic =
+        this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
 
       const isLocalHighConfidence =
-        intent.intent === 'LOCAL' &&
-        intent.confidence === 'high' &&
-        isShortConversational;
+        (intent.intent === 'LOCAL' &&
+          intent.confidence === 'high' &&
+          isShortConversational) ||
+        isDisciplinePanoramic;
+
+      if (isDisciplinePanoramic) {
+        this.logger.log(
+          `[rag:skip] Consulta panorámica de disciplina detectada ("${userMessage.slice(0, 60)}"). Omitiendo pre-search RAG.`,
+        );
+      }
 
       if (!isLocalHighConfidence) {
         libraryMatches = this.corpusSelector.findRelevantDocuments(
