@@ -6,6 +6,66 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Integración de Catálogo y Conocimiento Musical Personal (I:\Musica) (2026-10-10)
+
+- **🎵 Catálogo e Indexación Musical (`I:\Musica`)**:
+  - Escaneo e indexación automatizada de **64 artistas/bandas**, **220 álbumes** y **2.367 canciones** en formatos MP3, WAV y FLAC.
+  - Generación de `src/jarvis/knowledge/music-index.json` con metadatos exhaustivos por artista, álbumes, años, géneros, estilos y *moods*.
+  - Generación de `src/jarvis/knowledge/music-references.json` como índice liviano agrupado por géneros y estados de ánimo para recomendaciones rápidas.
+- **🧠 Servicio Central `MusicCatalogService` & Módulo `JarvisModule`**:
+  - Servicio dedicado para resolver búsquedas de artistas, recomendaciones según estado de ánimo (concentración, entrenamiento, introspección) y formateo de resúmenes.
+  - Inyección dinámica en `JarvisPromptBuilderService` cuando el usuario consulta sobre música o artistas.
+  - Comando interactivo `/musica` (o `mi musica`) en `JarvisCommandService` con guía integrada en `/help`.
+- **⚡ Ingesta RAG en PostgreSQL (1024D con `bge-m3:latest`)**:
+  - Documento relacional en base de datos (`Document` ID #73: *"Catálogo Musical y Colección Personal (I:\Musica)"*) categorizado en *"Música y Arte"*.
+  - 8 chunks temáticos vectorizados para recuperación semántica transversal en conversaciones cotidianas e investigaciones culturales.
+
+### Added — Ingesta Masiva de Colección "Carl Gustav Jung" (11 Obras) & RAG Analítico en RTX 5070 (2026-10-07)
+
+- **📚 Ingesta de 11 Obras Fundamentales de Carl Gustav Jung**:
+  - **Títulos procesados**: *El hombre y sus símbolos*, *Los complejos y el inconsciente*, *Tipos psicológicos (Tomos 1 y 2)*, *Conflictos del alma infantil*, *La interpretación de la naturaleza y la psique (Sincronicidad)*, *Recuerdos, sueños, pensamientos*, *Energética psíquica y esencia del sueño*, *Psicología de la religión oriental*, *Dream Interpretation: Ancient & Modern*, y *Correspondencia Freud - Jung*.
+  - **Volumen procesado**: 3.208 páginas (57.19 MB) con **7.109.177 caracteres** de texto especializado.
+  - **Segmentación**: 7.219 fragmentos (chunks) estructurados de ~1.400 caracteres con solapamiento semántico.
+  - **Persistencia en PostgreSQL**: 11 registros `Document` (IDs #3 a #13) y 7.219 registros `Chunk` relacionales con metadatos vectoriales.
+- **⚡ Hardware & Modelos de Inteligencia Artificial**:
+  - **GPU**: NVIDIA GeForce RTX 5070 (12 GB VRAM).
+  - **Modelo de Embeddings**: `bge-m3:latest` (1024D).
+  - **Modelo Chatbot / RAG**: `qwen2.5:7b`.
+  - **Base de Datos**: PostgreSQL (`jarbees_data`) con capa relacional Prisma.
+- **⏱️ Tiempos Empleados & Métricas de Rendimiento**:
+  - **Extracción de PDFs (11 libros / 3.208 págs)**: **7.93 segundos**.
+  - **Vectorización GPU (7.219 vectores 1024D)**: **110.47 segundos (1.84 min)** a **65.4 vectores/segundo**.
+  - **TIEMPO TOTAL DE INGESTA**: **132.88 segundos (2.21 minutos)** de principio a fin.
+- **🧠 Prueba de Consulta y Razonamiento Psicológico Analítico (Jung)**:
+  - **Pregunta formulada**: *"Explícame en detalle la estructura de la psique según Carl Gustav Jung: cómo se diferencian el Inconsciente Personal del Inconsciente Colectivo, cuáles son los arquetipos centrales (la Sombra, el Ánima/Ánimus y el Sí-mismo o Self), cómo opera el Proceso de Individuación y de qué manera la Sincronicidad trasciende la causalidad lineal según sus obras."*
+  - **Vectorización de la query**: **14 ms**.
+  - **Búsqueda y ranking semántico en PostgreSQL**: **15 ms** (acceso total en **29 ms**).
+  - **Top Match Semántico**: 70.36% de similitud (*El hombre y sus símbolos* y *Recuerdos, sueños, pensamientos*).
+  - **Inferencia LLM**: 14.48 segundos con síntesis doctoral completa sobre la integración arquetípica, el Self y la sincronicidad acausal.
+
+### Added — Ingesta Masiva de "Obras Completas de Sigmund Freud" & Benchmark RAG en RTX 5070 (2026-10-07)
+
+- **📚 Ingesta Completa de "Sigmund Freud - Obras completas"**:
+  - **Volumen procesado**: 6.926 páginas en PDF (24.40 MB) con un total de **12.298.288 caracteres** de texto académico directo.
+  - **Segmentación**: 13.317 fragmentos (chunks) estructurados con solapamiento semántico (~1.400 chars c/u).
+  - **Persistencia**: Registro de `Document` (ID #2) y 13.317 registros `Chunk` relacionales en PostgreSQL (Prisma) con metadatos vectoriales.
+- **⚡ Hardware & Modelos de Inteligencia Artificial**:
+  - **GPU**: NVIDIA GeForce RTX 5070 (12 GB VRAM dedicada).
+  - **Modelo de Embeddings**: `bge-m3:latest` (1024 dimensiones, aceleración completa por Tensor Cores).
+  - **Modelo Chatbot / RAG**: `qwen2.5:7b` (temperatura 0.3, inferencia local sobre VRAM).
+  - **Base de Datos**: PostgreSQL (`jarbees_data`) con capa relacional Prisma y soporte dual nativo / fallback en memoria para similitud de cosenos.
+- **⏱️ Tiempos Empleados & Métricas de Rendimiento**:
+  - **Extracción de texto PDF (6.926 págs)**: **18.95 segundos** (~365 págs/seg).
+  - **Segmentación en Chunks**: **117 milisegundos**.
+  - **Vectorización GPU (13.317 vectores 1024D)**: **179.14 segundos** (~2.98 min) a una tasa sostenida de **74.3 vectores/segundo** (13.4 ms por vector).
+  - **TIEMPO TOTAL DE INGESTA COMPLETA**: **211.21 segundos (3.52 minutos)** de principio a fin.
+- **🧠 Prueba de Consulta y Razonamiento Psicoanalítico Profundo**:
+  - **Pregunta formulada**: *"Explícame en detalle la segunda tópica freudiana (Ello, Yo y Superyó), cómo interactúan dinámicamente con el principio del placer y el principio de realidad, y de qué manera la pulsión de muerte (Tánatos) se manifiesta en los mecanismos de defensa psíquicos según las obras completas."*
+  - **Vectorización de la pregunta**: **15 ms**.
+  - **Búsqueda y ranking semántico**: **17 ms** (acceso total en **32 ms**).
+  - **Top Match Semántico**: 61.35% de similitud (*Más allá del principio del placer*, *El principio del placer y estado de nirvana*, mecanismos de defensa *Abwehr* y transposición).
+  - **Inferencia LLM**: 12.92 segundos con respuesta estructurada, profunda y fiel a las tesis del autor.
+
 ### Added — Arquitectura Modular por Disciplinas & Selector de Especialistas (2026-10-07)
 
 - **🎛️ Catálogo de Especialistas & Disciplinas ([`src/shared/disciplines.ts`](file:///c:/Projects/productos_crud_bkd/src/shared/disciplines.ts))**: Separación formal y desacoplada de capacidades para la UI:

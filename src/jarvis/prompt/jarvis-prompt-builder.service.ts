@@ -12,6 +12,7 @@ import { DocumentSummaryService } from '../library/document-summary.service';
 import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
 import { EmbeddingsService } from '../library/embeddings.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
+import { MusicCatalogService } from '../knowledge/music-catalog.service';
 
 @Injectable()
 export class JarvisPromptBuilderService {
@@ -31,6 +32,7 @@ export class JarvisPromptBuilderService {
     private readonly jarvisKnowledge: JarvisKnowledgeService,
     private readonly embeddingsService: EmbeddingsService,
     private readonly corpusSelector: CorpusSelectorService,
+    private readonly musicCatalog: MusicCatalogService,
   ) {}
 
   async buildJarvisContext(
@@ -144,6 +146,12 @@ export class JarvisPromptBuilderService {
       await this.jarvisKnowledge.extractRelevantContext(userMessage);
     if (localKnowledgeCtx) {
       contextParts.push(localKnowledgeCtx);
+    }
+
+    // ── Music Knowledge Context (I:\Musica) ──────────────────────────────────
+    const musicCtx = this.musicCatalog.formatContextForQuery(userMessage);
+    if (musicCtx) {
+      contextParts.push(musicCtx);
     }
 
     // Incluir skills solo si no es un modo puramente conversacional

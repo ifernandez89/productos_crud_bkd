@@ -441,27 +441,14 @@ export class JarvisService {
         }
       }
 
-      // Si el intent es RAG (o fue anulado a RAG), pero no se encontraron fragmentos (ej: no hay conexión a la BD, la BD no está aquí, o no hubo coincidencias en absoluto),
-      // retornamos un mensaje de error descriptivo amigable para el usuario.
+      // Si el intent fue RAG pero no se encontraron fragmentos específicos en la biblioteca,
+      // NO bloqueamos con un mensaje rígido ni robótico: permitimos que JARVIS responda
+      // de forma fluida, natural y humana con el conocimiento general del modelo.
       if (intent.intent === 'RAG' && (!prefetchedRagContext || retrievedChunksList.length === 0)) {
-        const noRagMsg = 'No encontré el documento solicitado o suficiente información al respecto en la biblioteca personal (o la base de datos no está disponible).';
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'assistant',
-          content: noRagMsg,
-          metadata: { source: 'rag_fail_fail-safe' },
-        });
-        await this.agentRunRepo.create({
-          sessionId,
-          question: userMessage,
-          answer: noRagMsg,
-          toolsUsed: [...toolsUsed, 'rag_fail'],
-          modelUsed: 'none',
-          provider: 'none',
-          durationMs: Date.now() - startTime,
-          success: false,
-        });
-        return noRagMsg;
+        this.logger.log(
+          `[rag:graceful-fallback] Sin fragmentos específicos para "${userMessage.slice(0, 50)}". Continuando hacia el LLM para respuesta conversacional natural estilo JARVIS.`,
+        );
+        toolsUsed.push('rag_general_knowledge_fallback');
       }
 
       // ── 7. Decidir si buscar en la web en primera instancia ───────────────
@@ -1067,10 +1054,7 @@ export class JarvisService {
       provider,
     );
 
-    let finalAnswer =
-      qicaResult.activated && qicaResult.collapseResult
-        ? responseContent + qicaResult.collapseResult.interferenceSummaryMarkdown
-        : responseContent;
+    let finalAnswer = responseContent;
     let confidenceScore = 100;
 
     const isEvasiveResponse =
@@ -1135,7 +1119,7 @@ export class JarvisService {
         retrievedChunks,
         userMessage,
       );
-      finalAnswer = responseContent + report.formattedReportMarkdown;
+      // Mantenemos la respuesta conversacional 100% limpia para texto y TTS (sin <details>, sin reportes diagnósticos)
       confidenceScore = report.confidenceScore;
       this.logger.log(
         `[evidence] Respuesta verificada: confianza=${confidenceScore}%, chunks=${report.chunksCount}`,

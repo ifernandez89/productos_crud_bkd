@@ -1,0 +1,1490 @@
+{
+  "version": 1,
+  "totalArtistas": 64,
+  "totalAlbumes": 220,
+  "rutaColeccion": "I:\\Musica",
+  "generosDisponibles": {
+    "Música / Variado": [
+      "A Thousand Years Of Plagues",
+      "Aversions Crown",
+      "Beneath the Massacre",
+      "Broken Flesh - Broken Flesh",
+      "Bury Your Dead",
+      "Carnifex",
+      "Carnivorous Voracity - The Impious Doctrine (2015)",
+      "Cerebral - Agorafobia",
+      "Daniel Fernández Tenor",
+      "David Bowie - Legacy (2016)",
+      "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015)",
+      "DVSR - D.V.S.R (2015)",
+      "Dying Fetus - Reign Supreme (2012)",
+      "Ektomorf - Outcast",
+      "First Fragment - Dasein (2016)",
+      "Gorillaz - Greatest Hits-2010",
+      "Hacktivist",
+      "Hijos de las Hojas",
+      "Johny Alen",
+      "Lentos",
+      "Limp Bizkit",
+      "Linkin Park - Hybrid Theory [2000]",
+      "LIVING PROOF",
+      "Manu Chao-Clandestino 1998",
+      "Metallica",
+      "Molotov Solution",
+      "Musica Clasica",
+      "Oceano",
+      "Opera",
+      "P.O.D - Satellite (2001)",
+      "Pink Floyd - Dark side of moon",
+      "Rage.Against.The.Machine.-.RATM",
+      "Red Hot Chili Peppers - Discography 1984-2013",
+      "Reggae",
+      "Signal The Firing Squad - Abnegate (2012)",
+      "Siouxsie and the Banshees",
+      "sueltos",
+      "Taijasa",
+      "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3",
+      "The Gathering - Discography.1992-2013",
+      "The siKC One",
+      "Thy Art Is Murder",
+      "Unfathomable Ruination",
+      "Wilder"
+    ],
+    "Soul": [
+      "Amy Winehouse"
+    ],
+    "R&B": [
+      "Amy Winehouse"
+    ],
+    "Jazz": [
+      "Amy Winehouse"
+    ],
+    "Ska": [
+      "Amy Winehouse"
+    ],
+    "Metal Progresivo": [
+      "Animals As Leaders"
+    ],
+    "Djent": [
+      "Animals As Leaders"
+    ],
+    "Instrumental": [
+      "Animals As Leaders"
+    ],
+    "Brutal Death Metal": [
+      "Cannibal Corpse"
+    ],
+    "Death Metal": [
+      "Cannibal Corpse"
+    ],
+    "Hip Hop": [
+      "Cypress Hill"
+    ],
+    "West Coast Rap": [
+      "Cypress Hill"
+    ],
+    "Hardcore Hip Hop": [
+      "Cypress Hill"
+    ],
+    "Death Metal Progresivo": [
+      "Death"
+    ],
+    "Pioneros del Death Metal": [
+      "Death"
+    ],
+    "Technical Death Metal": [
+      "Decapitated",
+      "Necrophagist"
+    ],
+    "Groove Metal": [
+      "Decapitated"
+    ],
+    "Metal Alternativo": [
+      "Deftones",
+      "Korn"
+    ],
+    "Shoegaze": [
+      "Deftones"
+    ],
+    "Nu Metal": [
+      "Deftones",
+      "Korn"
+    ],
+    "Rock Nacional": [
+      "Gustavo Cerati",
+      "Luis Alberto Spinetta",
+      "Soda Stereo",
+      "Virus"
+    ],
+    "Art Rock": [
+      "Gustavo Cerati"
+    ],
+    "Pop Rock": [
+      "Gustavo Cerati",
+      "Soda Stereo"
+    ],
+    "Electronica": [
+      "Gustavo Cerati"
+    ],
+    "Blues Rock": [
+      "Los Espiritus",
+      "The Doors"
+    ],
+    "Rock Psicodélico": [
+      "Los Espiritus",
+      "The Doors"
+    ],
+    "Ritmos Latinos": [
+      "Los Espiritus"
+    ],
+    "Jazz Rock": [
+      "Luis Alberto Spinetta"
+    ],
+    "Poesía Musical": [
+      "Luis Alberto Spinetta"
+    ],
+    "Neoclassical Metal": [
+      "Necrophagist",
+      "Yngwie Malmsteen"
+    ],
+    "Grunge": [
+      "Nirvana"
+    ],
+    "Rock Alternativo": [
+      "Nirvana"
+    ],
+    "Punk Rock": [
+      "Nirvana"
+    ],
+    "Rock Clásico": [
+      "Queen",
+      "The Beatles"
+    ],
+    "Glam Rock": [
+      "Queen"
+    ],
+    "Hard Rock": [
+      "Queen"
+    ],
+    "Ópera Rock": [
+      "Queen"
+    ],
+    "New Wave": [
+      "Soda Stereo",
+      "Virus"
+    ],
+    "Post-Punk": [
+      "Soda Stereo"
+    ],
+    "Pop Psicodélico": [
+      "The Beatles"
+    ],
+    "Merseybeat": [
+      "The Beatles"
+    ],
+    "Poesía": [
+      "The Doors"
+    ],
+    "Underground Hip Hop": [
+      "The Psycho Realm"
+    ],
+    "Hardcore Rap": [
+      "The Psycho Realm"
+    ],
+    "Synthpop": [
+      "Virus"
+    ],
+    "Power Metal": [
+      "Yngwie Malmsteen"
+    ],
+    "Shred": [
+      "Yngwie Malmsteen"
+    ]
+  },
+  "recomendacionesPorMood": {
+    "general": [
+      "A Thousand Years Of Plagues",
+      "Aversions Crown",
+      "Beneath the Massacre",
+      "Broken Flesh - Broken Flesh",
+      "Bury Your Dead",
+      "Carnifex",
+      "Carnivorous Voracity - The Impious Doctrine (2015)",
+      "Cerebral - Agorafobia",
+      "Daniel Fernández Tenor",
+      "David Bowie - Legacy (2016)",
+      "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015)",
+      "DVSR - D.V.S.R (2015)",
+      "Dying Fetus - Reign Supreme (2012)",
+      "Ektomorf - Outcast",
+      "First Fragment - Dasein (2016)",
+      "Gorillaz - Greatest Hits-2010",
+      "Hacktivist",
+      "Hijos de las Hojas",
+      "Johny Alen",
+      "Lentos",
+      "Limp Bizkit",
+      "Linkin Park - Hybrid Theory [2000]",
+      "LIVING PROOF",
+      "Manu Chao-Clandestino 1998",
+      "Metallica",
+      "Molotov Solution",
+      "Musica Clasica",
+      "Oceano",
+      "Opera",
+      "P.O.D - Satellite (2001)",
+      "Pink Floyd - Dark side of moon",
+      "Rage.Against.The.Machine.-.RATM",
+      "Red Hot Chili Peppers - Discography 1984-2013",
+      "Reggae",
+      "Signal The Firing Squad - Abnegate (2012)",
+      "Siouxsie and the Banshees",
+      "sueltos",
+      "Taijasa",
+      "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3",
+      "The Gathering - Discography.1992-2013",
+      "The siKC One",
+      "Thy Art Is Murder",
+      "Unfathomable Ruination",
+      "Wilder"
+    ],
+    "escucha": [
+      "A Thousand Years Of Plagues",
+      "Aversions Crown",
+      "Beneath the Massacre",
+      "Broken Flesh - Broken Flesh",
+      "Bury Your Dead",
+      "Carnifex",
+      "Carnivorous Voracity - The Impious Doctrine (2015)",
+      "Cerebral - Agorafobia",
+      "Daniel Fernández Tenor",
+      "David Bowie - Legacy (2016)",
+      "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015)",
+      "DVSR - D.V.S.R (2015)",
+      "Dying Fetus - Reign Supreme (2012)",
+      "Ektomorf - Outcast",
+      "First Fragment - Dasein (2016)",
+      "Gorillaz - Greatest Hits-2010",
+      "Hacktivist",
+      "Hijos de las Hojas",
+      "Johny Alen",
+      "Lentos",
+      "Limp Bizkit",
+      "Linkin Park - Hybrid Theory [2000]",
+      "LIVING PROOF",
+      "Manu Chao-Clandestino 1998",
+      "Metallica",
+      "Molotov Solution",
+      "Musica Clasica",
+      "Oceano",
+      "Opera",
+      "P.O.D - Satellite (2001)",
+      "Pink Floyd - Dark side of moon",
+      "Rage.Against.The.Machine.-.RATM",
+      "Red Hot Chili Peppers - Discography 1984-2013",
+      "Reggae",
+      "Signal The Firing Squad - Abnegate (2012)",
+      "Siouxsie and the Banshees",
+      "sueltos",
+      "Taijasa",
+      "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3",
+      "The Gathering - Discography.1992-2013",
+      "The siKC One",
+      "Thy Art Is Murder",
+      "Unfathomable Ruination",
+      "Wilder"
+    ],
+    "introspeccion": [
+      "Amy Winehouse",
+      "Gustavo Cerati",
+      "Luis Alberto Spinetta"
+    ],
+    "melancolia": [
+      "Amy Winehouse"
+    ],
+    "clasico": [
+      "Amy Winehouse"
+    ],
+    "relajacion": [
+      "Amy Winehouse"
+    ],
+    "concentracion": [
+      "Animals As Leaders"
+    ],
+    "estudio": [
+      "Animals As Leaders"
+    ],
+    "virtuosismo": [
+      "Animals As Leaders"
+    ],
+    "energia_mental": [
+      "Animals As Leaders"
+    ],
+    "fuerza": [
+      "Cannibal Corpse"
+    ],
+    "entrenamiento": [
+      "Cannibal Corpse"
+    ],
+    "adrenalina": [
+      "Cannibal Corpse"
+    ],
+    "pesado": [
+      "Cannibal Corpse",
+      "Korn"
+    ],
+    "groove": [
+      "Cypress Hill"
+    ],
+    "urbano": [
+      "Cypress Hill"
+    ],
+    "calle": [
+      "Cypress Hill"
+    ],
+    "filosofico": [
+      "Death",
+      "Luis Alberto Spinetta"
+    ],
+    "virtuosismo_metal": [
+      "Death"
+    ],
+    "tecnico": [
+      "Death",
+      "Decapitated"
+    ],
+    "precision": [
+      "Decapitated"
+    ],
+    "pesadez": [
+      "Decapitated"
+    ],
+    "atmosfera": [
+      "Deftones"
+    ],
+    "energia_intensa": [
+      "Deftones"
+    ],
+    "sueño": [
+      "Deftones"
+    ],
+    "viaje_musical": [
+      "Gustavo Cerati"
+    ],
+    "poesia": [
+      "Gustavo Cerati",
+      "Luis Alberto Spinetta"
+    ],
+    "clasico_argentino": [
+      "Gustavo Cerati",
+      "Soda Stereo"
+    ],
+    "catarsis": [
+      "Korn",
+      "Nirvana"
+    ],
+    "emocional": [
+      "Korn"
+    ],
+    "trance": [
+      "Los Espiritus"
+    ],
+    "nocturno": [
+      "Los Espiritus",
+      "The Doors",
+      "The Psycho Realm"
+    ],
+    "blues": [
+      "Los Espiritus"
+    ],
+    "arte_puro": [
+      "Luis Alberto Spinetta"
+    ],
+    "virtuosismo_extremo": [
+      "Necrophagist"
+    ],
+    "cirugia_musical": [
+      "Necrophagist"
+    ],
+    "rebeldia": [
+      "Nirvana"
+    ],
+    "energia_cruda": [
+      "Nirvana"
+    ],
+    "motivacion": [
+      "Queen"
+    ],
+    "himno": [
+      "Queen"
+    ],
+    "energia_positiva": [
+      "Queen"
+    ],
+    "energia": [
+      "Soda Stereo"
+    ],
+    "nostalgia": [
+      "Soda Stereo"
+    ],
+    "optimismo": [
+      "The Beatles"
+    ],
+    "clasico_universal": [
+      "The Beatles"
+    ],
+    "creatividad": [
+      "The Beatles"
+    ],
+    "misticismo": [
+      "The Doors"
+    ],
+    "chamanico": [
+      "The Doors"
+    ],
+    "reflexion_urbana": [
+      "The Psycho Realm"
+    ],
+    "crudo": [
+      "The Psycho Realm"
+    ],
+    "alegria": [
+      "Virus"
+    ],
+    "ritmo": [
+      "Virus"
+    ],
+    "nostalgia_80s": [
+      "Virus"
+    ],
+    "virtuosismo_guitarra": [
+      "Yngwie Malmsteen"
+    ],
+    "neoclasico": [
+      "Yngwie Malmsteen"
+    ],
+    "velocidad": [
+      "Yngwie Malmsteen"
+    ]
+  },
+  "artistas": [
+    {
+      "nombre": "A Thousand Years Of Plagues",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "2009 - Demo",
+        "2011 - [EP]",
+        "2013 - Daemon"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Amy Winehouse",
+      "generos": [
+        "Soul",
+        "R&B",
+        "Jazz",
+        "Ska"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "Amy Winehouse - Back To Black (2006)",
+        "Amy Winehouse - The Rarities - 2016 - LP",
+        "Amy Winehouse - The Ska EP"
+      ],
+      "moods": [
+        "introspeccion",
+        "melancolia",
+        "clasico",
+        "relajacion"
+      ]
+    },
+    {
+      "nombre": "Animals As Leaders",
+      "generos": [
+        "Metal Progresivo",
+        "Djent",
+        "Instrumental"
+      ],
+      "totalAlbumes": 7,
+      "albumesDestacados": [
+        "2009 - Animals As Leaders",
+        "2010 - Wave Of Babies (Single)",
+        "2011 - Weightless"
+      ],
+      "moods": [
+        "concentracion",
+        "estudio",
+        "virtuosismo",
+        "energia_mental"
+      ]
+    },
+    {
+      "nombre": "Aversions Crown",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Aversions Crown - Servitude (2011)",
+        "Aversions Crown - Tyrant"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Beneath the Massacre",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 4,
+      "albumesDestacados": [
+        "Beneath the Massacre - Marée Noire EP [2010]",
+        "Dystopia",
+        "Incongruous"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Broken Flesh - Broken Flesh",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Broken Flesh - Broken Flesh (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Bury Your Dead",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "2004 - Cover Your Tracks"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Cannibal Corpse",
+      "generos": [
+        "Brutal Death Metal",
+        "Death Metal"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Cannibal Corpse (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "fuerza",
+        "entrenamiento",
+        "adrenalina",
+        "pesado"
+      ]
+    },
+    {
+      "nombre": "Carnifex",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 5,
+      "albumesDestacados": [
+        "Carnifex (US) -2010- Hell Chose Me",
+        "Carnifex - 2011 - Until I Feel Nothing",
+        "Dead In My Arms"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Carnivorous Voracity - The Impious Doctrine (2015)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Carnivorous Voracity - The Impious Doctrine (2015) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Cerebral - Agorafobia",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Cerebral - Agorafobia (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Cypress Hill",
+      "generos": [
+        "Hip Hop",
+        "West Coast Rap",
+        "Hardcore Hip Hop"
+      ],
+      "totalAlbumes": 7,
+      "albumesDestacados": [
+        "Cypress Hill (Pistas Directas / Singles)",
+        "10-2001-Stoned Raiders",
+        "1998 - Tequila Sunrise"
+      ],
+      "moods": [
+        "groove",
+        "urbano",
+        "calle"
+      ]
+    },
+    {
+      "nombre": "Daniel Fernández Tenor",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "travesia"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "David Bowie - Legacy (2016)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "CD1",
+        "CD2"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Death",
+      "generos": [
+        "Death Metal Progresivo",
+        "Pioneros del Death Metal"
+      ],
+      "totalAlbumes": 4,
+      "albumesDestacados": [
+        "1998 - The Sound Of Perseverance",
+        "Death - Symbolic (1995) (Remastered - 2008)",
+        "Death-1993-Individual Thought Patterns"
+      ],
+      "moods": [
+        "filosofico",
+        "virtuosismo_metal",
+        "tecnico"
+      ]
+    },
+    {
+      "nombre": "Decapitated",
+      "generos": [
+        "Technical Death Metal",
+        "Groove Metal"
+      ],
+      "totalAlbumes": 6,
+      "albumesDestacados": [
+        "Decapitated (Pistas Directas / Singles)",
+        "2000 - Winds Of Creation",
+        "2002 - Nihility"
+      ],
+      "moods": [
+        "precision",
+        "pesadez",
+        "tecnico"
+      ]
+    },
+    {
+      "nombre": "Deftones",
+      "generos": [
+        "Metal Alternativo",
+        "Shoegaze",
+        "Nu Metal"
+      ],
+      "totalAlbumes": 7,
+      "albumesDestacados": [
+        "Deftones (Pistas Directas / Singles)",
+        "Deftones - 1995 - Adrenaline",
+        "Deftones - 1997 - Around The Fur"
+      ],
+      "moods": [
+        "atmosfera",
+        "energia_intensa",
+        "sueño"
+      ]
+    },
+    {
+      "nombre": "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "DVSR - D.V.S.R (2015)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "DVSR - D.V.S.R (2015) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Dying Fetus - Reign Supreme (2012)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Dying Fetus - Reign Supreme (2012) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Ektomorf - Outcast",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Ektomorf - Outcast (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "First Fragment - Dasein (2016)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "First Fragment - Dasein (2016) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Gorillaz - Greatest Hits-2010",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Gorillaz - Greatest Hits-2010 (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Gustavo Cerati",
+      "generos": [
+        "Rock Nacional",
+        "Art Rock",
+        "Pop Rock",
+        "Electronica"
+      ],
+      "totalAlbumes": 6,
+      "albumesDestacados": [
+        "Gustavo Cerati (Pistas Directas / Singles)",
+        "1992 - Gustavo Cerati - Colores Santos",
+        "1993 - Gustavo Cerati - Amor Amarillo"
+      ],
+      "moods": [
+        "introspeccion",
+        "viaje_musical",
+        "poesia",
+        "clasico_argentino"
+      ]
+    },
+    {
+      "nombre": "Hacktivist",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Hacktivist (Pistas Directas / Singles)",
+        "demo"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Hijos de las Hojas",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Hijos de las Hojas (Pistas Directas / Singles)",
+        "Hijos de las Hojas - El camino de la Serpiente (Chile)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Johny Alen",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 4,
+      "albumesDestacados": [
+        "Johny Alen (Pistas Directas / Singles)",
+        "Johny Alen - La Semilla (2019) 320",
+        "Johny Alen -Sangre o Sal (2013)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Korn",
+      "generos": [
+        "Nu Metal",
+        "Metal Alternativo"
+      ],
+      "totalAlbumes": 6,
+      "albumesDestacados": [
+        "1996 - Life Is Peachy",
+        "2000 - Issues",
+        "Follow the Leader (1999)"
+      ],
+      "moods": [
+        "catarsis",
+        "pesado",
+        "emocional"
+      ]
+    },
+    {
+      "nombre": "Lentos",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Lentos (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Limp Bizkit",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "(1999) Significant Other",
+        "(2000) Chocolate Starfish And The Hot Dog Flavored Water",
+        "1997 - Three Dollar Bill, Y'all$ (Japan Edition)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Linkin Park - Hybrid Theory [2000]",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Linkin Park - Hybrid Theory [2000] (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "LIVING PROOF",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 10,
+      "albumesDestacados": [
+        "LIVING PROOF (Pistas Directas / Singles)",
+        "01 Inicio",
+        "10"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Los Espiritus",
+      "generos": [
+        "Blues Rock",
+        "Rock Psicodélico",
+        "Ritmos Latinos"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "2015 - Gratitud",
+        "2017 - Agua Ardiente",
+        "2019 - Caldero"
+      ],
+      "moods": [
+        "trance",
+        "nocturno",
+        "blues"
+      ]
+    },
+    {
+      "nombre": "Luis Alberto Spinetta",
+      "generos": [
+        "Rock Nacional",
+        "Jazz Rock",
+        "Poesía Musical"
+      ],
+      "totalAlbumes": 6,
+      "albumesDestacados": [
+        "Luis Alberto Spinetta (Pistas Directas / Singles)",
+        "1975 - Durazno Sangrando",
+        "1976 - El Jardin De Los Presentes"
+      ],
+      "moods": [
+        "filosofico",
+        "introspeccion",
+        "poesia",
+        "arte_puro"
+      ]
+    },
+    {
+      "nombre": "Manu Chao-Clandestino 1998",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Manu Chao-Clandestino 1998 (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Metallica",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Metallica - Master Of Puppets"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Molotov Solution",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Molotov Solution - Insurrection 2011",
+        "Molotov Solution - The Harbinger (2009)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Musica Clasica",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 9,
+      "albumesDestacados": [
+        "Musica Clasica (Pistas Directas / Singles)",
+        "(2009) - Silvius Leopold Weiss ： Lute Music II",
+        "Beethoven - Sinf. nº 1 y nº 3 - Karajan"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Necrophagist",
+      "generos": [
+        "Technical Death Metal",
+        "Neoclassical Metal"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Epitaph",
+        "Onset Of Putrefaction"
+      ],
+      "moods": [
+        "virtuosismo_extremo",
+        "cirugia_musical"
+      ]
+    },
+    {
+      "nombre": "Nirvana",
+      "generos": [
+        "Grunge",
+        "Rock Alternativo",
+        "Punk Rock"
+      ],
+      "totalAlbumes": 5,
+      "albumesDestacados": [
+        "Bleach",
+        "In Utero '93",
+        "Nevermind"
+      ],
+      "moods": [
+        "rebeldia",
+        "catarsis",
+        "energia_cruda"
+      ]
+    },
+    {
+      "nombre": "Oceano",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "2009 - Depths",
+        "Ascendants - 2015",
+        "Oceano - Revelation (2017)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Opera",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Opera (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "P.O.D - Satellite (2001)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "P.O.D - Satellite (2001) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Pink Floyd - Dark side of moon",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Pink Floyd - Dark side of moon (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Queen",
+      "generos": [
+        "Rock Clásico",
+        "Glam Rock",
+        "Hard Rock",
+        "Ópera Rock"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Queen (Pistas Directas / Singles)",
+        "Queen - Innuendo"
+      ],
+      "moods": [
+        "motivacion",
+        "himno",
+        "energia_positiva"
+      ]
+    },
+    {
+      "nombre": "Rage.Against.The.Machine.-.RATM",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Rage.Against.The.Machine.-.RATM (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Red Hot Chili Peppers - Discography 1984-2013",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Red Hot Chili Peppers"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Reggae",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 13,
+      "albumesDestacados": [
+        "Reggae (Pistas Directas / Singles)",
+        "2010 - The Congos - Back In The Black Ark",
+        "Bob Marley"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Signal The Firing Squad - Abnegate (2012)",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Signal The Firing Squad - Abnegate (2012) (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Siouxsie and the Banshees",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "2002 - The Best Of Siouxsie And The Banshees",
+        "Siouxsie and the Banschees - (1981) Once upon a time"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Soda Stereo",
+      "generos": [
+        "Rock Nacional",
+        "New Wave",
+        "Post-Punk",
+        "Pop Rock"
+      ],
+      "totalAlbumes": 6,
+      "albumesDestacados": [
+        "1984 - Soda Stereo",
+        "1985 - Nada Personal",
+        "1986 - Signos"
+      ],
+      "moods": [
+        "energia",
+        "nostalgia",
+        "clasico_argentino"
+      ]
+    },
+    {
+      "nombre": "sueltos",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "sueltos (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Taijasa",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Taijasa (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3 (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "The Beatles",
+      "generos": [
+        "Rock Clásico",
+        "Pop Psicodélico",
+        "Merseybeat"
+      ],
+      "totalAlbumes": 12,
+      "albumesDestacados": [
+        "A Hard Day's Night",
+        "Abbey Road",
+        "Beatles For Sale"
+      ],
+      "moods": [
+        "optimismo",
+        "clasico_universal",
+        "creatividad"
+      ]
+    },
+    {
+      "nombre": "The Doors",
+      "generos": [
+        "Rock Psicodélico",
+        "Blues Rock",
+        "Poesía"
+      ],
+      "totalAlbumes": 3,
+      "albumesDestacados": [
+        "1967 - Strange Days",
+        "The Doors - Compilacion",
+        "The Doors - The Doors [1967]"
+      ],
+      "moods": [
+        "misticismo",
+        "chamanico",
+        "nocturno"
+      ]
+    },
+    {
+      "nombre": "The Gathering - Discography.1992-2013",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 32,
+      "albumesDestacados": [
+        "1992 - Always... (1993 Pavement Music)",
+        "1992 - Always... (1994 Foundation 2000 Remix)",
+        "1992 - Always... (1999 Psychonaut Records Remaster)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "The Psycho Realm",
+      "generos": [
+        "Underground Hip Hop",
+        "Hardcore Rap"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "The Psycho Realm (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "reflexion_urbana",
+        "crudo",
+        "nocturno"
+      ]
+    },
+    {
+      "nombre": "The siKC One",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "The siKC One (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Thy Art Is Murder",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 4,
+      "albumesDestacados": [
+        "2012 - Hate",
+        "Thy Art Is Murder - Holy War",
+        "Thy Art Is Murder - Infinite Death"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Unfathomable Ruination",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "Unfathomable Ruination - Finitude (2016)",
+        "Unfathomable Ruination - Idiosyncratic Chaos (2014)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Virus",
+      "generos": [
+        "Rock Nacional",
+        "Synthpop",
+        "New Wave"
+      ],
+      "totalAlbumes": 2,
+      "albumesDestacados": [
+        "1985 - Locura",
+        "1987 - Superficies De Placer"
+      ],
+      "moods": [
+        "alegria",
+        "ritmo",
+        "nostalgia_80s"
+      ]
+    },
+    {
+      "nombre": "Wilder",
+      "generos": [
+        "Música / Variado"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Wilder (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "general",
+        "escucha"
+      ]
+    },
+    {
+      "nombre": "Yngwie Malmsteen",
+      "generos": [
+        "Neoclassical Metal",
+        "Power Metal",
+        "Shred"
+      ],
+      "totalAlbumes": 1,
+      "albumesDestacados": [
+        "Yngwie Malmsteen (Pistas Directas / Singles)"
+      ],
+      "moods": [
+        "virtuosismo_guitarra",
+        "neoclasico",
+        "velocidad"
+      ]
+    }
+  ]
+}

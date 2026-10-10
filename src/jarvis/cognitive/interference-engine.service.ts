@@ -162,8 +162,7 @@ export class InterferenceEngineService {
     }
 
     return `
-<details>
-<summary>⚛️ <b>Estado Cognitivo Cuántico-Inspirado (QICA 2.0)</b></summary>
+### ⚛️ **Estado Cognitivo (QICA 2.0)**
 
 > **Filtro de Interferencia:** Procesado en ${durationMs}ms  
 > **Ángulos Cognitivos Colapsados:** ${surviving.map((s) => s.name).join(' + ')}${uncertaintyInfo}
@@ -171,8 +170,6 @@ export class InterferenceEngineService {
 | Perspectiva Explorada | Coherencia | Resultado Interferencia |
 |:----------------------|:----------:|:-----------------------|
 ${rows}
-
-</details>
 `;
   }
 }

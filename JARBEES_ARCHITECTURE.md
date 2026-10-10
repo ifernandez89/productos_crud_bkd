@@ -1003,3 +1003,26 @@ Validación: confidence ≥ 0.7 + quote verificable en chunks del doc
 | Endpoints REST (V2) | 🏠 Pendiente |
 | Visualización tipo Obsidian (V3) | 🔮 Futuro |
 
+---
+
+## 22. Integración de Conocimiento Musical Personal (v3.3) (nuevo)
+
+JarBees incorpora un motor de conocimiento y contextualización musical basado en la colección local del usuario (`I:\Musica`). Esta integración permite que el asistente cuente con una dimensión cultural, creativa y personal de las obras musicales, discografías y gustos del usuario.
+
+### 22.1 Componentes del Módulo Musical
+1. **Índice Maestro (`src/jarvis/knowledge/music-index.json`)**:
+   - Catálogo estructurado con 64 artistas, 220 álbumes y más de 2.360 temas.
+   - Detalle de álbumes, años de lanzamiento y pistas de muestra por artista.
+   - Perfil de estilo, géneros y estados de ánimo sugeridos (*moods*: concentración, estudio, energía, introspección).
+2. **Referencias Rápidas (`src/jarvis/knowledge/music-references.json`)**:
+   - Mapeo liviano de artistas agrupados por géneros (Prog Metal, Rock Nacional, Death Metal, Soul, Hip Hop, etc.) y por moods recomendados.
+3. **Servicio Central (`MusicCatalogService`)**:
+   - Registro en `JarvisModule` que provee búsqueda de artistas, recomendaciones por estado de ánimo, formateo contextual dinámico y resúmenes estadísticos.
+4. **Comando Integrado (`/musica` o `mi musica`)**:
+   - Gestionado por `JarvisCommandService` para devolver un desglose inmediato del inventario musical y ejes destacados.
+5. **Inyección Contextual en Prompts (`JarvisPromptBuilderService`)**:
+   - Reconocimiento automático de consultas sobre bandas, canciones o música para inyectar la discografía relevante al LLM.
+6. **Persistencia RAG Vectorizada en PostgreSQL**:
+   - Documento indexado en BD (*"Catálogo Musical y Colección Personal (I:\Musica)"*, Categoría: *Música y Arte*) con chunks vectorizados en `bge-m3:latest` (1024D) para recuperación semántica transversal.
+
+

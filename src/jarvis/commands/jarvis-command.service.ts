@@ -9,6 +9,7 @@ import { DocumentCompareService } from '../library/document-compare.service';
 import { KnowledgeTestService } from '../library/knowledge-test.service';
 import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
+import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -26,6 +27,7 @@ export class JarvisCommandService {
     private readonly knowledgeTestService: KnowledgeTestService,
     private readonly jarvisKnowledge: JarvisKnowledgeService,
     private readonly corpusSelector: CorpusSelectorService,
+    private readonly musicCatalog: MusicCatalogService,
   ) {}
 
   /**
@@ -233,6 +235,37 @@ export class JarvisCommandService {
         success: true,
       });
       return { handled: true, response: authorsMsg };
+    }
+
+    // 5c. MÚSICA — catálogo y resumen de la colección personal (I:\Musica)
+    if (
+      /^(\/musica|\/music|musica|mi musica|mis canciones|mis discos|mis bandas|catalogo musical|que musica tengo|coleccion musical)$/i.test(
+        trimmedMessage,
+      )
+    ) {
+      const musicMsg = this.musicCatalog.getSummaryText();
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: musicMsg,
+        metadata: { source: 'music_catalog' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: musicMsg,
+        toolsUsed: ['music_catalog'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+      return { handled: true, response: musicMsg };
     }
 
     // 6. LIBROS POR AUTOR
@@ -1224,6 +1257,11 @@ export class JarvisCommandService {
       `  Eliminar por título   →  \`eliminar documento '<título>'\``,
       `                           \`borrar el libro 'Botanica Oculta'\``,
       `                           \`eliminar el PDF 'TypeScript Handbook'\``,
+      ``,
+      `**COLECCIÓN MUSICAL (I:\\Musica)**`,
+      `  Ver catálogo musical  →  \`/musica\`  /  \`mi musica\`  /  \`mis bandas\``,
+      `  Recomendaciones       →  \`qué música tengo para concentrarme?\``,
+      `  Búsqueda por género   →  \`qué bandas de metal progresivo tengo?\``,
       ``,
       `**BÚSQUEDA WEB**`,
       `  Noticias generales     →  \`últimas noticias\``,

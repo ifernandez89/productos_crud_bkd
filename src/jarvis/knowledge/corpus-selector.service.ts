@@ -653,15 +653,21 @@ export class CorpusSelectorService {
     }
 
     // 2. Localizar el archivo en el sistema de archivos
-    let fullPath = path.join(process.cwd(), 'docs', 'libros', doc.archivo);
-    if (!fs.existsSync(fullPath)) {
-      // Intentar sin la carpeta libros
-      fullPath = path.join(process.cwd(), 'docs', doc.archivo);
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(
-          `Archivo no encontrado en docs/ o docs/libros/: ${doc.archivo}`,
-        );
-      }
+    const candidatePaths = [
+      path.join(process.cwd(), 'docs', 'books', doc.archivo),
+      path.join(process.cwd(), 'docs', 'books', path.basename(doc.archivo)),
+      path.join(process.cwd(), 'storage', 'translated', doc.archivo),
+      path.join(process.cwd(), 'storage', 'translated', path.basename(doc.archivo)),
+      path.join(process.cwd(), 'docs', 'libros', doc.archivo),
+      path.join(process.cwd(), 'docs', doc.archivo),
+      path.join(process.cwd(), 'src', 'jarvis', 'knowledge', doc.archivo),
+    ];
+
+    const fullPath = candidatePaths.find((p) => fs.existsSync(p));
+    if (!fullPath) {
+      throw new Error(
+        `Archivo no encontrado en docs/books/, storage/translated/ o docs/: ${doc.archivo}`,
+      );
     }
 
     // 3. Leer e Ingerir el archivo según su tipo/extensión

@@ -1,0 +1,4093 @@
+{
+  "metadata": {
+    "version": 1,
+    "origenRuta": "I:\\Musica",
+    "descripcion": "Índice y Catálogo de Conocimiento Musical Personal de JarBees",
+    "fechaActualizacion": "2026-10-10T20:50:56.206Z",
+    "totalArtistas": 64,
+    "totalAlbumes": 220,
+    "totalCancionesEstimadas": 2367
+  },
+  "artistas": [
+    {
+      "nombre": "A Thousand Years Of Plagues",
+      "totalAlbumes": 3,
+      "totalCanciones": 18,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (3 álbumes, 18 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "2009 - Demo",
+          "año": "2009",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Intro",
+            "Facing Lies",
+            "Breath For Crawl",
+            "It´s Not The First Time..."
+          ]
+        },
+        {
+          "titulo": "2011 - [EP]",
+          "año": "2011",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "What Hell is Really Like",
+            "Echoes"
+          ]
+        },
+        {
+          "titulo": "2013 - Daemon",
+          "año": "2013",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Exogenesis",
+            "Astaroth, The Baptism",
+            "Tunnel",
+            "Symphony Of The Fallen",
+            "Xenoglosia",
+            "At The Gates",
+            "Eternal Eclipse",
+            "Lilith"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Amy Winehouse",
+      "totalAlbumes": 3,
+      "totalCanciones": 16,
+      "generos": [
+        "Soul",
+        "R&B",
+        "Jazz",
+        "Ska"
+      ],
+      "estilo": "Emblemática cantautora británica con voz contralto profunda y letras autobiográficas cargadas de emotividad, vulnerabilidad y estilo retro Motown/soul de los años 60.",
+      "moods": [
+        "introspeccion",
+        "melancolia",
+        "clasico",
+        "relajacion"
+      ],
+      "albumes": [
+        {
+          "titulo": "Amy Winehouse - Back To Black (2006)",
+          "año": "2006",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Rehab",
+            "You Know I'm No Good",
+            "Me & Mr Jones",
+            "Just Friends",
+            "Back To Black",
+            "Love Is A Losing Game",
+            "Tears Dry On Their Own",
+            "Wake Up Alone"
+          ]
+        },
+        {
+          "titulo": "Amy Winehouse - The Rarities - 2016 - LP",
+          "año": "2016",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Amy Winehouse - The Rarities - 2016 - LP"
+          ]
+        },
+        {
+          "titulo": "Amy Winehouse - The Ska EP",
+          "año": "No especificado",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Monkey Man",
+            "Hey Little Rich Girl",
+            "You're Wondering Now",
+            "Cupid"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Animals As Leaders",
+      "totalAlbumes": 7,
+      "totalCanciones": 63,
+      "generos": [
+        "Metal Progresivo",
+        "Djent",
+        "Instrumental"
+      ],
+      "estilo": "Trío instrumental liderado por Tosin Abasi y Javier Reyes con guitarras de 8 cuerdas y batería virtuosa de Matt Garstka. Destaca por polirritmias, compases amalgama, slap/thump en guitarra y fusión con jazz y electrónica.",
+      "moods": [
+        "concentracion",
+        "estudio",
+        "virtuosismo",
+        "energia_mental"
+      ],
+      "albumes": [
+        {
+          "titulo": "2009 - Animals As Leaders",
+          "año": "2009",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Tempting Time",
+            "Soraya",
+            "Thoroughly At Home",
+            "On Impulse",
+            "Tessitura",
+            "Behaving Badly",
+            "The Price Of Everything And The Value Of Nothing",
+            "CAFO"
+          ]
+        },
+        {
+          "titulo": "2010 - Wave Of Babies (Single)",
+          "año": "2010",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Wave Of Babies"
+          ]
+        },
+        {
+          "titulo": "2011 - Weightless",
+          "año": "2011",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "An Infinite Regression",
+            "Odessa",
+            "Somnarium",
+            "Earth Departure",
+            "Isolated Incidents",
+            "Do Not Go Gently",
+            "New Eden",
+            "Cylindrical Sea"
+          ]
+        },
+        {
+          "titulo": "2014 - The Joy Of Motion",
+          "año": "2014",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Ka$cade",
+            "Lippincott",
+            "Air Chrysalis",
+            "Another Year",
+            "Physical Education",
+            "Tooth And Claw",
+            "Crescent",
+            "The Future That Awaited Me"
+          ]
+        },
+        {
+          "titulo": "2015 - Animals As Leaders (Encore Edition)",
+          "año": "2015",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "Tempting Time",
+            "Soraya",
+            "Thoroughly at Home",
+            "On Impulse",
+            "Tessitura",
+            "Behaving Badly",
+            "The Price of Everything and the Value of Nothing",
+            "CAFO"
+          ]
+        },
+        {
+          "titulo": "2016 - Arithmophobia (Single)",
+          "año": "2016",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Arithmophobia"
+          ]
+        },
+        {
+          "titulo": "2016 - The Madness of Many",
+          "año": "2016",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Arithmophobia",
+            "Ectogenesis",
+            "Cognitive Contortions",
+            "Inner Assassins",
+            "Private Visions of the World",
+            "Backpfeifengesicht",
+            "Transcentience",
+            "The Glass Bridge"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Aversions Crown",
+      "totalAlbumes": 2,
+      "totalCanciones": 21,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 21 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Aversions Crown - Servitude (2011)",
+          "año": "2011",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "No Salvation",
+            "Excoriate",
+            "Imperfect Design",
+            "Hive Mind",
+            "Repurposed - Reprogrammed",
+            "Solace",
+            "Partisan Deconstruction",
+            "We're Not Safe"
+          ]
+        },
+        {
+          "titulo": "Aversions Crown - Tyrant",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Hollow Planet",
+            "The Glass Sentient",
+            "Conqueror",
+            "Vectors",
+            "Earth Steriliser",
+            "Avalanche",
+            "Xenoforms",
+            "Overseer"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Beneath the Massacre",
+      "totalAlbumes": 4,
+      "totalCanciones": 37,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (4 álbumes, 37 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Beneath the Massacre - Marée Noire EP [2010]",
+          "año": "2010",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "The Casket You Sleep In",
+            "Black Tide",
+            "Drill Baby Drill",
+            "Designed To Strangle",
+            "Anomic"
+          ]
+        },
+        {
+          "titulo": "Dystopia",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "beneath_the_massacre-condemned",
+            "beneath_the_massacre-reign_of_terror",
+            "beneath_the_massacre-our_common_grave",
+            "beneath_the_massacre-harvest_of_hate",
+            "beneath_the_massacre-the_wasteland",
+            "beneath_the_massacre-bitter",
+            "beneath_the_massacre-no_future",
+            "beneath_the_massacre-lithium_overdose"
+          ]
+        },
+        {
+          "titulo": "Incongruous",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Symptoms",
+            "Hunted",
+            "Left Hand",
+            "Hopes",
+            "It",
+            "Light",
+            "Incongruous",
+            "Pedestal"
+          ]
+        },
+        {
+          "titulo": "Mechanics Of Dysfunction",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "The Surface",
+            "Society's Disposable Son",
+            "The System's Failure",
+            "The Stench Of Misery",
+            "Untitled",
+            "Modern Age Slavery",
+            "The Invisible Hand",
+            "Better Off Dead"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Broken Flesh - Broken Flesh",
+      "totalAlbumes": 1,
+      "totalCanciones": 12,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 12 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Broken Flesh - Broken Flesh (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Valley Of Mass Crucifixion",
+            "Blood Harvest",
+            "Consumed By Death",
+            "Buried Alive",
+            "Hell",
+            "Cries Of The Dead",
+            "Forever In Flames",
+            "Unworthy",
+            "Exalt",
+            "Ignominy"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Bury Your Dead",
+      "totalAlbumes": 1,
+      "totalCanciones": 12,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 12 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "2004 - Cover Your Tracks",
+          "año": "2004",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Top Gun",
+            "Vanilla Sky",
+            "Mission Impossible",
+            "Eyes Wide Shut",
+            "Magnolia",
+            "The Outsiders",
+            "Mission Impossible 2",
+            "The Color of Money"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Cannibal Corpse",
+      "totalAlbumes": 1,
+      "totalCanciones": 29,
+      "generos": [
+        "Brutal Death Metal",
+        "Death Metal"
+      ],
+      "estilo": "Pioneros del death metal norteamericano con bajo virtuoso de Alex Webster, guturales icónicos de George Corpsegrinder Fisher y letras extremas.",
+      "moods": [
+        "fuerza",
+        "entrenamiento",
+        "adrenalina",
+        "pesado"
+      ],
+      "albumes": [
+        {
+          "titulo": "Cannibal Corpse (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 29,
+          "pistasMuestra": [
+            "Pounded Into Dust",
+            "cannibal_corpse-demented_aggression",
+            "The time to kill is now",
+            "Dead Human Collection",
+            "Disposal of the body",
+            "Sadistic Embodiment",
+            "Sentenced to burn",
+            "Unleashing The Bloodthirsty",
+            "cannibal_corpse-scourge_of_iron",
+            "Kill Or Become"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Carnifex",
+      "totalAlbumes": 5,
+      "totalCanciones": 50,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (5 álbumes, 50 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Carnifex (US) -2010- Hell Chose Me",
+          "año": "2010",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Hell Chose Me",
+            "Dead Archetype",
+            "Entombed Monarch",
+            "Names Mean Nothing",
+            "Heartless",
+            "Sorrowspell",
+            "The Scope of Obsession",
+            "By Darkness Enslaved"
+          ]
+        },
+        {
+          "titulo": "Carnifex - 2011 - Until I Feel Nothing",
+          "año": "2011",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Deathwish",
+            "We Spoke Of Lies",
+            "A Grave To Blame",
+            "Dead But Dreaming",
+            "Creation Defaced",
+            "Dehumanize",
+            "Until I Feel Nothing",
+            "Never Forgive Me"
+          ]
+        },
+        {
+          "titulo": "Dead In My Arms",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Intro",
+            "These Thoughts Became Cages",
+            "Slit Wrist Savior",
+            "Hope Dies With Decadent",
+            "Lie To My Face",
+            "Love Lies In Ashes",
+            "A Winter In Remorse",
+            "Collaborating Like Killers"
+          ]
+        },
+        {
+          "titulo": "Die Without Hope 2014",
+          "año": "2014",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Salvation Is Dead",
+            "Dark Days",
+            "Condemned To Decay",
+            "Die Without Hope",
+            "Hatred And Slaughter",
+            "Dragged Into The Grave",
+            "Rotten Souls",
+            "Last Words"
+          ]
+        },
+        {
+          "titulo": "The Diseased and the Poisoned",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Carnifex - Suffering",
+            "Carnifex - In Coalesce With Filth and Faith",
+            "Carnifex - The Nature of Depravity",
+            "Carnifex - Adornment of the Sickened",
+            "Carnifex - Innocence Died Screaming",
+            "Carnifex - The Diseased and the Poisoned",
+            "Carnifex - To My Dead and Dark Dreams",
+            "Carnifex - Sadistic Embrace"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Carnivorous Voracity - The Impious Doctrine (2015)",
+      "totalAlbumes": 1,
+      "totalCanciones": 10,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 10 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Carnivorous Voracity - The Impious Doctrine (2015) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Raised Toward Heaven",
+            "Epiphanies Of Perverse Egocentrism",
+            "Steeped In Magnanimity",
+            "Grotesque Expiation Of Dissolute Lambs",
+            "Secularize",
+            "Anatomic Human Degradation",
+            "Serpent's Nest",
+            "The Threshold Of Obliteration",
+            "Anthropophagous Infanticide",
+            "Transferable Malignity"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Cerebral - Agorafobia",
+      "totalAlbumes": 1,
+      "totalCanciones": 4,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 4 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Cerebral - Agorafobia (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Esquizofrenia",
+            "Pesadillas",
+            "Alzheimer",
+            "Pandemia"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Cypress Hill",
+      "totalAlbumes": 7,
+      "totalCanciones": 74,
+      "generos": [
+        "Hip Hop",
+        "West Coast Rap",
+        "Hardcore Hip Hop"
+      ],
+      "estilo": "Leyendas del rap chicano de California con B-Real, Sen Dog y Muggs. Beats pesados, percusiones latinas y estética urbana inconfundible.",
+      "moods": [
+        "groove",
+        "urbano",
+        "calle"
+      ],
+      "albumes": [
+        {
+          "titulo": "Cypress Hill (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "Boom Biddy Bye Bye - Cypress Hill",
+            "Whatta You Know - Cypress Hill"
+          ]
+        },
+        {
+          "titulo": "10-2001-Stoned Raiders",
+          "año": "2001",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "intro",
+            "trouble",
+            "kronologik",
+            "southland killers",
+            "bitter",
+            "amplified",
+            "it ain't easy",
+            "memories"
+          ]
+        },
+        {
+          "titulo": "1998 - Tequila Sunrise",
+          "año": "1998",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Cypress Hill - 01 - Tequila Sunrise",
+            "Cypress Hill - 02 - Tequila Sunrise",
+            "Cypress Hill - 03 - Champions",
+            "Cypress Hill - 04 - Tequila Sunrise"
+          ]
+        },
+        {
+          "titulo": "BLACK SUNDAY. Año 1993",
+          "año": "1993",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "I wanna get high",
+            "hits from the bong",
+            "what go around  come around kid",
+            "hand on the glock",
+            "break' em off some",
+            "a to the k",
+            "I Ain't Goin' Out Like That",
+            "insane in the brain"
+          ]
+        },
+        {
+          "titulo": "CYPRESS HILL. Año 1991",
+          "año": "1991",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Pigs",
+            "How I Could Just Kill A Man",
+            "Hand On The Pump",
+            "Hole In The Head",
+            "Light Another",
+            "The Phuncky Feel One",
+            "Break It Up",
+            "Stoned Is The Way Of The Walk"
+          ]
+        },
+        {
+          "titulo": "GRANDES EXITOS EN ESPAÑOL. Año 1999",
+          "año": "1999",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Yo quiero fumar",
+            "Loco en el coco",
+            "No entiendes la onda",
+            "Dr Dedoverde",
+            "Latino Lingo",
+            "Puercos",
+            "Marijuano locos",
+            "Tu no ajaunta"
+          ]
+        },
+        {
+          "titulo": "TEMPLE OF BOOM. Año 1995",
+          "año": "1995",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Spark Another Owl",
+            "Throw Your Set In The Air",
+            "Stoned Raiders",
+            "Illusions",
+            "Killa Hill",
+            "Boom Biddy Bye Bye",
+            "Make A Move",
+            "Killafornia"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Daniel Fernández Tenor",
+      "totalAlbumes": 1,
+      "totalCanciones": 12,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 12 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "travesia",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Track01",
+            "Track02",
+            "Track03",
+            "Track04",
+            "Track05",
+            "Track06",
+            "Track07",
+            "Track08"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "David Bowie - Legacy (2016)",
+      "totalAlbumes": 2,
+      "totalCanciones": 40,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 40 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "CD1",
+          "año": "No especificado",
+          "totalPistas": 21,
+          "pistasMuestra": [
+            "Space Oddity",
+            "The Man Who Sold The World",
+            "Changes",
+            "Oh! You Pretty Things",
+            "Life On Mars",
+            "Starman",
+            "Ziggy Stardust",
+            "Moonage Daydream"
+          ]
+        },
+        {
+          "titulo": "CD2",
+          "año": "No especificado",
+          "totalPistas": 19,
+          "pistasMuestra": [
+            "Under Pressure",
+            "Let's Dance",
+            "China Girl",
+            "Modern Love",
+            "Blue Jean",
+            "This Is Not America",
+            "Dancing In The Street",
+            "Absolute Beginners"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Death",
+      "totalAlbumes": 4,
+      "totalCanciones": 41,
+      "generos": [
+        "Death Metal Progresivo",
+        "Pioneros del Death Metal"
+      ],
+      "estilo": "Fundada por Chuck Schuldiner (\"el padre del death metal\"). Evolucionó hacia un virtuosismo progresivo con letras filosóficas sobre la mente y el destino.",
+      "moods": [
+        "filosofico",
+        "virtuosismo_metal",
+        "tecnico"
+      ],
+      "albumes": [
+        {
+          "titulo": "1998 - The Sound Of Perseverance",
+          "año": "1998",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Scavenger Of Human Sorrow",
+            "Bite The Pain",
+            "Spirit Crusher",
+            "Story To Tell",
+            "Flesh And The Power It Holds",
+            "Voice Of The Soul",
+            "To Forgive Is To Suffer",
+            "A Moment Of Clarity"
+          ]
+        },
+        {
+          "titulo": "Death - Symbolic (1995) (Remastered - 2008)",
+          "año": "1995",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Death - Symbolic - 01 - Symbolic",
+            "Death - Symbolic - 02 - Zero Tolerance",
+            "Death - Symbolic - 03 - Empty Words",
+            "Death - Symbolic - 04 - Sacred Serenity",
+            "Death - Symbolic - 05 - 1,000 Eyes",
+            "Death - Symbolic - 06 - Without Judgement",
+            "Death - Symbolic - 07 - Crystal Mountain",
+            "Death - Symbolic - 08 - Misanthrope"
+          ]
+        },
+        {
+          "titulo": "Death-1993-Individual Thought Patterns",
+          "año": "1993",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Overactive Imagination",
+            "In Human Form",
+            "Jealousy",
+            "Trapped In A Corner",
+            "Nothing Is Everything",
+            "Mentally Blind",
+            "Individual Thought Patterns",
+            "Destiny"
+          ]
+        },
+        {
+          "titulo": "Death-Human MP3",
+          "año": "No especificado",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Flattening of Emotions",
+            "Suicide Machine",
+            "Together As One",
+            "Secret Face",
+            "Lack of Comprehension",
+            "See Through Dreams",
+            "Cosmic Sea",
+            "Vacant Planets"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Decapitated",
+      "totalAlbumes": 6,
+      "totalCanciones": 43,
+      "generos": [
+        "Technical Death Metal",
+        "Groove Metal"
+      ],
+      "estilo": "Referentes polacos del death metal técnico con riffs hiper-precisos del guitarrista Vogg.",
+      "moods": [
+        "precision",
+        "pesadez",
+        "tecnico"
+      ],
+      "albumes": [
+        {
+          "titulo": "Decapitated (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "DECAPITATED - Never"
+          ]
+        },
+        {
+          "titulo": "2000 - Winds Of Creation",
+          "año": "2000",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Winds Of Creation",
+            "Blessed",
+            "The First Damned",
+            "Way To Salvation",
+            "The Eye Of Horus",
+            "Humans Dust",
+            "Nine Steps",
+            "Dance Macabre"
+          ]
+        },
+        {
+          "titulo": "2002 - Nihility",
+          "año": "2002",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Perfect Dehumanisation",
+            "Eternity Too Short",
+            "Mother War",
+            "Nihility",
+            "Names",
+            "Spheres of Madness",
+            "Babylon's Pride",
+            "Symmetry of Zero"
+          ]
+        },
+        {
+          "titulo": "2011 - Carnival Is Forever",
+          "año": "2011",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "The Knife",
+            "United",
+            "Carnival Is Forever",
+            "Homo Sum",
+            "404",
+            "A View From A Hole",
+            "Pest",
+            "Silence"
+          ]
+        },
+        {
+          "titulo": "Organic Hallucinosis",
+          "año": "No especificado",
+          "totalPistas": 7,
+          "pistasMuestra": [
+            "A poem about an old prison man",
+            "Day 69",
+            "Revelation of existence",
+            "Post organic",
+            "Visual delusion",
+            "Flash-back",
+            "Invisible control"
+          ]
+        },
+        {
+          "titulo": "The Negation",
+          "año": "No especificado",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "The Fury",
+            "Three-Dimensional Defect",
+            "Lying And Weak",
+            "Sensual Sickness",
+            "The Calling",
+            "The Negation",
+            "Long-Desired Dementia",
+            "The Empty Throne"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Deftones",
+      "totalAlbumes": 7,
+      "totalCanciones": 64,
+      "generos": [
+        "Metal Alternativo",
+        "Shoegaze",
+        "Nu Metal"
+      ],
+      "estilo": "Contraste único entre agresividad pesada y texturas etéreas sensuales creadas por Chino Moreno y Stephen Carpenter.",
+      "moods": [
+        "atmosfera",
+        "energia_intensa",
+        "sueño"
+      ],
+      "albumes": [
+        {
+          "titulo": "Deftones (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "Beware",
+            "Mein"
+          ]
+        },
+        {
+          "titulo": "Deftones - 1995 - Adrenaline",
+          "año": "1995",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Bored",
+            "Minus Blindfold",
+            "One Weak",
+            "Nosebleed",
+            "Lifter",
+            "Root",
+            "7 Words",
+            "Birthmark"
+          ]
+        },
+        {
+          "titulo": "Deftones - 1997 - Around The Fur",
+          "año": "1997",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "My Own Summer",
+            "Lhabia",
+            "Mascara",
+            "Around The Fur",
+            "Rickets",
+            "Be Quiet And Drive",
+            "Lotion",
+            "Dai The Flu"
+          ]
+        },
+        {
+          "titulo": "Deftones - 2003 - Deftones",
+          "año": "2003",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Hexagram",
+            "Needles And Pins",
+            "Minerva",
+            "Good Morning Beautiful",
+            "When Girls Telephone Boys",
+            "Battle-Axe",
+            "Bloody Cape",
+            "Anniversary Of An Uninteresting Event"
+          ]
+        },
+        {
+          "titulo": "Diamond Eyes",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Diamond Eyes",
+            "Royal",
+            "CMND - CTRL",
+            "You've Seen the Butcher",
+            "Beauty School",
+            "Prince",
+            "Rocket Skates",
+            "Sextape"
+          ]
+        },
+        {
+          "titulo": "Koi No Yokan (2012)",
+          "año": "2012",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Swerve City",
+            "Romantic Dreams",
+            "Leathers",
+            "Poltergeist",
+            "Entombed",
+            "Graphic Nature",
+            "Tempest",
+            "Gauze"
+          ]
+        },
+        {
+          "titulo": "White Pony",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Feiticeira",
+            "Digital Bath",
+            "Elite",
+            "RX Queen",
+            "Street Carp",
+            "Teenager",
+            "Knife Prty",
+            "Korea"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015)",
+      "totalAlbumes": 1,
+      "totalCanciones": 19,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 19 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Dr Bene, Fen & DJ Perez - Salven a las Palomas (2015) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 19,
+          "pistasMuestra": [
+            "Paloma Mensajera del pasado",
+            "Del viento",
+            "Qué vas a hacer",
+            "70 lunas llenas",
+            "Disgusto Adquirido",
+            "El Faro",
+            "Déjame mirar",
+            "Vivir de lo lindo",
+            "Mundo al revés",
+            "Cain & Abel"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "DVSR - D.V.S.R (2015)",
+      "totalAlbumes": 1,
+      "totalCanciones": 11,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 11 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "DVSR - D.V.S.R (2015) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "I V I",
+            "Six Figures Deep",
+            "Fatal Attraction",
+            "Shutdown...",
+            "Life And Death",
+            "Beneath The Skin",
+            "Remission",
+            "Hooded Race",
+            "The Forked Tongue",
+            "React"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Dying Fetus - Reign Supreme (2012)",
+      "totalAlbumes": 1,
+      "totalCanciones": 10,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 10 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Dying Fetus - Reign Supreme (2012) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Invert the Idols",
+            "Subjected to a Beating",
+            "Second Skin",
+            "From Womb to Waste",
+            "Dissidence",
+            "In the Trenches",
+            "Devout Atrocity",
+            "Revisionist Past",
+            "The Blood of Power",
+            "Dead Whores Love to Fuck"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Ektomorf - Outcast",
+      "totalAlbumes": 1,
+      "totalCanciones": 12,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 12 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Ektomorf - Outcast (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Outcast",
+            "I choke",
+            "Ambush in the night",
+            "I'm against",
+            "We rise",
+            "Red I",
+            "Who can I trust",
+            "Leave me alone",
+            "Fuel my fire",
+            "I confront my enemy"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "First Fragment - Dasein (2016)",
+      "totalAlbumes": 1,
+      "totalCanciones": 11,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 11 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "First Fragment - Dasein (2016) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Le Serment De Tsion",
+            "Psychan",
+            "Evhron",
+            "Dasein",
+            "L’entité",
+            "Émergence",
+            "Mordêtre Et Dénaissance",
+            "Prélude En Sol Dièse Mineur",
+            "Archétype",
+            "Gula"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Gorillaz - Greatest Hits-2010",
+      "totalAlbumes": 1,
+      "totalCanciones": 21,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 21 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Gorillaz - Greatest Hits-2010 (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 21,
+          "pistasMuestra": [
+            "Superfast Jellyfish",
+            "Rockit",
+            "Rhinestone Eyes",
+            "Feel Good Inc.",
+            "Clint Eastwood",
+            "Stylo",
+            "DARE",
+            "5_4",
+            "On Melancholy Hill",
+            "Lil' Dub Chefin'"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Gustavo Cerati",
+      "totalAlbumes": 6,
+      "totalCanciones": 49,
+      "generos": [
+        "Rock Nacional",
+        "Art Rock",
+        "Pop Rock",
+        "Electronica"
+      ],
+      "estilo": "Figura máxima del rock hispanoamericano y líder de Soda Stereo. Letras poéticas y vanguardia en guitarra y producción sonora (Amor Amarillo, Bocanada, Ahí Vamos, Fuerza Natural).",
+      "moods": [
+        "introspeccion",
+        "viaje_musical",
+        "poesia",
+        "clasico_argentino"
+      ],
+      "albumes": [
+        {
+          "titulo": "Gustavo Cerati (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Te para tres - Soda Stereo"
+          ]
+        },
+        {
+          "titulo": "1992 - Gustavo Cerati - Colores Santos",
+          "año": "1992",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Vuelta Por El Universo",
+            "Marea De Venus",
+            "Cozumel",
+            "Quatro",
+            "Pudo Ser",
+            "Hoy Ya No Soy Yo",
+            "La Cuerda Planetaria",
+            "Madre Tierra"
+          ]
+        },
+        {
+          "titulo": "1993 - Gustavo Cerati - Amor Amarillo",
+          "año": "1993",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "A Merced",
+            "Ahora es Nunca",
+            "Amor Amarillo",
+            "Av. Alkorta",
+            "Bajan",
+            "Cabeza de Medusa",
+            "Lisa",
+            "Pulsar"
+          ]
+        },
+        {
+          "titulo": "2006 - Ahi Vamos",
+          "año": "2006",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Al Fin Sucede",
+            "La Excepcion",
+            "Uno Entre Mil",
+            "Caravana",
+            "Adios",
+            "Me Quedo Aqui",
+            "Lago En El Cielo",
+            "Dios Nos Libre"
+          ]
+        },
+        {
+          "titulo": "Gustavo Cerati - 11 Episodios Sinfónicos",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Gustavo Cerati - 11 Episodios Sinfónicos"
+          ]
+        },
+        {
+          "titulo": "Gustavo Cerati - Fuerza Natural",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Fuerza natural",
+            "Deja vu",
+            "Magia",
+            "Amor sin rodeos",
+            "Tracción a sangre",
+            "Desastre",
+            "Rapto",
+            "Cacçtus"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Hacktivist",
+      "totalAlbumes": 2,
+      "totalCanciones": 8,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 8 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Hacktivist (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "New Age",
+            "Unlike Us",
+            "HACKTIVIST - BUSZY",
+            "Hacktivist - Elevate",
+            "Niggas In Paris"
+          ]
+        },
+        {
+          "titulo": "demo",
+          "año": "No especificado",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "Blades",
+            "Cold Shoulders",
+            "Hacktivist"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Hijos de las Hojas",
+      "totalAlbumes": 2,
+      "totalCanciones": 15,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 15 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Hijos de las Hojas (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "HDH - Prana"
+          ]
+        },
+        {
+          "titulo": "Hijos de las Hojas - El camino de la Serpiente (Chile)",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Antu Fusha Kushe",
+            "Frutos Viejos",
+            "Caeran",
+            "Lo Que Callan Las Abejas",
+            "Bosque De Poe Con Riodelí",
+            "Censura Sensorial",
+            "Bajo El Mismo Cielo",
+            "Séptimo Portal"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Johny Alen",
+      "totalAlbumes": 4,
+      "totalCanciones": 33,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (4 álbumes, 33 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Johny Alen (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "SESIONES QMP - JOHNY ALEN"
+          ]
+        },
+        {
+          "titulo": "Johny Alen - La Semilla (2019) 320",
+          "año": "2019",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Dorlabra",
+            "Tramando",
+            "Que Pasen",
+            "Tierra de Nadie",
+            "No Quites Mi Paz",
+            "Un Gran Arbol",
+            "De Raíz",
+            "Monosol"
+          ]
+        },
+        {
+          "titulo": "Johny Alen -Sangre o Sal (2013)",
+          "año": "2013",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "01_-_Johny Intro",
+            "02_-_Desde siempre",
+            "03_-_Croquis",
+            "04_-_Interclub",
+            "05_-_Crisis",
+            "06_-_Hombre elefante",
+            "07_-_Nada que inventar",
+            "08_-_En serie"
+          ]
+        },
+        {
+          "titulo": "Johny_Alen_-_Monokid_(2014)",
+          "año": "2014",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Mono entrando",
+            "Traje, viejo y viento",
+            "Sigue el plan",
+            "El cerrojo",
+            "Outro",
+            "Origen",
+            "Sol semántico",
+            "Diente x diente"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Korn",
+      "totalAlbumes": 6,
+      "totalCanciones": 83,
+      "generos": [
+        "Nu Metal",
+        "Metal Alternativo"
+      ],
+      "estilo": "Pioneros del nu metal con bajos de 5 cuerdas slapeados por Fieldy, guitarras de 7 cuerdas afinadas graves y la catarsis emocional de Jonathan Davis.",
+      "moods": [
+        "catarsis",
+        "pesado",
+        "emocional"
+      ],
+      "albumes": [
+        {
+          "titulo": "1996 - Life Is Peachy",
+          "año": "1996",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Twist",
+            "Chi",
+            "Lost",
+            "Swallow",
+            "Porno Creep",
+            "Good God",
+            "Mr. Rogers",
+            "K@#Ø%!"
+          ]
+        },
+        {
+          "titulo": "2000 - Issues",
+          "año": "2000",
+          "totalPistas": 16,
+          "pistasMuestra": [
+            "Korn - Dead",
+            "Korn - Falling Away From Me",
+            "Korn - Trash",
+            "Korn - 4 U",
+            "Korn - Beg For Me",
+            "Korn - Make Me Bad",
+            "Korn - It's Gonna Go Away",
+            "Korn - Wake Up"
+          ]
+        },
+        {
+          "titulo": "Follow the Leader (1999)",
+          "año": "1999",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "It's On!",
+            "Freak on a Leash",
+            "Got the Life",
+            "Dead Bodies Everywhere",
+            "Children of the Korn",
+            "B.B.K",
+            "Pretty",
+            "All in the Family"
+          ]
+        },
+        {
+          "titulo": "Korn (1994)",
+          "año": "1994",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Korn - Blind",
+            "Korn - Ball Tongue",
+            "Korn - Need To",
+            "Korn - Clown",
+            "Korn - Divine",
+            "Korn - Faget",
+            "Korn - Shoots And Ladders",
+            "Korn - Predictable"
+          ]
+        },
+        {
+          "titulo": "Take A Look In The Mirror (2003)",
+          "año": "2003",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Korn - Right Now",
+            "Korn - Break Some Off",
+            "Korn - Counting On Me",
+            "Korn - Here It Comes Again",
+            "Korn - Deep Inside",
+            "Korn - Did My Time",
+            "Korn - Everything I've Known",
+            "Korn - Play Me"
+          ]
+        },
+        {
+          "titulo": "Untouchables (2002)",
+          "año": "2002",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Here To Stay",
+            "Make Believe",
+            "Blame",
+            "Hollow Life",
+            "Bottled Up Inside",
+            "Thoughtless",
+            "Hating",
+            "One More Time"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Lentos",
+      "totalAlbumes": 1,
+      "totalCanciones": 262,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 262 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Lentos (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 262,
+          "pistasMuestra": [
+            "-baladas antigas lentas-roxette - spending my time 32",
+            "i have nothing287",
+            "The Miracle",
+            "Maravillosa Esta Noche",
+            "Summertime",
+            "alwais somewhere",
+            "holliday",
+            "todo el amor del mundo",
+            "The Man I Love",
+            "frank sinatra - all the way"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Limp Bizkit",
+      "totalAlbumes": 3,
+      "totalCanciones": 39,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (3 álbumes, 39 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "(1999) Significant Other",
+          "año": "1999",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Intro",
+            "Just Like This",
+            "Nookie",
+            "Break Stuff",
+            "Re-Arranged",
+            "I'm Broke",
+            "Nobody Like You",
+            "Don't Go Off Wandering"
+          ]
+        },
+        {
+          "titulo": "(2000) Chocolate Starfish And The Hot Dog Flavored Water",
+          "año": "2000",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Intro",
+            "Hot Dog",
+            "My Generation",
+            "Full Nelson",
+            "My Way",
+            "Rollin'",
+            "Livin' It Up",
+            "The One"
+          ]
+        },
+        {
+          "titulo": "1997 - Three Dollar Bill, Y'all$ (Japan Edition)",
+          "año": "1997",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Intro",
+            "Pollution",
+            "Counterfeit",
+            "Stuck",
+            "Nobody Loves Me",
+            "Sour",
+            "Stalemate",
+            "Clunk"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Linkin Park - Hybrid Theory [2000]",
+      "totalAlbumes": 1,
+      "totalCanciones": 12,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 12 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Linkin Park - Hybrid Theory [2000] (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Papercut",
+            "One Step Closer",
+            "With You",
+            "Points of Authority",
+            "Crawling",
+            "Runaway",
+            "By Myself",
+            "In the End",
+            "Place for My Head",
+            "Forgotten"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "LIVING PROOF",
+      "totalAlbumes": 10,
+      "totalCanciones": 78,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (10 álbumes, 78 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "LIVING PROOF (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 23,
+          "pistasMuestra": [
+            "Living Proof - Unconcious manifestations",
+            "Living Proof - The Prophet",
+            "The Prophet 2021",
+            "Living Proof - Malevolent",
+            "Living Proof - Walls of the sick man",
+            "Living Proof - Transition",
+            "Living Proof - Unconcious manifestations P2",
+            "Living Proof - Dimensionless",
+            "Living Proof - Kether",
+            "bateria"
+          ]
+        },
+        {
+          "titulo": "01 Inicio",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "tema"
+          ]
+        },
+        {
+          "titulo": "10",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "10",
+            "Death Metal Drum Track 185",
+            "final sin fade out",
+            "final",
+            "viola 2",
+            "viola 3",
+            "viola 4",
+            "viola 5"
+          ]
+        },
+        {
+          "titulo": "BATAS LISTAS",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Kether"
+          ]
+        },
+        {
+          "titulo": "GRABACION CON BEHRINGER",
+          "año": "No especificado",
+          "totalPistas": 18,
+          "pistasMuestra": [
+            "adimensional - viola",
+            "adimensionalPROViola",
+            "Condemn His Lies OLD",
+            "Condemn His Lies",
+            "Fallen God",
+            "LIVING PROOF - Fallen God",
+            "Take 22.04. 19h25m34s",
+            "Take 23.04. 15h00m08s"
+          ]
+        },
+        {
+          "titulo": "LIVING PROOF (  )",
+          "año": "No especificado",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Dimensionless",
+            "Dimensionless",
+            "kether",
+            "Living Proof - Kether"
+          ]
+        },
+        {
+          "titulo": "LIVING PROOF (Ep-Malignant Expiation)",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Condemn His Lies"
+          ]
+        },
+        {
+          "titulo": "nuevo tema",
+          "año": "No especificado",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Skeletal Figure",
+            "Drum Track Loops 150 bpm Backing",
+            "tapping",
+            "viola nueva 2",
+            "viola nuevo"
+          ]
+        },
+        {
+          "titulo": "SAMPLERS INTROS",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Intro NUEVO"
+          ]
+        },
+        {
+          "titulo": "Unconscious manifestations",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Living Proof - Unconcious manifestations",
+            "Living Proof - The Prophet",
+            "Living Proof - Malevolent",
+            "Living Proof - Walls of the sick man",
+            "Living Proof - Transition",
+            "Living Proof - Unconcious manifestations P2",
+            "Living Proof - Dimensionless",
+            "Living Proof - Kether"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Los Espiritus",
+      "totalAlbumes": 3,
+      "totalCanciones": 28,
+      "generos": [
+        "Blues Rock",
+        "Rock Psicodélico",
+        "Ritmos Latinos"
+      ],
+      "estilo": "Banda argentina contemporánea que combina blues nocturno, letras de trance citadino y percusiones envolventes.",
+      "moods": [
+        "trance",
+        "nocturno",
+        "blues"
+      ],
+      "albumes": [
+        {
+          "titulo": "2015 - Gratitud",
+          "año": "2015",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "La Crecida",
+            "Perro Viejo",
+            "Mares",
+            "Alto Valle",
+            "Gratitud",
+            "Negro Chico",
+            "Vamos A La Luna",
+            "Pelea Callejera"
+          ]
+        },
+        {
+          "titulo": "2017 - Agua Ardiente",
+          "año": "2017",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Huracanes",
+            "Jugo",
+            "Perdida En El Fuego",
+            "La Rueda Que Mueve Al Mundo",
+            "Esa Luz",
+            "La Mirada",
+            "Mapa Vacio",
+            "Las Armas Las Carga El Diablo"
+          ]
+        },
+        {
+          "titulo": "2019 - Caldero",
+          "año": "2019",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Los Espiritus - Motivos",
+            "Los Espiritus - El Árbol de los Venenos",
+            "Los Espiritus - Cigarros y Tragos",
+            "Los Espiritus - Semillas de Luz",
+            "Los Espiritus - El Servidor",
+            "Los Espiritus - Plegarias",
+            "Los Espiritus - Destino",
+            "Los Espiritus - Ola Blanca"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Luis Alberto Spinetta",
+      "totalAlbumes": 6,
+      "totalCanciones": 59,
+      "generos": [
+        "Rock Nacional",
+        "Jazz Rock",
+        "Poesía Musical"
+      ],
+      "estilo": "El \"Flaco\" Spinetta, prócer absoluto de la música argentina. Complejidad armónica jazzera, lírica surrealista y profundidad filosófica incomparable.",
+      "moods": [
+        "filosofico",
+        "introspeccion",
+        "poesia",
+        "arte_puro"
+      ],
+      "albumes": [
+        {
+          "titulo": "Luis Alberto Spinetta (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 20,
+          "pistasMuestra": [
+            "Todas las Hojas Son del Viento",
+            "Cementerio Club",
+            "Por",
+            "La Sed Verdadera",
+            "Cantata de Puentes Amarillos",
+            "Bajan",
+            "a Starosta, el Idiota",
+            "Las Habladurias del Mundo",
+            "A Estos Hombres Tristes - Almendra",
+            "Luia Alberto Spinetta - Espuma mística"
+          ]
+        },
+        {
+          "titulo": "1975 - Durazno Sangrando",
+          "año": "1975",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Encadenado El Anima",
+            "Durazno Sangrando",
+            "Pleamar De Aguilas",
+            "En Una Lejana Playa Del Animus",
+            "Dios De La Adolescencia"
+          ]
+        },
+        {
+          "titulo": "1976 - El Jardin De Los Presentes",
+          "año": "1976",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "El Anillo Del Capitan Beto",
+            "Los Libros De La Buena Memoria",
+            "Alarma Entre Los Angeles",
+            "Que Ves El Cielo",
+            "Ruido De Magia",
+            "Doscientos Años",
+            "Niño Condenado",
+            "Las Golondrinas De La Plaza De"
+          ]
+        },
+        {
+          "titulo": "1977 - A 18' del sol",
+          "año": "1977",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Viento del azur",
+            "Telgopor",
+            "Viejas mascarillas",
+            "A dieciocho minutos del sol",
+            "Canción Para Los Días De La Vida",
+            "Toda La Vida Tiene Música Hoy",
+            "¿Dónde Está El Topacio0",
+            "La Eternidad Imaginaria"
+          ]
+        },
+        {
+          "titulo": "Luis Alberto Spinetta - 1974 - Invisible",
+          "año": "1974",
+          "totalPistas": 6,
+          "pistasMuestra": [
+            "Azafata del Tren Fantasma",
+            "El Diluvio y la Pasajera",
+            "Irregular",
+            "Jugo de Lúcuma",
+            "Suspensión",
+            "Tema de Elmo Lesto"
+          ]
+        },
+        {
+          "titulo": "Luis Alberto Spinetta - 2002 - Para Los Arboles (Solista quinta etapa)",
+          "año": "2002",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Sin Abandono",
+            "Cisne",
+            "Halo Lunar",
+            "Yo Miro Tu Amor",
+            "A Su Amor, Alli",
+            "Agua De La  Miseria",
+            "Dos Murcielagos",
+            "Vidami"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Manu Chao-Clandestino 1998",
+      "totalAlbumes": 1,
+      "totalCanciones": 16,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 16 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Manu Chao-Clandestino 1998 (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 16,
+          "pistasMuestra": [
+            "01_-_Manu_Chao_-_Clandestino",
+            "02_-_Manu_Chao_-_Desaparecido",
+            "03_-_Manu_Chao_-_Bongo_Bong",
+            "04_-_Manu_Chao_-_Je_ne_t'aime_plus",
+            "05_-_Manu_Chao_-_Mentira",
+            "06_-_Manu_Chao_-_Lagrimas_de_oro",
+            "07_-_Manu_Chao_-_Mama_Call",
+            "08_-_Manu_Chao_-_Luna_y_sol",
+            "09_-_Manu_Chao_-_Por_el_suelo",
+            "10_-_Manu_Chao_-_Welcome_to_tijuana"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Metallica",
+      "totalAlbumes": 1,
+      "totalCanciones": 8,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 8 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Metallica - Master Of Puppets",
+          "año": "No especificado",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Metallica - 01 - Battery",
+            "Metallica - 02 - Master Of Puppets",
+            "Metallica - 03 - The Thing That Should Not Be",
+            "Metallica - 04 - Welcome Home Sanitarium",
+            "Metallica - 05 - Disposable Heroes",
+            "Metallica - 06 - Leper Messiah",
+            "Metallica - 07 - Orion",
+            "Metallica - 08 - Damage Inc"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Molotov Solution",
+      "totalAlbumes": 2,
+      "totalCanciones": 21,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 21 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Molotov Solution - Insurrection 2011",
+          "año": "2011",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Sin & Sacrifice",
+            "Injustice For All",
+            "The Final Hour",
+            "The Blood of Tyrants",
+            "Divide & Conquer",
+            "Insurrection",
+            "Cruor Viaticus",
+            "Prophetic Illusions"
+          ]
+        },
+        {
+          "titulo": "Molotov Solution - The Harbinger (2009)",
+          "año": "2009",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Warlords 1.m4a",
+            "Rule by Secrecy 1.m4a",
+            "Only the Dead 1.m4a",
+            "Atrum Inritus 1.m4a",
+            "Corpus Imperium 1.m4a",
+            "Monolithic Apparatus 1.m4a",
+            "The Harbinger 1.m4a",
+            "Enslaved 1.m4a"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Musica Clasica",
+      "totalAlbumes": 9,
+      "totalCanciones": 58,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (9 álbumes, 58 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Musica Clasica (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "beethoven_concerto_for_violin_and_orchestra_hilary_hahn_violin_leonard_slatkin",
+            "leopold_weiss_greatest_baroque_music_for_meditation_the_most_famous_lute_sonatas_hq_kMUyAM6F94U_320kbps",
+            "Reverie - Claude Debussy"
+          ]
+        },
+        {
+          "titulo": "(2009) - Silvius Leopold Weiss ： Lute Music II",
+          "año": "2009",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Sonata N. 39 In C Major - Ouverture",
+            "Sonata N. 39 In C Major - Courante",
+            "Sonata N. 39 In C Major - Bourrée",
+            "Sonata N. 39 In C Major - Sarabande",
+            "Sonata N. 39 In C Major - Menuet",
+            "Sonata N. 39 In C Major - Presto",
+            "Tombeau Sur La Mort De M. Comte Logy",
+            "Sonata N. 50 In B Flat Major - Introduzzione"
+          ]
+        },
+        {
+          "titulo": "Beethoven - Sinf. nº 1 y nº 3 - Karajan",
+          "año": "No especificado",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "1. Adagio molto. Allegro con brio - Sinf. nº 1",
+            "2. Andante cantabile con moto - Sinf. nº 1",
+            "3. Menuetto. Allegro molto e vivace - Sinf. nº 1",
+            "4. Adagio - Allegro molto e vivace - Sinf. nº 1",
+            "1. Allegro con brio - Sinf. nº 3",
+            "2. Marcia funebre. Adagio assai - Sinf. nº 3",
+            "3. Scherzo. Allegro vivace - Sinf. nº 3",
+            "4. Finale. Allegro molto - Sinf. nº 3"
+          ]
+        },
+        {
+          "titulo": "Beethoven - Sinf. nº 9 - Karajan",
+          "año": "No especificado",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "1. Allegro ma non troppo, un poco maestoso - Sinf. nº 9",
+            "2. Molto vivace - Sinf. nº 9",
+            "3. Adagio molto e cantabile - Sinf. nº 9",
+            "4. Presto - Sinf. nº 9",
+            "5. Presto - O Freunde, nicht diese Töne - Allegro assai - Sinf. nº 9"
+          ]
+        },
+        {
+          "titulo": "BeethovenSymphonyNo.8",
+          "año": "No especificado",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "allegroVivaceEConBrio",
+            "scherzandoAllegretto",
+            "tempoDiMenuetto",
+            "allegroVivace"
+          ]
+        },
+        {
+          "titulo": "Frédéric Chopin",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Chopin - 24 preludios - Armands Abols, piano",
+            "Chopin - Prelude No 4",
+            "Chopin Ballade No. 1 in G minor, Op 23",
+            "Chopin Prelude No.13 - Paul Barton, piano",
+            "Chopin Prelude No.24 - Paul Barton, piano",
+            "Frederic Chopin's Raindrop Prelude, Op 28, No. 15",
+            "Frédéric Chopin - Prélude No. 6 In B Minor _Tolling Bells_",
+            "The Pianist - 01 - Frederic Chopin - Nocturne in C-sharp Minor"
+          ]
+        },
+        {
+          "titulo": "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_The_Four_Seasons_Vivaldi",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_01_-_Spring_Mvt_1_Allegro",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_02_-_Spring_Mvt_2_Largo",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_03_-_Spring_Mvt_3_Allegro_pastorale",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_04_-_Summer_Mvt_1_Allegro_non_molto",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_05_-_Summer_Mvt_2_Adagio",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_06_-_Summer_Mvt_3_Presto",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_07_-_Autumn_Mvt_1_Allegro",
+            "John_Harrison_with_the_Wichita_State_University_Chamber_Players_-_08_-_Autumn_Mvt_2_Adagio_molto"
+          ]
+        },
+        {
+          "titulo": "new",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "1"
+          ]
+        },
+        {
+          "titulo": "Vivaldi",
+          "año": "No especificado",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "Concerto_grosso_for_2_violins,_strings_and_continuo,_op.3_8_,_RV_522__DG_1962",
+            "L'estro_armonico,_Op._3,_Book_II,_Concerto_No._10_in_B_Minor,_RV_580_"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Necrophagist",
+      "totalAlbumes": 2,
+      "totalCanciones": 16,
+      "generos": [
+        "Technical Death Metal",
+        "Neoclassical Metal"
+      ],
+      "estilo": "Obra maestra de Muhammed Suiçmez. Fusión de música clásica barroca con el death metal más veloz y quirúrgico de la historia.",
+      "moods": [
+        "virtuosismo_extremo",
+        "cirugia_musical"
+      ],
+      "albumes": [
+        {
+          "titulo": "Epitaph",
+          "año": "No especificado",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Stabwound",
+            "The Stillborn One",
+            "Ignominious & Pale",
+            "Diminished To B",
+            "Epitaph",
+            "Only Ash Remains",
+            "Seven",
+            "Symbiotic In Theory"
+          ]
+        },
+        {
+          "titulo": "Onset Of Putrefaction",
+          "año": "No especificado",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Foul Body Autopsy",
+            "To Breathe in a Casket",
+            "Mutilate the Stillborn",
+            "Intestinal Incubation",
+            "Culinary Hyperversity",
+            "Advanced Corpse Tumor",
+            "Extreme Unction",
+            "Fermented Offal Discharge"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Nirvana",
+      "totalAlbumes": 5,
+      "totalCanciones": 67,
+      "generos": [
+        "Grunge",
+        "Rock Alternativo",
+        "Punk Rock"
+      ],
+      "estilo": "Trío de Seattle liderado por Kurt Cobain que definió los años 90. Rabia cruda, melodías pegadizas y angustia generacional.",
+      "moods": [
+        "rebeldia",
+        "catarsis",
+        "energia_cruda"
+      ],
+      "albumes": [
+        {
+          "titulo": "Bleach",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Blew",
+            "Floyd The Barber",
+            "About A Girl",
+            "School",
+            "Love Buzz",
+            "Paper Cuts",
+            "Negative Creep",
+            "Scoff"
+          ]
+        },
+        {
+          "titulo": "In Utero '93",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Nirvana - 01 - Serve the servants",
+            "Nirvana - 02 - Scentless apprentice",
+            "Nirvana - 03 - Heart-shaped box",
+            "Nirvana - 04 - Rape me",
+            "Nirvana - 05 - Frances Farmer will have her revenge on Seattle",
+            "Nirvana - 06 - Dumb",
+            "Nirvana - 07 - Very ape",
+            "Nirvana - 08 - Milk it"
+          ]
+        },
+        {
+          "titulo": "Nevermind",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Smells like teens spirit",
+            "In bloom",
+            "Come as you are",
+            "Breed",
+            "Lithium",
+            "Polly",
+            "Territorial pissings",
+            "Drain you"
+          ]
+        },
+        {
+          "titulo": "Nirvana - Incesticide 1992",
+          "año": "1992",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "Nirvana - Dive",
+            "Nirvana - Sliver",
+            "Nirvana - Stain",
+            "Nirvana - Been A Son",
+            "Nirvana - Turnaround",
+            "Nirvana - Molly's Lips",
+            "Nirvana - Son Of A Gun",
+            "Nirvana - Polly"
+          ]
+        },
+        {
+          "titulo": "Nirvana - Unplugged In New York",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "About A Girl",
+            "Come As You Are",
+            "The Man Who Sold The World",
+            "Pennyroyal Tea",
+            "Dumb",
+            "Polly",
+            "On A Plain",
+            "Something In The Way"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Oceano",
+      "totalAlbumes": 3,
+      "totalCanciones": 33,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (3 álbumes, 33 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "2009 - Depths",
+          "año": "2009",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Oceano - Descent",
+            "Oceano - Inhuman Affliction",
+            "Oceano - A Mandatory Sacrifice",
+            "Oceano - Samael The Destroyer",
+            "Oceano - Fractured Frames Scattered Flesh",
+            "Oceano - Disgust For Your Kind",
+            "Oceano - District Of Misery",
+            "Oceano - With Legions"
+          ]
+        },
+        {
+          "titulo": "Ascendants - 2015",
+          "año": "2015",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Nephilim",
+            "Transient Gateways",
+            "The World Engine",
+            "Dead Planet",
+            "The Taken",
+            "Dawn of Descent",
+            "The Dulce Incident",
+            "Arc of Creation"
+          ]
+        },
+        {
+          "titulo": "Oceano - Revelation (2017)",
+          "año": "2017",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Dark Prophecy",
+            "Lucid Reality",
+            "Path To Extinction",
+            "The Great Tribulation",
+            "Illusions Unravel",
+            "Majestic 12",
+            "Final Form",
+            "The Event"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Opera",
+      "totalAlbumes": 1,
+      "totalCanciones": 2,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 2 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Opera (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "Alfredo Kraus - Je Crois Entendre Encore",
+            "Nicolai Gedda live in Je crois entendre encore Les pêcheurs de perles"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "P.O.D - Satellite (2001)",
+      "totalAlbumes": 1,
+      "totalCanciones": 15,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 15 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "P.O.D - Satellite (2001) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "Set It Off",
+            "Alive",
+            "Boom",
+            "Youth of the Nation",
+            "Celestial",
+            "Satellite",
+            "Ridiculous",
+            "The Messenjah",
+            "Guitarras de Amor",
+            "Anything Right"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Pink Floyd - Dark side of moon",
+      "totalAlbumes": 1,
+      "totalCanciones": 10,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 10 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Pink Floyd - Dark side of moon (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Speak To Me",
+            "Breathe",
+            "On The Run",
+            "Time",
+            "The Great Gig In The Sky",
+            "Money",
+            "Us And Them",
+            "Any Colour You Like",
+            "Brain Damage",
+            "Eclipse"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Queen",
+      "totalAlbumes": 2,
+      "totalCanciones": 15,
+      "generos": [
+        "Rock Clásico",
+        "Glam Rock",
+        "Hard Rock",
+        "Ópera Rock"
+      ],
+      "estilo": "La voz colosal de Freddie Mercury y la guitarra única de Brian May. Teatralidad operística, himnos mundiales y virtuosismo vocal.",
+      "moods": [
+        "motivacion",
+        "himno",
+        "energia_positiva"
+      ],
+      "albumes": [
+        {
+          "titulo": "Queen (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "White Queen",
+            "The March Of The Black Queen",
+            "Seven Seas Of Rhye"
+          ]
+        },
+        {
+          "titulo": "Queen - Innuendo",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Innuendo",
+            "I'm going slightly mad",
+            "Headlong",
+            "I can't live with you",
+            "Don't try so hard",
+            "Ride the wild wind",
+            "All God's people",
+            "These are the days of our lives"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Rage.Against.The.Machine.-.RATM",
+      "totalAlbumes": 1,
+      "totalCanciones": 11,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 11 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Rage.Against.The.Machine.-.RATM (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Bombtrack",
+            "Killing in the Name",
+            "Take the Power back",
+            "Settle for Nothing",
+            "Bullet in the Head",
+            "Know your Enemy",
+            "Wake up",
+            "Fistful of Steel",
+            "Township Rebellion",
+            "Freedom"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Red Hot Chili Peppers - Discography 1984-2013",
+      "totalAlbumes": 1,
+      "totalCanciones": 15,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 15 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Red Hot Chili Peppers",
+          "año": "No especificado",
+          "totalPistas": 15,
+          "pistasMuestra": [
+            "By the Way",
+            "Dani California",
+            "Aeroplane",
+            "Parallel Universe",
+            "Snow)",
+            "Universally Speaking",
+            "Scar Tissue",
+            "My Friends"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Reggae",
+      "totalAlbumes": 13,
+      "totalCanciones": 129,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (13 álbumes, 129 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Reggae (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 6,
+          "pistasMuestra": [
+            "QUEEN SPARROW AND RAS SPARROW GOOD SEED  BACKED BY HRB LIVE HILO PALACE",
+            "Ras  Queen Sparrow - I Endure",
+            "Ras Sparrow  Queen Sparrow - Zion Town",
+            "Ras Sparrow - Tree of Life",
+            "Ronnie Benjamin - Stand Up",
+            "VIVIAN JONES - RED EYES"
+          ]
+        },
+        {
+          "titulo": "2010 - The Congos - Back In The Black Ark",
+          "año": "2010",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Celestial World",
+            "Chain Gang",
+            "Charriots",
+            "Crying Times",
+            "Forever Young",
+            "Garden Of Life",
+            "Great Powers",
+            "Music School"
+          ]
+        },
+        {
+          "titulo": "Bob Marley",
+          "año": "No especificado",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Krayzle Bone - Rebel Music",
+            "Rakim - Concrete Jungle",
+            "Mc Lyte - Jammin",
+            "Marley Bros - Kinky Reggae",
+            "Steven Tyler - Roots Rock Reggae"
+          ]
+        },
+        {
+          "titulo": "C4 - La verdad que no querían",
+          "año": "No especificado",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Cambiala",
+            "Hipocresía",
+            "El precio de mi verdad",
+            "Nunca seré tu esclavo",
+            "Soy tu espejo",
+            "La danza de la muerte",
+            "Mi canción",
+            "Niños sin luz"
+          ]
+        },
+        {
+          "titulo": "Hugh Mundell",
+          "año": "No especificado",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "02_My_Mind"
+          ]
+        },
+        {
+          "titulo": "Lee Scratch Perry - Black Ark Classic Songs (2016) - MP3",
+          "año": "2016",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Zion blood",
+            "Run obeah run",
+            "Egypt for my ransom",
+            "Doctor shit",
+            "Dub fire",
+            "Spirits speak",
+            "Telephatic",
+            "No more roast fish!"
+          ]
+        },
+        {
+          "titulo": "Nonpalidece - Dread Al Control",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Dread al control",
+            "Resplandor",
+            "Tres Balas",
+            "Mr. Muzik",
+            "Pexz",
+            "Cierran",
+            "Fin de siglo",
+            "Reina"
+          ]
+        },
+        {
+          "titulo": "Nonpalidece - El Fuego en Nosotros",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Tu Recompensa",
+            "En el Aire",
+            "Ay No!",
+            "El Ciclo de la Vida",
+            "Acto Reflejo",
+            "El Fuego en Nosotros",
+            "Juanito",
+            "La Gran Mentira"
+          ]
+        },
+        {
+          "titulo": "Nonpalidece - Nonpalidesenchufado",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Dame luz",
+            "Nuestras ideas",
+            "Dime ya",
+            "Un amor",
+            "Tu gran aliado",
+            "Pexz",
+            "Libre al fin",
+            "Espejo"
+          ]
+        },
+        {
+          "titulo": "Nonpalidece - Nuevo Dia",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Revolucion",
+            "Abre Tus Ojos",
+            "Tu Sueno",
+            "Dame Luz",
+            "Ha De Ser",
+            "Nuestras Ideas",
+            "Espejo",
+            "Voz En Tu Cabeza"
+          ]
+        },
+        {
+          "titulo": "Riddim",
+          "año": "No especificado",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "artist - RIDDIM 01 - La mascara",
+            "artist - RIDDIM 05 - Conquering Lion",
+            "artist - RIDDIM 06 - Guerra Tribal",
+            "Riddim -  princesa mia",
+            "Riddim - como elefantes",
+            "Riddim - Si estás conmigo",
+            "Riddim - tu amor",
+            "Riddim -ojos brillantes"
+          ]
+        },
+        {
+          "titulo": "The Jahmaican Horse - Consciousness (2012)",
+          "año": "2012",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "the_jahmaican_horse-dehna_hounou_intro",
+            "the_jahmaican_horse-moneycrazy",
+            "the_jahmaican_horse-welcome_jah_feat_lyricson",
+            "the_jahmaican_horse-dream_of_zion",
+            "the_jahmaican_horse-toukou_sate",
+            "the_jahmaican_horse-no_more_war",
+            "the_jahmaican_horse-oneness",
+            "the_jahmaican_horse-just_fire_burn_feat_kyjah"
+          ]
+        },
+        {
+          "titulo": "The Red Eyes - Rudeworld (2006)",
+          "año": "2006",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "The Power_",
+            "Rock Steady_",
+            "Rude World_",
+            "Arms Over Jordan_",
+            "The Word_",
+            "Rootsman Dub_",
+            "New Day_",
+            "Thieving Dub_"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Signal The Firing Squad - Abnegate (2012)",
+      "totalAlbumes": 1,
+      "totalCanciones": 10,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 10 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Signal The Firing Squad - Abnegate (2012) (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Abnegate",
+            "Abominator",
+            "Human_Redefined",
+            "Pillars Of Creation",
+            "Bloodlines",
+            "Goddess Of Retribution",
+            "The Ancients",
+            "Into The Mouth Of The Leviathan",
+            "Inearthed",
+            "Synapse Failure"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Siouxsie and the Banshees",
+      "totalAlbumes": 2,
+      "totalCanciones": 34,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 34 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "2002 - The Best Of Siouxsie And The Banshees",
+          "año": "2002",
+          "totalPistas": 24,
+          "pistasMuestra": [
+            "Dear Prudence",
+            "Hong Kong Garden",
+            "Cities In Dust",
+            "Peek-A-Boo",
+            "Happy House",
+            "Kiss Them For Me",
+            "Face To Face",
+            "Dizzy"
+          ]
+        },
+        {
+          "titulo": "Siouxsie and the Banschees - (1981) Once upon a time",
+          "año": "1981",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "01_hong_kong_garden",
+            "02_mirage",
+            "03_the_staircase_",
+            "04_playground_twist",
+            "05_love_in_a_void",
+            "06_happy_house",
+            "07_christine",
+            "08_israel"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Soda Stereo",
+      "totalAlbumes": 6,
+      "totalCanciones": 62,
+      "generos": [
+        "Rock Nacional",
+        "New Wave",
+        "Post-Punk",
+        "Pop Rock"
+      ],
+      "estilo": "Banda argentina más influyente de América Latina liderada por Cerati, Zeta Bosio y Charly Alberti. Evolución desde new wave ochentoso hasta dream pop y rock alternativo.",
+      "moods": [
+        "energia",
+        "nostalgia",
+        "clasico_argentino"
+      ],
+      "albumes": [
+        {
+          "titulo": "1984 - Soda Stereo",
+          "año": "1984",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Por qué no Puedo ser del Jet-Set",
+            "Sobredosis de TV",
+            "Te Hacen Falta Vitaminas",
+            "Trátame Suavemente",
+            "Detético",
+            "Tele-Ka",
+            "Ni un Segundo",
+            "Un Misil en mi Placard"
+          ]
+        },
+        {
+          "titulo": "1985 - Nada Personal",
+          "año": "1985",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Nada Personal",
+            "Si No Fuera Por",
+            "Cuando Pase El Temblor",
+            "Danza Rota",
+            "El Cuerpo Del Delito",
+            "Juego De Seducción",
+            "Estoy Azulado",
+            "Observándonos"
+          ]
+        },
+        {
+          "titulo": "1986 - Signos",
+          "año": "1986",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Sin Sobresaltos",
+            "El rito",
+            "Prófugos",
+            "No existes",
+            "Persiana americana",
+            "En camino",
+            "Signos",
+            "Final Caja Negra"
+          ]
+        },
+        {
+          "titulo": "1988 - Doble Vida",
+          "año": "1988",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Picnic en el 4° B",
+            "En la ciudad de la furia",
+            "Lo que sangra",
+            "En el borde",
+            "Languis",
+            "Día común - Doble vida",
+            "Corazón delator",
+            "El ritmo de tus ojos"
+          ]
+        },
+        {
+          "titulo": "1992 - Dynamo",
+          "año": "1992",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Secuencia Inicial",
+            "Toma la Ruta",
+            "En Remolinos",
+            "Primavera 0",
+            "Camaleón",
+            "Luna Roja",
+            "Sweet Sahumerio",
+            "Ameba"
+          ]
+        },
+        {
+          "titulo": "1995 - Sueño Stereo",
+          "año": "1995",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Ella Usó Mi Cabeza Como Un Revolver",
+            "Disco Eterno",
+            "Zoom",
+            "Ojo De La Tormenta",
+            "Efecto Doppler",
+            "Paseando Por Roma",
+            "Pasos",
+            "Angel Eléctrico"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "sueltos",
+      "totalAlbumes": 1,
+      "totalCanciones": 19,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 19 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "sueltos (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 19,
+          "pistasMuestra": [
+            "Mask and The Assasin",
+            "This Must Be It",
+            "Get You High",
+            "You Don't Have A Clue",
+            "C.R.E.A.M.",
+            "Disclosure - Help Me Lose My Mind",
+            "dj_muggs_and_planet_asia-triple_threat_",
+            "non-blondes-whats-up",
+            "Alert-03",
+            "Desapego - Alexin Semilla con Paula Reyes"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Taijasa",
+      "totalAlbumes": 1,
+      "totalCanciones": 1,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 1 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Taijasa (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Theres no rush"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3",
+      "totalAlbumes": 1,
+      "totalCanciones": 13,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 13 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Terrible & Dj CidTronyck - Recuerdos del Futuro (2014) Mp3 (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Terrible + Cidtronyck - Preámbulo",
+            "Terrible + Cidtronyck - Habla mi alma",
+            "Terrible + Cidtronyck - Suave Seda",
+            "Terrible + Cidtronyck - Pídeselo al universo",
+            "Terrible + Cidtronyck - Vaivén",
+            "Terrible + Cidtronyck - Apunta y dispara",
+            "Terrible + Cidtronyck - Avanza",
+            "Terrible + Cidtronyck - Viajes de metal",
+            "Terrible + Cidtronyck - Ruinas",
+            "Terrible + Cidtronyck - El futuro es ahora"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "The Beatles",
+      "totalAlbumes": 12,
+      "totalCanciones": 163,
+      "generos": [
+        "Rock Clásico",
+        "Pop Psicodélico",
+        "Merseybeat"
+      ],
+      "estilo": "El cuarteto de Liverpool que revolucionó la música popular. Innovación compositiva y arreglos irrepetibles (Lennon, McCartney, Harrison, Starr).",
+      "moods": [
+        "optimismo",
+        "clasico_universal",
+        "creatividad"
+      ],
+      "albumes": [
+        {
+          "titulo": "A Hard Day's Night",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "A Hard Day's Night",
+            "I Should Have Known Better",
+            "If I Fell",
+            "I'm Happy Just To Dance With You",
+            "And I Love Her",
+            "Tell Me Why",
+            "Can't Buy Me Love",
+            "Any Time At All"
+          ]
+        },
+        {
+          "titulo": "Abbey Road",
+          "año": "No especificado",
+          "totalPistas": 17,
+          "pistasMuestra": [
+            "Come Together",
+            "Something",
+            "Maxwell's Silver Hammer",
+            "Oh! Darling",
+            "Octopus's Garden",
+            "I Want You",
+            "Here Comes The Sun",
+            "Because"
+          ]
+        },
+        {
+          "titulo": "Beatles For Sale",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "No Reply",
+            "I'm A Loser",
+            "Baby's In Black",
+            "Rock And Roll Music",
+            "I'll Follow The Sun",
+            "Mr. Moonlight",
+            "Medley_ A. Kansas City B. Hey, Hey, Hey, Hey",
+            "Eight Days A Week"
+          ]
+        },
+        {
+          "titulo": "Help!",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Help!",
+            "The Night Before",
+            "You've Got To Hide Your Love Away",
+            "I Need You",
+            "Another Girl",
+            "You're Going To Lose That Girl",
+            "Ticket To Ride",
+            "Act Naturally"
+          ]
+        },
+        {
+          "titulo": "Let It Be",
+          "año": "No especificado",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Two Of Us",
+            "Dig A Pony",
+            "Across The Universe",
+            "I Me Mine",
+            "Dig It",
+            "Let It Be",
+            "Maggie Mae",
+            "I've Got A Feeling"
+          ]
+        },
+        {
+          "titulo": "Magical Mystery Tour",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Magical Mystery Tour",
+            "The Fool On The Hill",
+            "Flying",
+            "Blue Jay Way",
+            "Your Mother Should Know",
+            "I Am The Walrus",
+            "Hello Goodbye",
+            "Strawberry Fields Forever"
+          ]
+        },
+        {
+          "titulo": "Please Please Me",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "I Saw Her Standing There",
+            "Misery",
+            "Anna",
+            "Chains",
+            "Boys",
+            "Ask Me Why",
+            "Please Please Me",
+            "Love Me Do"
+          ]
+        },
+        {
+          "titulo": "Revolver",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Taxman",
+            "Eleanor Rigby",
+            "I'm Only Sleeping",
+            "Love You To",
+            "Here, There And Everywhere",
+            "Yellow Submarine",
+            "She Said She Said",
+            "Good Day Sunshine"
+          ]
+        },
+        {
+          "titulo": "Rubber Soul",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Drive My Car",
+            "Norwegian Wood",
+            "You Won't See Me",
+            "Nowhere Man",
+            "Think For Yourself",
+            "The Word",
+            "Michelle",
+            "What Goes On"
+          ]
+        },
+        {
+          "titulo": "Sgt. Pepper's Lonely Hearts Club Band",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Sgt Peppers Lonely Hearts Club Band",
+            "With A Little Help From My Friends",
+            "Lucy In The Sky With Diamonds",
+            "Getting Better",
+            "Fixing A Hole",
+            "She's Leaving Home",
+            "Being For The Benefit Of Mr Kite",
+            "Within You Without You"
+          ]
+        },
+        {
+          "titulo": "With The Beatles",
+          "año": "No especificado",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "It Won't Be Long",
+            "All I've Got To Do",
+            "All My Loving",
+            "Don't Bother Me",
+            "Little Me",
+            "Till There Was You",
+            "Please Mister Postman",
+            "Roll Over Beethoven"
+          ]
+        },
+        {
+          "titulo": "Yellow Submarine",
+          "año": "No especificado",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Yellow Submarine",
+            "Only A Northern Song",
+            "All Together Now",
+            "Hey Bulldog",
+            "It's All Too Much",
+            "All You Need Is Love",
+            "Pepperland",
+            "Sea Of Time"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "The Doors",
+      "totalAlbumes": 3,
+      "totalCanciones": 33,
+      "generos": [
+        "Rock Psicodélico",
+        "Blues Rock",
+        "Poesía"
+      ],
+      "estilo": "Jim Morrison y su poesía chamánica, teclado hipnótico de Ray Manzarek y blues psicodélico de finales de los 60.",
+      "moods": [
+        "misticismo",
+        "chamanico",
+        "nocturno"
+      ],
+      "albumes": [
+        {
+          "titulo": "1967 - Strange Days",
+          "año": "1967",
+          "totalPistas": 12,
+          "pistasMuestra": [
+            "Strange Days",
+            "You're Lost Little Girl",
+            "Love Me Two Times",
+            "Unhappy Girl",
+            "Horse Latitudes",
+            "Moonlight Drive",
+            "People Are Strange",
+            "My Eyes Have Seen You"
+          ]
+        },
+        {
+          "titulo": "The Doors - Compilacion",
+          "año": "No especificado",
+          "totalPistas": 16,
+          "pistasMuestra": [
+            "Break On Through",
+            "Light My Fire",
+            "Hello, I Love You",
+            "Love Her Madly",
+            "Strange Days",
+            "Love Street",
+            "Riders On The Storm",
+            "Queen Of The Highway"
+          ]
+        },
+        {
+          "titulo": "The Doors - The Doors [1967]",
+          "año": "1967",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Break On Through",
+            "Soul Kitchen",
+            "The Crystal Ship",
+            "Twentieth Century Fox",
+            "Alabama Song"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "The Gathering - Discography.1992-2013",
+      "totalAlbumes": 32,
+      "totalCanciones": 229,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (32 álbumes, 229 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "1992 - Always... (1993 Pavement Music)",
+          "año": "1992",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "The Mirror Waters",
+            "Subzero",
+            "In Sickness and Health",
+            "King for a Day",
+            "Second Sunrise",
+            "Stonegarden",
+            "Always",
+            "Gaya's Dream"
+          ]
+        },
+        {
+          "titulo": "1992 - Always... (1994 Foundation 2000 Remix)",
+          "año": "1992",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "The Mirror Waters",
+            "Subzero",
+            "In Sickness And Health",
+            "King For A Day",
+            "Second Sunrise",
+            "Stonegarden",
+            "Always",
+            "Gaya's Dream"
+          ]
+        },
+        {
+          "titulo": "1992 - Always... (1999 Psychonaut Records Remaster)",
+          "año": "1992",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "The Mirror Waters",
+            "Subzero",
+            "In Sickness and Health",
+            "King for a Day",
+            "Second Sunrise",
+            "Stonegarden",
+            "Always",
+            "Gaya's Dream"
+          ]
+        },
+        {
+          "titulo": "1993 - Almost A Dance",
+          "año": "1993",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "On A Wave",
+            "The Blue Vessel",
+            "Her Last Flight",
+            "The Sky People",
+            "Nobody Dares",
+            "Like Fountains",
+            "Proof",
+            "Heartbeat Amplifier"
+          ]
+        },
+        {
+          "titulo": "1993 - Almost A Dance (1999 Psychonaut Records Remaster)",
+          "año": "1993",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "On A Wave",
+            "The Blue Vessel",
+            "Her Last Flight",
+            "The Sky People",
+            "Nobody Dares",
+            "Like Fountains",
+            "Proof",
+            "Heartbeat Amplifier"
+          ]
+        },
+        {
+          "titulo": "1993 - Almost A Dance (2004 Scarecrow Records, Bonus Track)",
+          "año": "1993",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "On a Wave",
+            "The Blue Vessel",
+            "Her Last Flight",
+            "The Sky Poeple",
+            "Nobody Dares",
+            "Like Fountains",
+            "Proof",
+            "Heartbeat Amplifier"
+          ]
+        },
+        {
+          "titulo": "1995 - Mandylion",
+          "año": "1995",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Strange Machines",
+            "ElГ©anor",
+            "In Motion # 1",
+            "Leaves",
+            "Fear The Sea",
+            "Mandylion",
+            "Sand And Mercury",
+            "In Motion # 2"
+          ]
+        },
+        {
+          "titulo": "1995 - Strange Machines",
+          "año": "1995",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Strange Machines",
+            "Strange Machines",
+            "In Motion #1",
+            "Leaves"
+          ]
+        },
+        {
+          "titulo": "1996 - Adrenaline-Leaves",
+          "año": "1996",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Adrenaline",
+            "Leaves",
+            "Third Chance",
+            "Leaves"
+          ]
+        },
+        {
+          "titulo": "1997 - Kevin's Telescope",
+          "año": "1997",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "Kevin's Telescope",
+            "In Power We Entrust The Love Advocated",
+            "When The Sun Hits",
+            "Confusion"
+          ]
+        },
+        {
+          "titulo": "1997 - Nighttime Birds",
+          "año": "1997",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "On Most Surfaces",
+            "Confusion",
+            "The May Song",
+            "The Earth Is My Witness",
+            "New Moon, Different Day",
+            "Third Chance",
+            "Kevin's Telescope",
+            "Nighttime Birds"
+          ]
+        },
+        {
+          "titulo": "1997 - The May Song",
+          "año": "1997",
+          "totalPistas": 4,
+          "pistasMuestra": [
+            "The May Song",
+            "The Earth Is My Witness",
+            "Strange Machines",
+            "The May Song"
+          ]
+        },
+        {
+          "titulo": "1998 - Liberty Bell",
+          "año": "1998",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "Liberty Bell",
+            "Shrink",
+            "Frail"
+          ]
+        },
+        {
+          "titulo": "1999 - Superheat",
+          "año": "1999",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "The Big Sleep",
+            "On Most Surfaces",
+            "Probably Build in the Fifties",
+            "Liberty Bell",
+            "Marooned",
+            "Rescue Me",
+            "Strange Machines",
+            "Nighttime Birds"
+          ]
+        },
+        {
+          "titulo": "2000 - If Then Else",
+          "año": "2000",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Rollercoaster",
+            "Shot to Pieces",
+            "Amity",
+            "Bad Movie Scene",
+            "Colorado Incident",
+            "Beautiful War",
+            "Analog Park",
+            "Herbal Movement"
+          ]
+        },
+        {
+          "titulo": "2000 - Rollercoaster",
+          "año": "2000",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "Rollercoaster",
+            "Theme from The Cyclist",
+            "Leaves"
+          ]
+        },
+        {
+          "titulo": "2001 - Amity",
+          "año": "2001",
+          "totalPistas": 7,
+          "pistasMuestra": [
+            "Amity",
+            "Life's What You Make It",
+            "Amity",
+            "Amity",
+            "Amity",
+            "Amity",
+            "Amity"
+          ]
+        },
+        {
+          "titulo": "2001 - Downfall The Early Years",
+          "año": "2001",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "In Sickness And Health",
+            "Gaya's Dream",
+            "Always",
+            "Subzero",
+            "Anthology In Black",
+            "Second Sunrise",
+            "Downfall",
+            "In Sickness And Health"
+          ]
+        },
+        {
+          "titulo": "2002 - Black Light District",
+          "año": "2002",
+          "totalPistas": 3,
+          "pistasMuestra": [
+            "Black Light District",
+            "Debris",
+            "Broken Glass"
+          ]
+        },
+        {
+          "titulo": "2003 - Monsters",
+          "año": "2003",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Monsters - Radio Edit Mix",
+            "Monsters - Gallion Mix",
+            "Monsters - Gauzy Mix",
+            "Monsters go Deep! - Dance Mix",
+            "Monsters - Promo Demo Mix"
+          ]
+        },
+        {
+          "titulo": "2003 - Souvenirs",
+          "año": "2003",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "These Good People",
+            "Even the Spirits are Afraid",
+            "Broken Glass",
+            "You Learn About It",
+            "Souvenirs",
+            "We Just Stopped Breathing",
+            "Monsters",
+            "Golden Grounds"
+          ]
+        },
+        {
+          "titulo": "2003 - You Learn About It",
+          "año": "2003",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "You Learn About It",
+            "You Learn About It"
+          ]
+        },
+        {
+          "titulo": "2004 - Sleepy Buildings - A Semi-Acoustic Evening",
+          "año": "2004",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Locked Away",
+            "Saturnine",
+            "Amity",
+            "The Mirror Waters",
+            "Red Is A Slow Colour",
+            "Sleepy Buildings",
+            "Travel",
+            "Shrink"
+          ]
+        },
+        {
+          "titulo": "2005 - The Musical History Tour - Passengers In Time",
+          "año": "2005",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Deer Hunter",
+            "The Philosopher And The Soldier",
+            "Every Day Is Like A Thousand Years",
+            "Medieval City",
+            "New Horizon",
+            "Golden Age",
+            "Talking About The Revolution",
+            "Lost In Munch's Scream"
+          ]
+        },
+        {
+          "titulo": "2006 - Home",
+          "año": "2006",
+          "totalPistas": 13,
+          "pistasMuestra": [
+            "Shortest Day",
+            "In Between",
+            "Alone",
+            "Waking Hour",
+            "Fatigue",
+            "A Noise Severe",
+            "Forgotten",
+            "Solace"
+          ]
+        },
+        {
+          "titulo": "2009 - City From Above",
+          "año": "2009",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Treasure",
+            "All You Are",
+            "Miniature",
+            "Pale Traces",
+            "City From Above"
+          ]
+        },
+        {
+          "titulo": "2009 - The West Pole",
+          "año": "2009",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "When Trust Becomes Sound",
+            "Treasure",
+            "All You Are",
+            "The West Pole",
+            "No Bird Call",
+            "Capital Of Nowhere",
+            "You Promised Me A Symphony",
+            "Pale Traces"
+          ]
+        },
+        {
+          "titulo": "2010 - A Sound Relief",
+          "año": "2010",
+          "totalPistas": 5,
+          "pistasMuestra": [
+            "Alone",
+            "Broken Glass",
+            "A Life All Mine",
+            "Golden Grounds",
+            "Souvenirs"
+          ]
+        },
+        {
+          "titulo": "2011 - Heroes For Ghosts (CDS)",
+          "año": "2011",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Heroes For Ghosts"
+          ]
+        },
+        {
+          "titulo": "2012 - Disclosure",
+          "año": "2012",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Paper Waves",
+            "Meltdown",
+            "Paralyzed",
+            "Heroes For Ghosts",
+            "Gemini I",
+            "Missing Seasons",
+            "I Can See Four Miles",
+            "Gemini II"
+          ]
+        },
+        {
+          "titulo": "2012 - Meltdown (CDS)",
+          "año": "2012",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Meltdown"
+          ]
+        },
+        {
+          "titulo": "2013 - Afterwords",
+          "año": "2013",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "S.I.B.A.L.D",
+            "Echoes Keep Growing",
+            "Areas",
+            "Afterwords",
+            "Tuning In, Fading Out",
+            "Gemini III",
+            "Afterlights",
+            "Sleep Paralysis"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "The Psycho Realm",
+      "totalAlbumes": 1,
+      "totalCanciones": 14,
+      "generos": [
+        "Underground Hip Hop",
+        "Hardcore Rap"
+      ],
+      "estilo": "Dúo de Los Ángeles (Sick Jacken y Big Duke). Crítica social cruda, filosofía de supervivencia urbana y beats sombríos.",
+      "moods": [
+        "reflexion_urbana",
+        "crudo",
+        "nocturno"
+      ],
+      "albumes": [
+        {
+          "titulo": "The Psycho Realm (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 14,
+          "pistasMuestra": [
+            "Psycho City Blocks_Psycho Interlu",
+            "Showdown",
+            "The Big Payback",
+            "Premonitions",
+            "Interlude_Stone Garden_Interlude",
+            "Temporary Insanity",
+            "Doors Intro, Confessions of a Dru",
+            "Who Are You_ Interlude_Bullets",
+            "Love Letters_Love From Th",
+            "R.U. Experienced__Outro"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "The siKC One",
+      "totalAlbumes": 1,
+      "totalCanciones": 7,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 7 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "The siKC One (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 7,
+          "pistasMuestra": [
+            "sikconethegreat_drugs",
+            "sikconethegreat_leave-you-guessing-remix",
+            "sikconethegreat_original-leave-u-guessing",
+            "sikconethegreat_terrorist-flows-cypher",
+            "sikconethegreat_weed-breath-freestyle",
+            "The siKC One - The Remix Tape -Music Overdose- - 01 The Rain",
+            "The siKC One - The Remix Tape -Music Overdose- - 06 Bilingual Verbal"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Thy Art Is Murder",
+      "totalAlbumes": 4,
+      "totalCanciones": 38,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (4 álbumes, 38 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "2012 - Hate",
+          "año": "2012",
+          "totalPistas": 10,
+          "pistasMuestra": [
+            "Reign Of Darkness",
+            "The Purest Strain Of Hate",
+            "Vile Creations",
+            "Shadow Of Eternal Sin",
+            "Immolation",
+            "Infinite Forms",
+            "Dead Sun",
+            "Gates Of Misery"
+          ]
+        },
+        {
+          "titulo": "Thy Art Is Murder - Holy War",
+          "año": "No especificado",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Absolute Genocide",
+            "Light Bearer",
+            "Holy War",
+            "Coffin Dragger",
+            "Fur And Claw",
+            "Deliver Us To Evil",
+            "Emptiness",
+            "Violent Reckoning"
+          ]
+        },
+        {
+          "titulo": "Thy Art Is Murder - Infinite Death",
+          "año": "No especificado",
+          "totalPistas": 6,
+          "pistasMuestra": [
+            "Thy Art is Murder - I'll Show You God",
+            "Thy Art is Murder - Whore To A Chainsaw",
+            "Thy Art is Murder - Parasitic Autopsy",
+            "Thy Art is Murder - Breeding Bacteria",
+            "Thy Art is Murder - Infinite Death",
+            "Thy Art Is Murder - Engineering The Anti-Christ"
+          ]
+        },
+        {
+          "titulo": "[2010] The Adversary",
+          "año": "2010",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Unholy Sermons.m4a",
+            "Soldiers Of Immortality.m4a",
+            "Laceration Penetration.m4a",
+            "Furnace Of Hate.m4a",
+            "Flesh Oracle.m4a",
+            "The Adversary.m4a",
+            "Decrepit Putrification.m4a",
+            "The False Prophet.m4a"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Unfathomable Ruination",
+      "totalAlbumes": 2,
+      "totalCanciones": 11,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (2 álbumes, 11 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Unfathomable Ruination - Finitude (2016)",
+          "año": "2016",
+          "totalPistas": 9,
+          "pistasMuestra": [
+            "Pestilential Affinity",
+            "Abdication Of Servitude",
+            "Thy Venomous Coils",
+            "The Ephemeral Equation",
+            "Nihilistic Theorem",
+            "Neutralizer",
+            "Inhuman Reclamation",
+            "Pervasive Despoilment"
+          ]
+        },
+        {
+          "titulo": "Unfathomable Ruination - Idiosyncratic Chaos (2014)",
+          "año": "2014",
+          "totalPistas": 2,
+          "pistasMuestra": [
+            "Idiosyncratic Chaos",
+            "Parthenogenocide"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Virus",
+      "totalAlbumes": 2,
+      "totalCanciones": 19,
+      "generos": [
+        "Rock Nacional",
+        "Synthpop",
+        "New Wave"
+      ],
+      "estilo": "Banda fundamental del pop/rock argentino de los 80 liderada por Federico Moura. Letras irónicas, bailables y sofisticación en sintetizadores.",
+      "moods": [
+        "alegria",
+        "ritmo",
+        "nostalgia_80s"
+      ],
+      "albumes": [
+        {
+          "titulo": "1985 - Locura",
+          "año": "1985",
+          "totalPistas": 8,
+          "pistasMuestra": [
+            "Pronta Entrega",
+            "Tomo Lo Que Encuentro",
+            "Pecados Para Dos",
+            "Destino Circular",
+            "Una Luna De Miel En La Mano",
+            "Dicha Feliz",
+            "Sin Disfraz",
+            "Lugares Comunes"
+          ]
+        },
+        {
+          "titulo": "1987 - Superficies De Placer",
+          "año": "1987",
+          "totalPistas": 11,
+          "pistasMuestra": [
+            "Mirada Speed",
+            "Danza Narcotica",
+            "Ausencia",
+            "Rumbos Secretos",
+            "Epocalipsis",
+            "Polvos De Una Relacion",
+            "Encuentro En El Rio Musical",
+            "Amores Perpetuos"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Wilder",
+      "totalAlbumes": 1,
+      "totalCanciones": 1,
+      "generos": [
+        "Música / Variado"
+      ],
+      "estilo": "Banda / Artista presente en la biblioteca personal (1 álbumes, 1 temas).",
+      "moods": [
+        "general",
+        "escucha"
+      ],
+      "albumes": [
+        {
+          "titulo": "Wilder (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "Antonio"
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Yngwie Malmsteen",
+      "totalAlbumes": 1,
+      "totalCanciones": 1,
+      "generos": [
+        "Neoclassical Metal",
+        "Power Metal",
+        "Shred"
+      ],
+      "estilo": "Padre del shred neoclásico en guitarra eléctrica, llevando las influencias de Bach y Paganini a la velocidad de la luz en su Stratocaster.",
+      "moods": [
+        "virtuosismo_guitarra",
+        "neoclasico",
+        "velocidad"
+      ],
+      "albumes": [
+        {
+          "titulo": "Yngwie Malmsteen (Pistas Directas / Singles)",
+          "año": "Varios",
+          "totalPistas": 1,
+          "pistasMuestra": [
+            "yngwie-malmsteen-arpeggios-from-hell"
+          ]
+        }
+      ]
+    }
+  ]
+}

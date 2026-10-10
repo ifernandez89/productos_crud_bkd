@@ -120,7 +120,10 @@ export class DocumentRepository {
    */
   async findDocumentByExactTitle(title: string): Promise<Document | null> {
     const normalized = title.trim();
-    return this.prisma.document.findFirst({
+    if (!normalized) return null;
+
+    // 1. Coincidencia exacta (case-insensitive)
+    const exact = await this.prisma.document.findFirst({
       where: {
         title: {
           equals: normalized,
@@ -128,6 +131,49 @@ export class DocumentRepository {
         },
       },
     });
+    if (exact) return exact;
+
+    // 2. Coincidencia por contención
+    const contains = await this.prisma.document.findFirst({
+      where: {
+        title: {
+          contains: normalized,
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (contains) return contains;
+
+    // 3. Coincidencia difusa por palabras clave significativas (>= 4 caracteres)
+    const significantWords = normalized
+      .toLowerCase()
+      .replace(/[-_.,:;()]+/g, ' ')
+      .split(/\s+/)
+      .filter((w) => w.length >= 4);
+
+    if (significantWords.length > 0) {
+      const candidates = await this.prisma.document.findMany({
+        where: {
+          OR: significantWords.map((word) => ({
+            title: { contains: word, mode: 'insensitive' },
+          })),
+        },
+      });
+
+      let bestCandidate: Document | null = null;
+      let maxMatches = 0;
+      for (const cand of candidates) {
+        const candLower = cand.title.toLowerCase();
+        const matchCount = significantWords.filter((w) => candLower.includes(w)).length;
+        if (matchCount > maxMatches && matchCount >= Math.min(2, significantWords.length)) {
+          maxMatches = matchCount;
+          bestCandidate = cand;
+        }
+      }
+      if (bestCandidate) return bestCandidate;
+    }
+
+    return null;
   }
 
   /**

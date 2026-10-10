@@ -323,10 +323,7 @@ export class EvidenceService {
     const emoji = score >= 85 ? '🛡️' : score >= 50 ? '⚠️' : '❌';
     
     lines.push('');
-    lines.push(`<details>`);
-    lines.push(`<summary>${emoji} Verificación de Respaldo de JarBees (Confianza: ${score}%)</summary>`);
-    lines.push(``);
-    lines.push(`### 🛡️ **Análisis de Respaldo Determinista**`);
+    lines.push(`### ${emoji} Verificación de Respaldo (Confianza: ${score}%)`);
     lines.push(`- **Fragmentos de contexto utilizados:** \`${chunksUsed}\``);
     lines.push(`- **Puntaje de Confianza:** \`${score}%\``);
     lines.push(``);
@@ -344,19 +341,6 @@ export class EvidenceService {
       conceptsHallucinated.forEach((c) => lines.push(`- \`${c}\` (No presente en contexto ❌)`));
       lines.push(``);
     }
-
-    if (
-      authorsVerified.length === 0 &&
-      authorsHallucinated.length === 0 &&
-      conceptsVerified.length === 0 &&
-      conceptsHallucinated.length === 0
-    ) {
-      lines.push(`*No se detectaron autores o conceptos explícitos de la biblioteca en esta respuesta.*`);
-      lines.push(``);
-    }
-
-    lines.push(`*Este análisis determinista contrasta entidades y solapamiento de oraciones sin demoras de procesamiento.*`);
-    lines.push(`</details>`);
 
     return lines.join('\n');
   }

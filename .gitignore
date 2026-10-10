@@ -48,6 +48,7 @@ docs/books/
 # temp directory
 .temp
 .tmp
+scratch/
 
 # Runtime data
 pids

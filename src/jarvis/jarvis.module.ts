@@ -61,9 +61,9 @@ import { HierarchicalParserService } from './library/hierarchical-parser.service
 import { EntityGraphRepository } from './repositories/entity-graph.repository';
 import { EntityGraphService } from './knowledge/entity-graph.service';
 import { KnowledgeExtractionService } from './knowledge/knowledge-extraction.service';
-
 import { CognitiveModule } from './cognitive/cognitive.module';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
+import { MusicCatalogService } from './knowledge/music-catalog.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -130,6 +130,8 @@ import { DocumentSynthesisService } from './library/document-synthesis.service';
     KnowledgeExtractionService,
     // ── Synthesis Pipeline (v3.2) ──────────────────────────────────────────
     DocumentSynthesisService,
+    // ── Music Catalog & Knowledge ──────────────────────────────────────────
+    MusicCatalogService,
   ],
   exports: [
     JarvisService,
@@ -142,6 +144,7 @@ import { DocumentSynthesisService } from './library/document-synthesis.service';
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
+    MusicCatalogService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,
