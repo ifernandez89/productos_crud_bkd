@@ -295,11 +295,12 @@ export class CorpusSelectorService {
     for (const doc of index.documentos) {
       const result = this.scoreDocument(doc, queryTerms, query);
 
-      // REGLA CRÍTICA: si no hay ningún match en el título del documento,
-      // descartar sin importar cuántos conceptos/tags coincidan.
-      // El título es la señal más fuerte de intención real del usuario.
-      const hasTitleMatch = result.matchedOn.some((m) => m.startsWith('título:') || m.startsWith('autor:') || m.startsWith('escuela:'));
-      if (!hasTitleMatch) continue;
+      // REGLA CRÍTICA: Debe existir una coincidencia explícita en el título o autor del documento.
+      // Coincidencias temáticas o de escuela solas NO justifican secuestrar la consulta del usuario.
+      const hasTitleOrAuthorMatch = result.matchedOn.some(
+        (m) => m.startsWith('título:') || m.startsWith('autor:'),
+      );
+      if (!hasTitleOrAuthorMatch) continue;
 
       if (result.score >= MIN_SCORE_TO_TRIGGER) {
         scored.push(result);
@@ -469,18 +470,18 @@ export class CorpusSelectorService {
       }
     }
 
-    // 7. Coincidencia por Escuela de Pensamiento (peso muy alto para recuperar el corpus completo de la corriente)
+    // 7. Coincidencia por Escuela de Pensamiento (con comprobación de palabra completa)
     for (const [school, data] of Object.entries(SCHOOLS_OF_THOUGHT)) {
       const isQueryAboutSchool =
-        queryLower.includes(school) ||
-        data.keywords.some((kw) => queryLower.includes(kw));
+        this.matchTerm(queryLower, school) ||
+        data.keywords.some((kw) => this.matchTerm(queryLower, kw));
 
       if (isQueryAboutSchool) {
         const isDocInSchool = data.authors.some((auth) =>
-          doc.autor.toLowerCase().includes(auth),
+          this.matchTerm(doc.autor.toLowerCase(), auth),
         );
         if (isDocInSchool) {
-          score += 6; // Boost fuerte para priorizar autores de la misma escuela
+          score += 4;
           matchedOn.push(`escuela:${school}`);
         }
       }

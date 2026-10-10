@@ -13,6 +13,7 @@ import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
 import { EmbeddingsService } from '../library/embeddings.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
+import { GamesCatalogService } from '../knowledge/games-catalog.service';
 
 @Injectable()
 export class JarvisPromptBuilderService {
@@ -33,6 +34,7 @@ export class JarvisPromptBuilderService {
     private readonly embeddingsService: EmbeddingsService,
     private readonly corpusSelector: CorpusSelectorService,
     private readonly musicCatalog: MusicCatalogService,
+    private readonly gamesCatalog: GamesCatalogService,
   ) {}
 
   async buildJarvisContext(
@@ -152,6 +154,12 @@ export class JarvisPromptBuilderService {
     const musicCtx = this.musicCatalog.formatContextForQuery(userMessage);
     if (musicCtx) {
       contextParts.push(musicCtx);
+    }
+
+    // ── Gaming Knowledge Context (I:\Juegos) ──────────────────────────────────
+    const gamesCtx = this.gamesCatalog.formatContextForQuery(userMessage);
+    if (gamesCtx) {
+      contextParts.push(gamesCtx);
     }
 
     // Incluir skills solo si no es un modo puramente conversacional
@@ -414,7 +422,18 @@ export class JarvisPromptBuilderService {
     if (!actionMatch) {
       // 🌟 Si el mensaje no contiene prefijo de acción (ej: el usuario escribió "Energetica Psiquica y Esencia Del Sueño"),
       // pero coincide directamente con una obra/documento disponible en la biblioteca:
-      if (title.length >= 3) {
+      // PERO si el mensaje es una pregunta conversacional ("conoces...", "qué opinas...", "¿...?")
+      // o contiene más de una cláusula, NUNCA debe ser tratado como un pedido de resumen de libro.
+      if (
+        /[\?¿]/.test(trimmed) ||
+        /^(?:conoces|conoc[eé]s|sabes|sab[eé]s|que\s+sabes|hablemos|contame|cuentame|que\s+podes|podes\s+recomendar|recomendas|recomiendame|recomienda|tenes|ten[eé]s)/i.test(
+          normalized,
+        )
+      ) {
+        return null;
+      }
+
+      if (title.length >= 4) {
         const matchedDocTitle = await this.findMatchingDocumentTitle(title);
         if (matchedDocTitle) {
           return { title: matchedDocTitle, maxItems };
@@ -447,23 +466,15 @@ export class JarvisPromptBuilderService {
   }
 
   private async findMatchingDocumentTitle(title: string): Promise<string | null> {
-    // 1. Probar en el índice de la biblioteca (CorpusSelector)
-    if (this.corpusSelector) {
-      const matches = this.corpusSelector.findRelevantDocuments(title, 1);
-      if (matches.length > 0 && matches[0].score >= 2.0) {
-        return matches[0].document.titulo;
-      }
-    }
-
-    // 2. Probar en la base de datos o por coincidencia directa de título
     const normSearch = title
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .trim();
 
-    if (normSearch.length < 3) return null;
+    if (normSearch.length < 4) return null;
 
+    // 1. Probar en el índice de la biblioteca por coincidencia directa de título
     const index = this.corpusSelector?.getIndex();
     if (index && index.documentos) {
       const foundInIndex = index.documentos.find((doc) => {
@@ -472,11 +483,15 @@ export class JarvisPromptBuilderService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
-        return normDocTitle === normSearch || normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+        return (
+          normDocTitle === normSearch ||
+          (normSearch.length >= 10 && normDocTitle.includes(normSearch))
+        );
       });
       if (foundInIndex) return foundInIndex.titulo;
     }
 
+    // 2. Probar en la base de datos por título exacto
     try {
       const existing = await this.documentRepo.findDocumentByExactTitle(title);
       if (existing) return existing.title;

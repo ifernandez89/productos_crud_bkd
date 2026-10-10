@@ -10,6 +10,7 @@ import { KnowledgeTestService } from '../library/knowledge-test.service';
 import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
+import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -28,6 +29,7 @@ export class JarvisCommandService {
     private readonly jarvisKnowledge: JarvisKnowledgeService,
     private readonly corpusSelector: CorpusSelectorService,
     private readonly musicCatalog: MusicCatalogService,
+    private readonly gamesCatalog: GamesCatalogService,
   ) {}
 
   /**
@@ -266,6 +268,68 @@ export class JarvisCommandService {
         success: true,
       });
       return { handled: true, response: musicMsg };
+    }
+
+    // 5d. VIDEOJUEGOS — catálogo y biblioteca gamer personal (I:\Juegos)
+    if (
+      /^(\/juegos|\/juego|\/games|\/gaming|mis juegos|mi biblioteca gamer|catalogo gamer|catalogo de juegos|que juegos tengo)$/i.test(
+        trimmedMessage,
+      )
+    ) {
+      const gamesMsg = this.gamesCatalog.getSummaryText();
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: gamesMsg,
+        metadata: { source: 'games_catalog' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: gamesMsg,
+        toolsUsed: ['games_catalog'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+      return { handled: true, response: gamesMsg };
+    }
+
+    // 5e. BACKUP — respaldo de la base de datos hacia G:\
+    if (
+      /^(\/backup|\/respaldo|backup bd|hacer backup|respaldo bd|estado del backup|backups de la bd)$/i.test(
+        trimmedMessage,
+      )
+    ) {
+      const backupMsg = await this.handleBackupCommand();
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: backupMsg,
+        metadata: { source: 'database_backup' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: backupMsg,
+        toolsUsed: ['database_backup'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+      return { handled: true, response: backupMsg };
     }
 
     // 6. LIBROS POR AUTOR
@@ -1263,6 +1327,11 @@ export class JarvisCommandService {
       `  Recomendaciones       →  \`qué música tengo para concentrarme?\``,
       `  Búsqueda por género   →  \`qué bandas de metal progresivo tengo?\``,
       ``,
+      `**BIBLIOTECA GAMER (I:\\Juegos)**`,
+      `  Ver catálogo gamer    →  \`/juegos\`  /  \`mis juegos\`  /  \`que juegos tengo\``,
+      `  Estrategias y lore    →  \`cómo vencer al Carnicero en Diablo 1?\``,
+      `  Recomendaciones       →  \`qué juego jugar si busco acción cooperativa?\``,
+      ``,
       `**BÚSQUEDA WEB**`,
       `  Noticias generales     →  \`últimas noticias\``,
       `  Sitio específico       →  \`dame 6 noticias de elonce\``,
@@ -1312,11 +1381,60 @@ export class JarvisCommandService {
       `  Ver qué chunks recupera  →  \`probe: <tu pregunta>\``,
       `                               \`probe: qué dice sobre las plantas?\``,
       ``,
+      `**RESPALDOS / BACKUPS (G:\\)**`,
+      `  Estado de backups        →  \`/backup\`  /  \`backup bd\`  /  \`estado del backup\``,
+      ``,
       `💡 Tip: escribí **h** en cualquier momento para ver esta guía.`,
       ``,
       `📄 **Nota sobre PDFs:** Al subir documentos/PDFs, la categoría se detecta`,
       `    automáticamente del contenido. Podés preguntar por temas específicos`,
       `    y JarBees combinará información de todos los documentos relacionados.`,
+    ].join('\n');
+  }
+
+  private async handleBackupCommand(): Promise<string> {
+    const backupDir = 'G:\\Backups\\jarbees_data';
+    const fs = await import('fs');
+    const path = await import('path');
+
+    if (!fs.existsSync('G:\\')) {
+      return '⚠️ La unidad de respaldo `G:\\` no se encuentra disponible o no está montada.';
+    }
+
+    if (!fs.existsSync(backupDir)) {
+      return '📁 La carpeta de backups `G:\\Backups\\jarbees_data` aún no tiene archivos de respaldo generados.';
+    }
+
+    const files = fs
+      .readdirSync(backupDir)
+      .filter((f) => f.endsWith('.dump'))
+      .map((f) => {
+        const stats = fs.statSync(path.join(backupDir, f));
+        return {
+          name: f,
+          sizeMB: (stats.size / (1024 * 1024)).toFixed(1),
+          date: stats.mtime.toLocaleString('es-AR'),
+        };
+      })
+      .sort((a, b) => b.name.localeCompare(a.name));
+
+    const fileList = files
+      .slice(0, 5)
+      .map((f) => `• \`${f.name}\` (${f.sizeMB} MB) — ${f.date}`)
+      .join('\n');
+
+    return [
+      `💾 **Estado del Sistema de Backups de JarBees** (\`G:\\Backups\\jarbees_data\`)`,
+      `- **Unidad de respaldo:** \`G:\\\` (PostgreSQL 18.6 \`jarbees_data\`)`,
+      `- **Respaldos conservados en disco:** \`${files.length}\``,
+      `- **Programación automática:** Tarea programada activa en Windows (\`JarBees_Database_Monthly_Backup\`) para ejecutarse el **día 1 de cada mes a las 03:00 AM**.`,
+      `- **Rotación:** Mantiene automáticamente los últimos 12 respaldos mensuales.`,
+      '',
+      `📦 **Últimos respaldos disponibles:**`,
+      fileList || '• Sin respaldos registrados aún.',
+      '',
+      `💡 Para forzar un nuevo respaldo inmediatamente, podés ejecutar en PowerShell:`,
+      `\`powershell -ExecutionPolicy Bypass -File C:\\Projects\\productos_crud_bkd\\scripts\\backup-db.ps1\``,
     ].join('\n');
   }
 }

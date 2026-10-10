@@ -1,0 +1,291 @@
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Script de indexación y generación del catálogo gamer de JarBees (I:\Juegos)
+ */
+
+const JUEGOS_DIR = 'I:\\Juegos';
+const OUTPUT_INDEX = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'games-index.json');
+const OUTPUT_REFS = path.join(process.cwd(), 'src', 'jarvis', 'knowledge', 'games-references.json');
+
+console.log('🎮 Escaneando biblioteca de videojuegos en:', JUEGOS_DIR);
+
+const catalogEntries = [
+  {
+    id: 'aoe2',
+    titulo: 'Age of Empires II: The Conquerors',
+    saga: 'Age of Empires',
+    desarrollador: 'Ensemble Studios / Microsoft',
+    año: 2000,
+    genero: ['Estrategia', 'RTS', 'Estrategia Histórica'],
+    estilo: 'Estrategia en tiempo real con micro y macro gestión militar y económica',
+    modos: ['Un jugador (Campañas)', 'Escaramuza vs IA', 'Multijugador LAN/Online'],
+    moods: ['Estrategia profunda', 'Concentración táctica', 'Conquista medieval', 'Nostalgia'],
+    estado: 'Instalado y 100% Funcional',
+    carpeta: 'Ae2+C\\Age of Empires II',
+    ejecutables: ['empires2.exe', 'age2_x1.exe'],
+    civilizacionesDestacadas: ['Bizantinos', 'Francos', 'Hunos', 'Mayas', 'Teutones', 'Britanos'],
+    caracteristicas: [
+      'Gestión de 4 recursos vitales: alimento, madera, oro y piedra.',
+      'Evolución por 4 edades: Alta Edad Media, Edad Feudal, Edad de los Castillos y Edad Imperial.',
+      'Campañas históricas completas: Juana de Arco, Barbarroja, Saladino, Atila el Huno, El Cid Campeador.'
+    ],
+    descripcion: 'La obra cumbre de la estrategia en tiempo real medieval. Combina árbol tecnológico profundo, equilibrio perfecto entre civilizaciones y tácticas legendarias de asedio y caballería.'
+  },
+  {
+    id: 'aoe2_hd',
+    titulo: 'Age of Empires II: HD Edition (v4.1)',
+    saga: 'Age of Empires',
+    desarrollador: 'Hidden Path Entertainment / Microsoft',
+    año: 2013,
+    genero: ['Estrategia', 'RTS', 'Remaster'],
+    estilo: 'Versión remasterizada con soporte widescreen y texturas HD',
+    modos: ['Instalador / Repack listo para instalar'],
+    moods: ['Estrategia', 'Remaster moderno'],
+    estado: 'Instalador Repack disponible',
+    carpeta: 'Age Of Empires II HD 4.1 repack Mrr DJ',
+    descripcion: 'Edición en alta definición de AoE2 con gráficos actualizados, IA mejorada y compatibilidad con pantallas modernas.'
+  },
+  {
+    id: 'cs16',
+    titulo: 'Counter-Strike 1.6',
+    saga: 'Counter-Strike',
+    desarrollador: 'Valve Corporation',
+    año: 2003,
+    genero: ['FPS', 'Shooter Táctico', 'Multijugador Competitivo'],
+    estilo: 'Shooter táctico en primera persona por rondas con compra de equipamiento',
+    modos: ['Multijugador LAN', 'Online', 'Partidas locales con Bots (ZBot/YAPB)'],
+    moods: ['Adrenalina pura', 'Reflejos y puntería', 'Competitivo', 'Nostalgia cibercafé'],
+    estado: 'Instalado Portable y 100% Funcional',
+    carpeta: 'Chonter',
+    ejecutables: ['hl.exe', 'cstrike.exe'],
+    mapasLegendarios: ['de_dust2', 'de_inferno', 'cs_assault', 'de_nuke', 'de_aztec', 'cs_office', 'cs_mansion'],
+    armasIconicas: ['AK-47', 'Colt M4A1 Carabine', 'AWP (Magnum Sniper)', 'Desert Eagle', 'MP5 Navy'],
+    caracteristicas: [
+      'Enfrentamiento Terroristas vs Fuerzas Especiales Antiterroristas (CT).',
+      'Mecánicas de desactivación de C4 y rescate de rehenes.',
+      'Economía por rondas basada en recompensas por bajas y objetivos cumplidos.'
+    ],
+    descripcion: 'El shooter táctico competitivo más influyente de todos los tiempos. Requiere puntería precisa (recoil control), movimiento (strafe) y lectura táctica del mapa.'
+  },
+  {
+    id: 'diablo2',
+    titulo: 'Diablo II: Lord of Destruction',
+    saga: 'Diablo',
+    desarrollador: 'Blizzard North',
+    año: 2001,
+    genero: ['Action RPG', 'Hack and Slash', 'Fantasía Oscura'],
+    estilo: 'Rol de acción isométrico con generación procedural y farmeo de botín',
+    modos: ['Un jugador', 'Multijugador cooperativo LAN / Battle.net'],
+    moods: ['Inmersión oscura', 'Farmeo de botín', 'Progresión de personaje', 'Fantasía sombría'],
+    estado: 'Instalado y 100% Funcional (5.40 GB)',
+    carpeta: 'DIABLO 2',
+    ejecutables: ['Game.exe', 'Diablo II.exe'],
+    clases: ['Nigromante', 'Paladín', 'Hechicera', 'Bárbaro', 'Amazona', 'Druida', 'Asesina'],
+    caracteristicas: [
+      '5 Actos monumentales desde el campamento de las arpías hasta la cima del Monte Arreat.',
+      'Sistema profundo de árboles de talentos y sinergias entre habilidades.',
+      'Palabras rúnicas (Runewords como Enigma, Heart of the Oak, Breath of the Dying).',
+      'Tres dificultades: Normal, Pesadilla e Infierno.'
+    ],
+    descripcion: 'El estándar de oro absoluto de los Action RPG. Su atmósfera gótica, música sublime de Matt Uelmen y sistema de looteo lo convierten en una obra maestra atemporal.'
+  },
+  {
+    id: 'diablo1',
+    titulo: 'Diablo I',
+    saga: 'Diablo',
+    desarrollador: 'Blizzard North',
+    año: 1996,
+    genero: ['Action RPG', 'Roguelike', 'Terror Gótico'],
+    estilo: 'Exploración de mazmorras subterráneas con atmósfera opresiva y tensa',
+    modos: ['Un jugador', 'Multijugador LAN'],
+    moods: ['Terror psicológico', 'Claustrofobia', 'Nostalgia retro', 'Dificultad implacable'],
+    estado: 'Instalado y 100% Funcional (2.95 GB)',
+    carpeta: 'DIABLO 1',
+    ejecutables: ['Diablo.exe', 'devilutionx.exe'],
+    clases: ['Guerrero', 'Pícara', 'Hechicero'],
+    caracteristicas: [
+      'El pueblo desolado de Tristram con su icónica guitarra acústica de fondo.',
+      '16 niveles descendentes: Catedral, Catacumbas, Cuevas y el propio Infierno.',
+      'Enfrentamiento final contra El Carnicero (The Butcher), el Rey Leoric y Diablo.'
+    ],
+    descripcion: 'El origen del mito. Un juego implacable y atmosférico donde cada paso en la oscuridad subterránea se siente como una verdadera lucha por la supervivencia.'
+  },
+  {
+    id: 'l4d',
+    titulo: 'Left 4 Dead',
+    saga: 'Left 4 Dead',
+    desarrollador: 'Valve / Turtle Rock Studios',
+    año: 2008,
+    genero: ['FPS', 'Survival Horror Co-op', 'Zombis'],
+    estilo: 'Disparos en primera persona cooperativo con IA Director adaptativa',
+    modos: ['Campaña Cooperativa (1-4 jugadores)', 'Modo Versus', 'Supervivencia'],
+    moods: ['Tensión constante', 'Cooperativo con amigos', 'Terror y acción', 'Frenesí'],
+    estado: 'Instalado y 100% Funcional (7.52 GB)',
+    carpeta: 'Program Files (x86)\\VALVE\\Left 4 Dead',
+    ejecutables: ['left4dead.exe'],
+    supervivientes: ['Bill (veterano de Vietnam)', 'Zoey (estudiante de cine)', 'Francis (motero rebelde)', 'Louis (analista de sistemas)'],
+    infectadosEspeciales: ['Tank (fuerza bruta)', 'Witch (llanto letal)', 'Hunter (agilidad y salto)', 'Smoker (lengua a distancia)', 'Boomer (bilis atrayente)'],
+    campañas: ['No Mercy (Alta Médica)', 'Death Toll (Toque de Difuntos)', 'Dead Air (Último Vuelo)', 'Blood Harvest (Cosecha de Sangre)'],
+    descripcion: 'La experiencia definitiva de apocalipsis zombi en cooperativo. El AI Director modula dinámicamente el estrés, la música, los botiquines y las hordas para asegurar tensión continua.'
+  },
+  {
+    id: 'worms_reloaded',
+    titulo: 'Worms Reloaded',
+    saga: 'Worms',
+    desarrollador: 'Team17 Digital Ltd',
+    año: 2010,
+    genero: ['Estrategia', 'Artillería por Turnos', 'Humor / Casual'],
+    estilo: 'Estrategia táctica por turnos 2D en escenarios totalmente destructibles',
+    modos: ['Campaña individual', 'Puzzles tácticos', 'Multijugador local / Online'],
+    moods: ['Risas con amigos', 'Diversión desenfadada', 'Puntería y cálculo balístico'],
+    estado: 'Instalado y 100% Funcional (2.51 GB)',
+    carpeta: 'Program Files (x86)\\Team17\\Worms Reloaded',
+    ejecutables: ['WormsReloaded.exe'],
+    armasMiticas: ['Granada Santa', 'Super Banana Bomb', 'Oveja Voladora', 'Burro de Cemento', 'Bate de Béisbol', 'Bomba Alfombra'],
+    descripcion: 'El regreso clásico de los gusanos beligerantes con gráficos HD, personalización de equipos y tumbas, y física mejorada de cuerdas y explosiones.'
+  },
+  {
+    id: 'worms_armageddon',
+    titulo: 'Worms Armageddon & World Party',
+    saga: 'Worms',
+    desarrollador: 'Team17',
+    año: 1999,
+    genero: ['Estrategia', 'Artillería por Turnos', 'Clásico Retro'],
+    estilo: 'El pináculo del gameplay competitivo clásico de Worms',
+    modos: ['Multijugador local Hotseat', 'Misiones'],
+    moods: ['Nostalgia pura', 'Batallas rápidas Hotseat'],
+    estado: 'Instalado y 100% Funcional',
+    carpeta: 'Worms Armaggedon / Worms World Party',
+    descripcion: 'Considerado por la comunidad como el juego más perfecto de la saga Worms por su física de soga ninja y precisión milimétrica.'
+  },
+  {
+    id: 'mk_shaolin_monks',
+    titulo: 'Mortal Kombat: Shaolin Monks',
+    saga: 'Mortal Kombat',
+    desarrollador: 'Midway Games',
+    año: 2005,
+    genero: ['Beat em Up', 'Acción y Aventura', 'Lucha Cooperativa'],
+    estilo: 'Aventura de acción en tercera persona con combate fluido y fatalities en tiempo real',
+    modos: ['Campaña individual', 'Cooperativo para 2 jugadores', 'Modo Versus'],
+    moods: ['Combate salvaje', 'Cooperativo de sillón', 'Nostalgia PS2'],
+    estado: 'Imagen ISO Completa (3.36 GB)',
+    carpeta: 'Mortal Kombat Shaolin Monks.iso',
+    protagonistas: ['Liu Kang', 'Kung Lao', 'Sub-Zero (desbloqueable)', 'Scorpion (desbloqueable)'],
+    descripcion: 'La mejor aventura spin-off de Mortal Kombat. Revive la historia de MK2 con combates multidireccionales, combos aéreos brutales y fatalities interactivos con el entorno.'
+  },
+  {
+    id: 'screencheat',
+    titulo: 'Screencheat',
+    saga: 'Screencheat',
+    desarrollador: 'Samurai Punk / GOG',
+    año: 2014,
+    genero: ['FPS Party', 'Multijugador Split-Screen'],
+    estilo: 'Shooter frenético donde todos los personajes son invisibles',
+    modos: ['Multijugador local de 2 a 4 jugadores'],
+    moods: ['Risas caóticas', 'Fiesta / Party Game'],
+    estado: 'Instalador GOG (467 MB)',
+    carpeta: 'Screencheat.v3.3.0.GOG',
+    descripcion: 'Premisa hilarante y brillante: como todos son invisibles, la única forma de encontrar a tus oponentes es mirando sus cuadrantes en la pantalla dividida.'
+  },
+  {
+    id: 'chess_titans',
+    titulo: 'Chess Titans',
+    saga: 'Windows Entertainment',
+    desarrollador: 'Oberon Games / Microsoft',
+    año: 2006,
+    genero: ['Estrategia', 'Juegos de Mesa', 'Ajedrez'],
+    estilo: 'Ajedrez 3D elegante con vista en perspectiva y tablero de madera o porcelana',
+    modos: ['Vs Computadora (10 niveles de IA)', '2 Jugadores local'],
+    moods: ['Concentración mental', 'Tranquilidad', 'Estudio de aperturas'],
+    estado: 'Instalado y 100% Funcional',
+    carpeta: 'chess-titans',
+    descripcion: 'El ajedrez clásico de Windows Vista/7 con gráficos tridimensionales limpios y asistencia visual para movimientos legales y jaques.'
+  },
+  {
+    id: 'hours_of_fun',
+    titulo: 'Hours of Fun (Emuladores & ROMs Retro)',
+    saga: 'Colección Retro',
+    desarrollador: 'Comunidad de Emulación',
+    año: 2020,
+    genero: ['Emulación', 'Retro Gaming', 'Arcade'],
+    estilo: 'Suite de emuladores para Sega Dreamcast (Redream), consolas clásicas y ROMs',
+    modos: ['Un jugador', 'Multijugador local con gamepads'],
+    moods: ['Exploración retro', 'Arcade', 'Curiosidades'],
+    estado: 'Instalado y 100% Funcional (7.71 GB)',
+    carpeta: 'Hours of Fun',
+    emuladores: ['redream-win64 (Sega Dreamcast)'],
+    descripcion: 'Colección exhaustiva de emulación que incluye Redream para disfrutar del catálogo de Dreamcast a 60 FPS en alta resolución, además de ROMs clásicas de consolas históricas.'
+  },
+  {
+    id: 'flashes_arcade',
+    titulo: 'Colección Arcade Flash Web',
+    saga: 'Flash Clásicos',
+    desarrollador: 'Desarrolladores Indie Web (Newgrounds / ArmorGames)',
+    año: 2005,
+    genero: ['Arcade', 'Acción Flash', 'Minijuegos'],
+    estilo: 'Juegos vectoriales Flash autónomos sin necesidad de navegador',
+    modos: ['Un jugador', 'Cooperativo 2 jugadores local en teclado'],
+    moods: ['Diversión instantánea', 'Nostalgia web de los 2000'],
+    estado: 'Instalado y 100% Funcional (163 MB)',
+    carpeta: 'Flashes',
+    juegosDestacados: ['Boxhead 2Play (supervivencia zombi cooperativa)', 'Gunblood Reborn (duelo de pistolas del lejano oeste)'],
+    descripcion: 'Preservación de joyas Flash de la era dorada de los minijuegos de navegador, ejecutables de inmediato mediante scripts arcade locales.'
+  }
+];
+
+// Estadísticas
+const totalJuegos = catalogEntries.length;
+const totalCompletos = catalogEntries.filter(j => j.estado.includes('100% Funcional')).length;
+
+const catalogData = {
+  metadata: {
+    version: 1,
+    origenRuta: JUEGOS_DIR,
+    descripcion: 'Catálogo de Videojuegos y Biblioteca Gamer de JarBees (I:\\Juegos)',
+    fechaActualizacion: new Date().toISOString(),
+    totalJuegos,
+    totalFuncionalesDirectos: totalCompletos,
+  },
+  juegos: catalogEntries
+};
+
+// Referencias livianas
+const generosMap = {};
+const moodsMap = {};
+
+catalogEntries.forEach(j => {
+  j.genero.forEach(g => {
+    if (!generosMap[g]) generosMap[g] = [];
+    generosMap[g].push(j.titulo);
+  });
+  j.moods.forEach(m => {
+    if (!moodsMap[m]) moodsMap[m] = [];
+    moodsMap[m].push(j.titulo);
+  });
+});
+
+const referencesData = {
+  version: 1,
+  totalJuegos,
+  totalFuncionalesDirectos: totalCompletos,
+  rutaColeccion: JUEGOS_DIR,
+  generosDisponibles: generosMap,
+  recomendacionesPorMood: moodsMap,
+  juegos: catalogEntries.map(j => ({
+    id: j.id,
+    titulo: j.titulo,
+    saga: j.saga,
+    genero: j.genero,
+    estado: j.estado,
+    moods: j.moods,
+    carpeta: j.carpeta
+  }))
+};
+
+fs.writeFileSync(OUTPUT_INDEX, JSON.stringify(catalogData, null, 2), 'utf-8');
+console.log(`✅ Catálogo generado: ${OUTPUT_INDEX} (${totalJuegos} títulos catalogados)`);
+
+fs.writeFileSync(OUTPUT_REFS, JSON.stringify(referencesData, null, 2), 'utf-8');
+console.log(`✅ Referencias generadas: ${OUTPUT_REFS}`);

@@ -1,0 +1,449 @@
+{
+  "version": 1,
+  "totalJuegos": 13,
+  "totalFuncionalesDirectos": 10,
+  "rutaColeccion": "I:\\Juegos",
+  "generosDisponibles": {
+    "Estrategia": [
+      "Age of Empires II: The Conquerors",
+      "Age of Empires II: HD Edition (v4.1)",
+      "Worms Reloaded",
+      "Worms Armageddon & World Party",
+      "Chess Titans"
+    ],
+    "RTS": [
+      "Age of Empires II: The Conquerors",
+      "Age of Empires II: HD Edition (v4.1)"
+    ],
+    "Estrategia Histórica": [
+      "Age of Empires II: The Conquerors"
+    ],
+    "Remaster": [
+      "Age of Empires II: HD Edition (v4.1)"
+    ],
+    "FPS": [
+      "Counter-Strike 1.6",
+      "Left 4 Dead"
+    ],
+    "Shooter Táctico": [
+      "Counter-Strike 1.6"
+    ],
+    "Multijugador Competitivo": [
+      "Counter-Strike 1.6"
+    ],
+    "Action RPG": [
+      "Diablo II: Lord of Destruction",
+      "Diablo I"
+    ],
+    "Hack and Slash": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Fantasía Oscura": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Roguelike": [
+      "Diablo I"
+    ],
+    "Terror Gótico": [
+      "Diablo I"
+    ],
+    "Survival Horror Co-op": [
+      "Left 4 Dead"
+    ],
+    "Zombis": [
+      "Left 4 Dead"
+    ],
+    "Artillería por Turnos": [
+      "Worms Reloaded",
+      "Worms Armageddon & World Party"
+    ],
+    "Humor / Casual": [
+      "Worms Reloaded"
+    ],
+    "Clásico Retro": [
+      "Worms Armageddon & World Party"
+    ],
+    "Beat em Up": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "Acción y Aventura": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "Lucha Cooperativa": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "FPS Party": [
+      "Screencheat"
+    ],
+    "Multijugador Split-Screen": [
+      "Screencheat"
+    ],
+    "Juegos de Mesa": [
+      "Chess Titans"
+    ],
+    "Ajedrez": [
+      "Chess Titans"
+    ],
+    "Emulación": [
+      "Hours of Fun (Emuladores & ROMs Retro)"
+    ],
+    "Retro Gaming": [
+      "Hours of Fun (Emuladores & ROMs Retro)"
+    ],
+    "Arcade": [
+      "Hours of Fun (Emuladores & ROMs Retro)",
+      "Colección Arcade Flash Web"
+    ],
+    "Acción Flash": [
+      "Colección Arcade Flash Web"
+    ],
+    "Minijuegos": [
+      "Colección Arcade Flash Web"
+    ]
+  },
+  "recomendacionesPorMood": {
+    "Estrategia profunda": [
+      "Age of Empires II: The Conquerors"
+    ],
+    "Concentración táctica": [
+      "Age of Empires II: The Conquerors"
+    ],
+    "Conquista medieval": [
+      "Age of Empires II: The Conquerors"
+    ],
+    "Nostalgia": [
+      "Age of Empires II: The Conquerors"
+    ],
+    "Estrategia": [
+      "Age of Empires II: HD Edition (v4.1)"
+    ],
+    "Remaster moderno": [
+      "Age of Empires II: HD Edition (v4.1)"
+    ],
+    "Adrenalina pura": [
+      "Counter-Strike 1.6"
+    ],
+    "Reflejos y puntería": [
+      "Counter-Strike 1.6"
+    ],
+    "Competitivo": [
+      "Counter-Strike 1.6"
+    ],
+    "Nostalgia cibercafé": [
+      "Counter-Strike 1.6"
+    ],
+    "Inmersión oscura": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Farmeo de botín": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Progresión de personaje": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Fantasía sombría": [
+      "Diablo II: Lord of Destruction"
+    ],
+    "Terror psicológico": [
+      "Diablo I"
+    ],
+    "Claustrofobia": [
+      "Diablo I"
+    ],
+    "Nostalgia retro": [
+      "Diablo I"
+    ],
+    "Dificultad implacable": [
+      "Diablo I"
+    ],
+    "Tensión constante": [
+      "Left 4 Dead"
+    ],
+    "Cooperativo con amigos": [
+      "Left 4 Dead"
+    ],
+    "Terror y acción": [
+      "Left 4 Dead"
+    ],
+    "Frenesí": [
+      "Left 4 Dead"
+    ],
+    "Risas con amigos": [
+      "Worms Reloaded"
+    ],
+    "Diversión desenfadada": [
+      "Worms Reloaded"
+    ],
+    "Puntería y cálculo balístico": [
+      "Worms Reloaded"
+    ],
+    "Nostalgia pura": [
+      "Worms Armageddon & World Party"
+    ],
+    "Batallas rápidas Hotseat": [
+      "Worms Armageddon & World Party"
+    ],
+    "Combate salvaje": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "Cooperativo de sillón": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "Nostalgia PS2": [
+      "Mortal Kombat: Shaolin Monks"
+    ],
+    "Risas caóticas": [
+      "Screencheat"
+    ],
+    "Fiesta / Party Game": [
+      "Screencheat"
+    ],
+    "Concentración mental": [
+      "Chess Titans"
+    ],
+    "Tranquilidad": [
+      "Chess Titans"
+    ],
+    "Estudio de aperturas": [
+      "Chess Titans"
+    ],
+    "Exploración retro": [
+      "Hours of Fun (Emuladores & ROMs Retro)"
+    ],
+    "Arcade": [
+      "Hours of Fun (Emuladores & ROMs Retro)"
+    ],
+    "Curiosidades": [
+      "Hours of Fun (Emuladores & ROMs Retro)"
+    ],
+    "Diversión instantánea": [
+      "Colección Arcade Flash Web"
+    ],
+    "Nostalgia web de los 2000": [
+      "Colección Arcade Flash Web"
+    ]
+  },
+  "juegos": [
+    {
+      "id": "aoe2",
+      "titulo": "Age of Empires II: The Conquerors",
+      "saga": "Age of Empires",
+      "genero": [
+        "Estrategia",
+        "RTS",
+        "Estrategia Histórica"
+      ],
+      "estado": "Instalado y 100% Funcional",
+      "moods": [
+        "Estrategia profunda",
+        "Concentración táctica",
+        "Conquista medieval",
+        "Nostalgia"
+      ],
+      "carpeta": "Ae2+C\\Age of Empires II"
+    },
+    {
+      "id": "aoe2_hd",
+      "titulo": "Age of Empires II: HD Edition (v4.1)",
+      "saga": "Age of Empires",
+      "genero": [
+        "Estrategia",
+        "RTS",
+        "Remaster"
+      ],
+      "estado": "Instalador Repack disponible",
+      "moods": [
+        "Estrategia",
+        "Remaster moderno"
+      ],
+      "carpeta": "Age Of Empires II HD 4.1 repack Mrr DJ"
+    },
+    {
+      "id": "cs16",
+      "titulo": "Counter-Strike 1.6",
+      "saga": "Counter-Strike",
+      "genero": [
+        "FPS",
+        "Shooter Táctico",
+        "Multijugador Competitivo"
+      ],
+      "estado": "Instalado Portable y 100% Funcional",
+      "moods": [
+        "Adrenalina pura",
+        "Reflejos y puntería",
+        "Competitivo",
+        "Nostalgia cibercafé"
+      ],
+      "carpeta": "Chonter"
+    },
+    {
+      "id": "diablo2",
+      "titulo": "Diablo II: Lord of Destruction",
+      "saga": "Diablo",
+      "genero": [
+        "Action RPG",
+        "Hack and Slash",
+        "Fantasía Oscura"
+      ],
+      "estado": "Instalado y 100% Funcional (5.40 GB)",
+      "moods": [
+        "Inmersión oscura",
+        "Farmeo de botín",
+        "Progresión de personaje",
+        "Fantasía sombría"
+      ],
+      "carpeta": "DIABLO 2"
+    },
+    {
+      "id": "diablo1",
+      "titulo": "Diablo I",
+      "saga": "Diablo",
+      "genero": [
+        "Action RPG",
+        "Roguelike",
+        "Terror Gótico"
+      ],
+      "estado": "Instalado y 100% Funcional (2.95 GB)",
+      "moods": [
+        "Terror psicológico",
+        "Claustrofobia",
+        "Nostalgia retro",
+        "Dificultad implacable"
+      ],
+      "carpeta": "DIABLO 1"
+    },
+    {
+      "id": "l4d",
+      "titulo": "Left 4 Dead",
+      "saga": "Left 4 Dead",
+      "genero": [
+        "FPS",
+        "Survival Horror Co-op",
+        "Zombis"
+      ],
+      "estado": "Instalado y 100% Funcional (7.52 GB)",
+      "moods": [
+        "Tensión constante",
+        "Cooperativo con amigos",
+        "Terror y acción",
+        "Frenesí"
+      ],
+      "carpeta": "Program Files (x86)\\VALVE\\Left 4 Dead"
+    },
+    {
+      "id": "worms_reloaded",
+      "titulo": "Worms Reloaded",
+      "saga": "Worms",
+      "genero": [
+        "Estrategia",
+        "Artillería por Turnos",
+        "Humor / Casual"
+      ],
+      "estado": "Instalado y 100% Funcional (2.51 GB)",
+      "moods": [
+        "Risas con amigos",
+        "Diversión desenfadada",
+        "Puntería y cálculo balístico"
+      ],
+      "carpeta": "Program Files (x86)\\Team17\\Worms Reloaded"
+    },
+    {
+      "id": "worms_armageddon",
+      "titulo": "Worms Armageddon & World Party",
+      "saga": "Worms",
+      "genero": [
+        "Estrategia",
+        "Artillería por Turnos",
+        "Clásico Retro"
+      ],
+      "estado": "Instalado y 100% Funcional",
+      "moods": [
+        "Nostalgia pura",
+        "Batallas rápidas Hotseat"
+      ],
+      "carpeta": "Worms Armaggedon / Worms World Party"
+    },
+    {
+      "id": "mk_shaolin_monks",
+      "titulo": "Mortal Kombat: Shaolin Monks",
+      "saga": "Mortal Kombat",
+      "genero": [
+        "Beat em Up",
+        "Acción y Aventura",
+        "Lucha Cooperativa"
+      ],
+      "estado": "Imagen ISO Completa (3.36 GB)",
+      "moods": [
+        "Combate salvaje",
+        "Cooperativo de sillón",
+        "Nostalgia PS2"
+      ],
+      "carpeta": "Mortal Kombat Shaolin Monks.iso"
+    },
+    {
+      "id": "screencheat",
+      "titulo": "Screencheat",
+      "saga": "Screencheat",
+      "genero": [
+        "FPS Party",
+        "Multijugador Split-Screen"
+      ],
+      "estado": "Instalador GOG (467 MB)",
+      "moods": [
+        "Risas caóticas",
+        "Fiesta / Party Game"
+      ],
+      "carpeta": "Screencheat.v3.3.0.GOG"
+    },
+    {
+      "id": "chess_titans",
+      "titulo": "Chess Titans",
+      "saga": "Windows Entertainment",
+      "genero": [
+        "Estrategia",
+        "Juegos de Mesa",
+        "Ajedrez"
+      ],
+      "estado": "Instalado y 100% Funcional",
+      "moods": [
+        "Concentración mental",
+        "Tranquilidad",
+        "Estudio de aperturas"
+      ],
+      "carpeta": "chess-titans"
+    },
+    {
+      "id": "hours_of_fun",
+      "titulo": "Hours of Fun (Emuladores & ROMs Retro)",
+      "saga": "Colección Retro",
+      "genero": [
+        "Emulación",
+        "Retro Gaming",
+        "Arcade"
+      ],
+      "estado": "Instalado y 100% Funcional (7.71 GB)",
+      "moods": [
+        "Exploración retro",
+        "Arcade",
+        "Curiosidades"
+      ],
+      "carpeta": "Hours of Fun"
+    },
+    {
+      "id": "flashes_arcade",
+      "titulo": "Colección Arcade Flash Web",
+      "saga": "Flash Clásicos",
+      "genero": [
+        "Arcade",
+        "Acción Flash",
+        "Minijuegos"
+      ],
+      "estado": "Instalado y 100% Funcional (163 MB)",
+      "moods": [
+        "Diversión instantánea",
+        "Nostalgia web de los 2000"
+      ],
+      "carpeta": "Flashes"
+    }
+  ]
+}

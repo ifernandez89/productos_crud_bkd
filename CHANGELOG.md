@@ -6,6 +6,57 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed — Prevención de Falso Positivo de Resumen de Carl Jung en Consultas Gamer (2026-10-10)
+
+- **🛡️ Corrección de Secuestro por Subcadena ("juegos" ➔ "ego" ➔ Jung)**:
+  - **Causa Raíz**: En `CorpusSelectorService`, la detección de escuelas de pensamiento utilizaba `queryLower.includes(kw)` sin límites de palabra. La palabra *"juegos"* contenía la subcadena *"ego"*, activando `escuela:psicoanalisis` con +6 puntos y seleccionando *"Arquetipos y el Inconsciente Colectivo"* de Carl Jung. Además, `JarvisPromptBuilderService` asumía que si `findMatchingDocumentTitle` devolvía cualquier obra, el usuario deseaba un resumen ejecutivo del libro, aun tratándose de preguntas abiertas sobre consolas o gaming.
+  - **Filtro de Palabra Completa (`matchTerm`)**: Ahora todas las palabras clave de escuelas exigen coincidencia de palabra delimitada por fronteras léxicas (`\bword\b`).
+  - **Filtro de Coincidencia de Título/Autor**: `CorpusSelectorService` solo aprueba documentos si hay coincidencia real con el título o autor.
+  - **Protección en Preguntas Conversacionales**: `extractDocumentSummaryRequest` nunca se activa si el mensaje del usuario contiene signos de interrogación o conectores conversacionales (*"conoces"*, *"sabes"*, *"recomiendas"*, *"qué opinas"*).
+
+### Added — Documento Estratégico de Arquitectura e Independencia de Inferencia LLM (2026-10-10)
+
+- **🏛️ Estrategia de Desacoplamiento y Resiliencia (`docs/ARCHITECTURE_INDEPENDENCE_LLM.md`)**:
+  - Definición del contrato lógico `InferenceProvider` para convertir a Ollama en un motor reemplazable por `llama.cpp` (`llama-server` / GGUF), `LM Studio` o `vLLM`.
+  - Diseño de `InferenceGateway` con timeouts diferenciados por caso de uso (chat vs RAG pesado), Circuit Breaker y degradación controlada (HTTP 503 con fallback).
+  - Plan de ejecución en 3 etapas para exprimir la aceleración local en la **RTX 5070 de 12 GB**.
+
+### Added — Integración de Catálogo Gamer y Biblioteca de Videojuegos (I:\Juegos) (2026-10-10)
+
+- **🎮 Limpieza e Indexación Gamer (`I:\Juegos`)**:
+  - Eliminación de vestigios huérfanos vacíos (`S.T.A.L.K.E.R.: Clear Sky`, ~5 KB).
+  - Indexación exhaustiva de la biblioteca gamer en `src/jarvis/knowledge/games-index.json` y `src/jarvis/knowledge/games-references.json`.
+  - Títulos catalogados: **Age of Empires II (The Conquerors & HD)**, **Diablo I & Diablo II: Lord of Destruction**, **Left 4 Dead**, **Counter-Strike 1.6**, **Worms (Reloaded, Armageddon, World Party)**, **Mortal Kombat: Shaolin Monks**, **Chess Titans**, **Screencheat**, suite **Hours of Fun** (Redream / Dreamcast y ROMs) y **Colección Arcade Flash**.
+- **🧠 Servicio `GamesCatalogService` & Módulo `JarvisModule`**:
+  - Inyección en `JarvisPromptBuilderService` para responder consultas sobre videojuegos, guías de estrategia, clases de Diablo 2, tácticas de AoE2, infectados de L4D y recomendaciones por estado de ánimo.
+  - Comando interactivo `/juegos` (o `mis juegos`) en `JarvisCommandService` con guía en `/help`.
+- **⚡ Ingesta RAG en PostgreSQL (1024D con `bge-m3:latest`)**:
+  - Documento relacional `Document` ID #74: *"Catálogo de Videojuegos y Biblioteca Gamer (I:\Juegos)"* en categoría *"Videojuegos y Ocio Digital"*.
+  - 8 chunks temáticos vectorizados para recuperación semántica transversal en el chat y modo RAG.
+
+### Added — Sistema Automatizado de Backups Mensuales de Base de Datos en Unidad G:\ (2026-10-10)
+
+- **💾 Script de Respaldo Nativo (`scripts/backup-db.ps1`)**:
+  - Volcado comprimido binario con `pg_dump -F c` de PostgreSQL 18.6 hacia `G:\Backups\jarbees_data\jarbees_data_YYYYMMDD_HHMM.dump`.
+  - Duración de ejecución: ~40 segundos para preservar la base completa (tablas, secuencias y vectores pgvector 1024D de libros y música).
+  - Rotación automática inteligente: Mantiene los últimos 12 respaldos (1 año de historial) y purga los más viejos para proteger el almacenamiento de `G:\`.
+  - Registro cronológico detallado en `G:\Backups\jarbees_data\backup_history.log`.
+- **⏰ Tarea Programada de Windows (Task Scheduler)**:
+  - Registro de la tarea programada `JarBees_Database_Monthly_Backup` en el Programador de Tareas de Windows.
+  - Frecuencia: Mensual (día 1 de cada mes a las 03:00 AM), 100% desatendida.
+  - Script complementario: `scripts/schedule-monthly-backup.ps1`.
+- **💬 Comando de Monitoreo `/backup` en JarBees**:
+  - Comando `/backup` (o `backup bd`, `estado del backup`) en `JarvisCommandService` para consultar estado, fecha y tamaño de los últimos volcados disponibles.
+
+### Fixed — Prevención de Falsos Positivos en Detección Matemática y Herramientas (2026-10-10)
+
+- **🛡️ Corrección de Secuestro Matemático en Consultas Conversacionales (`AssistantToolsService`)**:
+  - **Causa Raíz**: La expresión regular en `isMathQuery` (`\d+\s*[\+\-\*\/\^]\s*\d`) capturaba cualquier texto que contuviera barras o números en medio de frases cotidianas (por ejemplo: *"pop 80/90"*, *"24/7"*, *"16/9"*, *"10/12/2026"*). Al fallar la evaluación aritmética, `evaluateWithMathJs` devolvía un string de error (`"No pude identificar una expresión matemática válida..."`) que cortaba la ejecución del LLM y se entregaba directamente al usuario.
+  - **Filtro Estricto de Intención**: Ahora `isMathQuery` exige verbos o intenciones matemáticas explícitas (*"calcula"*, *"cuánto es"*, *"resuelve"*, etc.) o que la consulta sea una expresión aritmética pura (sin palabras de lenguaje natural adicionales).
+  - **Fallback Silencioso a Ollama (`null`)**: Si una consulta matemática no puede evaluarse con total certeza o falla, la herramienta devuelve `null` en lugar de un mensaje abortivo, permitiendo que el flujo continúe de forma natural hacia el modelo conversacional / catálogo musical / RAG.
+  - **Blindaje en País, Clima y Hora**: Se sustituyó el lanzamiento de `HttpException` por retorno `null` en `getCountryAnswer` y se refinaron los detectores de clima (*"tiempo"*) y hora para evitar falsas activaciones en lenguaje coloquial.
+  - **Pruebas Unitarias Automatizadas**: Se incorporó una suite en `assistant-tools.service.spec.ts` validando el descarte de frases como *"Hablemos de música!! Por ej pop 80/90! Que podrías recomendarme?"* y la preservación de cálculos legítimos.
+
 ### Added — Integración de Catálogo y Conocimiento Musical Personal (I:\Musica) (2026-10-10)
 
 - **🎵 Catálogo e Indexación Musical (`I:\Musica`)**:

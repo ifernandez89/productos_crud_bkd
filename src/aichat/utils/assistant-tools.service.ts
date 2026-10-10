@@ -78,7 +78,7 @@ export class AssistantToolsService {
     }
 
     // Si la pregunta mezcla dominios distintos, Ollama maneja mejor la respuesta completa
-    if (this.isMixedQuery(normalized)) {
+    if (this.isMixedQuery(query, normalized)) {
       this.logger.log(`[tool:mixed → ollama] "${query}"`);
       return null;
     }
@@ -115,9 +115,12 @@ export class AssistantToolsService {
       this.logger.log(`[tool:hebrew] "${query}"`);
       return this.getHebrewCalendarAnswer(query);
     }
-    if (this.isMathQuery(normalized)) {
-      this.logger.log(`[tool:math] "${query}"`);
-      return this.getMathAnswer(query, normalized);
+    if (this.isMathQuery(query, normalized)) {
+      const mathAnswer = await this.getMathAnswer(query, normalized);
+      if (mathAnswer) {
+        this.logger.log(`[tool:math] "${query}"`);
+        return mathAnswer;
+      }
     }
 
     this.logger.log(`[tool:none → ollama] "${query}"`);
@@ -125,13 +128,13 @@ export class AssistantToolsService {
   }
 
   // Detecta preguntas que combinan 2 o más dominios distintos → mejor dejarlas a Ollama
-  private isMixedQuery(n: string): boolean {
+  private isMixedQuery(query: string, n: string): boolean {
     const domains = [
       this.isWeatherQuery(n),
       this.isAstronomyQuery(n),
       this.isHolidayQuery(n),
       this.isCountryQuery(n),
-      this.isMathQuery(n),
+      this.isMathQuery(query, n),
       this.isEconomyQuery(n),
     ];
     return domains.filter(Boolean).length >= 2;
@@ -153,7 +156,7 @@ export class AssistantToolsService {
     // Excluir "clima astrológico" / "clima zodiacal" / "clima lunar" → eso es astrología
     if (/(astro|zodiac|lunar|horoscopo|signo|tarot|astrolog)/i.test(n))
       return false;
-    return /(clima|temperatura|tiempo|pronostico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio)/i.test(
+    return /(clima|temperatura|pronostico|pronóstico|lluvia|llueve|soleado|nublado|viento|hace calor|hace frio|hace frío|como esta el tiempo|cómo está el tiempo|estado del tiempo|tiempo en)/i.test(
       n,
     );
   }
@@ -171,13 +174,13 @@ export class AssistantToolsService {
   }
 
   private isTimeQuery(n: string): boolean {
-    return /(hora|horario|zona horaria|que hora|hora local|hora actual)/i.test(
+    return /(que hora es|qué hora es|hora actual|hora local|que hora tiene|qué hora tiene|zona horaria|horario actual)/i.test(
       n,
     );
   }
 
   private isCountryQuery(n: string): boolean {
-    return /(pais|capital|moneda|idioma|poblacion|bandera|datos de|sobre [a-z])/i.test(
+    return /(?:^|\s)(?:pais|país|capital\s+de|moneda\s+de|idioma\s+de|poblacion\s+de|población\s+de|bandera\s+de|datos\s+de)\s+/i.test(
       n,
     );
   }
@@ -200,10 +203,45 @@ export class AssistantToolsService {
     );
   }
 
-  private isMathQuery(n: string): boolean {
-    return /(calcula|calculo|cuanto es|cuanto da|resuelve|deriva|integral|simplifica|factoriza|raiz cuadrada|logaritmo|seno|coseno|tangente|matematica|\d+\s*[\+\-\*\/\^]\s*\d)/i.test(
-      n,
-    );
+  private isMathQuery(query: string, n: string): boolean {
+    // 1. Verbos e intenciones matemáticas explícitas
+    const explicitMathVerbs =
+      /(cu[aá]nto\s+(?:es|da|ser[ií]a)|calcul[aoá](?:me|r)?|resuelv[ea]|resolv[eé]r?|deriv[aoá](?:da|r)?|integr[aoá](?:l|r)?|simplific[aoá](?:r)?|factoriz[aoá](?:r)?|ra[ií]z\s+(?:cuadrada|c[uú]bica)|logaritmo|seno(?:\s+de)?|coseno(?:\s+de)?|tangente(?:\s+de))/i;
+
+    if (explicitMathVerbs.test(n)) {
+      return true;
+    }
+
+    // 2. Si no hay verbos explícitos, verificar si la consulta es una expresión aritmética pura
+    const trimmed = query.trim().replace(/^[\¿\¡\s]+|[\?\!\=\s]+$/g, '').trim();
+
+    // Si tiene palabras de lenguaje natural (2+ letras) que no sean tokens matemáticos reconocidos,
+    // es una frase conversacional (ej: "Hablemos de música!! Por ej pop 80/90!"), NO una operación pura.
+    const mathTokens = new Set([
+      'sqrt',
+      'sin',
+      'cos',
+      'tan',
+      'log',
+      'pi',
+      'exp',
+      'abs',
+      'mod',
+    ]);
+    const words = trimmed.toLowerCase().match(/[a-záéíóúñ]{2,}/g) || [];
+    const nonMathWords = words.filter((w) => !mathTokens.has(w));
+    if (nonMathWords.length > 0) {
+      return false;
+    }
+
+    // Debe contener dígitos y al menos un operador aritmético (+, -, *, /, ^, %)
+    const hasDigits = /\d/.test(trimmed);
+    const hasOperator = /[\+\-\*\/\^\%]/.test(trimmed);
+
+    // Debe contener únicamente caracteres válidos de operaciones matemáticas
+    const isMathCharsOnly = /^[\d\s\+\-\*\/\^\(\)\.\,\%\!\:a-zA-Z]+$/.test(trimmed);
+
+    return hasDigits && hasOperator && isMathCharsOnly;
   }
 
   // ── Detector de URL ─────────────────────────────────────────────────────────
@@ -703,11 +741,7 @@ export class AssistantToolsService {
 
   private async getCountryAnswer(query: string): Promise<string | null> {
     const country = this.extractCountry(query);
-    if (!country)
-      throw new HttpException(
-        'Necesito el nombre de un país.',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!country) return null;
 
     try {
       const response = await axios.get<CountryRecord[]>(
@@ -1132,7 +1166,7 @@ export class AssistantToolsService {
   private async getMathAnswer(
     query: string,
     normalized: string,
-  ): Promise<string> {
+  ): Promise<string | null> {
     // Derivada → Newton API (sin clave)
     if (/(deriva|derivada)/i.test(normalized)) {
       return this.getNewtonAnswer('derive', query);
@@ -1158,13 +1192,31 @@ export class AssistantToolsService {
   }
 
   private extractMathExpression(query: string): string | null {
-    // Busca expresión matemática en el query
-    const match = query.match(/[=:es]?\s*([\d\s\+\-\*\/\^\(\)\.x\,π]+)/i);
-    if (match?.[1]?.trim()) return match[1].trim();
+    // 1. Quitar saludos y verbos introductores de consulta
+    let expr = query
+      .replace(/^(?:hola|por\s+favor|che|jarvis|jarbees)[,\s]*/i, '')
+      .replace(
+        /^(?:calcula(?:me|r)?|calcul[aoá]|cu[aá]nto\s+(?:es|da|ser[ií]a)|resuelv[ea]|resolv[eé]r?|simplific[aoá](?:r)?|factoriz[aoá](?:r)?|deriv[aoá](?:da|r)?|integr[aoá](?:l|r)?)\s*(?:de|el|la|los|las|:|es)?\s*/i,
+        '',
+      )
+      .replace(/[\?\!\=]+$/g, '')
+      .trim();
 
-    // Busca expresión tipo "de x^2+3x"
+    if (!expr) return null;
+
+    // 2. Si la expresión resultante contiene sólo caracteres matemáticos válidos
+    if (/^[\d\s\+\-\*\/\^\(\)\.\,xXyYπeE%a-zA-Z]+$/.test(expr)) {
+      return expr;
+    }
+
+    // 3. Busca expresión tipo "de x^2+3x" o ": 25 * 4"
     const exprMatch = query.match(/(?:de|of|:)\s*([^\?\.]+)/i);
-    if (exprMatch?.[1]?.trim()) return exprMatch[1].trim();
+    if (exprMatch?.[1]?.trim()) {
+      const candidate = exprMatch[1].trim();
+      if (/^[\d\s\+\-\*\/\^\(\)\.\,xXyYπeE%a-zA-Z]+$/.test(candidate)) {
+        return candidate;
+      }
+    }
 
     return null;
   }
@@ -1172,10 +1224,9 @@ export class AssistantToolsService {
   private async getNewtonAnswer(
     operation: string,
     query: string,
-  ): Promise<string> {
+  ): Promise<string | null> {
     const expr = this.extractMathExpression(query);
-    if (!expr)
-      return 'No pude identificar la expresión matemática en la pregunta.';
+    if (!expr) return null;
 
     // Newton API usa expresiones URL-encoded
     const encoded = encodeURIComponent(expr.replace(/\s/g, '+'));
@@ -1194,6 +1245,7 @@ export class AssistantToolsService {
         simplify: 'Simplificado',
         factor: 'Factorizado',
       };
+      if (!response.data?.result) return null;
       return `${opLabels[operation] ?? operation} de "${expr}":\n${response.data.result}`;
     } catch (err: unknown) {
       // ECONNRESET / timeout / 4xx → fallback silencioso a mathjs
@@ -1205,21 +1257,35 @@ export class AssistantToolsService {
     }
   }
 
-  private evaluateWithMathJs(query: string): string {
-    // Extraer expresión numérica del texto
-    const exprMatch = query.match(
-      /([\d\s\+\-\*\/\^\(\)\.\,]+(?:sqrt|sin|cos|tan|log|pi|e)?[\d\s\+\-\*\/\^\(\)\.\,]*)/i,
-    );
-    if (!exprMatch?.[0]?.trim()) {
-      return 'No pude identificar una expresión matemática válida. Escribí la operación directamente, ej: "cuánto es 25 * 4 + 10".';
-    }
+  private evaluateWithMathJs(query: string): string | null {
+    const expr = this.extractMathExpression(query);
+    if (!expr) return null;
 
-    const expr = exprMatch[0].trim();
     try {
-      const result = math.evaluate(expr);
-      return `Resultado de "${expr}": ${result}`;
+      const sanitized = expr
+        .replace(/,/g, '.')
+        .replace(/π/g, 'pi')
+        .replace(/x/g, '*');
+
+      const result = math.evaluate(sanitized);
+      if (
+        result === undefined ||
+        result === null ||
+        typeof result === 'function'
+      ) {
+        return null;
+      }
+
+      const formattedResult =
+        typeof result === 'number'
+          ? Number.isInteger(result)
+            ? result.toString()
+            : Number(result.toFixed(6)).toString()
+          : String(result);
+
+      return `Resultado de "${expr}": ${formattedResult}`;
     } catch {
-      return `No pude evaluar la expresión "${expr}". Intentá escribirla más clara, ej: "sqrt(144)" o "2^10".`;
+      return null;
     }
   }
 }
