@@ -1244,10 +1244,14 @@ export class JarvisController {
       notes?: string;
     },
   ) {
-    const updated = await this.jarvisService.evaluateRunClaim(runId, claimId, body);
-    return {
-      success: true,
-      claim: updated,
-    };
+    try {
+      const updated = await this.jarvisService.evaluateRunClaim(runId, claimId, body);
+      return {
+        success: true,
+        claim: updated,
+      };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
   }
 }

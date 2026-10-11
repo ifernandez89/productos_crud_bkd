@@ -1743,7 +1743,7 @@ export class JarvisService {
       notes?: string;
     },
   ) {
-    return await this.agentRunRepo.evaluateClaim(claimId, {
+    return await this.agentRunRepo.evaluateClaim(runId, claimId, {
       status: feedback.status || 'supported',
       limitations: feedback.limitations || (feedback.notes ? [feedback.notes] : undefined),
     });

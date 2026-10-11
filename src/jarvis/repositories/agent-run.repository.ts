@@ -226,9 +226,22 @@ export class AgentRunRepository {
   }
 
   async evaluateClaim(
+    runId: number,
     claimId: number,
     data: { status: string; limitations?: string[] },
   ) {
+    const claim = await this.prisma.claimEvidence.findUnique({
+      where: { id: claimId },
+    });
+    if (!claim) {
+      throw new Error(`Claim #${claimId} no encontrado`);
+    }
+    if (claim.agentRunId !== runId) {
+      throw new Error(
+        `Violación de integridad: El Claim #${claimId} no pertenece al AgentRun #${runId}`,
+      );
+    }
+
     return this.prisma.claimEvidence.update({
       where: { id: claimId },
       data: {
