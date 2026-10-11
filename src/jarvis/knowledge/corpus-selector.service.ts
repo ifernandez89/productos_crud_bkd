@@ -210,6 +210,23 @@ export const SCHOOLS_OF_THOUGHT: Record<
   },
 };
 
+const GENERIC_DISCIPLINE_WORDS = new Set([
+  'ciencia', 'ciencias',
+  'fisica', 'fisicas', 'física', 'físicas',
+  'astronomia', 'astronomía', 'astrofisica', 'astrofísica',
+  'astrologia', 'astrología',
+  'matematica', 'matematicas', 'matemática', 'matemáticas',
+  'metafisica', 'metafísica',
+  'parapsicologia', 'parapsicología',
+  'filosofia', 'filosofía',
+  'psicologia', 'psicología',
+  'quimica', 'química',
+  'biologia', 'biología',
+  'antropologia', 'antropología',
+  'sociologia', 'sociología',
+  'historia',
+]);
+
 // ── Servicio ──────────────────────────────────────────────────────────────────
 
 /**
@@ -505,6 +522,23 @@ export class CorpusSelectorService {
 
     // Deduplicar matchedOn
     const uniqueMatches = [...new Set(matchedOn)];
+
+    // 🛡️ REGLA ANTI-SECUESTRO: Si la única coincidencia del documento proviene de un término
+    // genérico de disciplina (ej. "ciencia", "física", "astrología") sin coincidencia en autor
+    // ni un segundo término que confirme la obra específica, se penaliza para que no supere
+    // el umbral de 5.0 por sí solo.
+    const hasAuthorMatch = uniqueMatches.some((m) => m.startsWith('autor:'));
+    const matchedTerms = uniqueMatches
+      .map((m) => m.split(':')[1]?.toLowerCase())
+      .filter(Boolean);
+    const allMatchesAreGeneric =
+      !hasAuthorMatch &&
+      matchedTerms.length > 0 &&
+      matchedTerms.every((t) => GENERIC_DISCIPLINE_WORDS.has(t));
+
+    if (allMatchesAreGeneric && score >= 5.0) {
+      score = 3.0;
+    }
 
     return {
       document: doc,

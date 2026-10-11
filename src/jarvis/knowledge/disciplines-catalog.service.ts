@@ -500,24 +500,24 @@ export class DisciplinesCatalogService {
       if (marker.test(qNorm)) return null;
     }
 
+    // Limpiar puntuación repetida (... , ? ¿ ! ¡ - ; :)
+    const qClean = qNorm
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
     // 2. Comprobar si menciona una disciplina catalogada
     for (const discipline of Object.values(this.DISCIPLINES)) {
       for (const term of discipline.synonyms) {
         const normTerm = this.normalize(term);
         const termRegex = new RegExp(`\\b${normTerm}\\b`, 'i');
-        if (termRegex.test(qNorm)) {
-          // 3. Comprobar si la estructura de la consulta es abierta / panorámica
-          const isPanoramic = this.PANORAMIC_PATTERNS.some((p) =>
-            p.test(qNorm),
-          );
-          if (isPanoramic) {
-            return {
-              key: discipline.key,
-              discipline,
-              matchedTerm: term,
-              originalQuery: query,
-            };
-          }
+        if (termRegex.test(qClean)) {
+          return {
+            key: discipline.key,
+            discipline,
+            matchedTerm: term,
+            originalQuery: query,
+          };
         }
       }
     }

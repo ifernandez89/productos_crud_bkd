@@ -21,7 +21,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     - **Filosofía**, **Psicología**, **Química**, **Biología**, **Neurociencia**, **Antropología**, **Sociología**, **Historia**, **Epistemología** y **Cosmología**.
 - **🛡️ Enrutamiento de Intención y Protección en Pipeline**:
   - `IntentRouterService`: Consultas panorámicas clasifican de inmediato como `LOCAL/high`, previniendo que *"qué opinas de la astrología"* active la herramienta en tiempo real `AstrologyTool` (que calculaba tránsitos locales en lugar de explicar la disciplina).
-  - `CorpusSelectorService`: Si la consulta es panorámica, omite vincular documentos aislados (`findRelevantDocuments` devuelve lista vacía).
+  - `CorpusSelectorService`: Si la consulta es panorámica, omite vincular documentos aislados (`findRelevantDocuments` devuelve lista vacía). Además, se incorpora `GENERIC_DISCIPLINE_WORDS` para topar a 3.0 cualquier coincidencia solitaria de términos universales ("ciencia", "física", etc.), impidiendo que un PDF supere el umbral de 5.0 por una sola palabra.
+  - `DisciplinesCatalogService`: Detección robusta y normalizada contra signos de puntuación elípticos y conectores conversacionales (ej: *"Entonces...sobre ciencia?"*, *"Y sobre astronomía?"*, *"Ciencia?"*).
   - `JarvisService`: `isDisciplinePanoramicQuery` activa `isLocalHighConfidence`, omitiendo la búsqueda RAG previa y previniendo el secuestro temático.
   - `JarvisPromptBuilderService`: Inyecta el marco panorámico estructurado con directrices estrictas de estilo JARVIS (erudito, reflexivo, equilibrado e invitando al usuario a elegir vertiente).
 
