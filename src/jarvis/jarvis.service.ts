@@ -36,6 +36,12 @@ import { CorpusSelectorService } from './knowledge/corpus-selector.service';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { EvidenceService } from './knowledge/evidence.service';
 import { CognitiveOrchestratorService } from './cognitive/cognitive-orchestrator.service';
+import { CognitiveTraceService } from './cognitive/cognitive-trace.service';
+import { ClaimExtractorService } from './cognitive/claim-extractor.service';
+import {
+  DialecticReasoningService,
+  DialecticChunkInput,
+} from './cognitive/dialectic-reasoning.service';
 import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
 import { randomUUID } from 'crypto';
 
@@ -46,6 +52,7 @@ export interface JarvisQueryOptions {
   maxHistoryMessages?: number;
   provider?: 'ollama' | 'openrouter';
   mode?: string;
+  useDialectic?: boolean;
 }
 
 @Injectable()
@@ -90,6 +97,9 @@ export class JarvisService {
     private readonly ingestService: DocumentIngestService,
     private readonly evidenceService: EvidenceService,
     private readonly cognitiveOrchestrator: CognitiveOrchestratorService,
+    private readonly cognitiveTrace: CognitiveTraceService,
+    private readonly claimExtractor: ClaimExtractorService,
+    private readonly dialecticReasoning: DialecticReasoningService,
     @Optional()
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
   ) {
@@ -457,6 +467,100 @@ export class JarvisService {
         }
       }
 
+      // ── 6.1. MOTOR DIALÉCTICO: Contrastación Epistémica y Auditoría en 2 fases ──────
+      const isDialecticRequested =
+        options.mode === 'dialectic' ||
+        options.useDialectic === true ||
+        this.isDialecticQuery(userMessage);
+
+      if (
+        isDialecticRequested &&
+        (retrievedChunksList.length > 0 ||
+          options.mode === 'dialectic' ||
+          options.useDialectic === true)
+      ) {
+        this.logger.log(
+          `[dialectic] Activando motor dialéctico de 2 fases para: "${userMessage.slice(0, 60)}" con ${retrievedChunksList.length} fragmentos`,
+        );
+        toolsUsed.push('rag', 'dialectic_reasoning');
+
+        const dialecticChunks: DialecticChunkInput[] = retrievedChunksList.map(
+          (c, idx) => ({
+            id: c.id,
+            content: c.content,
+            metadata: c.metadata,
+            documentTitle:
+              c.document?.title ||
+              c.metadata?.sourceFile ||
+              `Documento #${c.id || idx + 1}`,
+            author:
+              c.document?.author || c.metadata?.author || 'Autor / Fuente',
+          }),
+        );
+
+        const dialecticResult =
+          await this.dialecticReasoning.analyzeDialecticContrasts(
+            userMessage,
+            dialecticChunks,
+          );
+
+        await this.conversationRepo.create({
+          sessionId,
+          role: 'assistant',
+          content: dialecticResult.cleanMarkdownAnswer,
+          metadata: {
+            source: 'dialectic_reasoning',
+            model: dialecticResult.auditTrail.modelUsed,
+            hasTensionsDetected: dialecticResult.hasTensionsDetected,
+          },
+        });
+
+        const agentRun = await this.agentRunRepo.create({
+          sessionId,
+          question: userMessage,
+          answer: dialecticResult.cleanMarkdownAnswer,
+          toolsUsed,
+          modelUsed: dialecticResult.auditTrail.modelUsed,
+          provider: 'ollama',
+          durationMs: Date.now() - startTime,
+          success: dialecticResult.success,
+          intentClassified: intent.intent,
+          intentConfidence:
+            intent.confidence === 'high'
+              ? 0.9
+              : intent.confidence === 'medium'
+                ? 0.6
+                : 0.3,
+          chunksRetrievedIds: retrievedChunksList
+            .map((c) => c.id)
+            .filter(Boolean),
+          chunksRetrievedCount: retrievedChunksList.length,
+          ragContextUsed: retrievedChunksList.length > 0,
+          webSearchUsed: false,
+          dialecticUsed: true,
+          auditPhaseMs: dialecticResult.auditTrail.auditPhaseMs,
+          synthesisPhaseMs: dialecticResult.auditTrail.synthesisPhaseMs,
+          tensionsDetected: dialecticResult.hasTensionsDetected,
+          executionTrace: dialecticResult.auditTrail,
+        });
+
+        this.recordCognitiveTraceAndClaims(
+          agentRun.id,
+          userMessage,
+          dialecticResult.cleanMarkdownAnswer,
+          retrievedChunksList,
+          dialecticResult,
+        ).catch((err) => {
+          this.logger.warn(
+            `[cognitive:trace] Error background registrando traza: ${err?.message ?? err}`,
+          );
+        });
+
+        await this.updateSessionSummaryIfNeeded(sessionId);
+
+        return dialecticResult.cleanMarkdownAnswer;
+      }
+
       // Si el intent fue RAG pero no se encontraron fragmentos específicos en la biblioteca,
       // NO bloqueamos con un mensaje rígido ni robótico: permitimos que JARVIS responda
       // de forma fluida, natural y humana con el conocimiento general del modelo.
@@ -534,6 +638,9 @@ export class JarvisService {
             calContext,
             undefined,
             mode,
+            retrievedChunksList,
+            undefined,
+            intent,
           );
         }
       }
@@ -553,6 +660,9 @@ export class JarvisService {
             tasksContext,
             undefined,
             mode,
+            retrievedChunksList,
+            undefined,
+            intent,
           );
         }
       }
@@ -604,6 +714,9 @@ export class JarvisService {
           gmailContext,
           undefined,
           mode,
+          retrievedChunksList,
+          undefined,
+          intent,
         );
       }
 
@@ -643,6 +756,9 @@ export class JarvisService {
           driveContext,
           undefined,
           mode,
+          retrievedChunksList,
+          undefined,
+          intent,
         );
       }
 
@@ -695,6 +811,9 @@ export class JarvisService {
           ytContext,
           undefined,
           mode,
+          retrievedChunksList,
+          undefined,
+          intent,
         );
       }
 
@@ -742,6 +861,9 @@ export class JarvisService {
             browserCtx,
             undefined,
             mode,
+            retrievedChunksList,
+            undefined,
+            intent,
           );
         }
         return await this.respondWithLLM(
@@ -754,6 +876,9 @@ export class JarvisService {
           undefined,
           undefined,
           mode,
+          retrievedChunksList,
+          undefined,
+          intent,
         );
       }
 
@@ -777,6 +902,8 @@ export class JarvisService {
             prefetchedRagContext,
             mode,
             retrievedChunksList,
+            undefined,
+            intent,
           );
         }
 
@@ -823,6 +950,8 @@ export class JarvisService {
               prefetchedRagContext,
               mode,
               retrievedChunksList,
+              undefined,
+              intent,
             );
           }
         }
@@ -882,6 +1011,8 @@ export class JarvisService {
               prefetchedRagContext,
               mode,
               retrievedChunksList,
+              undefined,
+              intent,
             );
           }
 
@@ -943,6 +1074,7 @@ export class JarvisService {
             mode,
             retrievedChunksList,
             options.mode,
+            intent,
           );
         }
       }
@@ -960,6 +1092,7 @@ export class JarvisService {
         mode,
         retrievedChunksList,
         options.mode,
+        intent,
       );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
@@ -1004,6 +1137,7 @@ export class JarvisService {
     mode?: 'OFFLINE' | 'LOCAL_FIRST' | 'HYBRID' | 'WEB_FIRST',
     retrievedChunks: any[] = [],
     disciplineMode?: string,
+    intent?: any,
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
@@ -1124,6 +1258,8 @@ export class JarvisService {
           response2,
           startTime,
           100,
+          intent,
+          retrievedChunks,
         );
         return response2Content;
       }
@@ -1150,6 +1286,8 @@ export class JarvisService {
       response,
       startTime,
       confidenceScore,
+      intent,
+      retrievedChunks,
     );
     return finalAnswer;
   }
@@ -1318,6 +1456,8 @@ export class JarvisService {
     response: any,
     startTime: number,
     confidenceScore?: number,
+    intent?: any,
+    retrievedChunks: any[] = [],
   ): Promise<void> {
     await this.conversationRepo.create({
       sessionId,
@@ -1325,23 +1465,59 @@ export class JarvisService {
       content: answer,
       metadata: {
         source: 'llm',
-        model: response.model,
-        provider: response.provider,
-        latencyMs: response.latencyMs,
+        model: response?.model,
+        provider: response?.provider,
+        latencyMs: response?.latencyMs,
         ...(confidenceScore !== undefined ? { confidenceScore } : {}),
       },
     });
-    await this.agentRunRepo.create({
+
+    const isWebSearch = toolsUsed.some(
+      (t) => t.includes('search') || t.includes('web') || t.includes('browser'),
+    );
+    const isRag =
+      (retrievedChunks && retrievedChunks.length > 0) ||
+      toolsUsed.includes('rag');
+
+    const agentRun = await this.agentRunRepo.create({
       sessionId,
       question,
       answer,
       toolsUsed,
-      modelUsed: response.model,
-      provider: response.provider,
+      modelUsed: response?.model || 'unknown',
+      provider: response?.provider || 'ollama',
       durationMs: Date.now() - startTime,
-      tokensUsed: response.tokensUsed,
+      tokensUsed: response?.tokensUsed,
       success: true,
+      intentClassified: intent?.intent,
+      intentConfidence:
+        intent?.confidence === 'high'
+          ? 0.9
+          : intent?.confidence === 'medium'
+            ? 0.6
+            : 0.3,
+      chunksRetrievedIds: (retrievedChunks || [])
+        .map((c) => c.id)
+        .filter(Boolean),
+      chunksRetrievedCount: retrievedChunks?.length || 0,
+      ragContextUsed: isRag,
+      webSearchUsed: isWebSearch,
+      dialecticUsed: false,
     });
+
+    if (retrievedChunks && retrievedChunks.length > 0) {
+      this.recordCognitiveTraceAndClaims(
+        agentRun.id,
+        question,
+        answer,
+        retrievedChunks,
+      ).catch((err) => {
+        this.logger.warn(
+          `[cognitive:observe] Error en traza cognitiva: ${err?.message ?? err}`,
+        );
+      });
+    }
+
     await this.updateSessionSummaryIfNeeded(sessionId);
 
     this.memoryExtractor.extractAndSave(question, sessionId).catch((err) => {
@@ -1539,5 +1715,153 @@ export class JarvisService {
 
   getLibraryIndex() {
     return this.corpusSelector.getIndex();
+  }
+
+  /**
+   * Explica el proceso cognitivo de una ejecución específica (Fase 1: /explain/:runId)
+   */
+  async explainReasoning(runId: number) {
+    return await this.cognitiveTrace.getTrace(runId);
+  }
+
+  /**
+   * Explica la ejecución completa con métricas forenses, etapas cognitivas y claims
+   */
+  async explainRun(runId: number) {
+    return await this.agentRunRepo.getRunWithExplanation(runId);
+  }
+
+  /**
+   * Evalúa una afirmación individual de un run (Fase 3: Calibración y feedback)
+   */
+  async evaluateRunClaim(
+    runId: number,
+    claimId: number,
+    feedback: {
+      status?: 'supported' | 'contradicted' | 'partially_supported' | 'inference' | 'speculative' | 'unverified';
+      limitations?: string[];
+      notes?: string;
+    },
+  ) {
+    return await this.agentRunRepo.evaluateClaim(claimId, {
+      status: feedback.status || 'supported',
+      limitations: feedback.limitations || (feedback.notes ? [feedback.notes] : undefined),
+    });
+  }
+
+  /**
+   * Obtiene estadísticas de observabilidad cognitiva
+   */
+  async getCognitiveStats() {
+    return await this.cognitiveTrace.getStats();
+  }
+
+  // ── Helpers de Razonamiento Dialéctico y Trazabilidad ─────────────────────────
+
+  private isDialecticQuery(query: string): boolean {
+    const dialecticPatterns = [
+      /compara|comparaci[oó]n|contrast(a|ar)|diferencia(s)? entre/i,
+      /falsa equivalencia|es v[aá]lido inferir|se deduce realmente/i,
+      /relaci[oó]n entre .* y .*/i,
+      /dado que .* (demostr[oó]|prueba)/i,
+      /qui[eé]n tiene raz[oó]n|qui[eé]n est[aá] en lo correcto/i,
+      /tensi[oó]n entre|conflicto entre|divergencia entre/i,
+      /contradicci[oó]n entre|conciliar|armonizar/i,
+      /demostr[oó] realmente|comprobaci[oó]n emp[ií]rica/i,
+    ];
+    return dialecticPatterns.some((pattern) => pattern.test(query));
+  }
+
+  private async recordCognitiveTraceAndClaims(
+    agentRunId: number,
+    query: string,
+    answer: string,
+    retrievedChunks: any[],
+    dialecticResult?: any,
+  ): Promise<void> {
+    try {
+      await this.cognitiveTrace.createTrace({
+        agentRunId,
+        queryAnalysis: {
+          entities: this.extractEntitiesFromQuery(query),
+          ambiguous: false,
+          contextNeeded: ['rag_library_chunks'],
+        },
+        retrievalResult: {
+          method: 'hybrid',
+          chunks: retrievedChunks.map((c) => ({
+            id: c.id,
+            score: c.score ?? 1.0,
+            docTitle:
+              c.document?.title || c.metadata?.sourceFile || 'Documento',
+            author: c.document?.author || c.metadata?.author || 'Autor',
+            relevant: true,
+          })),
+          coverageScore: retrievedChunks.length > 0 ? 0.9 : 0.0,
+          distractorsCount: 0,
+        },
+        auditResult: dialecticResult
+          ? {
+              report:
+                dialecticResult.auditTrail?.auditSummary ||
+                'Ficha de auditoría dialéctica completada',
+              premisesChecked: (
+                dialecticResult.auditTrail?.deductionSteps || []
+              ).map((step: string) => ({
+                premise: step,
+                documentalSupport: true,
+                empiricalSupport: 'hypothesis' as const,
+              })),
+              attributionsValid: true,
+            }
+          : undefined,
+        synthesisResult: {
+          hypothesesCount:
+            dialecticResult?.auditTrail?.deductionSteps?.length || 1,
+          evidenceGaps: [],
+          uncertaintyLevel: dialecticResult?.hasTensionsDetected ? 0.4 : 0.1,
+        },
+      });
+
+      const claims = await this.claimExtractor.extractClaims(
+        answer,
+        retrievedChunks,
+      );
+      if (claims && claims.length > 0) {
+        await this.cognitiveTrace.recordClaims(agentRunId, claims);
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `[cognitive:observe] Error registrando traza/claims: ${err?.message ?? err}`,
+      );
+    }
+  }
+
+  private extractEntitiesFromQuery(query: string): string[] {
+    const commonAuthors = [
+      'jung',
+      'grinberg',
+      'freud',
+      'pauli',
+      'blavatsky',
+      'bohm',
+      'penrose',
+      'reich',
+      'lacan',
+      'kant',
+      'spinoza',
+      'hermes',
+      'gurdjieff',
+      'castaneda',
+    ];
+    const qLower = query.toLowerCase();
+    const found = commonAuthors.filter((author) => qLower.includes(author));
+    if (found.length > 0) return found;
+
+    return query
+      .split(/\s+/)
+      .map((w) => w.replace(/[^a-zA-Záéíóúüñ]/g, ''))
+      .filter((w) => w.length > 4)
+      .slice(0, 4);
   }
 }

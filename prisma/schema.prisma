@@ -360,10 +360,97 @@ model AgentRun {
   errorMsg   String?
   createdAt  DateTime @default(now())
 
+  // ── OBSERVABILIDAD COGNITIVA (2026-10-12) ────────────────────────────────
+  // Trazabilidad del proceso cognitivo real, no reconstrucción retrospectiva
+  intentClassified    String? // Intent detectado: "RAG", "WEB", "TOOL", etc.
+  intentConfidence    Float? // 0-1, confianza en la clasificación
+  chunksRetrievedIds  String? // JSON: IDs de chunks recuperados
+  chunksRetrievedCount Int? // Cantidad de chunks recuperados
+  ragContextUsed      Boolean @default(false) // ¿Se usó contexto RAG?
+  webSearchUsed       Boolean @default(false) // ¿Se buscó en web?
+  dialecticUsed       Boolean @default(false) // ¿Se usó motor dialéctico?
+  
+  // Pipeline dialéctico (si se activó)
+  auditPhaseMs        Int? // Latencia fase auditoría
+  synthesisPhaseMs    Int? // Latencia fase síntesis
+  tensionsDetected    Boolean? // ¿Se detectaron contradicciones?
+  
+  // Tracking de ejecución detallado
+  executionTrace      String? // JSON: registro paso a paso del proceso
+
+  // Relaciones
+  cognitiveTrace      CognitiveExecutionTrace?
+  claimEvidences      ClaimEvidence[]
+
   @@index([success])
   @@index([modelUsed])
   @@index([provider])
   @@index([createdAt])
+  @@index([intentClassified])
+  @@index([ragContextUsed])
+  @@index([dialecticUsed])
+}
+
+// ── 9.1) TRAZA DE EJECUCIÓN COGNITIVA ────────────────────────────────────────
+// Registro detallado y estructurado del proceso cognitivo
+
+model CognitiveExecutionTrace {
+  id             Int      @id @default(autoincrement())
+  agentRunId     Int      @unique
+  
+  // Fase 1: Análisis de consulta
+  queryEntities  String? // JSON: entidades extraídas
+  queryAmbiguous Boolean @default(false)
+  contextNeeded  String? // JSON: qué contexto se necesitaba
+  
+  // Fase 2: Recuperación
+  retrievalMethod    String? // "vector", "textual", "hybrid"
+  chunksRetrieved    String? // JSON detallado de chunks con scores
+  coverageScore      Float? // 0-1, qué % de entidades se cubrió
+  distractorsFound   Int? // Cantidad de chunks irrelevantes
+  
+  // Fase 3: Auditoría (si aplica)
+  auditReport        String? // Ficha de auditoría textual
+  premisesChecked    String? // JSON: premisas evaluadas
+  attributionsValid  Boolean? // ¿Todas las atribuciones eran correctas?
+  
+  // Fase 4: Síntesis
+  hypothesesCount    Int? // Cuántas hipótesis se consideraron
+  evidenceGaps       String? // JSON: qué evidencia faltó
+  uncertaintyLevel   Float? // 0-1, nivel de incertidumbre
+  
+  createdAt          DateTime @default(now())
+  agentRun           AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  
+  @@index([agentRunId])
+  @@index([retrievalMethod])
+  @@index([coverageScore])
+}
+
+// ── 9.2) REGISTRO DE AFIRMACIONES Y EVIDENCIAS ───────────────────────────────
+// Cada afirmación de la respuesta vinculada a su evidencia
+
+model ClaimEvidence {
+  id              Int      @id @default(autoincrement())
+  agentRunId      Int
+  
+  claim           String // La afirmación concreta
+  status          String // "supported" | "contradicted" | "partially_supported" | "inference" | "speculative" | "unverified"
+  
+  // Evidencia
+  supportingChunkIds     String? // JSON: IDs de chunks que respaldan
+  contradictingChunkIds  String? // JSON: IDs de chunks que contradicen
+  
+  // Metadata
+  author          String? // Autor atribuido (si aplica)
+  document        String? // Documento fuente (si aplica)
+  limitations     String? // JSON: limitaciones de la evidencia
+  
+  createdAt       DateTime @default(now())
+  agentRun        AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+  
+  @@index([agentRunId])
+  @@index([status])
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

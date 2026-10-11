@@ -1180,4 +1180,74 @@ export class JarvisController {
       ...result,
     };
   }
+
+  // ── Observabilidad Cognitiva & Motor Dialéctico (Fases 1, 2 y 3) ───────────────
+
+  @Public()
+  @Get('explain/:runId')
+  @ApiOperation({
+    summary: 'Explicabilidad cognitiva forense de un AgentRun',
+    description:
+      'Muestra el recorrido real del proceso cognitivo: enrutamiento, chunks recuperados, fase de auditoría, síntesis dialéctica y desglose de claims con evidencias.',
+  })
+  async explainRun(@Param('runId', ParseIntPipe) runId: number) {
+    const explanation = await this.jarvisService.explainRun(runId);
+    if (!explanation) {
+      throw new BadRequestException(`No se encontró AgentRun con ID #${runId}`);
+    }
+    return {
+      success: true,
+      data: explanation,
+    };
+  }
+
+  @Public()
+  @Get('runs')
+  @ApiOperation({
+    summary: 'Listar ejecuciones recientes de JarBees con métricas cognitivas',
+  })
+  async getAgentRuns(@Query('limit') limit?: string) {
+    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    const runs = await this.jarvisService.getRecentRuns(parsedLimit);
+    return {
+      success: true,
+      count: runs.length,
+      runs,
+    };
+  }
+
+  @Public()
+  @Get('cognitive/stats')
+  @ApiOperation({
+    summary: 'Estadísticas globales de observabilidad y calibración cognitiva',
+  })
+  async getCognitiveStats() {
+    const stats = await this.jarvisService.getCognitiveStats();
+    return {
+      success: true,
+      stats,
+    };
+  }
+
+  @Public()
+  @Post('runs/:runId/claims/:claimId/evaluate')
+  @ApiOperation({
+    summary: 'Evaluar y calibrar una afirmación individual de un run (Fase 3)',
+  })
+  async evaluateClaim(
+    @Param('runId', ParseIntPipe) runId: number,
+    @Param('claimId', ParseIntPipe) claimId: number,
+    @Body()
+    body: {
+      status?: 'supported' | 'contradicted' | 'partially_supported' | 'inference' | 'speculative' | 'unverified';
+      limitations?: string[];
+      notes?: string;
+    },
+  ) {
+    const updated = await this.jarvisService.evaluateRunClaim(runId, claimId, body);
+    return {
+      success: true,
+      claim: updated,
+    };
+  }
 }

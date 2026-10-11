@@ -13,8 +13,11 @@ export interface DialecticChunkInput {
 export interface DialecticAuditTrail {
   modelUsed: string;
   latencyMs: number;
+  auditPhaseMs?: number;
+  synthesisPhaseMs?: number;
   rawThinkLength: number;
   deductionSteps: string[];
+  auditSummary?: string;
 }
 
 export interface DialecticAnalysisResponse {
@@ -94,9 +97,11 @@ ESTRUCTURA DE RESPUESTA:
 ${customDirectives ? `\nDIRECTIVAS ADICIONALES:\n${customDirectives}` : ''}`;
 
     try {
+      let auditPhaseMs = 0;
       let auditSummary = '';
       if (chunks.length > 0) {
         try {
+          const auditStartTime = Date.now();
           const auditRes = await this.ollamaProvider.generate({
             model,
             messages: [
@@ -109,12 +114,14 @@ ${customDirectives ? `\nDIRECTIVAS ADICIONALES:\n${customDirectives}` : ''}`;
             temperature: 0.2,
             maxTokens: 1000,
           });
+          auditPhaseMs = Date.now() - auditStartTime;
           auditSummary = auditRes.content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
         } catch (auditErr: any) {
           this.logger.warn(`[DialecticReasoning] Auditoría previa omitida por error: ${auditErr.message}`);
         }
       }
 
+      const synthesisStartTime = Date.now();
       const userPrompt = `CONSULTA A ANALIZAR:
 "${userQuery}"
 
@@ -132,6 +139,7 @@ Por favor, realizá la contrastación dialéctica profunda aplicando el protocol
         temperature: 0.6,
         maxTokens: 2500,
       });
+      const synthesisPhaseMs = Date.now() - synthesisStartTime;
 
       const latencyMs = Date.now() - startTime;
       const rawContent = response.content;
@@ -153,7 +161,7 @@ Por favor, realizá la contrastación dialéctica profunda aplicando el protocol
       );
 
       this.logger.log(
-        `[DialecticReasoning] Análisis completado en ${latencyMs}ms (${deductionSteps.length} pasos de deducción).`,
+        `[DialecticReasoning] Análisis completado en ${latencyMs}ms (Auditoría: ${auditPhaseMs}ms, Síntesis: ${synthesisPhaseMs}ms, ${deductionSteps.length} pasos).`,
       );
 
       return {
@@ -161,8 +169,11 @@ Por favor, realizá la contrastación dialéctica profunda aplicando el protocol
         auditTrail: {
           modelUsed: model,
           latencyMs,
+          auditPhaseMs,
+          synthesisPhaseMs,
           rawThinkLength: rawThink.length,
           deductionSteps,
+          auditSummary,
         },
         hasTensionsDetected,
         success: true,
@@ -177,6 +188,8 @@ Por favor, realizá la contrastación dialéctica profunda aplicando el protocol
         auditTrail: {
           modelUsed: model,
           latencyMs: Date.now() - startTime,
+          auditPhaseMs: 0,
+          synthesisPhaseMs: 0,
           rawThinkLength: 0,
           deductionSteps: [],
         },
