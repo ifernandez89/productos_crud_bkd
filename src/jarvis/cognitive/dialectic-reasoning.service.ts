@@ -63,33 +63,66 @@ ${c.content}
       })
       .join('\n\n');
 
+    const auditPrompt = `Sos el Auditor de Evidencia y Control Epistemológico de JarBees.
+Tu única tarea es auditar las afirmaciones y presupuestos de la consulta frente a los fragmentos documentales disponibles.
+
+PROTOCOLO DE AUDITORÍA:
+1. Extraé cada premisa implícita o explícita de la consulta.
+2. ¿Aparece textualmente respaldada en los fragmentos? (RESPALDO DOCUMENTAL: SÍ o NO).
+3. ¿Está validada por la ciencia o la experimentación independiente? (RESPALDO EMPÍRICO: DEMOSTRADO / HIPÓTESIS / ESPECULACIÓN / PSEUDOCIENCIA).
+4. ¿El autor citado sostiene realmente esa afirmación? Si la consulta le atribuye conceptos no presentes en los textos, denuncialo como ATRIBUCIÓN FALSA O APÓCRIFA.
+5. Sé directo, forense y no intentes responder la pregunta aún, solo emití la Ficha de Auditoría.`;
+
     const systemPrompt = `Sos el Motor de Razonamiento Crítico y Análisis Dialéctico de JarBees.
 Tu especialidad es la contrastación epistémica rigurosa, la evaluación de hipótesis y la detección de contradicciones lógicas entre múltiples textos, ciencias y filosofías.
 
-REGLAS DE RAZONAMIENTO ESTRICTAS (AUDITORÍA DE PREMISAS):
-1. ATRIBUCIÓN EXACTA: Identificá y aislá qué afirma cada autor o texto por separado. PROHIBIDO atribuir a un autor lo que dijo otro.
-2. DISTINCIÓN EPISTÉMICA OBLIGATORIA: En tu respuesta, separá claramente:
-   - [EVIDENCIA DOCUMENTAL]: Citas o afirmaciones exactas presentes en los fragmentos.
-   - [INTERPRETACIÓN DEL AUTOR]: La tesis o perspectiva particular de esa fuente.
-   - [CONTRASTACIÓN / TENSIÓN]: Puntos donde las premisas chocan, difieren en método o son incompatibles.
-   - [SÍNTESIS / HIPÓTESIS]: Analogías sugerentes o puentes conceptuales (aclarando siempre que son hipótesis, no demostraciones empíricas).
-3. CONTROL DE ALUCINACIONES: Si un fragmento no respalda una afirmación, NO la inventes ni asumas que "seguramente pensaban igual".
-4. ESTRUCTURA DE RESPUESTA:
-   • 1. Tesis y Premisas de cada autor
-   • 2. Puntos de Convergencia (si existen)
-   • 3. Tensiones y Diferencias Irreconciliables
-   • 4. Conclusión / Síntesis Crítica
+PROTOCOLO PERMANENTE: AUDITORÍA DE PREMISAS Y ATRIBUCIONES (7 PASOS):
+1. IDENTIFICAR LAS PREMISAS: Descomponer la pregunta en afirmaciones verificables, hipótesis e interpretaciones (incluso ante formulaciones sutiles como "explicá el mecanismo...", "¿por qué sabemos que...?" o "relacioná este descubrimiento...").
+2. VERIFICAR LA ATRIBUCIÓN: Comprobar si el autor citado sostiene realmente la afirmación atribuida. PROHIBIDO atribuir a un autor lo que este nunca escribió o demostró.
+3. ALCANCE DE LA EVIDENCIA (DOCUMENTAL vs. EMPÍRICA): No confundir que una afirmación aparezca en una fuente con que haya sido demostrada científicamente. La evidencia documental determina qué afirma una fuente; la calidad metodológica y la evidencia independiente determinan cuánto respaldo merece esa afirmación.
+4. DETECTAR PREMISAS NO RESPALDADAS O FALSAS: Si los fragmentos recuperados no confirman una premisa o si esta contradice el consenso científico, decláralo explícitamente y corregí la premisa antes de responder.
+5. EXAMINAR CONTRADICCIONES: Si la biblioteca contiene evidencia contradictoria, identificar las posiciones y explicar sus diferencias sin forzar una armonización artificial.
+6. RESPUESTA CONDICIONAL: Si una hipótesis no está establecida, analizar qué se seguiría de ella en modo condicional sin presentarla como un hecho.
+7. NO FABRICAR TRAZABILIDAD (ANTI-SYCOPHANCY): Nunca atribuir a un documento una afirmación que solo aparece en la pregunta, en el conocimiento paramétrico o en una inferencia propia.
+
+ESTRUCTURA DE RESPUESTA:
+• 1. Auditoría de Premisas y Fuentes
+• 2. Tesis y Enfoque de cada autor / disciplina
+• 3. Puntos de Convergencia o Analogías Válidas
+• 4. Tensiones Irreconciliables y Límites Metodológicos
+• 5. Conclusión y Síntesis Crítica Proporcional
 ${customDirectives ? `\nDIRECTIVAS ADICIONALES:\n${customDirectives}` : ''}`;
 
-    const userPrompt = `CONSULTA A ANALIZAR:
+    try {
+      let auditSummary = '';
+      if (chunks.length > 0) {
+        try {
+          const auditRes = await this.ollamaProvider.generate({
+            model,
+            messages: [
+              { role: 'system', content: auditPrompt },
+              {
+                role: 'user',
+                content: `CONSULTA: "${userQuery}"\n\nFRAGMENTOS DOCUMENTALES:\n${formattedEvidence}\n\nEmití la Ficha de Auditoría de Evidencia:`,
+              },
+            ],
+            temperature: 0.2,
+            maxTokens: 1000,
+          });
+          auditSummary = auditRes.content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        } catch (auditErr: any) {
+          this.logger.warn(`[DialecticReasoning] Auditoría previa omitida por error: ${auditErr.message}`);
+        }
+      }
+
+      const userPrompt = `CONSULTA A ANALIZAR:
 "${userQuery}"
 
-EVIDENCIA DOCUMENTAL DISPONIBLE (RAG):
+${auditSummary ? `FICHA PREVIA DE AUDITORÍA DE EVIDENCIA:\n${auditSummary}\n\n` : ''}EVIDENCIA DOCUMENTAL DISPONIBLE (RAG):
 ${formattedEvidence}
 
 Por favor, realizá la contrastación dialéctica profunda aplicando el protocolo de rigor epistémico.`;
 
-    try {
       const response = await this.ollamaProvider.generate({
         model,
         messages: [

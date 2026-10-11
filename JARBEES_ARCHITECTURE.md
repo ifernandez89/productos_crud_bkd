@@ -310,6 +310,19 @@ Para evitar que el agente ejecute acciones destructivas o no autorizadas de mane
 - **Human-in-the-Loop (HITL)**: Requiere explícitamente confirmación del usuario para acciones que modifican o destruyen el estado del sistema (como `drop` o `delete`).
 - **Auditoría Estricta**: Cada acción crítica rechazada, pendiente o aprobada se registra cronológicamente en `logs/security_audit.log`.
 
+### 5.3 Motor de Razonamiento Dialéctico y Pipeline Epistemológico en 2 Fases (Octubre 2026)
+
+Para cruzar disciplinas complejas (psicología analítica, teoría sintérgica, física cuántica, teosofía y neurobiología) sin caer en falsas equivalencias ni sesgos de complacencia (*sycophancy*), se incorporó `DialecticReasoningService`:
+- **Especialista en Razonamiento**: Impulsado por `deepseek-r1:7b` (o `iradukundadev/finetuned-deepseek-r1_7b:latest`), manteniendo a `qwen2.5:7b` para tareas conversacionales estándar.
+- **Pipeline en 2 Fases**:
+  1. *Fase 1: Auditoría Forense de Evidencia (`temperature: 0.2`)*: Audita las premisas de la consulta frente a los fragmentos de pgvector, verificando si hay respaldo textual, respaldo empírico o atribuciones apócrifas.
+  2. *Fase 2: Síntesis Crítica Condicionada (`temperature: 0.5 - 0.6`)*: Redacta la respuesta final basándose en la Ficha de Auditoría, obligada a desarticular falacias antes de construir analogías.
+- **Taxonomía Epistemológica**: Distingue estrictamente:
+  - *Respaldado por la fuente* (atribución documental probada).
+  - *Respaldado por evidencia independiente* (validación empírica/científica).
+  - *Hipótesis o interpretación propia* (metáforas y puentes heurísticos sin demostración).
+- **Suite de Regresión Automatizada**: Verificable vía `node scripts/epistemic_regression_suite.js` (8 escenarios de estrés epistemológico y detección de distractores).
+
 ---
 
 ## 6. Knowledge Evolution *(nuevo)*

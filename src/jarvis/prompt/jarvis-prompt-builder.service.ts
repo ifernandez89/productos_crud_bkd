@@ -327,8 +327,13 @@ export class JarvisPromptBuilderService {
 
               contextParts.push(
                 `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
-                  `⚠️ IDIOMA OBLIGATORIO: Respondé 100% EN ESPAÑOL. Traducí cualquier fragmento o término que esté en inglés.\n` +
-                  `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
+                  `⚠️ PROTOCOLO DE AUDITORÍA DE PREMISAS, ATRIBUCIÓN E IDIOMA:\n` +
+                  `1. IDIOMA Y TRADUCCIÓN: Respondé siempre 100% en español fluido, independientemente del idioma de los documentos. Si hay términos técnicos en inglés u otro idioma, conservalos pero traducilos o explicálos en su primera aparición.\n` +
+                  `2. RESPALDO DOCUMENTAL vs. RESPALDO EMPÍRICO: Que una afirmación aparezca en una obra o testimonio significa únicamente que la fuente lo afirma (respaldo documental), NO que la ciencia experimental independiente lo haya demostrado. Diferenciá con rigor hechos verificados, modelos teóricos, hipótesis y tradiciones.\n` +
+                  `3. RESISTENCIA A LA SUGESTIÓN (ANTI-SYCOPHANCY): Si la consulta del usuario presupone o afirma algo ('dado que X demostró Y...', 'explicá el mecanismo por el cual...', '¿por qué sabemos que...?'), NO lo aceptes como verdadero a menos que los documentos recuperados lo confirmen textualmente. Si los documentos no lo sustentan o la afirmación es errónea, decláralo y corregí la premisa antes de responder.\n` +
+                  `4. NO FABRICAR TRAZABILIDAD: Jamás atribuyas a un autor o fragmento afirmaciones que solo aparecen en la pregunta del usuario o en tu conocimiento general.\n` +
+                  `5. FUENTES CONTRADICTORIAS: Si diferentes autores o textos difieren o entran en tensión, exponé cada perspectiva por separado sin forzar una síntesis artificial.\n` +
+                  `6. RESPUESTA CONDICIONAL: Si una hipótesis no está establecida empíricamente, analizá qué se seguiría de ella en modo condicional sin presentarla como un hecho.\n\n` +
                   formattedParts.join('\n\n'),
               );
             }

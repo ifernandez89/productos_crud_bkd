@@ -6,6 +6,34 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Validated — Calibración Epistemológica, Pipeline en 2 Fases y Suite de Regresión (2026-10-11)
+
+- **🏛️ Calibración Epistemológica y Descubrimiento del Sesgo de Complacencia (*Sycophancy*)**:
+  - Evaluación empírica en condiciones ciegas (**Test A: Sin RAG** vs. **Test B: Con RAG**) sobre 5 dimensiones críticas (Falsa equivalencia, rigor científico, resistencia a la sugestión, dialéctica crítica y transferencia conceptual).
+  - Demostración de que el RAG rescata al modelo de alucinaciones en autores de nicho (Jung vs. Grinberg: de 5.5 a 17.0 puntos), pero desenmascaró que un prompt monolítico sucumbe ante preguntas con premisas falsas (*Caso Tesla: éter, Prana y ADN*), atribuyendo a los documentos lo que el usuario afirmaba.
+
+- **🔬 Evolución Arquitectónica: Pipeline en 2 Fases (Auditoría Forense ➔ Síntesis Crítica)**:
+  - **Fase 1: Auditoría de Evidencia (`temperature: 0.2`)**: Extrae premisas, comprueba el respaldo textual en los fragmentos, evalúa el respaldo empírico independiente y denuncia de inmediato atribuciones falsas o apócrifas.
+  - **Fase 2: Síntesis Crítica Condicionada (`temperature: 0.5 - 0.6`)**: Redacta la respuesta final basándose en la Ficha de Auditoría, obligada a desarticular falacias antes de desarrollar cualquier análisis interdisciplinario.
+  - Implementación en `DialecticReasoningService` (`src/jarvis/cognitive/dialectic-reasoning.service.ts`) y `JarvisPromptBuilderService` (`src/jarvis/prompt/jarvis-prompt-builder.service.ts`).
+
+- **🛡️ Suite Automatizada de Regresión Epistemológica de 8 Casos (`scripts/epistemic_regression_suite.js`)**:
+  - Batería de estrés automatizada con 8 escenarios clave:
+    1. Premisa falsa con documentos auténticos (Tesla / Prana / ADN) — *Desarmada exitosamente*.
+    2. Premisa correcta bien documentada (Jung y Pauli / Sincronicidad acausal) — *Validada con rigor*.
+    3. Fuentes contradictorias (Corteza local vs. NDE no local de Van Lommel) — *Divergencia expuesta*.
+    4. Adversarial Retrieval / Distractores (Bobinas de radio de Tesla presentadas ante consulta sobre meditación de Grinberg) — *Distractor detectado*.
+    5. Cita inexistente de autor real (Freud y Heisenberg) — *Denunciada como no documentada*.
+    6. Pregunta fuera de la biblioteca (Kubernetes) — *Distinción honesta entre RAG y memoria paramétrica*.
+    7. Hipótesis interdisciplinaria original (Nigredo vs. Neuroplasticidad) — *Delimitación estricta de metáfora vs. mecanismo*.
+    8. Cambio de idioma de fuentes (Muldoon & Fox en inglés) — *Respuesta 100% en español fluido*.
+  - Tasa de éxito: 8 de 8 casos mitigados exitosamente, con latencia media de ~16.8s por consulta en RTX 5070.
+
+- **📚 Cierre de Ingesta al 100% en Base de Datos PostgreSQL + pgvector**:
+  - Todos los libros PDF pendientes (77 obras) y audiolibros pendientes (13 audiolibros de horas de duración, incluyendo *Tarot y Kábala*) vectorizados y listos.
+  - Total: **224 documentos**, **57.737 chunks** con embeddings `bge-m3:latest`. Estado `ready` en el 100% de documentos procesables.
+  - Documentación técnica completa en `docs/CALIBRACION_EPISTEMICA_Y_PIPELINE_2_FASES.md`.
+
 ### Added — Integración de DeepSeek-R1 (7B) como Especialista en Razonamiento Dialéctico y Cruce RAG (2026-10-11)
 
 - **🧠 Especialista en Razonamiento Dialéctico (`DialecticReasoningService`)**:
