@@ -6,6 +6,50 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added — Integración de DeepSeek-R1 (7B) como Especialista en Razonamiento Dialéctico y Cruce RAG (2026-10-11)
+
+- **🧠 Especialista en Razonamiento Dialéctico (`DialecticReasoningService`)**:
+  - **Decisión de Arquitectura Híbrida**: En lugar de sustituir a `Qwen2.5:7b` (que sigue como modelo general veloz de baja latencia), se incorporó `deepseek-r1:7b` oficial como especialista puro para contrastación epistémica profunda, evaluación de hipótesis y detección de contradicciones lógicas.
+  - **Aislamiento de Premisas**: Protocolo que fuerza al modelo a aislar las afirmaciones de cada autor/fuente, detectar puntos de coincidencia y explicitar tensiones o divergencias irreconciliables.
+  - **Distinción Epistémica Estricta**: Clasificación obligatoria entre `[EVIDENCIA DOCUMENTAL]`, `[INTERPRETACIÓN DEL AUTOR]`, `[CONTRASTACIÓN / TENSIÓN]` y `[SÍNTESIS / HIPÓTESIS]`.
+  - **Supresión y Resumen del `<think>`**: El monólogo interno crudo de razonamiento es procesado y resumido en un `auditTrail` estructurado con pasos de deducción concisos, eliminando el ruido cognitivo de la respuesta final del usuario.
+
+- **⚙️ Configuración y Multi-modelo Dinámico en Ollama**:
+  - `.env`: Se agregó `OLLAMA_REASONING_MODEL="deepseek-r1:7b"`.
+  - `src/shared/ollama-config.ts`: Se añadieron `resolveReasoningModel()` y el perfil `DEEPSEEK_R1_DIALECTIC_PROFILE` (temperatura 0.6, contexto 16.384 tokens, sin stop sequences restrictivas).
+  - `src/jarvis/llm/llm-provider.interface.ts` y `src/jarvis/llm/ollama.provider.ts`: Soporte dinámico para invocar cualquier modelo por petición (`options.model`, `options.temperature`, `options.stopSequences`).
+
+- **🧪 Banco de Pruebas de Laboratorio (`scripts/benchmark_dialectic_r1.js`)**:
+  - Script automatizado para evaluar a `deepseek-r1:7b` contra fragmentos reales de pgvector (bge-m3).
+  - Caso verificado: Contrastación de *Nikola Tesla* vs. *Srí Sankaráchchária* vs. *Franz Anton Mesmer*, validando la detección de tensiones conceptuales y la separación entre hecho documental y postura filosófica con cero alucinaciones.
+
+### Added & Fixed — Catálogo Real de la Biblioteca, Ingesta Inversa de Audiolibros & Voz Nativa (2026-10-10)
+
+- **📚 Catálogo Oficial y Real de la Biblioteca (`isLibraryBooksRequest` + `buildLibraryMessage`)**:
+  - **Problema corregido**: Al consultar *"¿Qué libros tenemos?"*, *"qué libros tenemos en la biblioteca"*, *"mis libros"*, *"cuáles libros hay"*, el sistema no contaba con un comando interceptor dedicado y `extractAuthorBooksRequest` retornaba `null`, haciendo que la consulta cayera en Ollama RAG sin documentos e induciendo alucinaciones o respuestas genéricas.
+  - **Solución implementada**:
+    - Detector tolerante a acentos, signos de puntuación y fraseos: `isLibraryBooksRequest(message)`.
+    - Consulta directa a la base de datos real PostgreSQL (`getAllDocuments(300)` y `getLibraryStats()`), reportando las 75+ obras maestras indexadas y 34.140+ secciones vectorizadas con `bge-m3` en pgvector.
+    - Agrupación por 6 grandes áreas temáticas con autoría limpia: Psicología Analítica (Jung 16 obras, Freud), Jacobo Grinberg (21 obras maestras), Proyección Astral (Monroe, Muldoon, Fox, Leadbeater, Ziewe), Teosofía & Cábala (Blavatsky, Powell, Mario Sabán, Jodorowsky), Chamanismo Tradicional (Munay Ki, Ícaros, Herbario), y Cosmología & Trascendencia (Stephen Hawking, Tulku Thondup, Charles Fort).
+    - Comando interactivo `/audiolibros` para consultar el estado del repositorio de audiolibros (`I:\Musica\Audiolibros y mas`).
+
+- **🎙️ Ingesta Inversa de Audiolibros (Audio a Texto RAG en PostgreSQL)**:
+  - **Motor**: `scripts/transcribe_audiobook.py` impulsado por `faster-whisper-1.2.1` y `av-13.1.0` con cuantización INT8 en CPU (~15x a 20x en tiempo real).
+  - **Persistencia Incremental Obligatoria**: Toda transcripción se guarda de inmediato en disco en `I:\Musica\Audiolibros y mas\_transcripciones\<slug>.json` y `<slug>.txt`.
+  - **Reutilización Obligatoria de Cache**: Detección estricta de transcripciones existentes en disco para evitar reprocesamientos innecesarios (0% gasto de CPU en cache hits).
+  - **Indexación Vectorial**: `AudiobookIngestService` realiza chunking semántico (1000 caracteres, 150 solapamiento), genera embeddings `bge-m3` en pgvector y activa síntesis cognitiva `DocumentInsight`.
+  - **Ejecución Batch**: Script batch autónomo `scripts/batch_ingest_audiobooks.js` y endpoint `POST /jarvis/audiobooks/ingest-all`.
+  - **Casos verificados**: Ingesta exitosa de *Enuma Elish / Los Anunnaki* (Capítulos 7 y 8) con documentos #75 y #76 en base de datos.
+
+- **🔊 Motor de Voz y Síntesis de Audiolibros (`VoiceService`)**:
+  - Decodificación CLI con `opusdec.exe` (`I:\Programas\...\opusdec.exe`) para notas de voz de WhatsApp/Telegram hacia PCM WAV.
+  - Text-to-Speech nativo con voz Helena (Español Natural).
+  - Generación continua de audiolibros a partir de síntesis de libros con algoritmo de costura binaria de cabeceras WAV (`stitchWavBuffers`).
+  - Endpoint `GET /jarvis/voice/audiobook/:id` para descarga directa de audiolibros generados.
+
+- **💾 Respaldo Automatizado con 7-Zip (`scripts/backup-db.ps1`)**:
+  - Actualización del script y del comando `/backup` para utilizar `D:\HBCD\Programs\7z.exe`, exportando respaldos ultralivianos `.7z` hacia `G:\Backups\jarbees_data`.
+
 ### Added & Fixed — Catálogo de Conocimiento Panorámico de Disciplinas y Prevención de Secuestro RAG (2026-10-10)
 
 - **🌌 Catálogo Enciclopédico de Disciplinas (`DisciplinesCatalogService`)**:

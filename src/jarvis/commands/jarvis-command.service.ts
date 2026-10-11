@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConversationRepository } from '../repositories/conversation.repository';
 import { DocumentRepository } from '../repositories/document.repository';
 import { UserProfileRepository } from '../repositories/user-profile.repository';
@@ -11,6 +11,7 @@ import { JarvisKnowledgeService } from '../knowledge/jarvis-knowledge.service';
 import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
+import { AudiobookIngestService } from '../library/audiobook-ingest.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -30,6 +31,8 @@ export class JarvisCommandService {
     private readonly corpusSelector: CorpusSelectorService,
     private readonly musicCatalog: MusicCatalogService,
     private readonly gamesCatalog: GamesCatalogService,
+    @Optional()
+    private readonly audiobookIngest?: AudiobookIngestService,
   ) {}
 
   /**
@@ -156,12 +159,8 @@ export class JarvisCommandService {
       return { handled: true, response: helpMsg };
     }
 
-    // 4. BIBLIOTECA — lista de documentos guardados
-    if (
-      /^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs))$/i.test(
-        trimmedMessage,
-      )
-    ) {
+    // 4. BIBLIOTECA — lista completa y coherente de libros en la base de datos
+    if (this.isLibraryBooksRequest(trimmedMessage)) {
       const libraryMsg = await this.buildLibraryMessage();
       await this.conversationRepo.create({
         sessionId,
@@ -174,7 +173,44 @@ export class JarvisCommandService {
         content: libraryMsg,
         metadata: { source: 'library_list' },
       });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: libraryMsg,
+        toolsUsed: ['library_list'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
       return { handled: true, response: libraryMsg };
+    }
+
+    // 4b. AUDIOLIBROS — catálogo y estado de audiolibros (I:\Musica\Audiolibros y mas)
+    if (this.isAudiobooksRequest(trimmedMessage)) {
+      const audiobooksMsg = await this.buildAudiobooksMessage();
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: audiobooksMsg,
+        metadata: { source: 'audiobooks_list' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: audiobooksMsg,
+        toolsUsed: ['audiobooks_list'],
+        modelUsed: 'none',
+        provider: 'none',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+      return { handled: true, response: audiobooksMsg };
     }
 
     // 5. CATEGORÍAS — lista de categorías con conteo
@@ -844,6 +880,8 @@ export class JarvisCommandService {
     if (!trimmed) return null;
 
     if (
+      this.isLibraryBooksRequest(trimmed) ||
+      this.isAudiobooksRequest(trimmed) ||
       /^(mis documentos|biblioteca|mis libros|mis pdfs|documentos guardados|que (libros|documentos|pdfs) (tengo|hay)|lista de (documentos|libros|pdfs)|mis categor[ií]as|categor[ií]as|categorias de (mis )?(documentos|pdfs|libros)|que categor[ií]as (tengo|hay)|mis autores|autores|lista de autores|que autores (tengo|hay))$/i.test(
         trimmed,
       )
@@ -1029,95 +1067,332 @@ export class JarvisCommandService {
     }
   }
 
+  private isLibraryBooksRequest(message: string): boolean {
+    const clean = message
+      .toLowerCase()
+      .replace(/[¿?¡!.,;:_]/g, ' ')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!clean) return false;
+
+    // Si pide libros DE un autor o SOBRE un tema específico, dejarlo a otros handlers
+    if (
+      /^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre)\s+[a-z0-9]+/i.test(clean) &&
+      !/^(?:libros?|documentos?|obras?)\s+(?:de|del)\s+(?:la|nuestra)\s+biblioteca$/i.test(clean)
+    ) {
+      return false;
+    }
+
+    // Comandos directos o palabras clave
+    if (/^(\/libros|\/biblioteca|\/books|\/docs|libros|biblioteca|nuestra biblioteca|mi biblioteca)$/i.test(clean)) {
+      return true;
+    }
+
+    // Variaciones comunes de listado de biblioteca
+    if (
+      /^(mis libros|mis documentos|mis pdfs|documentos guardados|libros guardados|libros disponibles|lista de libros|lista de documentos|catalogo de libros)$/i.test(
+        clean,
+      )
+    ) {
+      return true;
+    }
+
+    // "¿Qué libros tenemos?", "¿qué libros hay?", "¿cuáles libros tenemos?", etc.
+    if (
+      /^(?:que|cuales|que clase de)\s+(?:libros|documentos|pdfs|obras)\s+(?:tenemos|hay|existen|poseemos|tenes|tengo)(?:\s+(?:en|de)\s+(?:la|nuestra)?\s*biblioteca)?$/i.test(
+        clean,
+      )
+    ) {
+      return true;
+    }
+
+    // Coincidencia más amplia para consultas del tipo: "qué libros tenemos en la biblioteca", "cuales son los libros", etc.
+    if (
+      /^(?:que|cuales|que clase de)\s+(?:libros|documentos|pdfs|obras)\s+(?:tenemos|hay|existen|poseemos|tenes|tengo|guardados|disponibles)\b.*$/i.test(
+        clean,
+      )
+    ) {
+      if (/\b(?:sobre|acerca de|de la materia|del autor)\b/i.test(clean)) {
+        return false;
+      }
+      return true;
+    }
+
+    // "dime qué libros tenemos", "mostrame los libros", etc.
+    if (
+      /^(?:dime|decime|mostrame|muestra|ver|mostrar|ensenanos|enseñame)\s+(?:los\s+|todos\s+los\s+|que\s+|cuales\s+)?(?:libros|documentos|pdfs|obras)(?:\s+(?:que\s+)?(?:tenemos|hay|tenes|tengo|en\s+(?:la|nuestra)\s+biblioteca))?$/i.test(
+        clean,
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private isAudiobooksRequest(message: string): boolean {
+    const clean = message
+      .toLowerCase()
+      .replace(/[¿?¡!.,;:_]/g, ' ')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!clean) return false;
+
+    if (/^(\/audiolibros|\/audiobooks|audiolibros|audiobooks|mis audiolibros)$/i.test(clean)) {
+      return true;
+    }
+
+    if (/^(?:que|cuales)\s+audiolibros\s+(?:tenemos|hay|tenes|tengo|existen|disponibles)\b/i.test(clean)) {
+      return true;
+    }
+
+    if (/^(?:lista|catalogo|ver|mostrar|dime|decime|mostrame)\s+(?:de\s+)?(?:los\s+)?audiolibros\b/i.test(clean)) {
+      return true;
+    }
+
+    return false;
+  }
+
   private async buildLibraryMessage(): Promise<string> {
-    const index = this.corpusSelector?.getIndex?.();
-    const docsFromIndex = index?.documentos ?? [];
+    const stats = await this.documentRepo.getLibraryStats();
+    const dbDocs = await this.documentRepo.getAllDocuments(300);
 
-    if (docsFromIndex.length > 0) {
-      const byCategory = new Map<string, typeof docsFromIndex>();
-      for (const doc of docsFromIndex) {
-        const cat = doc.categorias?.[0] ?? 'sin categoría';
-        if (!byCategory.has(cat)) byCategory.set(cat, []);
-        byCategory.get(cat)!.push(doc);
-      }
-
-      const lines: string[] = [
-        `📚 **Tus documentos escaneados** (${docsFromIndex.length} documento${docsFromIndex.length !== 1 ? 's' : ''})`,
-        ``,
-      ];
-
-      for (const [category, items] of byCategory.entries()) {
-        lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
-        for (const doc of items) {
-          const estado =
-            doc.embeddings === 'ready'
-              ? 'indexado'
-              : doc.embeddings === 'processing'
-                ? 'procesando'
-                : 'disponible';
-          const displayTitle =
-            doc.titulo?.trim() || doc.archivo?.trim() || 'Sin título';
-          lines.push(
-            `  • ${displayTitle} — ${doc.autor} [${doc.formato.toUpperCase()}] · estado: ${estado}`,
-          );
-        }
-        lines.push(``);
-      }
-
-      lines.push(`💡 Podés preguntar:`);
-      lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
-      lines.push(
-        `  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``,
-      );
-      lines.push(
-        `  - Buscar en docs     →  \`busca en mis documentos <tema>\``,
-      );
-      lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
-
-      return lines.join('\n');
+    if (dbDocs.length === 0) {
+      return `📚 Tu biblioteca está vacía.\n\nSubí un PDF o ingesta un audiolibro desde el chat para empezar a construirla.`;
     }
 
-    const docs = await this.documentRepo.getMostRecentDocuments(50);
-    if (!docs || docs.length === 0) {
-      return `📚 Tu biblioteca está vacía.\n\nSubí un PDF desde el chat para empezar a construirla.`;
-    }
-
-    const byCategory = new Map<string, typeof docs>();
-    for (const doc of docs) {
-      const cat = (doc as any).category ?? 'sin categoría';
-      if (!byCategory.has(cat)) byCategory.set(cat, []);
-      byCategory.get(cat)!.push(doc);
-    }
+    const thematicSections: Array<{
+      title: string;
+      icon: string;
+      categories: string[];
+    }> = [
+      {
+        title: 'Psicología Analítica & Psicoanálisis',
+        icon: '🧠',
+        categories: ['Psicología Analítica', 'Psicoanálisis'],
+      },
+      {
+        title: 'Jacobo Grinberg — Chamanismo, Neurofisiología & Teoría Sintérgica',
+        icon: '👁️',
+        categories: [
+          'Teoría Sintérgica',
+          'Chamanismo Mexicano',
+          'Chamanismo y Cirugía Psíquica',
+          'Meditación y Neurofisiología',
+          'Neurofisiología y Consciencia',
+          'Neurofisiología y Percepción',
+          'Psicofisiología',
+          'Psicofisiología y Mística',
+          'Comunicación Directa',
+          'Epistemología y Realidad',
+          'Filosofía y Mística',
+          'Filosofía y Consciencia',
+          'Meditación y Tradición Oriental',
+          'Misticismo y Antropología',
+          'Sanación Tradicional',
+          'Tecnología de la Consciencia',
+          'Cosmología y Consciencia',
+          'Semiótica y Experiencia Pura',
+          'Espiritualidad y Trascendencia',
+          'Poesía y Mística',
+          'Autobiografía y Despertar',
+          'Evolución de la Consciencia',
+        ],
+      },
+      {
+        title: 'Proyección Astral & Consciencia',
+        icon: '🌌',
+        categories: [
+          'Experiencias Fuera del Cuerpo',
+          'Plano Astral',
+          'Proyección Astral',
+          'Neurociencia y ECM',
+        ],
+      },
+      {
+        title: 'Teosofía, Hermetismo & Cábala',
+        icon: '📜',
+        categories: [
+          'Teosofía',
+          'Cábala',
+          'Tarot y Simbolismo',
+          'Esoterismo',
+        ],
+      },
+      {
+        title: 'Chamanismo Tradicional & Medicina Ancestral',
+        icon: '🌿',
+        categories: [
+          'Chamanismo',
+          'Chamanismo y Medicina',
+          'Chamanismo y Relatos',
+          'Plantas Medicinales',
+          'Medicina Popular',
+          'Toltequidad y Espiritualidad',
+        ],
+      },
+      {
+        title: 'Ciencia, Cosmología & Trascendencia',
+        icon: '🔬',
+        categories: [
+          'Cosmología y Física',
+          'Cosmovisión Maya',
+          'Arqueología Misteriosa',
+          'Fenómenos Anómalos',
+          'Filosofía Budista',
+          'Psicología Transpersonal',
+          'Sanación y Mente Tibetana',
+          'Mitología e Historia Antigua',
+        ],
+      },
+    ];
 
     const lines: string[] = [
-      `📚 **Tu biblioteca** (${docs.length} documento${docs.length !== 1 ? 's' : ''})`,
+      `📚 **Biblioteca JarBees — Catálogo Oficial y Real**`,
+      `Contamos con **${stats.totalDocs} obras maestras indexadas** y **${stats.totalChunks.toLocaleString('es-AR')} fragmentos vectorizados con bge-m3** listos para razonamiento RAG en PostgreSQL.`,
       ``,
     ];
 
-    for (const [category, items] of byCategory.entries()) {
-      lines.push(`📁 **${category.toUpperCase()}** (${items.length})`);
-      for (const doc of items) {
-        const used =
-          (doc as any).timesUsed > 0
-            ? ` · usado ${(doc as any).timesUsed}x`
-            : '';
-        const tipo = (doc as any).category === 'web' ? 'web' : 'pdf';
-        lines.push(
-          `  • ${doc.title}  [${tipo}] - CATEGORÍA: "${((doc as any).category ?? 'sin categoría').toUpperCase()}"${used ? `  _(${used.trim()})_` : ''}`,
-        );
+    const matchedIds = new Set<number>();
+
+    for (const section of thematicSections) {
+      const sectionDocs = dbDocs.filter((d) =>
+        section.categories.includes(d.category ?? ''),
+      );
+      if (sectionDocs.length === 0) continue;
+
+      sectionDocs.forEach((d) => matchedIds.add(d.id));
+
+      lines.push(`${section.icon} **${section.title}** (${sectionDocs.length} obras)`);
+      for (const d of sectionDocs) {
+        lines.push(this.formatBookLine(d));
       }
       lines.push(``);
     }
 
-    lines.push(`💡 Podés preguntar:`);
-    lines.push(`  - Resumen de un doc  →  \`resumen de 'Título del libro'\``);
-    lines.push(
-      `  - Puntos clave       →  \`puntos clave de 'TypeScript Handbook'\``,
-    );
-    lines.push(`  - Buscar en docs     →  \`busca en mis documentos <tema>\``);
-    lines.push(`  - Limpiar dupl.      →  \`eliminar documentos repetidos\``);
+    const remainingDocs = dbDocs.filter((d) => !matchedIds.has(d.id));
+    if (remainingDocs.length > 0) {
+      lines.push(`📁 **Otras Obras y Catálogos Multimedia** (${remainingDocs.length})`);
+      for (const d of remainingDocs) {
+        lines.push(this.formatBookLine(d));
+      }
+      lines.push(``);
+    }
+
+    lines.push(`💡 **¿Qué podés pedir sobre cualquier libro?**`);
+    lines.push(`  • \`resumen de '<título>'\`  — Síntesis estructurada y tesis central.`);
+    lines.push(`  • \`puntos clave de '<título>'\`  — Ideas y conceptos fundamentales.`);
+    lines.push(`  • \`compara '<libro A>' con '<libro B>'\`  — Cruce dialéctico entre autores.`);
+    lines.push(`  • \`busca en mis documentos <tema>\`  — Búsqueda semántica híbrida pgvector.`);
+    lines.push(`  • \`/audiolibros\`  — Repositorio de audiolibros y estado de transcripción.`);
 
     return lines.join('\n');
+  }
+
+  private formatBookLine(doc: { id: number; title: string; category?: string | null }): string {
+    const title = doc.title;
+    let authorHint = '';
+
+    if (/jung/i.test(title)) {
+      authorHint = 'Carl G. Jung';
+    } else if (/freud/i.test(title)) {
+      authorHint = 'Sigmund Freud';
+    } else if (/monroe/i.test(title) || /viajes fuera del cuerpo/i.test(title)) {
+      authorHint = 'Robert Monroe';
+    } else if (/muldoon/i.test(title) || /projection of the astral body/i.test(title)) {
+      authorHint = 'Sylvan Muldoon & H. Carrington';
+    } else if (/fox/i.test(title) || /astral projection:/i.test(title)) {
+      authorHint = 'Oliver Fox';
+    } else if (/ziewe|multi-dimensional man/i.test(title)) {
+      authorHint = 'Jürgen Ziewe';
+    } else if (/leadbeater/i.test(title)) {
+      authorHint = 'Charles W. Leadbeater';
+    } else if (/blavatsky|doctrina secreta/i.test(title)) {
+      authorHint = 'Helena P. Blavatsky';
+    } else if (/etheric double/i.test(title)) {
+      authorHint = 'Arthur E. Powell';
+    } else if (/sod 22|sefer atzilut|keter|secretos de dios/i.test(title)) {
+      authorHint = 'Mario Sabán';
+    } else if (/tarot/i.test(title)) {
+      authorHint = 'Alejandro Jodorowsky';
+    } else if (/hawking|historia del tiempo/i.test(title)) {
+      authorHint = 'Stephen Hawking';
+    } else if (/thondup|poder curativo/i.test(title)) {
+      authorHint = 'Tulku Thondup';
+    } else if (/lommel|consciencia m[aá]s all[aá]/i.test(title)) {
+      authorHint = 'Pim van Lommel';
+    } else if (/chamanes de mexico|sintergica|autoalusiva|potencial transferido|construccion de la realidad|experiencia interna|sin yo|conquista del templo|fuerza creativa|cristales de la galaxia|retorno a la luz|cantos de ignorancia|sabor de la iluminacion|vehiculo de las transformaciones|misticismo indigena/i.test(title)) {
+      authorHint = 'Jacobo Grinberg';
+    } else if (/anunnaki|enuma elish/i.test(title)) {
+      authorHint = 'Tradición Sumeria / Granmisterio';
+    }
+
+    let cleanTitle = title
+      .replace(/^(Carl Gustav Jung|Sigmund Freud)\s*-\s*/i, '')
+      .replace(/^Jung(Carl(Gustav)?)?/i, '')
+      .replace(/^JungC\.?G\.?\s*/i, '')
+      .replace(/^JUNG,?\s*C\.?\s*G\.?,?\s*/i, '')
+      .replace(/^C\.G\.\s+/i, '')
+      .replace(/^\d+a?\s+(FREUD JUNG|JUNG)\s+/i, '')
+      .replace(/Carl Gustav Jung$/i, '')
+      .replace(/^[,.\-_:\s]+/, '')
+      .trim();
+
+    const authorStr = authorHint ? ` — *${authorHint}*` : '';
+    return `  • **${cleanTitle}**${authorStr}`;
+  }
+
+  private async buildAudiobooksMessage(): Promise<string> {
+    if (!this.audiobookIngest) {
+      return `🎙️ El servicio de audiolibros no está disponible actualmente.`;
+    }
+
+    try {
+      const items = await this.audiobookIngest.listAvailableAudiobooks();
+      if (items.length === 0) {
+        return `🎙️ No se encontraron archivos de audio en \`I:\\Musica\\Audiolibros y mas\`.`;
+      }
+
+      const total = items.length;
+      const ingested = items.filter((i) => i.isIngested).length;
+      const transcribed = items.filter((i) => i.isTranscribed).length;
+
+      const lines: string[] = [
+        `🎙️ **Repositorio de Audiolibros JarBees** (\`I:\\Musica\\Audiolibros y mas\`)`,
+        `Total de audios: **${total}** · Ingestados en BD: **${ingested}** · Transcripciones en disco: **${transcribed}**`,
+        ``,
+      ];
+
+      for (const item of items.slice(0, 30)) {
+        const statusBadge = item.isIngested
+          ? '✅ En BD (RAG Listo)'
+          : item.isTranscribed
+            ? '💾 Transcrito (En disco)'
+            : '⏳ Pendiente';
+        lines.push(
+          `  • **${item.cleanTitle}** (${item.author}) · ${item.sizeMB} MB · ${statusBadge}`,
+        );
+      }
+
+      if (items.length > 30) {
+        lines.push(`  *...y ${items.length - 30} audiolibros más disponibles.*`);
+      }
+
+      lines.push(``);
+      lines.push(`💡 **Para transcribir e ingestar cualquier audiolibro:**`);
+      lines.push(`  • JarBees utiliza Faster-Whisper (INT8 CPU) y genera automáticamente chunks vectorizados con bge-m3.`);
+      lines.push(`  • Todas las transcripciones se persisten de forma incremental en \`_transcripciones/*.json\`.`);
+
+      return lines.join('\n');
+    } catch (err: any) {
+      return `❌ Error al listar audiolibros: ${err.message}`;
+    }
   }
 
   private async extractDocumentSummaryRequest(
@@ -1405,27 +1680,33 @@ export class JarvisCommandService {
       return '📁 La carpeta de backups `G:\\Backups\\jarbees_data` aún no tiene archivos de respaldo generados.';
     }
 
+    const has7z = fs.existsSync('D:\\HBCD\\Programs\\7z.exe');
     const files = fs
       .readdirSync(backupDir)
-      .filter((f) => f.endsWith('.dump'))
+      .filter((f) => f.endsWith('.dump') || f.endsWith('.7z'))
       .map((f) => {
         const stats = fs.statSync(path.join(backupDir, f));
         return {
           name: f,
           sizeMB: (stats.size / (1024 * 1024)).toFixed(1),
           date: stats.mtime.toLocaleString('es-AR'),
+          is7z: f.endsWith('.7z'),
         };
       })
       .sort((a, b) => b.name.localeCompare(a.name));
 
     const fileList = files
       .slice(0, 5)
-      .map((f) => `• \`${f.name}\` (${f.sizeMB} MB) — ${f.date}`)
+      .map(
+        (f) =>
+          `• \`${f.name}\` (${f.sizeMB} MB${f.is7z ? ' 🗜️ 7-Zip' : ''}) — ${f.date}`,
+      )
       .join('\n');
 
     return [
       `💾 **Estado del Sistema de Backups de JarBees** (\`G:\\Backups\\jarbees_data\`)`,
       `- **Unidad de respaldo:** \`G:\\\` (PostgreSQL 18.6 \`jarbees_data\`)`,
+      `- **Compresión:** ${has7z ? '✅ 7-Zip CLI (`D:\\HBCD\\Programs\\7z.exe`) integrado' : 'Estándar PostgreSQL (`pg_dump`)'}`,
       `- **Respaldos conservados en disco:** \`${files.length}\``,
       `- **Programación automática:** Tarea programada activa en Windows (\`JarBees_Database_Monthly_Backup\`) para ejecutarse el **día 1 de cada mes a las 03:00 AM**.`,
       `- **Rotación:** Mantiene automáticamente los últimos 12 respaldos mensuales.`,

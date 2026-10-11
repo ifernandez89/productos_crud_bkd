@@ -73,6 +73,16 @@ export class DocumentSynthesisService {
   // ── API principal ──────────────────────────────────────────────────────────
 
   /**
+   * Obtiene la ficha de síntesis existente de un documento si ya fue procesada
+   */
+  async getInsight(documentId: number): Promise<DocumentInsightData | null> {
+    const existing = await this.prisma.documentInsight.findUnique({
+      where: { documentId },
+    });
+    return existing ? this.deserializeInsight(existing) : null;
+  }
+
+  /**
    * Sintetiza un documento por ID y guarda la ficha en DocumentInsight.
    * Si ya existe y force=false, la devuelve sin re-procesar.
    */

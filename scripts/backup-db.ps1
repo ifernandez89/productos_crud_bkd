@@ -62,15 +62,30 @@ try {
     $Duration = [math]::Round(((Get-Date) - $StartTime).TotalSeconds, 2)
 
     Write-Log "✅ Respaldo exitoso! Tamaño: $FileSizeMB MB. Duración: $Duration seg."
+
+    # 4b. Compresión opcional con 7-Zip si D:\HBCD\Programs\7z.exe está disponible
+    $SevenZipPath = "D:\HBCD\Programs\7z.exe"
+    if (Test-Path $SevenZipPath) {
+        $ArchiveFile = "$BackupFile.7z"
+        Write-Log "📦 Comprimiendo respaldo con 7-Zip ($SevenZipPath)..."
+        $ZipStart = Get-Date
+        & $SevenZipPath a -t7z -mx=5 -sdel $ArchiveFile $BackupFile | Out-Null
+        if (Test-Path $ArchiveFile) {
+            $ArchiveSize = (Get-Item $ArchiveFile).Length
+            $ArchiveSizeMB = [math]::Round($ArchiveSize / 1MB, 2)
+            $ZipDuration = [math]::Round(((Get-Date) - $ZipStart).TotalSeconds, 2)
+            Write-Log "🗜️ Respaldo 7z generado: $ArchiveSizeMB MB. Duración compresión: $ZipDuration seg."
+        }
+    }
 }
 catch {
     Write-Log "❌ ERROR generando respaldo: $_"
     exit 1
 }
 
-# 5. Rotación de respaldos antiguos (Conservar los últimos N)
+# 5. Rotación de respaldos antiguos (Conservar los últimos N, tanto .dump como .7z)
 try {
-    $AllDumps = Get-ChildItem -Path $TargetDir -Filter "jarbees_data_*.dump" | Sort-Object LastWriteTime -Descending
+    $AllDumps = Get-ChildItem -Path $TargetDir | Where-Object { $_.Name -match '^jarbees_data_.*\.(dump|7z)$' } | Sort-Object LastWriteTime -Descending
     if ($AllDumps.Count -gt $MaxBackupsToKeep) {
         $DumpsToDelete = $AllDumps | Select-Object -Skip $MaxBackupsToKeep
         foreach ($OldDump in $DumpsToDelete) {

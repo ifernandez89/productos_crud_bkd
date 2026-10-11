@@ -13,7 +13,9 @@ import {
   UseInterceptors,
   BadRequestException,
   Headers,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JarvisService } from './jarvis.service';
@@ -32,6 +34,8 @@ import { DocumentSummaryService } from './library/document-summary.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
 import { AuditService } from './security/audit.service';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
+import { VoiceService } from './tools/voice/voice.service';
+import { AudiobookIngestService } from './library/audiobook-ingest.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 import { getAvailableDisciplines } from '../shared/disciplines';
@@ -55,6 +59,8 @@ export class JarvisController {
     private readonly knowledgeTestService: KnowledgeTestService,
     private readonly auditService: AuditService,
     private readonly synthesisService: DocumentSynthesisService,
+    private readonly voiceService: VoiceService,
+    private readonly audiobookIngestService: AudiobookIngestService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -963,5 +969,215 @@ export class JarvisController {
     const imageBase64 = file.buffer.toString('base64');
     const text = await this.visionService.extractText(imageBase64);
     return { success: true, text };
+  }
+
+  // ── Voz & Procesamiento de Audio (Opus CLI + SAPI STT/TTS) ───────────────────
+
+  @Public()
+  @Get('voice/status')
+  @ApiOperation({
+    summary: 'Estado del motor de voz (Opus CLI, Windows SAPI STT y TTS Helena)',
+  })
+  async getVoiceStatus() {
+    return this.voiceService.getStatus();
+  }
+
+  @Public()
+  @Post('voice/transcribe')
+  @ApiOperation({
+    summary: 'Transcribir nota de voz (Opus, OGG, WebM o WAV) a texto',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { audio: { type: 'string', format: 'binary' } },
+    },
+  })
+  @UseInterceptors(FileInterceptor('audio'))
+  async transcribeVoice(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Se requiere un archivo de audio en el campo "audio"');
+    }
+    const result = await this.voiceService.processAudioToText(
+      file.buffer,
+      file.originalname || 'audio.opus',
+    );
+    return { success: true, ...result };
+  }
+
+  @Public()
+  @Post('voice/chat')
+  @ApiOperation({
+    summary: 'Enviar nota de voz directamente al chat de JarBees',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        audio: { type: 'string', format: 'binary' },
+        sessionId: { type: 'string' },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('audio'))
+  async voiceChat(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('sessionId') sessionIdBody?: string,
+    @Headers('x-session-id') sessionIdHeader?: string,
+    @Headers('x-user-id') userId?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Se requiere un archivo de audio en el campo "audio"');
+    }
+
+    const transcription = await this.voiceService.processAudioToText(
+      file.buffer,
+      file.originalname || 'audio.opus',
+    );
+
+    if (!transcription.text || transcription.text.trim().length === 0) {
+      return {
+        success: false,
+        transcription: '',
+        confidence: 0,
+        answer:
+          'No pude distinguir palabras en el audio grabado. ¿Podrías grabarlo de nuevo más cerca del micrófono o escribir tu consulta?',
+      };
+    }
+
+    const sessionId = sessionIdBody || sessionIdHeader || randomUUID();
+    const answer = await this.jarvisService.query(transcription.text, {
+      sessionId,
+    });
+
+    return {
+      success: true,
+      transcription: transcription.text,
+      confidence: transcription.confidence,
+      transcriptionDurationMs: transcription.durationMs,
+      answer,
+      sessionId,
+    };
+  }
+
+  @Public()
+  @Post('voice/speak')
+  @ApiOperation({
+    summary: 'Sintetizar texto a voz WAV (TTS) con voz Helena en español',
+  })
+  async speakText(@Body('text') text: string, @Res() res: Response) {
+    if (!text || text.trim().length === 0) {
+      throw new BadRequestException('Se requiere texto a sintetizar');
+    }
+    const audioBuffer = await this.voiceService.synthesizeSpeech(text);
+    res.set({
+      'Content-Type': 'audio/wav',
+      'Content-Length': audioBuffer.length.toString(),
+      'Content-Disposition': 'inline; filename="jarbees_voice.wav"',
+    });
+    res.end(audioBuffer);
+  }
+
+  @Public()
+  @Get('library/:id/audiobook')
+  @ApiOperation({
+    summary: 'Generar y descargar audiolibro narrado de un documento o síntesis de la biblioteca',
+  })
+  async getDocumentAudiobook(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const doc = await this.documentRepo.findById(id);
+    if (!doc) {
+      throw new BadRequestException(`Documento con ID ${id} no encontrado`);
+    }
+
+    const insight = await this.synthesisService.getInsight(id);
+    let narrationText = '';
+
+    if (insight) {
+      narrationText = [
+        `Audiolibro del libro: ${doc.title}. ${insight.author ? `Por ${insight.author}.` : ''}`,
+        `Resumen Ejecutivo: ${insight.executiveSummary}`,
+        insight.centralThesis ? `Tesis Central: ${insight.centralThesis}` : '',
+        insight.coreConcepts && insight.coreConcepts.length > 0
+          ? `Conceptos fundamentales: ${insight.coreConcepts.join('. ')}.`
+          : '',
+        insight.notableQuotes && insight.notableQuotes.length > 0
+          ? `Citas destacadas: ${insight.notableQuotes.join('. ')}.`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+    } else {
+      narrationText = `Audiolibro de ${doc.title}. ${doc.content ? doc.content.slice(0, 2000) : 'Sin contenido disponible.'}`;
+    }
+
+    const audioBuffer = await this.voiceService.generateAudiobook(narrationText, {
+      title: doc.title,
+      author: insight?.author,
+    });
+
+    const safeTitle = (doc.title || 'audiolibro')
+      .replace(/[^a-zA-Z0-9_\-]/g, '_')
+      .substring(0, 40);
+
+    res.set({
+      'Content-Type': 'audio/wav',
+      'Content-Length': audioBuffer.length.toString(),
+      'Content-Disposition': `attachment; filename="${safeTitle}_audiolibro.wav"`,
+    });
+    res.end(audioBuffer);
+  }
+
+  // ── Ingesta Inversa de Audiolibros ──────────────────────────────────────────
+
+  @Public()
+  @Get('audiobooks')
+  @ApiOperation({
+    summary: 'Listar audiolibros encontrados en I:\\Musica\\Audiolibros y mas',
+  })
+  async listAudiobooks() {
+    const items = await this.audiobookIngestService.listAvailableAudiobooks();
+    return {
+      success: true,
+      total: items.length,
+      audiobooks: items,
+    };
+  }
+
+  @Public()
+  @Post('audiobooks/ingest')
+  @ApiOperation({
+    summary: 'Transcribir e ingestar un audiolibro a la base de datos de conocimiento de JarBees',
+  })
+  async ingestAudiobook(
+    @Body() body: { filePath: string; category?: string },
+  ) {
+    if (!body.filePath) {
+      throw new BadRequestException('Se requiere "filePath" del archivo de audiolibro a ingestar');
+    }
+    const result = await this.audiobookIngestService.ingestAudiobook(
+      body.filePath,
+      body.category,
+    );
+    return result;
+  }
+
+  @Public()
+  @Post('audiobooks/ingest-all')
+  @ApiOperation({
+    summary: 'Ingesta por lotes de todos los audiolibros disponibles en I:\\Musica\\Audiolibros y mas',
+  })
+  async ingestAllAudiobooks(
+    @Body() body?: { skipPureAmbient?: boolean; maxFiles?: number },
+  ) {
+    const result = await this.audiobookIngestService.ingestAllAvailableAudiobooks(body);
+    return {
+      success: true,
+      ...result,
+    };
   }
 }

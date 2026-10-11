@@ -49,6 +49,12 @@ export class DocumentRepository {
     await this.prisma.document.update({ where: { id }, data: { status } });
   }
 
+  async findById(id: number): Promise<Document | null> {
+    return this.prisma.document.findUnique({
+      where: { id },
+    });
+  }
+
   async createChunk(data: CreateChunkData): Promise<Chunk> {
     return this.prisma.chunk.create({
       data: {
@@ -578,6 +584,22 @@ export class DocumentRepository {
   async getMostRecentDocuments(limit = 10) {
     return this.prisma.document.findMany({
       orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        timesUsed: true,
+        lastUsed: true,
+        createdAt: true,
+        _count: { select: { chunks: true } },
+      },
+    });
+  }
+
+  async getAllDocuments(limit = 300) {
+    return this.prisma.document.findMany({
+      orderBy: [{ category: 'asc' }, { title: 'asc' }],
       take: limit,
       select: {
         id: true,

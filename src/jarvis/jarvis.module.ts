@@ -66,6 +66,9 @@ import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { MusicCatalogService } from './knowledge/music-catalog.service';
 import { GamesCatalogService } from './knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
+import { VoiceService } from './tools/voice/voice.service';
+import { AudiobookIngestService } from './library/audiobook-ingest.service';
+import { DialecticReasoningService } from './cognitive/dialectic-reasoning.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -138,6 +141,12 @@ import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.servi
     GamesCatalogService,
     // ── Disciplines Catalog & Knowledge ────────────────────────────────────
     DisciplinesCatalogService,
+    // ── Voice & Audio Processing ───────────────────────────────────────────
+    VoiceService,
+    // ── Audiobook Ingestion ────────────────────────────────────────────────
+    AudiobookIngestService,
+    // ── Dialectic Reasoning & RAG Contrast (DeepSeek-R1) ────────────────────
+    DialecticReasoningService,
   ],
   exports: [
     JarvisService,
@@ -153,6 +162,9 @@ import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.servi
     MusicCatalogService,
     GamesCatalogService,
     DisciplinesCatalogService,
+    VoiceService,
+    AudiobookIngestService,
+    DialecticReasoningService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

@@ -152,4 +152,28 @@ export function resolveEmbeddingModel(defaultModel = 'bge-m3:latest'): string {
   return process.env.OLLAMA_EMBEDDING_MODEL?.trim() || defaultModel;
 }
 
+/**
+ * Modelo de Razonamiento Crítico / Dialéctico — OLLAMA_REASONING_MODEL
+ * Caso de uso: Cruce dialéctico de autores en RAG, evaluación de hipótesis y deducción estricta.
+ */
+export function resolveReasoningModel(
+  defaultModel = 'deepseek-r1:7b',
+): string {
+  return process.env.OLLAMA_REASONING_MODEL?.trim() || defaultModel;
+}
+
+/** Perfil Razonamiento Dialéctico y Cruce RAG (DeepSeek-R1) */
+export const DEEPSEEK_R1_DIALECTIC_PROFILE: OllamaGenerationOptions = {
+  model: 'deepseek-r1:7b',
+  think: true,
+  temperature: 0.6, // Óptimo para R1 (0.5 a 0.7 para razonamiento paso a paso)
+  topP: 0.95,
+  topK: 40,
+  repeatPenalty: 1.10,
+  presencePenalty: 0,
+  frequencyPenalty: 0,
+  numCtx: 16384, // Contexto extendido para absorber múltiples chunks y autores
+  numPredict: 2048,
+};
+
 

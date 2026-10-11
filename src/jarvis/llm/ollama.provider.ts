@@ -32,11 +32,16 @@ export class OllamaProvider implements ILLMProvider {
 
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {
     const startTime = Date.now();
+    const requestedModel = options.model || this.getDefaultModel();
 
     // Crear modelo con numPredict dinámico según lo que pida cada llamada
-    // Esto evita que el 400 hardcodeado corte respuestas largas (resúmenes, comparaciones)
-    const numPredict = options.maxTokens ?? 400;
-    const model = await this.getModel(numPredict);
+    const numPredict = options.maxTokens ?? 512;
+    const model = await this.getModel(
+      numPredict,
+      requestedModel,
+      options.temperature,
+      options.stopSequences,
+    );
 
     // Convertir mensajes a formato LangChain
     const messages = options.messages.map((msg) => {
@@ -64,7 +69,7 @@ export class OllamaProvider implements ILLMProvider {
 
       return {
         content,
-        model: this.getDefaultModel(),
+        model: requestedModel,
         provider: this.getProviderName(),
         latencyMs: Date.now() - startTime,
       };
@@ -126,29 +131,51 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   /**
-   * Devuelve un modelo con el numPredict solicitado.
-   * Reutiliza el modelo cacheado si el numPredict coincide,
-   * sino crea uno nuevo (costo mínimo — solo cambia un parámetro).
+   * Devuelve un modelo con los parámetros solicitados.
+   * Soporta modelos de razonamiento (DeepSeek-R1) y modelos estándar.
    */
-  private async getModel(numPredict: number): Promise<ChatOllama> {
-    if (this.model && this.currentNumPredict === numPredict) {
+  private async getModel(
+    numPredict: number,
+    modelName?: string,
+    temperature?: number,
+    customStop?: string[],
+  ): Promise<ChatOllama> {
+    const targetModel = modelName || this.getDefaultModel();
+    const isReasoning = targetModel.includes('deepseek-r1') || targetModel.includes('reasoning');
+
+    if (
+      this.model &&
+      this.currentNumPredict === numPredict &&
+      targetModel === this.getDefaultModel() &&
+      temperature === undefined &&
+      !customStop
+    ) {
       return this.model;
     }
-    // Para el modelo "default" (512 tokens) cacheamos
-    if (numPredict === 512) {
+
+    if (
+      numPredict === 512 &&
+      targetModel === this.getDefaultModel() &&
+      temperature === undefined &&
+      !customStop
+    ) {
       if (!this.model) await this.initialize();
       return this.model!;
     }
-    // Para llamadas con tokens distintos, crear instancia temporal
+
+    const stopSequences = customStop !== undefined
+      ? customStop
+      : (isReasoning ? undefined : ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:']);
+
     return new ChatOllama({
-      model: this.getDefaultModel(),
-      temperature: 0.10,
-      topP: 0.85,
-      topK: 20,
+      model: targetModel,
+      temperature: temperature ?? (isReasoning ? 0.6 : 0.10),
+      topP: isReasoning ? 0.95 : 0.85,
+      topK: isReasoning ? 40 : 20,
       numPredict,
       repeatPenalty: 1.10,
-      numCtx: 8192,
-      stop: ['\n\n\n', 'User:', 'Usuario:', 'Pregunta:', 'Q:', 'Human:'],
+      numCtx: isReasoning ? 16384 : 8192,
+      stop: stopSequences,
     });
   }
 

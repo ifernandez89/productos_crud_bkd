@@ -10,6 +10,7 @@ export interface LLMMessage {
 
 export interface LLMGenerateOptions {
   messages: LLMMessage[];
+  model?: string;
   temperature?: number;
   maxTokens?: number;
   stopSequences?: string[];

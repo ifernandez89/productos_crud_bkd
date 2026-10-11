@@ -104,6 +104,8 @@ export class PgvectorService {
       const chunks = await this.prisma.chunk.findMany({
         where: { document: { status: 'ready' } },
         include: { document: true },
+        take: 300,
+        orderBy: { id: 'desc' },
       });
 
       const scored: any[] = [];
