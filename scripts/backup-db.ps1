@@ -22,9 +22,9 @@ function Write-Log {
     }
 }
 
-# 1. Validar que la unidad G:\ esté accesible
+# 1. Validar que la unidad G:\ este accesible
 if (-not (Test-Path "G:\")) {
-    Write-Error "CRÍTICO: La unidad G:\ no está accesible o no está montada."
+    Write-Error "CRITICO: La unidad G:\ no esta accesible o no esta montada."
     exit 1
 }
 
@@ -36,18 +36,18 @@ if (-not (Test-Path $TargetDir)) {
 
 # 3. Validar presencia de pg_dump
 if (-not (Test-Path $PgDumpPath)) {
-    Write-Error "CRÍTICO: No se encontró pg_dump en: $PgDumpPath"
+    Write-Error "CRITICO: No se encontro pg_dump en: $PgDumpPath"
     exit 1
 }
 
-# 4. Configurar variables de conexión
+# 4. Configurar variables de conexion
 $env:PGPASSWORD = "7523"
 $DbHost = "localhost"
 $DbPort = "5432"
 $DbUser = "postgres"
 $DbName = "jarbees_data"
 
-Write-Log "Iniciando respaldo mensual de '$DbName' hacia '$BackupFile'..."
+Write-Log "Iniciando respaldo de '$DbName' hacia '$BackupFile'..."
 $StartTime = Get-Date
 
 try {
@@ -61,42 +61,42 @@ try {
     $FileSizeMB = [math]::Round($FileSize / 1MB, 2)
     $Duration = [math]::Round(((Get-Date) - $StartTime).TotalSeconds, 2)
 
-    Write-Log "✅ Respaldo exitoso! Tamaño: $FileSizeMB MB. Duración: $Duration seg."
+    Write-Log "OK: Respaldo pg_dump exitoso! Tamano: $FileSizeMB MB. Duracion: $Duration seg."
 
-    # 4b. Compresión opcional con 7-Zip si D:\HBCD\Programs\7z.exe está disponible
+    # 4b. Compresion con 7-Zip si D:\HBCD\Programs\7z.exe esta disponible
     $SevenZipPath = "D:\HBCD\Programs\7z.exe"
     if (Test-Path $SevenZipPath) {
         $ArchiveFile = "$BackupFile.7z"
-        Write-Log "📦 Comprimiendo respaldo con 7-Zip ($SevenZipPath)..."
+        Write-Log "Comprimiendo respaldo con 7-Zip ($SevenZipPath)..."
         $ZipStart = Get-Date
         & $SevenZipPath a -t7z -mx=5 -sdel $ArchiveFile $BackupFile | Out-Null
         if (Test-Path $ArchiveFile) {
             $ArchiveSize = (Get-Item $ArchiveFile).Length
             $ArchiveSizeMB = [math]::Round($ArchiveSize / 1MB, 2)
             $ZipDuration = [math]::Round(((Get-Date) - $ZipStart).TotalSeconds, 2)
-            Write-Log "🗜️ Respaldo 7z generado: $ArchiveSizeMB MB. Duración compresión: $ZipDuration seg."
+            Write-Log "OK: Respaldo 7z generado: $ArchiveSizeMB MB. Duracion compresion: $ZipDuration seg."
         }
     }
 }
 catch {
-    Write-Log "❌ ERROR generando respaldo: $_"
+    Write-Log "ERROR generando respaldo: $_"
     exit 1
 }
 
-# 5. Rotación de respaldos antiguos (Conservar los últimos N, tanto .dump como .7z)
+# 5. Rotacion de respaldos antiguos (Conservar los ultimos N)
 try {
     $AllDumps = Get-ChildItem -Path $TargetDir | Where-Object { $_.Name -match '^jarbees_data_.*\.(dump|7z)$' } | Sort-Object LastWriteTime -Descending
     if ($AllDumps.Count -gt $MaxBackupsToKeep) {
         $DumpsToDelete = $AllDumps | Select-Object -Skip $MaxBackupsToKeep
         foreach ($OldDump in $DumpsToDelete) {
-            Write-Log "♻️ Rotación: Eliminando respaldo antiguo '$($OldDump.Name)'"
+            Write-Log "Rotacion: Eliminando respaldo antiguo '$($OldDump.Name)'"
             Remove-Item -Path $OldDump.FullName -Force
         }
     }
     Write-Log "Estado: $($AllDumps.Count) respaldos conservados en $TargetDir."
 }
 catch {
-    Write-Log "Advertencia durante rotación: $_"
+    Write-Log "Advertencia durante rotacion: $_"
 }
 
 Write-Log "Fin del proceso de respaldo."
