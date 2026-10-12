@@ -72,10 +72,16 @@ import { VoiceService } from './tools/voice/voice.service';
 import { DialecticReasoningService } from './cognitive/dialectic-reasoning.service';
 import { CognitiveTraceService } from './cognitive/cognitive-trace.service';
 import { ClaimExtractorService } from './cognitive/claim-extractor.service';
+import { PosterController } from './tools/poster/poster.controller';
+import { PosterService } from './tools/poster/poster.service';
+import { ArtDirectionService } from './tools/poster/art-direction.service';
+import { GenesisPixelArtEngine } from './tools/poster/engines/genesis-pixel-art.engine';
+import { PngExporter } from './tools/poster/rendering/png-exporter';
+import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
-  controllers: [JarvisController],
+  controllers: [JarvisController, PosterController],
   providers: [
     JarvisService,
     MemoryRepository,
@@ -154,6 +160,12 @@ import { ClaimExtractorService } from './cognitive/claim-extractor.service';
     // ── Cognitive Observability & Claim Extraction ──────────────────────────
     CognitiveTraceService,
     ClaimExtractorService,
+    // ── Procedural Poster & Box Art Generator ──────────────────────────────
+    ArtDirectionService,
+    GenesisPixelArtEngine,
+    PngExporter,
+    PosterQualityAssuranceService,
+    PosterService,
   ],
   exports: [
     JarvisService,
@@ -175,6 +187,7 @@ import { ClaimExtractorService } from './cognitive/claim-extractor.service';
     CognitiveTraceService,
     ClaimExtractorService,
     GeneralIntelligenceTrialsService,
+    PosterService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,
