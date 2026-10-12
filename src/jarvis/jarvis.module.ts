@@ -82,6 +82,10 @@ import { ThreePortraitEngine } from './tools/poster/engines/three-portrait.engin
 import { PngExporter } from './tools/poster/rendering/png-exporter';
 import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
 import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service';
+import { PortraitDirectionService } from './tools/poster/portrait/portrait-direction.service';
+import { VectorPortraitEngine } from './tools/poster/portrait/vector-portrait.engine';
+import { PortraitQaService } from './tools/poster/portrait/portrait-qa.service';
+import { PortraitService } from './tools/poster/portrait/portrait.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -174,6 +178,10 @@ import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service
     PosterQualityAssuranceService,
     AssetCatalogService,
     PosterService,
+    PortraitDirectionService,
+    VectorPortraitEngine,
+    PortraitQaService,
+    PortraitService,
   ],
   exports: [
     JarvisService,
@@ -197,6 +205,7 @@ import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service
     GeneralIntelligenceTrialsService,
     PosterService,
     AssetCatalogService,
+    PortraitService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

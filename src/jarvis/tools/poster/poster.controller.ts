@@ -14,11 +14,39 @@ import * as path from 'path';
 import { Public } from '../../../auth/public.decorator';
 import { PosterService } from './poster.service';
 import { GeneratePosterDto } from './poster.types';
+import { PortraitService } from './portrait/portrait.service';
+import { GeneratePortraitDto } from './portrait/portrait.types';
 
 @ApiTags('Jarvis Poster Generator')
 @Controller('jarbees/poster')
 export class PosterController {
-  constructor(private readonly posterService: PosterService) {}
+  constructor(
+    private readonly posterService: PosterService,
+    private readonly portraitService: PortraitService,
+  ) {}
+
+  @Public()
+  @Post('portrait/generate')
+  @ApiOperation({
+    summary: 'Generar retrato paramétrico 2.5D con control de calidad anatómico (QA) y exportación hasta 2048x2048',
+  })
+  async generatePortrait(@Body() body: GeneratePortraitDto) {
+    const result = await this.portraitService.generatePortrait(body);
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+  @Public()
+  @Get('portrait/presets')
+  @ApiOperation({ summary: 'Obtener presets de estilos, expresiones y paletas para retratos' })
+  getPortraitPresets() {
+    return {
+      success: true,
+      presets: this.portraitService.getPresets(),
+    };
+  }
 
   @Public()
   @Post('generate')
