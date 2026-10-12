@@ -1,4 +1,4 @@
-export type EraType = 'genesis16' | 'genesis-landscape' | 'dreamcast-ocean' | 'ps1' | 'ps2' | 'editorial';
+export type EraType = 'genesis16' | 'genesis-landscape' | 'dreamcast-ocean' | 'threejs-portrait' | 'ps1' | 'ps2' | 'editorial';
 
 export interface PaletteSpec {
   primary: string;      // Color predominante del sujeto (ej: rojo armadura o blanco/negro orca)

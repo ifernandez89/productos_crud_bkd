@@ -78,6 +78,7 @@ import { ArtDirectionService } from './tools/poster/art-direction.service';
 import { GenesisPixelArtEngine } from './tools/poster/engines/genesis-pixel-art.engine';
 import { GenesisLandscapePixelEngine } from './tools/poster/engines/genesis-landscape-pixel.engine';
 import { DreamcastOceanEngine } from './tools/poster/engines/dreamcast-ocean.engine';
+import { ThreePortraitEngine } from './tools/poster/engines/three-portrait.engine';
 import { PngExporter } from './tools/poster/rendering/png-exporter';
 import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
 import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service';
@@ -168,6 +169,7 @@ import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service
     GenesisPixelArtEngine,
     GenesisLandscapePixelEngine,
     DreamcastOceanEngine,
+    ThreePortraitEngine,
     PngExporter,
     PosterQualityAssuranceService,
     AssetCatalogService,

@@ -5,6 +5,7 @@ import { ArtDirectionService } from './art-direction.service';
 import { GenesisPixelArtEngine } from './engines/genesis-pixel-art.engine';
 import { GenesisLandscapePixelEngine } from './engines/genesis-landscape-pixel.engine';
 import { DreamcastOceanEngine } from './engines/dreamcast-ocean.engine';
+import { ThreePortraitEngine } from './engines/three-portrait.engine';
 import { PngExporter } from './rendering/png-exporter';
 import { PosterQualityAssuranceService } from './qa/poster-qa.service';
 import { AssetCatalogService } from './assets/asset-catalog.service';
@@ -23,6 +24,7 @@ export class PosterService {
     private readonly genesisEngine: GenesisPixelArtEngine,
     private readonly genesisLandscapeEngine: GenesisLandscapePixelEngine,
     private readonly dreamcastOceanEngine: DreamcastOceanEngine,
+    private readonly threePortraitEngine: ThreePortraitEngine,
     private readonly pngExporter: PngExporter,
     private readonly qaService: PosterQualityAssuranceService,
     private readonly assetCatalog: AssetCatalogService,
@@ -40,25 +42,63 @@ export class PosterService {
     const spec: PosterDesignSpec = this.artDirection.createSpecFromRequest(dto);
     const artDirectionMs = Date.now() - t0;
 
-    // 2. Selección del motor por época y temática
-    const t1 = Date.now();
-    const svgContent =
-      spec.era === 'dreamcast-ocean'
-        ? this.dreamcastOceanEngine.generateSvg(spec)
-        : spec.era === 'genesis-landscape'
-        ? this.genesisLandscapeEngine.generateSvg(spec)
-        : this.genesisEngine.generateSvg(spec);
-    const svgGenMs = Date.now() - t1;
-
-    // 3. Renderizado a disco (SVG + PNG con aceleración GPU)
     const safeTitle = spec.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const filename = `${safeTitle}_${spec.era}_seed${spec.seed}`;
-    const renderOutput = await this.pngExporter.renderToDisk(
-      svgContent,
-      filename,
-      spec.dimensions.width,
-      spec.dimensions.height,
-    );
+    const storageDir = path.join(process.cwd(), 'storage', 'posters');
+    if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+
+    let renderOutput: { svgPath: string; pngPath: string; buffer: Buffer; durationMs: number };
+    let svgContent = '';
+    let svgGenMs = 0;
+
+    if (spec.era === 'threejs-portrait') {
+      const promptLower = (dto.prompt || '').toLowerCase();
+      const modelName = promptLower.includes('hatshepsut')
+        ? 'hatshepsut.glb'
+        : promptLower.includes('olmec')
+        ? 'olmec_head.glb'
+        : 'akenaton.glb';
+
+      const t1 = Date.now();
+      const threeRes = await this.threePortraitEngine.renderPortrait(spec, modelName);
+      svgGenMs = Date.now() - t1;
+
+      // Crear SVG de layout tipográfico acompañante
+      svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${spec.dimensions.width} ${spec.dimensions.height}">
+        <g id="3d-portrait-layout">
+          <text id="main-title" x="640" y="860" font-family="'Times New Roman', serif" font-size="48" font-weight="900" fill="#FFD700" text-anchor="middle">${spec.title}</text>
+          <text id="sub-title" x="640" y="900" font-family="'Arial', sans-serif" font-size="20" fill="#E8D098" text-anchor="middle" letter-spacing="4">${spec.subtitle || 'THREE.JS 3D PORTRAIT'}</text>
+        </g>
+      </svg>`;
+
+      const svgPath = path.join(storageDir, `${filename}.svg`);
+      fs.writeFileSync(svgPath, svgContent, 'utf-8');
+
+      renderOutput = {
+        svgPath,
+        pngPath: threeRes.pngPath,
+        buffer: threeRes.pngBuffer,
+        durationMs: threeRes.durationMs,
+      };
+    } else {
+      // 2. Selección del motor por época y temática
+      const t1 = Date.now();
+      svgContent =
+        spec.era === 'dreamcast-ocean'
+          ? this.dreamcastOceanEngine.generateSvg(spec)
+          : spec.era === 'genesis-landscape'
+          ? this.genesisLandscapeEngine.generateSvg(spec)
+          : this.genesisEngine.generateSvg(spec);
+      svgGenMs = Date.now() - t1;
+
+      // 3. Renderizado a disco (SVG + PNG con aceleración GPU)
+      renderOutput = await this.pngExporter.renderToDisk(
+        svgContent,
+        filename,
+        spec.dimensions.width,
+        spec.dimensions.height,
+      );
+    }
 
     const gpuDiag = await this.pngExporter.getGpuDiagnostics();
 
@@ -120,7 +160,6 @@ export class PosterService {
       },
     };
 
-    const storageDir = path.join(process.cwd(), 'storage', 'posters');
     fs.writeFileSync(
       path.join(storageDir, `${filename}_project.json`),
       JSON.stringify(projectManifest, null, 2),
@@ -149,6 +188,13 @@ export class PosterService {
    */
   getPresets() {
     return [
+      {
+        id: 'threejs-portrait-archeoscope',
+        era: 'threejs-portrait',
+        name: 'Three.js 3D Realistic Portrait (Akhenaten / Hatshepsut / Olmec Face)',
+        description: 'Renderizado tridimensional hiperrealista con Three.js, mallas GLB, iluminación cinematográfica de 3 puntos (Key, Fill, Rim), sombreado PBR y ACES Filmic Tone Mapping en la GPU RTX 5070.',
+        defaultDimensions: { width: 1280, height: 960 },
+      },
       {
         id: 'dreamcast-ecco-ocean',
         era: 'dreamcast-ocean',

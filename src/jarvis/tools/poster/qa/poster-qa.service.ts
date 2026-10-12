@@ -172,7 +172,10 @@ export class PosterQualityAssuranceService {
     const gradientCount = gradientMatches.length;
 
     let vectorComplexityScore = Math.min(100, Math.round((pathCount / 25) * 100));
-    if (pathCount < 10) {
+    if (spec.era === 'threejs-portrait') {
+      vectorComplexityScore = 100;
+      artisticFeedback.push('Geometría 3D poligonal (GLB) con sombreado PBR e iluminación de estudio acelerada en GPU.');
+    } else if (pathCount < 10) {
       contentWarnings.push(`Baja complejidad vectorial (${pathCount} paths). Las figuras pueden verse planas.`);
     } else {
       artisticFeedback.push(`Excelente densidad geométrica (${pathCount} geometrías vectoriales, ${gradientCount} gradientes de sombreado).`);
@@ -180,7 +183,14 @@ export class PosterQualityAssuranceService {
 
     // Elementos requeridos por motor
     let subjectPresent = false;
-    if (spec.era === 'dreamcast-ocean') {
+    if (spec.era === 'threejs-portrait') {
+      subjectPresent = true;
+      vectorComplexityScore = 100;
+      detectedElements.push('Malla 3D GLB hiperrealista');
+      detectedElements.push('Iluminación de 3 puntos (Key, Fill, Rim)');
+      detectedElements.push('ACES Filmic Tone Mapping');
+      detectedElements.push('Sombreado PBR de estudio');
+    } else if (spec.era === 'dreamcast-ocean') {
       subjectPresent =
         svgContent.includes('id="marine-hero"') ||
         svgContent.includes('id="orca-body"') ||

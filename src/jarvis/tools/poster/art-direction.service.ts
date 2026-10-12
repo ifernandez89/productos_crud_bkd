@@ -10,27 +10,57 @@ export class ArtDirectionService {
    */
   createSpecFromRequest(req: GeneratePosterDto): PosterDesignSpec {
     const promptLower = (req.prompt || req.title || '').toLowerCase();
-    const isOcean =
-      req.era === 'dreamcast-ocean' ||
+    const isPortrait3D =
+      req.era === 'threejs-portrait' ||
       (!req.era &&
-        (/\b(mar|oceano|ocean|orca|ecco|dolphin|ballena|cetaceo)\b/i.test(promptLower) ||
-          promptLower.includes('marino')));
+        (/\b(rostro|face|portrait|cabeza|busto|akenaton|hatshepsut|olmec)\b/i.test(promptLower) ||
+          (promptLower.includes('3d') && promptLower.includes('rostro'))));
+
+    const isOcean =
+      !isPortrait3D &&
+      (req.era === 'dreamcast-ocean' ||
+        (!req.era &&
+          (/\b(mar|oceano|ocean|orca|ecco|dolphin|ballena|cetaceo)\b/i.test(promptLower) ||
+            promptLower.includes('marino'))));
 
     const isLandscape =
-      req.era === 'genesis-landscape' ||
-      (!req.era &&
-        !isOcean &&
-        (/\b(isla|flotante|floating|landscape|twinkle|aetheria|cascada|montaña|temple)\b/i.test(promptLower) ||
-          promptLower.includes('flotant')));
+      !isPortrait3D &&
+      (req.era === 'genesis-landscape' ||
+        (!req.era &&
+          !isOcean &&
+          (/\b(isla|flotante|floating|landscape|twinkle|aetheria|cascada|montaña|temple)\b/i.test(promptLower) ||
+            promptLower.includes('flotant'))));
 
-    const era: EraType = req.era || (isOcean ? 'dreamcast-ocean' : isLandscape ? 'genesis-landscape' : 'genesis16');
+    const era: EraType =
+      req.era ||
+      (isPortrait3D
+        ? 'threejs-portrait'
+        : isOcean
+        ? 'dreamcast-ocean'
+        : isLandscape
+        ? 'genesis-landscape'
+        : 'genesis16');
 
-    const title = req.title || (isOcean ? 'ORCA' : isLandscape ? 'AETHERIA' : 'IRON MAN');
+    const title =
+      req.title ||
+      (isPortrait3D
+        ? 'AKHENATEN'
+        : isOcean
+        ? 'ORCA'
+        : isLandscape
+        ? 'AETHERIA'
+        : 'IRON MAN');
     const subtitle =
       req.subtitle ||
-      (isOcean ? 'DEFENDER OF THE SEAS' : isLandscape ? 'THE CELESTIAL REALM' : 'GENESIS PROTOCOL');
+      (isPortrait3D
+        ? 'THE SUN PHARAOH'
+        : isOcean
+        ? 'DEFENDER OF THE SEAS'
+        : isLandscape
+        ? 'THE CELESTIAL REALM'
+        : 'GENESIS PROTOCOL');
     const seed = req.seed || Math.floor(Math.random() * 1000000);
-    const width = req.width || (isOcean || isLandscape ? 1280 : 720);
+    const width = req.width || (isPortrait3D || isOcean || isLandscape ? 1280 : 720);
     const height = req.height || 960;
 
     let palette = {
@@ -43,7 +73,17 @@ export class ArtDirectionService {
       grid: '#1F2438',        // Retícula de horizonte
     };
 
-    if (isOcean) {
+    if (isPortrait3D) {
+      palette = {
+        primary: '#C8A060',     // Pátina de piedra dorada
+        secondary: '#E8D098',   // Relieve luminoso
+        accent: '#40E0D0',      // Rim light cian de estudio
+        background: '#06080D',  // Fondo carbón de estudio fotográfico
+        text: '#FFD700',        // Dorado jeroglífico
+        glow: '#FFA500',        // Resplandor ámbar
+        grid: '#151D28',        // Sombras ambientales
+      };
+    } else if (isOcean) {
       palette = {
         primary: '#162232',     // Piel cetácea dorsal
         secondary: '#F0F6FC',   // Vientre y manchas blancas

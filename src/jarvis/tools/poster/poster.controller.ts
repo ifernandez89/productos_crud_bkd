@@ -96,4 +96,22 @@ export class PosterController {
 
     return res.sendFile(filePath);
   }
+
+  @Public()
+  @Get('draco/:file')
+  @ApiOperation({ summary: 'Servir decodificadores DRACO para modelos 3D GLB' })
+  serveDraco(@Param('file') file: string, @Res() res: Response) {
+    const safeName = path.basename(file);
+    const filePath = path.join(process.cwd(), 'storage', 'assets', 'three', 'draco', safeName);
+    if (!fs.existsSync(filePath)) {
+      throw new NotFoundException(`Draco decoder file ${safeName} not found`);
+    }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    if (safeName.endsWith('.wasm')) {
+      res.setHeader('Content-Type', 'application/wasm');
+    } else if (safeName.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+    return res.sendFile(filePath);
+  }
 }
