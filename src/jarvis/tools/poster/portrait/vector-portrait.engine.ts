@@ -233,6 +233,10 @@ export class VectorPortraitEngine {
         <path d="M ${ex - eyeW * 1.08} ${eyeY + 2} 
                  Q ${ex} ${eyeY - eyeH * 1.15} ${ex + eyeW * 1.08} ${eyeY + 2}" 
               stroke="#1a1418" stroke-width="4.5" stroke-linecap="round" fill="none" />
+        <!-- Eyeliner felino cat-eye rasgado hacia el extremo exterior -->
+        <path d="M ${ex + dir * eyeW * 0.8} ${eyeY - 2} 
+                 Q ${ex + dir * eyeW * 1.15} ${eyeY - eyeH * 0.8} ${ex + dir * eyeW * 1.3} ${eyeY - eyeH * 1.2}" 
+              stroke="#1a1418" stroke-width="3.5" stroke-linecap="round" fill="none" />
         <!-- Pliegue palpebral superior -->
         <path d="M ${ex - eyeW * 0.9} ${eyeY - eyeH * 1.1} 
                  Q ${ex} ${eyeY - eyeH * 1.55} ${ex + eyeW * 0.85} ${eyeY - eyeH * 1.1}" 
@@ -338,8 +342,11 @@ export class VectorPortraitEngine {
                  Q ${cx} ${mouthY + 18} ${cx + mouthW * 0.9} ${mouthY + 1} 
                  Q ${cx} ${mouthY + 4} ${cx - mouthW * 0.9} ${mouthY + 1} Z" 
               fill="${spec.palette.skinBase}" />
-        <!-- Brillo central del labio inferior -->
-        <ellipse cx="${cx}" cy="${mouthY + 9}" rx="${mouthW * 0.35}" ry="4" fill="${spec.palette.skinHighlight}" opacity="0.65" />
+        <!-- Brillos de volumen en lóbulos de labio inferior -->
+        <ellipse cx="${cx - mouthW * 0.28}" cy="${mouthY + 9}" rx="${mouthW * 0.22}" ry="3.5" fill="${spec.palette.skinHighlight}" opacity="0.75" />
+        <ellipse cx="${cx + mouthW * 0.28}" cy="${mouthY + 9}" rx="${mouthW * 0.22}" ry="3.5" fill="${spec.palette.skinHighlight}" opacity="0.65" />
+        <circle cx="${cx - mouthW * 0.15}" cy="${mouthY + 8}" r="2" fill="#ffffff" opacity="0.8" />
+        <circle cx="${cx + mouthW * 0.15}" cy="${mouthY + 8}" r="2" fill="#ffffff" opacity="0.8" />
 
         <!-- Sombra debajo del labio inferior (mentón) -->
         <path d="M ${cx - mouthW * 0.6} ${mouthY + 22} Q ${cx} ${mouthY + 28} ${cx + mouthW * 0.6} ${mouthY + 22}" 

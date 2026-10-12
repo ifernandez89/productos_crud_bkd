@@ -36,10 +36,54 @@ export class PortraitDirectionService {
     const palettePreset = dto.palettePreset || (['renaissance_warm', 'cyber_neon', 'golden_hour', 'nordic_cool', 'ethereal_cosmic'][Math.floor(rng() * 5)] as any);
     const resolution = dto.resolution && dto.resolution >= 1024 ? dto.resolution : 2048;
 
-    const palette = this.resolvePalette(palettePreset, rng);
-    const proportions = this.computeAnatomicalProportions(expression, rng);
-    const lighting = this.computeLighting(style, rng);
-    const hair = this.computeHair(hairStyle, rng);
+    const isAngelina = dto.name?.toLowerCase().includes('angelina') || dto.name?.toLowerCase().includes('jolie');
+
+    let palette = this.resolvePalette(palettePreset, rng);
+    let proportions = this.computeAnatomicalProportions(expression, rng);
+    let lighting = this.computeLighting(style, rng);
+    let hair = this.computeHair(hairStyle, rng);
+
+    if (isAngelina) {
+      proportions = {
+        faceRatio: 1.36,
+        jawTaper: 0.36,         // Mandíbula angular elegante
+        eyeLevelY: 0.49,
+        eyeSpacing: 0.44,       // Separación clásica
+        eyeWidth: 0.130,        // Ojos felinos rasgados
+        eyeHeight: 0.052,
+        browAngleDeg: 11,       // Cejas arqueadas icónicas
+        noseBaseY: 0.635,
+        noseWidth: 0.092,       // Nariz fina y recta
+        mouthLevelY: 0.765,
+        mouthWidth: 0.230,      // Labios voluminosos distintivos
+      };
+      palette = {
+        skinBase: '#e8cbba',
+        skinShadow: '#8a5c48',
+        skinHighlight: '#fff4eb',
+        skinSubsurface: '#c94d38',
+        hairBase: '#160d09',
+        hairHighlight: '#4d2e22',
+        irisPrimary: '#486842', // Ojos verdes/avellana
+        irisSecondary: '#94b868',
+        accent: '#ffd4aa',
+        backgroundGradient: ['#0b0609', '#1f1019'],
+      };
+      hair = {
+        style: 'flowing',
+        volume: 1.25,
+        strandsCount: 14,
+        hasFringe: false,
+      };
+      lighting = {
+        keyLightAngleDeg: 45,
+        keyLightIntensity: 1.2,
+        ambientColor: '#0c070a',
+        fillColor: '#1f131a',
+        rimColor: '#ffd8aa',
+        rimIntensity: 1.1,
+      };
+    }
 
     return {
       id: `portrait-${seed}`,
@@ -56,8 +100,8 @@ export class PortraitDirectionService {
       palette,
       hair,
       features: {
-        addEarrings: rng() > 0.45,
-        addCyberMarkings: dto.addCyberMarkings ?? (style === 'comic' || palettePreset === 'cyber_neon' || rng() > 0.6),
+        addEarrings: isAngelina ? false : rng() > 0.45,
+        addCyberMarkings: isAngelina ? false : (dto.addCyberMarkings ?? (style === 'comic' || palettePreset === 'cyber_neon' || rng() > 0.6)),
         ambientParticles: style === 'fantasy' || style === 'digital_painting' || rng() > 0.5,
         halftoneDots: style === 'comic',
       },
