@@ -211,18 +211,15 @@ async function renderRealisticFace3D(modelName = 'akenaton.glb', outputName = 'r
 
 async function main() {
   try {
-    // 1. Rostro 3D de Akhenatón (Rostro humano real de la antigüedad)
+    // 1. Casco de Ciencia Ficción PBR Hiperrealista (Khronos Group PBR Standard)
+    await renderRealisticFace3D('DamagedHelmet.glb', 'realistic_3d_damaged_helmet.png');
+
+    // 2. Rostro 3D de Akhenatón (Rostro humano real de la antigüedad)
     await renderRealisticFace3D('akenaton.glb', 'realistic_3d_face_akenaton.png');
 
-    // 2. Rostro 3D de la Reina Hatshepsut
-    await renderRealisticFace3D('hatshepsut.glb', 'realistic_3d_face_hatshepsut.png');
-
-    // 3. Cabeza y rostro colosal Olmeca
-    await renderRealisticFace3D('olmec_head.glb', 'realistic_3d_face_olmec.png');
-
-    console.log('\n🎉 ¡TODOS LOS ROSTROS 3D FUERON RENDERIZADOS CON ÉXITO EN THREE.JS Y LA GPU!');
+    console.log('\n🎉 ¡TODOS LOS MODELOS 3D FUERON RENDERIZADOS CON ÉXITO EN THREE.JS Y LA GPU!');
   } catch (err) {
-    console.error('❌ Error renderizando rostros 3D:', err);
+    console.error('❌ Error renderizando modelos 3D:', err);
     process.exit(1);
   }
 }
