@@ -73,7 +73,7 @@ export class MemoryRepository {
     return this.prisma.memory.findMany({
       where: {
         OR: terms.map((term) => ({
-          content: { contains: term },
+          content: { contains: term, mode: 'insensitive' as const },
         })),
       },
       orderBy: [{ importance: 'desc' }, { lastAccessed: 'desc' }],

@@ -32,6 +32,7 @@ import { VisionService } from './tools/vision/vision.service';
 import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
+import { GeneralIntelligenceTrialsService } from './library/general-intelligence-trials.service';
 import { AuditService } from './security/audit.service';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { VoiceService } from './tools/voice/voice.service';
@@ -61,6 +62,7 @@ export class JarvisController {
     private readonly synthesisService: DocumentSynthesisService,
     private readonly voiceService: VoiceService,
     private readonly audiobookIngestService: AudiobookIngestService,
+    private readonly trialsService: GeneralIntelligenceTrialsService,
   ) {}
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
@@ -520,6 +522,51 @@ export class JarvisController {
     );
     const formatted = this.knowledgeTestService.formatProbeResult(result);
     return { success: true, ...result, formatted };
+  }
+
+  // ── JarBees General Intelligence Trials (Edición 1.0) ──────────────────────
+
+  @Public()
+  @Get('trials/spec')
+  @ApiOperation({
+    summary: 'Especificación completa del banco de pruebas (12 categorías, 36 preguntas, rúbricas)',
+  })
+  getTrialsSpec() {
+    const spec = this.trialsService.getTrialsSpec();
+    return { success: true, spec };
+  }
+
+  @Public()
+  @Get('trials/history')
+  @ApiOperation({
+    summary: 'Historial de ejecuciones y puntuaciones del banco de pruebas guardadas en disco',
+  })
+  getTrialsHistory() {
+    const history = this.trialsService.getTrialsHistory();
+    return { success: true, count: history.length, history };
+  }
+
+  @Public()
+  @Post('trials/run')
+  @ApiOperation({
+    summary: 'Ejecutar banco de pruebas de inteligencia general y calibración',
+    description:
+      'Ejecuta la batería de pruebas (total o filtrada por categoría/nivel) con scoring en 5 dimensiones ' +
+      'y persistencia incremental obligatoria en disco (.json y .txt). Body: { category?: string|number, level?: number, limit?: number, withFollowUp?: boolean, model?: string }',
+  })
+  async runTrials(
+    @Body()
+    body: {
+      category?: string | number;
+      level?: number;
+      limit?: number;
+      withFollowUp?: boolean;
+      model?: string;
+    },
+  ) {
+    const summary = await this.trialsService.runTrials(body || {});
+    const formatted = this.trialsService.formatSummaryForChat(summary);
+    return { success: true, summary, formatted };
   }
 
   // ── Biblioteca — Synthesis Pipeline (Map-Reduce) ───────────────────────────

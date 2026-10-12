@@ -12,6 +12,7 @@ import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { AudiobookIngestService } from '../library/audiobook-ingest.service';
+import { GeneralIntelligenceTrialsService } from '../library/general-intelligence-trials.service';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -29,10 +30,14 @@ export class JarvisCommandService {
     private readonly knowledgeTestService: KnowledgeTestService,
     private readonly jarvisKnowledge: JarvisKnowledgeService,
     private readonly corpusSelector: CorpusSelectorService,
-    private readonly musicCatalog: MusicCatalogService,
-    private readonly gamesCatalog: GamesCatalogService,
+    @Optional()
+    private readonly musicCatalog?: MusicCatalogService,
+    @Optional()
+    private readonly gamesCatalog?: GamesCatalogService,
     @Optional()
     private readonly audiobookIngest?: AudiobookIngestService,
+    @Optional()
+    private readonly trialsService?: GeneralIntelligenceTrialsService,
   ) {}
 
   /**
@@ -559,6 +564,81 @@ export class JarvisCommandService {
         success: true,
       });
       return { handled: true, response: probeMsg };
+    }
+
+    // 10.5. JARBEES GENERAL INTELLIGENCE TRIALS (Edición 1.0)
+    const trialsMatch = trimmedMessage.match(
+      /^(trials|test de ajuste|test de inteligencia( general)?|calibraci[oó]n general|git trials)(\s+(.+))?$/i,
+    );
+    if (trialsMatch && this.trialsService) {
+      const subCommand = (trialsMatch[4] || '').trim().toLowerCase();
+      let trialsResponse = '';
+
+      if (subCommand === 'spec' || subCommand === 'especificacion' || subCommand === 'matriz') {
+        const spec = this.trialsService.getTrialsSpec();
+        trialsResponse =
+          `📋 **JarBees General Intelligence Trials · Matriz 1.0**\n` +
+          `• Categorías: **${spec.meta.totalCategories}**\n` +
+          `• Preguntas iniciales: **${spec.meta.totalQuestions}** (3 por categoría)\n` +
+          `• Dimensiones (0-4 pts): Exactitud, Calibración, Relevancia, Razonamiento, Memoria/Contexto\n` +
+          `• Puntaje máximo total: **${spec.meta.maxTotalScore} pts**\n\n` +
+          `Categorías disponibles:\n` +
+          spec.categories.map((c: any) => `  ${c.id}. **${c.name}:** ${c.description}`).join('\n');
+      } else if (subCommand === 'history' || subCommand === 'historial' || subCommand === 'status') {
+        const history = this.trialsService.getTrialsHistory();
+        if (history.length === 0) {
+          trialsResponse = 'ℹ️ Aún no hay ejecuciones del banco de pruebas registradas en disco.';
+        } else {
+          trialsResponse =
+            `📊 **Historial de Ejecuciones de Trials en Disco:**\n\n` +
+            history
+              .slice(0, 5)
+              .map(
+                (h, idx) =>
+                  `**${idx + 1}. [${h.date}]** Puntaje: **${h.overallScore}/${h.maxScore}** (${h.percent}%) — \`${h.fileName}\``,
+              )
+              .join('\n');
+        }
+      } else {
+        // Ejecutar batería rápida o categoría seleccionada
+        const numTests = parseInt(subCommand, 10);
+        const isNum = !isNaN(numTests);
+        const runOptions: any = {};
+        if (isNum) {
+          runOptions.limit = Math.min(Math.max(numTests, 1), 5);
+        } else if (subCommand && subCommand !== 'run' && subCommand !== 'ejecutar') {
+          runOptions.category = subCommand;
+          runOptions.limit = 3;
+        } else {
+          runOptions.limit = 3; // Muestra rápida de 3 preguntas por defecto en chat
+        }
+
+        const runResult = await this.trialsService.runTrials(runOptions);
+        trialsResponse = this.trialsService.formatSummaryForChat(runResult);
+      }
+
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: trialsResponse,
+        metadata: { source: 'general_intelligence_trials' },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: trialsResponse,
+        toolsUsed: ['general_intelligence_trials'],
+        modelUsed: 'qwen2.5:7b',
+        provider: 'ollama',
+        durationMs: Date.now() - startTime,
+        success: true,
+      });
+      return { handled: true, response: trialsResponse };
     }
 
     // 11. DEDUPLICAR DOCUMENTOS

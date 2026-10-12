@@ -6,6 +6,46 @@
   },
   "documentos": [
     {
+      "id": "archeoscope-001",
+      "titulo": "ArcheoScope: The Forgotten Relics & Observatorio Astronómico",
+      "archivo": "archeoscope_architecture.md",
+      "tipo": "proyecto",
+      "formato": "markdown",
+      "autor": "Ignacio Fernández / ifernandez89",
+      "idioma": "es",
+      "categorias": [
+        "astronomía",
+        "arqueología",
+        "proyectos",
+        "software"
+      ],
+      "conceptosClave": [
+        "ArcheoScope",
+        "astronomy-engine",
+        "VSOP87",
+        "Open-Meteo",
+        "Harmonia Mundi",
+        "Kepler",
+        "Three.js",
+        "Next.js",
+        "calendario maya",
+        "Tzolk'in",
+        "observatorio astronómico"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Proyecto insignia de Ignacio Fernández (ifernandez89) que combina exploración 3D arqueológica en primera persona (Three.js/Next.js) con audio Harmonia Mundi y observatorio astronómico móvil. Fuente de los módulos \"HOY\", \"ASTROLOGÍA\" y \"CLIMA\" incorporados a JarBees.",
+      "tags": [
+        "ArcheoScope",
+        "astronomía",
+        "arqueología",
+        "3d",
+        "proyectos",
+        "ifernandez89"
+      ],
+      "dbId": 253
+    },
+    {
       "id": "munay-ki-001",
       "titulo": "Los Nueve Ritos del Munay-Ki",
       "archivo": "munay_ki_completo.md",

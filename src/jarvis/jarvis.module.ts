@@ -45,6 +45,7 @@ import { CategorySummaryService } from './library/category-summary.service';
 import { DocumentSummaryService } from './library/document-summary.service';
 import { DocumentCompareService } from './library/document-compare.service';
 import { KnowledgeTestService } from './library/knowledge-test.service';
+import { GeneralIntelligenceTrialsService } from './library/general-intelligence-trials.service';
 import { PgvectorService } from './repositories/pgvector.service';
 import { GoogleGmailService } from './tools/google/google-gmail.service';
 import { GoogleDriveService } from './tools/google/google-drive.service';
@@ -121,6 +122,7 @@ import { ClaimExtractorService } from './cognitive/claim-extractor.service';
     DocumentSummaryService,
     DocumentCompareService,
     KnowledgeTestService,
+    GeneralIntelligenceTrialsService,
     PgvectorService,
     JarvisKnowledgeService,
     CorpusSelectorService,
@@ -172,6 +174,7 @@ import { ClaimExtractorService } from './cognitive/claim-extractor.service';
     DialecticReasoningService,
     CognitiveTraceService,
     ClaimExtractorService,
+    GeneralIntelligenceTrialsService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,
