@@ -135,6 +135,124 @@ export class AssetCatalogService {
           status: 'ready_for_threejs_stage',
         },
       },
+      // Modelos 3D GLB Activos en disco
+      {
+        id: 'model-glb-damaged-helmet',
+        name: 'Battle-Damaged Sci-Fi Mecha Helmet',
+        category: 'model3d_slot',
+        tags: ['glb', 'khronos', 'pbr', 'helmet', 'sci-fi'],
+        data: {
+          format: 'glb',
+          filename: 'DamagedHelmet.glb',
+          source: 'Khronos glTF Samples',
+          license: 'CC0 / Apache 2.0',
+          sizeKb: 3685,
+        },
+      },
+      {
+        id: 'model-glb-antique-camera',
+        name: 'Antique Vintage Brass Camera',
+        category: 'model3d_slot',
+        tags: ['glb', 'khronos', 'pbr', 'camera', 'vintage'],
+        data: {
+          format: 'glb',
+          filename: 'AntiqueCamera.glb',
+          source: 'Khronos glTF Samples',
+          license: 'CC0 / Apache 2.0',
+          sizeKb: 19726,
+        },
+      },
+      {
+        id: 'model-glb-akhenaten',
+        name: 'Akhenaten Royal Sun Pharaoh Bust',
+        category: 'model3d_slot',
+        tags: ['glb', 'archeoscope', 'egypt', 'pharaoh', 'human_face'],
+        data: {
+          format: 'glb',
+          filename: 'akenaton.glb',
+          source: 'ArcheoScope 3D Relics',
+          compression: 'draco',
+          sizeKb: 778,
+        },
+      },
+      {
+        id: 'model-glb-olmec-colossal',
+        name: 'Olmec Colossal Stone Face',
+        category: 'model3d_slot',
+        tags: ['glb', 'archeoscope', 'mesoamerica', 'olmec', 'stone_face'],
+        data: {
+          format: 'glb',
+          filename: 'olmec_head.glb',
+          source: 'ArcheoScope 3D Relics',
+          compression: 'draco',
+          sizeKb: 4854,
+        },
+      },
+      // Mapas de Entorno HDRI 360° (Poly Haven CC0)
+      {
+        id: 'hdri-sunset-fairway',
+        name: 'Sunset Fairway Warm Twilight 360° HDRI',
+        category: 'shader_material',
+        tags: ['hdri', 'lighting', 'sunset', 'polyhaven', 'cc0'],
+        data: {
+          format: 'hdr',
+          filename: 'sunset_fairway_1k.hdr',
+          resolution: '1024x512',
+          source: 'Poly Haven',
+          license: 'CC0 Public Domain',
+        },
+      },
+      {
+        id: 'hdri-quarry-day',
+        name: 'Quarry Natural Daylight 360° HDRI',
+        category: 'shader_material',
+        tags: ['hdri', 'lighting', 'daylight', 'rocky', 'polyhaven', 'cc0'],
+        data: {
+          format: 'hdr',
+          filename: 'quarry_01_1k.hdr',
+          resolution: '1024x512',
+          source: 'Poly Haven',
+          license: 'CC0 Public Domain',
+        },
+      },
+      {
+        id: 'hdri-studio-portrait',
+        name: 'Studio Small Photo Portrait 360° HDRI',
+        category: 'shader_material',
+        tags: ['hdri', 'lighting', 'studio', 'portrait', 'polyhaven', 'cc0'],
+        data: {
+          format: 'hdr',
+          filename: 'studio_small_08_1k.hdr',
+          resolution: '1024x512',
+          source: 'Poly Haven',
+          license: 'CC0 Public Domain',
+        },
+      },
+      // Texturas PBR de Superficie (Poly Haven CC0)
+      {
+        id: 'pbr-rock-boulder-cracked',
+        name: 'Cracked Volcanic Basalt Rock PBR Set',
+        category: 'shader_material',
+        tags: ['texture', 'pbr', 'rock', 'basalt', 'polyhaven', 'cc0'],
+        data: {
+          maps: ['diffuse', 'normal_gl', 'roughness'],
+          resolution: '1024x1024',
+          source: 'Poly Haven',
+          license: 'CC0 Public Domain',
+        },
+      },
+      {
+        id: 'pbr-aerial-beach-sand',
+        name: 'Coastal Beach Wet Sand PBR Set',
+        category: 'shader_material',
+        tags: ['texture', 'pbr', 'sand', 'beach', 'coastal', 'polyhaven', 'cc0'],
+        data: {
+          maps: ['diffuse', 'normal_gl'],
+          resolution: '1024x1024',
+          source: 'Poly Haven',
+          license: 'CC0 Public Domain',
+        },
+      },
     ];
 
     for (const item of assets) {

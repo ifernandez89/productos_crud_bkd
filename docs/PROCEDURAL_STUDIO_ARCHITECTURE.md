@@ -106,5 +106,6 @@ Los resultados se guardan de forma persistente en `storage/benchmarks/baselines/
 - [x] **3. Crear el benchmark de regresión:** Batería `ocean-001` a `ocean-005` con semillas constantes y líneas base en disco.
 - [x] **4. Validar WebGL en Playwright con la GPU:** Confirmada la detección de la NVIDIA GeForce RTX 5070 bajo ANGLE Direct3D11 con WebGL 2.0.
 - [x] **5. Crear el catálogo de recursos:** `AssetCatalogService` indexando paletas, materiales Fresnel y encuadres en `storage/assets/catalog.json`.
-- [ ] **6. Implementar la escena 3D mínima:** Cargar modelo GLB (cetáceo o reliquia de ArcheoScope) con materiales PBR y cámara en Three.js headless.
-- [ ] **7. Integrar el compositor híbrido:** Unificar el buffer WebGL 3D con tipografía y capas 2D vectoriales a alta resolución.
+- [x] **6. Implementar la escena 3D mínima:** Cargar modelo GLB (casco PBR de Khronos y reliquias de ArcheoScope) con materiales PBR, Three.js headless y aceleración por GPU RTX 5070 completada en [`ThreePortraitEngine`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/engines/three-portrait.engine.ts).
+- [x] **7. Integrar recursos PBR y HDRIs:** Catálogo de 17 recursos de dominio público indexados por `AssetCatalogService`, descargador automatizado [`scripts/download_pbr_assets.js`](file:///c:/Projects/productos_crud_bkd/scripts/download_pbr_assets.js) y catálogo detallado en [`docs/PBR_ASSET_CATALOG.md`](file:///c:/Projects/productos_crud_bkd/docs/PBR_ASSET_CATALOG.md).
+
