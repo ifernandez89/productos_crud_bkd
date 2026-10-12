@@ -80,6 +80,7 @@ import { GenesisLandscapePixelEngine } from './tools/poster/engines/genesis-land
 import { DreamcastOceanEngine } from './tools/poster/engines/dreamcast-ocean.engine';
 import { PngExporter } from './tools/poster/rendering/png-exporter';
 import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
+import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -169,6 +170,7 @@ import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.servi
     DreamcastOceanEngine,
     PngExporter,
     PosterQualityAssuranceService,
+    AssetCatalogService,
     PosterService,
   ],
   exports: [
@@ -192,6 +194,7 @@ import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.servi
     ClaimExtractorService,
     GeneralIntelligenceTrialsService,
     PosterService,
+    AssetCatalogService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

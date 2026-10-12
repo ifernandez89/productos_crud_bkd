@@ -55,12 +55,77 @@ export interface PosterDesignSpec {
   };
 }
 
+export type QualityProfile = 'draft' | 'standard' | 'final';
+
+export interface CameraOrFramingSpec {
+  fieldOfView?: number;
+  angle?: 'low' | 'eye_level' | 'aerial';
+  framing: 'centered' | 'offset_left' | 'offset_right' | 'cinematic';
+  horizonY: number; // Rango 0.0 - 1.0 (ej: 0.58)
+}
+
+export interface AssetReference {
+  id: string;
+  role: 'palette' | 'font' | 'texture' | 'model3d' | 'reference_image';
+  type: string;
+  uri?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface PosterProject {
+  schemaVersion: number;
+  engine: string;
+  seed: number;
+  output: {
+    width: number;
+    height: number;
+    format: 'png' | 'svg';
+    profile: QualityProfile;
+  };
+  cameraOrFraming: CameraOrFramingSpec;
+  palette: PaletteSpec;
+  subject: SubjectSpec;
+  scenery: ScenerySpec;
+  packaging?: PackagingSpec;
+  assets: AssetReference[];
+  parameters: Record<string, unknown>;
+}
+
 export interface TechnicalChecks {
   validPng: boolean;
   fileSizeKb: number;
   widthMatch: boolean;
   heightMatch: boolean;
   errors: string[];
+}
+
+export interface DesignQualityBlockReport {
+  wcagContrastRatio: number;
+  contrastPassed: boolean;
+  safeMarginRatio: number;
+  safeMarginPassed: boolean;
+  visualHierarchyPassed: boolean;
+  typographyWarnings: string[];
+}
+
+export interface ContentSilhouetteBlockReport {
+  vectorComplexityScore: number;
+  pathCount: number;
+  gradientCount: number;
+  subjectElementsDetected: string[];
+  sceneryDepthPassed: boolean;
+  warnings: string[];
+}
+
+export interface PerformanceBlockReport {
+  artDirectionMs: number;
+  svgGenMs: number;
+  renderMs: number;
+  qaMs: number;
+  totalMs: number;
+  heapUsedMb: number;
+  gpuRenderer?: string;
+  webglAccelerated?: boolean;
 }
 
 export interface CompositionChecks {
@@ -82,9 +147,15 @@ export interface ArtisticReview {
 export interface PosterQualityReport {
   passed: boolean;
   score: number; // 0 - 100
+  // Bloques desacoplados
   technicalChecks: TechnicalChecks;
+  design?: DesignQualityBlockReport;
+  content?: ContentSilhouetteBlockReport;
+  performance?: PerformanceBlockReport;
   compositionChecks: CompositionChecks;
   artisticReview?: ArtisticReview;
+  artisticFeedback?: string[];
+  profile?: QualityProfile;
   engineVersion: string;
   seed: number;
   renderedAt: string;
@@ -110,4 +181,5 @@ export interface GeneratePosterDto {
   width?: number;
   height?: number;
   seed?: number;
+  profile?: QualityProfile;
 }

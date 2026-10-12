@@ -7,6 +7,7 @@ import { GenesisLandscapePixelEngine } from './engines/genesis-landscape-pixel.e
 import { DreamcastOceanEngine } from './engines/dreamcast-ocean.engine';
 import { PngExporter } from './rendering/png-exporter';
 import { PosterQualityAssuranceService } from './qa/poster-qa.service';
+import { AssetCatalogService } from './assets/asset-catalog.service';
 import {
   GeneratePosterDto,
   PosterGenerationResult,
@@ -24,6 +25,7 @@ export class PosterService {
     private readonly dreamcastOceanEngine: DreamcastOceanEngine,
     private readonly pngExporter: PngExporter,
     private readonly qaService: PosterQualityAssuranceService,
+    private readonly assetCatalog: AssetCatalogService,
   ) {}
 
   /**
@@ -34,17 +36,21 @@ export class PosterService {
     this.logger.log(`[poster-service] Iniciando generación: "${dto.title || 'Untitled'}"`);
 
     // 1. Dirección de arte y especificación estructurada
+    const t0 = Date.now();
     const spec: PosterDesignSpec = this.artDirection.createSpecFromRequest(dto);
+    const artDirectionMs = Date.now() - t0;
 
     // 2. Selección del motor por época y temática
+    const t1 = Date.now();
     const svgContent =
       spec.era === 'dreamcast-ocean'
         ? this.dreamcastOceanEngine.generateSvg(spec)
         : spec.era === 'genesis-landscape'
         ? this.genesisLandscapeEngine.generateSvg(spec)
         : this.genesisEngine.generateSvg(spec);
+    const svgGenMs = Date.now() - t1;
 
-    // 3. Renderizado a disco (SVG + PNG)
+    // 3. Renderizado a disco (SVG + PNG con aceleración GPU)
     const safeTitle = spec.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const filename = `${safeTitle}_${spec.era}_seed${spec.seed}`;
     const renderOutput = await this.pngExporter.renderToDisk(
@@ -54,24 +60,77 @@ export class PosterService {
       spec.dimensions.height,
     );
 
-    // 4. Control de Calidad Visual (QA)
+    const gpuDiag = await this.pngExporter.getGpuDiagnostics();
+
+    // 4. Control de Calidad Visual Desacoplado (QA)
     const qaReport = this.qaService.evaluate(
       spec,
       svgContent,
       renderOutput.buffer,
       renderOutput.pngPath,
+      {
+        durationMs: renderOutput.durationMs,
+        artDirectionMs,
+        svgGenMs,
+      },
+      gpuDiag,
+      dto.profile || 'standard',
     );
 
     const durationMs = Date.now() - startTime;
 
-    // Guardar el informe de calidad JSON junto a las imágenes
-    const reportPath = path.join(
-      process.cwd(),
-      'storage',
-      'posters',
-      `${filename}_qa_report.json`,
+    // 5. Guardar Manifiesto de Proyecto Versionado y QA Report en disco
+    const projectManifest = {
+      schemaVersion: 1,
+      engine: spec.era,
+      seed: spec.seed,
+      output: {
+        width: spec.dimensions.width,
+        height: spec.dimensions.height,
+        format: 'png',
+        profile: dto.profile || 'standard',
+      },
+      cameraOrFraming: {
+        framing: spec.era === 'dreamcast-ocean' ? 'cinematic' : 'centered',
+        horizonY: spec.era === 'dreamcast-ocean' ? 0.58 : 0.65,
+        angle: 'low',
+      },
+      palette: spec.palette,
+      subject: spec.subject,
+      scenery: spec.scenery,
+      packaging: spec.packaging,
+      assets: [
+        {
+          id: `palette-${spec.era}`,
+          role: 'palette',
+          type: 'color-scheme',
+          metadata: { primary: spec.palette.primary, accent: spec.palette.accent },
+        },
+      ],
+      parameters: {
+        genre: spec.genre,
+        effects: spec.effects,
+      },
+      telemetry: {
+        artDirectionMs,
+        svgGenMs,
+        renderDurationMs: renderOutput.durationMs,
+        totalDurationMs: durationMs,
+        gpu: gpuDiag,
+      },
+    };
+
+    const storageDir = path.join(process.cwd(), 'storage', 'posters');
+    fs.writeFileSync(
+      path.join(storageDir, `${filename}_project.json`),
+      JSON.stringify(projectManifest, null, 2),
+      'utf-8',
     );
-    fs.writeFileSync(reportPath, JSON.stringify(qaReport, null, 2), 'utf-8');
+    fs.writeFileSync(
+      path.join(storageDir, `${filename}_qa_report.json`),
+      JSON.stringify(qaReport, null, 2),
+      'utf-8',
+    );
 
     return {
       id: spec.id,
@@ -148,5 +207,19 @@ export class PosterService {
         };
       })
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  /**
+   * Obtiene la biblioteca de recursos reutilizables (paletas, materiales, encuadres)
+   */
+  getAssetCatalog() {
+    return this.assetCatalog.getAll();
+  }
+
+  /**
+   * Obtiene el diagnóstico empírico de aceleración GPU y WebGL
+   */
+  async getGpuDiagnostics() {
+    return this.pngExporter.getGpuDiagnostics();
   }
 }

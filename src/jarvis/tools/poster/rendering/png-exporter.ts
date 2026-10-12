@@ -8,11 +8,59 @@ export interface RenderOutput {
   pngPath: string;
   buffer: Buffer;
   durationMs: number;
+  gpuDiagnostics?: {
+    vendor: string;
+    renderer: string;
+    webgl2: boolean;
+  };
 }
 
 @Injectable()
 export class PngExporter {
   private readonly logger = new Logger(PngExporter.name);
+  private cachedGpuDiag: { vendor: string; renderer: string; webgl2: boolean } | null = null;
+
+  /**
+   * Obtiene diagnóstico empírico del renderer WebGL / GPU en Playwright
+   */
+  async getGpuDiagnostics(): Promise<{ vendor: string; renderer: string; webgl2: boolean }> {
+    if (this.cachedGpuDiag) return this.cachedGpuDiag;
+
+    let browser;
+    try {
+      browser = await chromium.launch({
+        channel: 'msedge',
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--enable-gpu',
+          '--use-gl=angle',
+          '--use-angle=d3d11',
+        ],
+      });
+
+      const page = await browser.newPage();
+      const diag = await page.evaluate(() => {
+        const canvas = document.createElement('canvas');
+        const gl = (canvas.getContext('webgl2') || canvas.getContext('webgl')) as WebGLRenderingContext | null;
+        if (!gl) return { vendor: 'Unknown', renderer: 'Software/None', webgl2: false };
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        return {
+          vendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+          renderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+          webgl2: !!canvas.getContext('webgl2'),
+        };
+      });
+
+      this.cachedGpuDiag = diag;
+      return diag;
+    } catch (e: any) {
+      return { vendor: 'Generic', renderer: 'Skia/CPU fallback', webgl2: false };
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
+  }
 
   /**
    * Renderiza el contenido SVG en un navegador Chromium/Edge headless y exporta a PNG
@@ -35,13 +83,19 @@ export class PngExporter {
     // 1. Guardar SVG maestro en disco
     fs.writeFileSync(svgPath, svgContent, 'utf-8');
 
-    // 2. Renderizar a PNG usando Edge/Chromium de Playwright
+    // 2. Renderizar a PNG usando Edge/Chromium de Playwright con aceleración por GPU
     let browser;
     try {
       browser = await chromium.launch({
         channel: 'msedge',
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--enable-gpu',
+          '--use-gl=angle',
+          '--use-angle=d3d11',
+        ],
       });
 
       const page = await browser.newPage();
@@ -84,6 +138,7 @@ export class PngExporter {
         pngPath,
         buffer,
         durationMs,
+        gpuDiagnostics: this.cachedGpuDiag || undefined,
       };
     } catch (err: any) {
       this.logger.error(`[poster] Error renderizando PNG: ${err.message}`);

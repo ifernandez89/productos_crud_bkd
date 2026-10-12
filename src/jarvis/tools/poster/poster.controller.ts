@@ -44,6 +44,27 @@ export class PosterController {
   }
 
   @Public()
+  @Get('assets')
+  @ApiOperation({ summary: 'Consultar catálogo de recursos reutilizables (paletas, materiales, encuadres)' })
+  getAssets() {
+    return {
+      success: true,
+      assets: this.posterService.getAssetCatalog(),
+    };
+  }
+
+  @Public()
+  @Get('diagnostics/gpu')
+  @ApiOperation({ summary: 'Comprobar aceleración empírica de GPU y WebGL en el motor headless' })
+  async getGpuDiagnostics() {
+    const diag = await this.posterService.getGpuDiagnostics();
+    return {
+      success: true,
+      gpu: diag,
+    };
+  }
+
+  @Public()
   @Get('history')
   @ApiOperation({ summary: 'Listar imágenes y carátulas generadas en disco' })
   getHistory() {

@@ -60,10 +60,10 @@ export class ArtDirectionService {
         primary: '#162232',     // Piel cetácea dorsal
         secondary: '#F0F6FC',   // Vientre y manchas blancas
         accent: '#00E5FF',      // Resplandor sonar / cian Dreamcast
-        background: '#7B93CC',  // Cielo crepúsculo
-        text: '#FFD700',        // Dorado serifa clásico
+        background: '#0C1E34',  // Fondo de la zona tipográfica (profundidades marinas)
+        text: '#FFF000',        // Dorado luminoso con serifa
         glow: '#66E5FF',        // Espuma y refracción
-        grid: '#183B64',        // Profundidades marinas
+        grid: '#183B64',        // Capas abisales
       };
     } else if (isLandscape) {
       palette = {
