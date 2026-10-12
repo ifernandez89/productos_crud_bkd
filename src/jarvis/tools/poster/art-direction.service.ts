@@ -12,30 +12,18 @@ export class ArtDirectionService {
     const promptLower = (req.prompt || req.title || '').toLowerCase();
     const isOcean =
       req.era === 'dreamcast-ocean' ||
-      promptLower.includes('orca') ||
-      promptLower.includes('ecco') ||
-      promptLower.includes('ocean') ||
-      promptLower.includes('mar') ||
-      promptLower.includes('dolphin') ||
-      promptLower.includes('ballena');
+      (!req.era &&
+        (/\b(mar|oceano|ocean|orca|ecco|dolphin|ballena|cetaceo)\b/i.test(promptLower) ||
+          promptLower.includes('marino')));
 
     const isLandscape =
-      !isOcean &&
-      (req.era === 'genesis-landscape' ||
-        promptLower.includes('isla') ||
-        promptLower.includes('flotant') ||
-        promptLower.includes('floating') ||
-        promptLower.includes('landscape') ||
-        promptLower.includes('twinkle') ||
-        promptLower.includes('aetheria') ||
-        promptLower.includes('cascada') ||
-        promptLower.includes('montaña'));
+      req.era === 'genesis-landscape' ||
+      (!req.era &&
+        !isOcean &&
+        (/\b(isla|flotante|floating|landscape|twinkle|aetheria|cascada|montaña|temple)\b/i.test(promptLower) ||
+          promptLower.includes('flotant')));
 
-    const era: EraType = isOcean
-      ? 'dreamcast-ocean'
-      : isLandscape
-      ? 'genesis-landscape'
-      : (req.era || 'genesis16');
+    const era: EraType = req.era || (isOcean ? 'dreamcast-ocean' : isLandscape ? 'genesis-landscape' : 'genesis16');
 
     const title = req.title || (isOcean ? 'ORCA' : isLandscape ? 'AETHERIA' : 'IRON MAN');
     const subtitle =
