@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { ArtDirectionService } from './art-direction.service';
 import { GenesisPixelArtEngine } from './engines/genesis-pixel-art.engine';
+import { GenesisLandscapePixelEngine } from './engines/genesis-landscape-pixel.engine';
 import { PngExporter } from './rendering/png-exporter';
 import { PosterQualityAssuranceService } from './qa/poster-qa.service';
 import {
@@ -18,6 +19,7 @@ export class PosterService {
   constructor(
     private readonly artDirection: ArtDirectionService,
     private readonly genesisEngine: GenesisPixelArtEngine,
+    private readonly genesisLandscapeEngine: GenesisLandscapePixelEngine,
     private readonly pngExporter: PngExporter,
     private readonly qaService: PosterQualityAssuranceService,
   ) {}
@@ -32,8 +34,11 @@ export class PosterService {
     // 1. Dirección de arte y especificación estructurada
     const spec: PosterDesignSpec = this.artDirection.createSpecFromRequest(dto);
 
-    // 2. Selección del motor por época (Actualmente: Genesis 16-Bit)
-    const svgContent = this.genesisEngine.generateSvg(spec);
+    // 2. Selección del motor por época y temática
+    const svgContent =
+      spec.era === 'genesis-landscape'
+        ? this.genesisLandscapeEngine.generateSvg(spec)
+        : this.genesisEngine.generateSvg(spec);
 
     // 3. Renderizado a disco (SVG + PNG)
     const safeTitle = spec.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -81,6 +86,13 @@ export class PosterService {
    */
   getPresets() {
     return [
+      {
+        id: 'genesis-twinkle-tale',
+        era: 'genesis-landscape',
+        name: 'Sega Genesis 16-Bit Floating Island (Twinkle Tale Style)',
+        description: 'Pantalla de título de fantasía de 16 bits con isla flotante, acantilados estratificados, cascadas, palacio de cristal y tipografía dorada de 1992.',
+        defaultDimensions: { width: 1280, height: 960 },
+      },
       {
         id: 'genesis-action',
         era: 'genesis16',

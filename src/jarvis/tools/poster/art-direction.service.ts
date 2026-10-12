@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { GeneratePosterDto, PosterDesignSpec } from './poster.types';
+import { GeneratePosterDto, PosterDesignSpec, EraType } from './poster.types';
 
 @Injectable()
 export class ArtDirectionService {
@@ -9,15 +9,24 @@ export class ArtDirectionService {
    * Transforma una solicitud de texto (o especificación) en una dirección de arte estructurada
    */
   createSpecFromRequest(req: GeneratePosterDto): PosterDesignSpec {
-    const title = req.title || 'IRON MAN';
-    const subtitle = req.subtitle || 'GENESIS PROTOCOL';
-    const era = req.era || 'genesis16';
-    const seed = req.seed || Math.floor(Math.random() * 1000000);
-    const width = req.width || 720;
-    const height = req.height || 960;
-
-    // Detectar paleta según temática
     const promptLower = (req.prompt || req.title || '').toLowerCase();
+    const isLandscape =
+      req.era === 'genesis-landscape' ||
+      promptLower.includes('isla') ||
+      promptLower.includes('flotant') ||
+      promptLower.includes('floating') ||
+      promptLower.includes('landscape') ||
+      promptLower.includes('twinkle') ||
+      promptLower.includes('aetheria') ||
+      promptLower.includes('cascada') ||
+      promptLower.includes('montaña');
+
+    const era: EraType = isLandscape ? 'genesis-landscape' : (req.era || 'genesis16');
+    const title = req.title || (isLandscape ? 'AETHERIA' : 'IRON MAN');
+    const subtitle = req.subtitle || (isLandscape ? 'THE CELESTIAL REALM' : 'GENESIS PROTOCOL');
+    const seed = req.seed || Math.floor(Math.random() * 1000000);
+    const width = req.width || (isLandscape ? 1280 : 720);
+    const height = req.height || 960;
 
     let palette = {
       primary: '#D1121E',     // Rojo armadura
@@ -29,7 +38,17 @@ export class ArtDirectionService {
       grid: '#1F2438',        // Retícula de horizonte
     };
 
-    if (promptLower.includes('cyber') || promptLower.includes('neon')) {
+    if (isLandscape) {
+      palette = {
+        primary: '#388820',     // Verde bosque
+        secondary: '#B87830',   // Ocre acantilado
+        accent: '#58A8F0',      // Azul cascada
+        background: '#285890',  // Cielo 16-bit
+        text: '#FFD700',        // Dorado fantástico
+        glow: '#FFFFFF',        // Espuma y nubes
+        grid: '#C89848',        // Sendas de tierra
+      };
+    } else if (promptLower.includes('cyber') || promptLower.includes('neon')) {
       palette = {
         primary: '#FF007F',
         secondary: '#00F0FF',
@@ -56,36 +75,36 @@ export class ArtDirectionService {
       title,
       subtitle,
       era,
-      genre: req.genre || 'Action / Mecha / Sci-Fi',
+      genre: req.genre || (isLandscape ? 'Fantasy RPG / 16-Bit Title Screen' : 'Action / Mecha / Sci-Fi'),
       dimensions: {
         width,
         height,
       },
       palette,
       subject: {
-        archetype: 'armored_hero',
-        pose: 'heroic',
+        archetype: isLandscape ? 'floating_island' : 'armored_hero',
+        pose: isLandscape ? 'panoramic' : 'heroic',
         primaryColor: palette.primary,
         secondaryColor: palette.secondary,
         energyColor: palette.accent,
       },
       scenery: {
-        type: 'space_nebula',
-        starCount: 160,
+        type: isLandscape ? 'cloud_sea' : 'space_nebula',
+        starCount: isLandscape ? 0 : 160,
       },
       packaging: {
-        brand: era === 'genesis16' ? 'SEGA GENESIS' : 'RETRO CONSOLE',
-        badgeText: '16-BIT CARTRIDGE',
+        brand: 'SEGA GENESIS',
+        badgeText: isLandscape ? 'TITLE SCREEN 1992' : '16-BIT CARTRIDGE',
         qualitySeal: 'OFFICIAL SEGA SEAL OF QUALITY',
-        borderGrid: true,
-        barcode: true,
+        borderGrid: !isLandscape,
+        barcode: !isLandscape,
       },
       seed,
       effects: {
-        rimLighting: true,
-        arcReactorGlow: true,
+        rimLighting: !isLandscape,
+        arcReactorGlow: !isLandscape,
         retroScanlines: true,
-        particleCount: 24,
+        particleCount: isLandscape ? 0 : 24,
       },
     };
 

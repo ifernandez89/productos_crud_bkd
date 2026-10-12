@@ -76,6 +76,7 @@ import { PosterController } from './tools/poster/poster.controller';
 import { PosterService } from './tools/poster/poster.service';
 import { ArtDirectionService } from './tools/poster/art-direction.service';
 import { GenesisPixelArtEngine } from './tools/poster/engines/genesis-pixel-art.engine';
+import { GenesisLandscapePixelEngine } from './tools/poster/engines/genesis-landscape-pixel.engine';
 import { PngExporter } from './tools/poster/rendering/png-exporter';
 import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
 
@@ -163,6 +164,7 @@ import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.servi
     // ── Procedural Poster & Box Art Generator ──────────────────────────────
     ArtDirectionService,
     GenesisPixelArtEngine,
+    GenesisLandscapePixelEngine,
     PngExporter,
     PosterQualityAssuranceService,
     PosterService,

@@ -1,25 +1,25 @@
-export type EraType = 'genesis16' | 'ps1' | 'ps2' | 'editorial';
+export type EraType = 'genesis16' | 'genesis-landscape' | 'ps1' | 'ps2' | 'editorial';
 
 export interface PaletteSpec {
-  primary: string;      // Color predominante del sujeto (ej: rojo armadura)
-  secondary: string;    // Color complementario (ej: dorado)
-  accent: string;       // Color de acento de energía (ej: cian/azul reactor)
-  background: string;   // Tono base del fondo (ej: #080710)
+  primary: string;      // Color predominante del sujeto (ej: rojo armadura o verde bosque)
+  secondary: string;    // Color complementario (ej: dorado u ocre acantilado)
+  accent: string;       // Color de acento de energía/agua (ej: cian/azul cascada)
+  background: string;   // Tono base del fondo (ej: #080710 o azul cielo 16-bit)
   text: string;         // Color principal del título
   glow: string;         // Color de halos y destellos
   grid: string;         // Color de retículas o detalles retro
 }
 
 export interface SubjectSpec {
-  archetype: 'armored_hero' | 'cyber_mech' | 'starfighter' | 'dark_warrior';
-  pose: 'heroic' | 'action' | 'dynamic';
+  archetype: 'armored_hero' | 'cyber_mech' | 'starfighter' | 'dark_warrior' | 'floating_island' | 'fantasy_landscape';
+  pose: 'heroic' | 'action' | 'dynamic' | 'panoramic';
   primaryColor: string;
   secondaryColor: string;
   energyColor: string;
 }
 
 export interface ScenerySpec {
-  type: 'space_nebula' | 'cyber_grid' | 'planet_horizon' | 'dark_abyss';
+  type: 'space_nebula' | 'cyber_grid' | 'planet_horizon' | 'dark_abyss' | 'cloud_sea' | 'celestial_sky';
   starCount?: number;
   horizonCurvature?: number;
 }

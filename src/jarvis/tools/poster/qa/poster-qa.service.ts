@@ -90,15 +90,21 @@ export class PosterQualityAssuranceService {
       warnings.push('El documento SVG presenta estructura XML incompleta o etiquetas desbalanceadas.');
     }
 
-    // Verificar presencia del sujeto y del marco
-    const subjectPresent = svgContent.includes('id="armored-hero"') || svgContent.includes('id="helmet"');
+    // Verificar presencia del sujeto y del marco o UI
+    const subjectPresent =
+      spec.era === 'genesis-landscape'
+        ? svgContent.includes('id="floating-island"') || svgContent.includes('id="crystal-palace"')
+        : svgContent.includes('id="armored-hero"') || svgContent.includes('id="helmet"');
     if (!subjectPresent) {
       warnings.push('La capa del sujeto protagónico no fue renderizada en la escena.');
     }
 
-    const packagingPresent = svgContent.includes('id="genesis-packaging"');
+    const packagingPresent =
+      spec.era === 'genesis-landscape'
+        ? svgContent.includes('id="title-screen-ui"') || svgContent.includes('id="push-start"')
+        : svgContent.includes('id="genesis-packaging"');
     if (!packagingPresent) {
-      warnings.push('El marco de packaging de consola no se encuentra presente.');
+      warnings.push('El marco de packaging o interfaz UI de consola no se encuentra presente.');
     }
 
     const compositionChecks: CompositionChecks = {
@@ -112,7 +118,7 @@ export class PosterQualityAssuranceService {
     // 3. Revisión Artística Estimada por Reglas
     const artisticReview: ArtisticReview = {
       composition: subjectPresent && titlePresent ? 5 : 3,
-      eraConsistency: packagingPresent && spec.era === 'genesis16' ? 5 : 4,
+      eraConsistency: packagingPresent && (spec.era === 'genesis16' || spec.era === 'genesis-landscape') ? 5 : 4,
       typography: titlePresent && subtitlePresent ? 5 : 3,
       visualIntegration: 5,
       professionalFinish: technicalErrors.length === 0 ? 5 : 2,
