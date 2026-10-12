@@ -75,6 +75,21 @@ async function main() {
       'TEST 2: Aetheria (Twinkle Tale Style Floating Island 16-Bit)',
     );
 
+    // Prueba 3: Atmósfera Oceánica Dreamcast 128-Bit (Alternativa a Ecco: Orca)
+    await runTest(
+      {
+        title: 'ORCA',
+        subtitle: 'DEFENDER OF THE SEAS',
+        prompt: 'orca emergiendo del oceano con salpicaduras superficie de agua con reflejos atardecer tropical acantilados con palmeras y hud dreamcast',
+        era: 'dreamcast-ocean',
+        genre: '128-Bit Action Adventure / Dreamcast Era',
+        width: 1280,
+        height: 960,
+        seed: 2000,
+      },
+      'TEST 3: Orca Defender of the Seas (Dreamcast 128-Bit Ocean Studio)',
+    );
+
     console.log('\n🎉 ¡TODAS LAS PRUEBAS DE CALIDAD FUERON SUPERADAS CON ÉXITO!');
   } catch (err) {
     console.error('❌ Error en la suite de pruebas:', err.message);

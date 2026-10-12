@@ -1,25 +1,25 @@
-export type EraType = 'genesis16' | 'genesis-landscape' | 'ps1' | 'ps2' | 'editorial';
+export type EraType = 'genesis16' | 'genesis-landscape' | 'dreamcast-ocean' | 'ps1' | 'ps2' | 'editorial';
 
 export interface PaletteSpec {
-  primary: string;      // Color predominante del sujeto (ej: rojo armadura o verde bosque)
+  primary: string;      // Color predominante del sujeto (ej: rojo armadura o blanco/negro orca)
   secondary: string;    // Color complementario (ej: dorado u ocre acantilado)
-  accent: string;       // Color de acento de energía/agua (ej: cian/azul cascada)
-  background: string;   // Tono base del fondo (ej: #080710 o azul cielo 16-bit)
+  accent: string;       // Color de acento de energía/agua (ej: cian/azul cascada/mar)
+  background: string;   // Tono base del fondo (ej: #080710 o cielo atardecer)
   text: string;         // Color principal del título
   glow: string;         // Color de halos y destellos
   grid: string;         // Color de retículas o detalles retro
 }
 
 export interface SubjectSpec {
-  archetype: 'armored_hero' | 'cyber_mech' | 'starfighter' | 'dark_warrior' | 'floating_island' | 'fantasy_landscape';
-  pose: 'heroic' | 'action' | 'dynamic' | 'panoramic';
+  archetype: 'armored_hero' | 'cyber_mech' | 'starfighter' | 'dark_warrior' | 'floating_island' | 'fantasy_landscape' | 'marine_creature' | 'orca';
+  pose: 'heroic' | 'action' | 'dynamic' | 'panoramic' | 'breaching';
   primaryColor: string;
   secondaryColor: string;
   energyColor: string;
 }
 
 export interface ScenerySpec {
-  type: 'space_nebula' | 'cyber_grid' | 'planet_horizon' | 'dark_abyss' | 'cloud_sea' | 'celestial_sky';
+  type: 'space_nebula' | 'cyber_grid' | 'planet_horizon' | 'dark_abyss' | 'cloud_sea' | 'celestial_sky' | 'tropical_ocean' | 'dreamcast_sea';
   starCount?: number;
   horizonCurvature?: number;
 }

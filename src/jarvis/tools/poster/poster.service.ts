@@ -4,6 +4,7 @@ import * as path from 'path';
 import { ArtDirectionService } from './art-direction.service';
 import { GenesisPixelArtEngine } from './engines/genesis-pixel-art.engine';
 import { GenesisLandscapePixelEngine } from './engines/genesis-landscape-pixel.engine';
+import { DreamcastOceanEngine } from './engines/dreamcast-ocean.engine';
 import { PngExporter } from './rendering/png-exporter';
 import { PosterQualityAssuranceService } from './qa/poster-qa.service';
 import {
@@ -20,6 +21,7 @@ export class PosterService {
     private readonly artDirection: ArtDirectionService,
     private readonly genesisEngine: GenesisPixelArtEngine,
     private readonly genesisLandscapeEngine: GenesisLandscapePixelEngine,
+    private readonly dreamcastOceanEngine: DreamcastOceanEngine,
     private readonly pngExporter: PngExporter,
     private readonly qaService: PosterQualityAssuranceService,
   ) {}
@@ -36,7 +38,9 @@ export class PosterService {
 
     // 2. Selección del motor por época y temática
     const svgContent =
-      spec.era === 'genesis-landscape'
+      spec.era === 'dreamcast-ocean'
+        ? this.dreamcastOceanEngine.generateSvg(spec)
+        : spec.era === 'genesis-landscape'
         ? this.genesisLandscapeEngine.generateSvg(spec)
         : this.genesisEngine.generateSvg(spec);
 
@@ -86,6 +90,13 @@ export class PosterService {
    */
   getPresets() {
     return [
+      {
+        id: 'dreamcast-ecco-ocean',
+        era: 'dreamcast-ocean',
+        name: 'Sega Dreamcast 128-Bit Ocean & Cetacean Studio (Ecco/Orca Style)',
+        description: 'Atmósfera oceánica tridimensional de 128 bits con superficie de agua Fresnel, sol crepuscular, acantilados tropicales, orca saltando con salpicaduras y HUD Dreamcast.',
+        defaultDimensions: { width: 1280, height: 960 },
+      },
       {
         id: 'genesis-twinkle-tale',
         era: 'genesis-landscape',

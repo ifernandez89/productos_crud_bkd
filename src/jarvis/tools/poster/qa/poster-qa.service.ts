@@ -92,7 +92,9 @@ export class PosterQualityAssuranceService {
 
     // Verificar presencia del sujeto y del marco o UI
     const subjectPresent =
-      spec.era === 'genesis-landscape'
+      spec.era === 'dreamcast-ocean'
+        ? svgContent.includes('id="marine-hero"') || svgContent.includes('id="orca-body"') || svgContent.includes('orca')
+        : spec.era === 'genesis-landscape'
         ? svgContent.includes('id="floating-island"') || svgContent.includes('id="crystal-palace"')
         : svgContent.includes('id="armored-hero"') || svgContent.includes('id="helmet"');
     if (!subjectPresent) {
@@ -100,7 +102,9 @@ export class PosterQualityAssuranceService {
     }
 
     const packagingPresent =
-      spec.era === 'genesis-landscape'
+      spec.era === 'dreamcast-ocean'
+        ? svgContent.includes('id="dreamcast-hud"') || svgContent.includes('id="dreamcast-branding"')
+        : spec.era === 'genesis-landscape'
         ? svgContent.includes('id="title-screen-ui"') || svgContent.includes('id="push-start"')
         : svgContent.includes('id="genesis-packaging"');
     if (!packagingPresent) {
@@ -118,7 +122,11 @@ export class PosterQualityAssuranceService {
     // 3. Revisión Artística Estimada por Reglas
     const artisticReview: ArtisticReview = {
       composition: subjectPresent && titlePresent ? 5 : 3,
-      eraConsistency: packagingPresent && (spec.era === 'genesis16' || spec.era === 'genesis-landscape') ? 5 : 4,
+      eraConsistency:
+        packagingPresent &&
+        (spec.era === 'genesis16' || spec.era === 'genesis-landscape' || spec.era === 'dreamcast-ocean')
+          ? 5
+          : 4,
       typography: titlePresent && subtitlePresent ? 5 : 3,
       visualIntegration: 5,
       professionalFinish: technicalErrors.length === 0 ? 5 : 2,

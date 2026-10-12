@@ -10,22 +10,39 @@ export class ArtDirectionService {
    */
   createSpecFromRequest(req: GeneratePosterDto): PosterDesignSpec {
     const promptLower = (req.prompt || req.title || '').toLowerCase();
-    const isLandscape =
-      req.era === 'genesis-landscape' ||
-      promptLower.includes('isla') ||
-      promptLower.includes('flotant') ||
-      promptLower.includes('floating') ||
-      promptLower.includes('landscape') ||
-      promptLower.includes('twinkle') ||
-      promptLower.includes('aetheria') ||
-      promptLower.includes('cascada') ||
-      promptLower.includes('montaña');
+    const isOcean =
+      req.era === 'dreamcast-ocean' ||
+      promptLower.includes('orca') ||
+      promptLower.includes('ecco') ||
+      promptLower.includes('ocean') ||
+      promptLower.includes('mar') ||
+      promptLower.includes('dolphin') ||
+      promptLower.includes('ballena');
 
-    const era: EraType = isLandscape ? 'genesis-landscape' : (req.era || 'genesis16');
-    const title = req.title || (isLandscape ? 'AETHERIA' : 'IRON MAN');
-    const subtitle = req.subtitle || (isLandscape ? 'THE CELESTIAL REALM' : 'GENESIS PROTOCOL');
+    const isLandscape =
+      !isOcean &&
+      (req.era === 'genesis-landscape' ||
+        promptLower.includes('isla') ||
+        promptLower.includes('flotant') ||
+        promptLower.includes('floating') ||
+        promptLower.includes('landscape') ||
+        promptLower.includes('twinkle') ||
+        promptLower.includes('aetheria') ||
+        promptLower.includes('cascada') ||
+        promptLower.includes('montaña'));
+
+    const era: EraType = isOcean
+      ? 'dreamcast-ocean'
+      : isLandscape
+      ? 'genesis-landscape'
+      : (req.era || 'genesis16');
+
+    const title = req.title || (isOcean ? 'ORCA' : isLandscape ? 'AETHERIA' : 'IRON MAN');
+    const subtitle =
+      req.subtitle ||
+      (isOcean ? 'DEFENDER OF THE SEAS' : isLandscape ? 'THE CELESTIAL REALM' : 'GENESIS PROTOCOL');
     const seed = req.seed || Math.floor(Math.random() * 1000000);
-    const width = req.width || (isLandscape ? 1280 : 720);
+    const width = req.width || (isOcean || isLandscape ? 1280 : 720);
     const height = req.height || 960;
 
     let palette = {
@@ -38,7 +55,17 @@ export class ArtDirectionService {
       grid: '#1F2438',        // Retícula de horizonte
     };
 
-    if (isLandscape) {
+    if (isOcean) {
+      palette = {
+        primary: '#162232',     // Piel cetácea dorsal
+        secondary: '#F0F6FC',   // Vientre y manchas blancas
+        accent: '#00E5FF',      // Resplandor sonar / cian Dreamcast
+        background: '#7B93CC',  // Cielo crepúsculo
+        text: '#FFD700',        // Dorado serifa clásico
+        glow: '#66E5FF',        // Espuma y refracción
+        grid: '#183B64',        // Profundidades marinas
+      };
+    } else if (isLandscape) {
       palette = {
         primary: '#388820',     // Verde bosque
         secondary: '#B87830',   // Ocre acantilado
@@ -75,36 +102,42 @@ export class ArtDirectionService {
       title,
       subtitle,
       era,
-      genre: req.genre || (isLandscape ? 'Fantasy RPG / 16-Bit Title Screen' : 'Action / Mecha / Sci-Fi'),
+      genre:
+        req.genre ||
+        (isOcean
+          ? '128-Bit Action Adventure / Dreamcast Era'
+          : isLandscape
+          ? 'Fantasy RPG / 16-Bit Title Screen'
+          : 'Action / Mecha / Sci-Fi'),
       dimensions: {
         width,
         height,
       },
       palette,
       subject: {
-        archetype: isLandscape ? 'floating_island' : 'armored_hero',
-        pose: isLandscape ? 'panoramic' : 'heroic',
+        archetype: isOcean ? 'orca' : isLandscape ? 'floating_island' : 'armored_hero',
+        pose: isOcean ? 'breaching' : isLandscape ? 'panoramic' : 'heroic',
         primaryColor: palette.primary,
         secondaryColor: palette.secondary,
         energyColor: palette.accent,
       },
       scenery: {
-        type: isLandscape ? 'cloud_sea' : 'space_nebula',
-        starCount: isLandscape ? 0 : 160,
+        type: isOcean ? 'tropical_ocean' : isLandscape ? 'cloud_sea' : 'space_nebula',
+        starCount: isOcean ? 12 : isLandscape ? 0 : 160,
       },
       packaging: {
-        brand: 'SEGA GENESIS',
-        badgeText: isLandscape ? 'TITLE SCREEN 1992' : '16-BIT CARTRIDGE',
-        qualitySeal: 'OFFICIAL SEGA SEAL OF QUALITY',
-        borderGrid: !isLandscape,
-        barcode: !isLandscape,
+        brand: isOcean ? 'SEGA DREAMCAST' : 'SEGA GENESIS',
+        badgeText: isOcean ? '128-BIT GD-ROM' : isLandscape ? 'TITLE SCREEN 1992' : '16-BIT CARTRIDGE',
+        qualitySeal: isOcean ? 'OFFICIAL SEGA DREAMCAST QUALITY' : 'OFFICIAL SEGA SEAL OF QUALITY',
+        borderGrid: !isOcean && !isLandscape,
+        barcode: !isOcean && !isLandscape,
       },
       seed,
       effects: {
-        rimLighting: !isLandscape,
-        arcReactorGlow: !isLandscape,
-        retroScanlines: true,
-        particleCount: isLandscape ? 0 : 24,
+        rimLighting: true,
+        arcReactorGlow: !isOcean && !isLandscape,
+        retroScanlines: !isOcean, // Dreamcast 128-bit entrega salida VGA nítida sin scanlines analógicos
+        particleCount: isOcean ? 40 : isLandscape ? 0 : 24,
       },
     };
 
