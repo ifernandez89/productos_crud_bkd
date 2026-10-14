@@ -4,9 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
-## [Unreleased]
+### Added & Validated — Upgrades Fotorrealistas 3D en Blender 5.2: Angelina Jolie (SSS & ARKit) y Aetheria (Ciudadela Celestial PBR) (2026-10-14)
 
-### Added & Validated — Pipeline 3D Headless con Blender 5.2 (`bpy`) y Modificación Procedural de Assets (2026-10-14)
+- **👤 Angelina Jolie — Retrato Humano Fotorrealista en Blender 5.2 (`scripts/blender/render_angelina_blender.py`)**:
+  - **Subsurface Scattering (SSS) Dérmico**: Sustitución del sombreador plástico previo por dispersión de luz subdérmica en `Principled BSDF` (`Weight=0.16`, `Radius=(1.0, 0.38, 0.18)`), capturando la translucidez natural del rostro.
+  - **Micro-expresiones Faciales ARKit & Pose Natural**: Activación en malla `Head_Mesh` de claves de forma (`mouthSmileLeft=0.28`, `mouthSmileRight=0.18`, `eyeSquintLeft/Right=0.26`, `browOuterUpLeft/Right=0.35`, `jawOpen=0.03`) e inclinación ósea del cuello/cabeza (+4.2° roll, +2.5° yaw).
+  - **Física de Cabello y Ojos**: Sombreador moreno chocolate con brillo especular anisotrópico y reflexión corneal especular con catchlight.
+  - **Iluminación de Estudio Rembrandt**: Teleobjetivo de 95mm f/2.8, Key Light a 45°, Fill frío crepuscular, Rim turquesa de silueta y Hair accent light.
+  - **Entregables**: Modelo GLB [`storage/assets/models/angelina_jolie_blender.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/angelina_jolie_blender.glb) y render 1600x2000 [`storage/assets/renders/angelina_blender_portrait.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/angelina_blender_portrait.png) (5.3 MB).
+
+- **🏛️ Aetheria — Ciudadela Celestial 3D en Blender 5.2 (`scripts/blender/render_aetheria_blender.py`)**:
+  - **Geología de Isla Flotante PBR**: Base rocosa con mapas PBR 1K (`rock_boulder_diff/nor/rough`), desplazamiento fractal de estratos, agujas basálticas y meseta superior con césped alpino procedural y sendero ceremonial.
+  - **Acrópolis Clásica Monumental**: Escalinatas de mármol crepidoma, peristilo de 14 columnas corintias con capiteles y basas doradas, arquitrabe, frontón clásico con medallón solar de oro, gran cúpula imperial nervada dorada, y aguja celestial con orbe arcano radiante flotante.
+  - **Hidrología y Cascada al Vacío**: Estanque celestial con cauce meandriforme y cascada frontal colosal precipitándose al abismo cósmico sobre un mar de nubes bajas y bruma volumétrica.
+  - **Cristales Arcanos y Entorno**: 5 monolitos octaédricos flotantes orbitando la isla con halos cian y fuentes de luz puntual, pebeteros con fuego sagrado encendido y cordillera nevada en el horizonte.
+  - **Composición Cinematográfica**: Cámara de 36mm con constraint `Track-To` enfocada a la Acrópolis, iluminación de 3 puntos (Sol dorado, Fill crepuscular, Rim turquesa) y gestión de color `AgX`.
+  - **Entregables**: Modelo GLB [`storage/assets/models/aetheria_celestial_island.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/aetheria_celestial_island.glb) (3.52 MB) y render 2048x1536 [`storage/assets/renders/aetheria_blender_cinematic.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/aetheria_blender_cinematic.png) (4.22 MB).
+
+- **🖼️ Lámina Comparativa de Alta Resolución (`storage/assets/renders/blender_upgrades_showcase.png`)**:
+  - Comparador 2560x1440 generado con Playwright Edge (`scripts/blender/create_blender_upgrades_showcase.js`), contrastando lado a lado las versiones WebGL previas frente a los nuevos renders de Blender 5.2 LTS.
+
+
 
 - **🏛️ Motor de Assets 3D Asistido por Blender Headless (`bpy`)**:
   - Superación de la generación de geometría 3D descontrolada con IA generativa y de las imágenes 2D planas por difusión.
