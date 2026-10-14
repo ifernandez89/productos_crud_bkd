@@ -83,6 +83,7 @@ import { PngExporter } from './tools/poster/rendering/png-exporter';
 import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.service';
 import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service';
 import { PortraitDirectionService } from './tools/poster/portrait/portrait-direction.service';
+import { BlenderService } from './3d/blender.service';
 import { VectorPortraitEngine } from './tools/poster/portrait/vector-portrait.engine';
 import { PortraitQaService } from './tools/poster/portrait/portrait-qa.service';
 import { PortraitService } from './tools/poster/portrait/portrait.service';
@@ -163,7 +164,10 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     VoiceService,
     // ── Audiobook Ingestion ────────────────────────────────────────────────
     AudiobookIngestService,
-    // ── Dialectic Reasoning & RAG Contrast (DeepSeek-R1) ────────────────────
+    // ── 3D & Blender Headless Engine ────────────────────────
+    BlenderService,
+
+    // ── Dialectic Reasoning & RAG Contrast ────────────────────
     DialecticReasoningService,
     // ── Cognitive Observability & Claim Extraction ──────────────────────────
     CognitiveTraceService,
@@ -206,6 +210,7 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     PosterService,
     AssetCatalogService,
     PortraitService,
+    BlenderService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

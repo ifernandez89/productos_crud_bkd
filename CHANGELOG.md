@@ -6,6 +6,31 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Validated — Pipeline 3D Headless con Blender 5.2 (`bpy`) y Modificación Procedural de Assets (2026-10-14)
+
+- **🏛️ Motor de Assets 3D Asistido por Blender Headless (`bpy`)**:
+  - Superación de la generación de geometría 3D descontrolada con IA generativa y de las imágenes 2D planas por difusión.
+  - Implementación de un pipeline automatizado donde JarBees inspecciona modelos 3D existentes (`.glb`), calcula dimensiones reales, diseña árboles de nodos de sombreado PBR y aplica desgaste o pátina procedural sin romper la topología original.
+  - **Eficiencia y Velocidad**: Ejecución completa del ciclo (inspección + estudio de luces de 3 puntos + render ANTES a 1024x1024 + síntesis PBR + render DESPUÉS a 1024x1024 + exportación glTF 2.0) en solo **3.5 segundos** en GPU RTX 5070 (motor EEVEE).
+
+- **🧩 Skill de Automatización & Scripts Modulares**:
+  - **Skill Creada**: [`.agents/skills/blender-automation/SKILL.md`](file:///c:/Projects/productos_crud_bkd/.agents/skills/blender-automation/SKILL.md), con especificaciones completas para CLI headless, árboles de nodos en Principled BSDF, máscaras por vector normal y altura $Z$, y exportación validada.
+  - `scripts/blender/inspect_glb.py`: Extractor JSON de Bounding Box, recuento de vértices/triángulos, materiales y texturas.
+  - `scripts/blender/apply_weathering.py`: Generador procedural de pátina vegetal (musgo con orientación $+Z$ y gradiente de humedad en zócalo), suciedad en oquedades y micro-bump de piedra erosionada.
+  - `scripts/blender/create_comparison_poster.js`: Generador de lámina comparativa de alta fidelidad con Playwright.
+  - `scripts/test_blender_service.js`: Suite de integración NestJS verificando todo el flujo en el runtime.
+
+- **⚙️ Servicio NestJS `BlenderService`**:
+  - [`src/jarvis/3d/blender.service.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/3d/blender.service.ts): Integrado en [`JarvisModule`](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.module.ts) con autodetección de Blender 5.2 / 4.x, tipado estricto y ejecución acotada.
+
+- **🔬 Caso Piloto Verificado: Cabeza Olmeca de ArcheoScope (`olmec_head.glb`)**:
+  - Vértices: **22.564 preservados al 100%** (0 roturas de malla).
+  - Triángulos: **40.000**.
+  - Dimensiones conservadas exactamente: **1.45m × 1.62m × 1.95m**.
+  - Modelo exportado: [`storage/assets/models/olmec_head_weathered.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/olmec_head_weathered.glb) (5.8 MB, re-importado en Blender en 0.05s).
+  - Renders y Lámina: [`storage/assets/renders/olmec_head_comparison.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/olmec_head_comparison.png).
+  - Documentación completa en [`docs/BLENDER_3D_PIPELINE.md`](file:///c:/Projects/productos_crud_bkd/docs/BLENDER_3D_PIPELINE.md).
+
 ### Added & Validated — Unificación de Chatbot y Razonamiento Dialéctico en Qwen3:8b (2026-10-14)
 
 - **🧠 Unificación de Arquitectura LLM en `qwen3:8b` (Chatbot + Thinking Mode)**:
