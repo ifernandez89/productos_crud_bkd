@@ -823,6 +823,31 @@ export class JarvisController {
     return { runs };
   }
 
+  @Public()
+  @Get('observability/explain/:runId')
+  @ApiOperation({ 
+    summary: 'Explicar proceso cognitivo de una ejecución',
+    description: 'Muestra el recorrido real: intent, chunks recuperados, auditoría, síntesis, afirmaciones y evidencia.'
+  })
+  async explainReasoning(@Param('runId', ParseIntPipe) runId: number) {
+    const trace = await this.jarvisService.explainReasoning(runId);
+    if (!trace) {
+      throw new BadRequestException(`No se encontró AgentRun #${runId}`);
+    }
+    return { success: true, trace };
+  }
+
+  @Public()
+  @Get('observability/cognitive-stats')
+  @ApiOperation({ 
+    summary: 'Estadísticas de observabilidad cognitiva',
+    description: 'Tasa de uso RAG, motor dialéctico, cobertura promedio, afirmaciones por estado.'
+  })
+  async getCognitiveStats() {
+    const stats = await this.jarvisService.getCognitiveStats();
+    return { success: true, stats };
+  }
+
   // ── Jarvis config y registro ──────────────────────────────────────────────
 
   @Public()

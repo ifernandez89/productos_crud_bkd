@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Robotización y Optimización Web del Avatar 3D JarBee (`jarbee_robot.glb`) (2026-10-14)
+
+- **🤖 Transformación de Abeja Orgánica a JarBee Cyber Avatar (`scripts/blender/robotize_bee.py`)**:
+  - **Repintado Procedural del Atlas UV (sin rotura topológica)**: Sustitución del pelaje amarillo biológico por blindaje de placas esmaltadas de *gunmetal* y ámbar industrial con líneas de panel, biseles y remaches mecánicos.
+  - **Alas Fotovoltaicas & Circuitos**: Membrana alar convertida en vidrio ahumado azul con rejilla hexagonal de micro-celdas solares y pistas conductoras de energía cian.
+  - **Visor Óptico HUD**: Ojos compuestos reemplazados por visores digitales reflectantes con líneas de barrido (*scanlines*), halo luminoso cian y anillo de estado ámbar.
+  - **Material PBR glTF-Estándar**: Generación de mapas BaseColor, ORM (*Ambient Occlusion*, *Roughness*, *Metallic*), Normal Map sintetizado por gradiente de relieve y mapa Emisivo calibrado para Three.js y WebGL.
+  - **Normalización y Rigging Intacto**:
+    - Vértices: **29.614 preservados al 100%**.
+    - Esqueleto: **107 huesos intactos** con articulaciones mecánicas en tarsos y antenas.
+    - 3 clips de animación nativos estandarizados: `hover` (vuelo estacionario para chat activo), `idle` (reposo/escucha) y `take_off_and_land` (transición cinemática).
+    - Normalización geométrica: centrado en `(0, 0, 0)`, escala de cuadro delimitador `1.0` y cabeza orientada hacia la cámara frontal (`+Z` web).
+  - **Compresión Web Extrema**: Reducción de 20.1 MB (fuente original) a **4.37 MB** (GLB estándar) y **2.76 MB** (Draco comprimido, **-86.2% de peso**).
+  - **Entrega Lista para UI**: Modelos instalados directamente en [`productos_crud_frd/public/models/jarbee/`](file:///c:/Projects/productos_crud_frd/public/models/jarbee/) y guía técnica completa en [`docs/JARBEE_3D_AVATAR_INTEGRATION.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEE_3D_AVATAR_INTEGRATION.md).
+
+- **🖼️ Lámina Comparativa 2560x1440 (`storage/assets/renders/bee_robot_comparison.png`)**:
+  - Comparativa visual lado a lado generada con Playwright Edge (`scripts/blender/create_bee_comparison_poster.js`), exhibiendo vistas en 3/4 y cenitales de la metamorfosis desde el insecto natural hasta el dron robótico.
+
 ### Added & Validated — Upgrades Fotorrealistas 3D en Blender 5.2: Angelina Jolie (SSS & ARKit) y Aetheria (Ciudadela Celestial PBR) (2026-10-14)
 
 - **👤 Angelina Jolie — Retrato Humano Fotorrealista en Blender 5.2 (`scripts/blender/render_angelina_blender.py`)**:
