@@ -313,7 +313,7 @@ Para evitar que el agente ejecute acciones destructivas o no autorizadas de mane
 ### 5.3 Motor de Razonamiento Dialéctico y Pipeline Epistemológico en 2 Fases (Octubre 2026)
 
 Para cruzar disciplinas complejas (psicología analítica, teoría sintérgica, física cuántica, teosofía y neurobiología) sin caer en falsas equivalencias ni sesgos de complacencia (*sycophancy*), se incorporó `DialecticReasoningService`:
-- **Especialista en Razonamiento**: Impulsado por `deepseek-r1:7b` (o `iradukundadev/finetuned-deepseek-r1_7b:latest`), manteniendo a `qwen2.5:7b` para tareas conversacionales estándar.
+- **Motor Unificado Chatbot + Thinking**: Impulsado por `qwen3:8b` (unificando conversación natural y razonamiento profundo en un solo modelo para evitar intercambios de VRAM).
 - **Pipeline en 2 Fases**:
   1. *Fase 1: Auditoría Forense de Evidencia (`temperature: 0.2`)*: Audita las premisas de la consulta frente a los fragmentos de pgvector, verificando si hay respaldo textual, respaldo empírico o atribuciones apócrifas.
   2. *Fase 2: Síntesis Crítica Condicionada (`temperature: 0.5 - 0.6`)*: Redacta la respuesta final basándose en la Ficha de Auditoría, obligada a desarticular falacias antes de construir analogías.

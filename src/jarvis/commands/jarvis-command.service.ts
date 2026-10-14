@@ -13,6 +13,7 @@ import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { AudiobookIngestService } from '../library/audiobook-ingest.service';
 import { GeneralIntelligenceTrialsService } from '../library/general-intelligence-trials.service';
+import { resolveOllamaModelName } from '../../shared/ollama-config';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -633,7 +634,7 @@ export class JarvisCommandService {
         question: userMessage,
         answer: trialsResponse,
         toolsUsed: ['general_intelligence_trials'],
-        modelUsed: 'qwen2.5:7b',
+        modelUsed: resolveOllamaModelName('qwen3:8b'),
         provider: 'ollama',
         durationMs: Date.now() - startTime,
         success: true,

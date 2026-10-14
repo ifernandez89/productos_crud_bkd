@@ -149,7 +149,7 @@ export class ModelRouterService {
   routeToModel(prompt: string, explicitMode?: string): ModelRouterDecision {
     const discipline = normalizeDiscipline(explicitMode);
     const coderModel = resolveCoderModel('qwen2.5-coder:7b');
-    const generalModel = resolveOllamaModelName('qwen2.5:7b');
+    const generalModel = resolveOllamaModelName('qwen3:8b');
 
     // 1. Si el frontend especificó 'coder'
     if (discipline === 'coder') {

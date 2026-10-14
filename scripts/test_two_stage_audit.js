@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434';
 const EMBEDDING_MODEL = process.env.OLLAMA_EMBEDDING_MODEL || 'bge-m3:latest';
-const REASONING_MODEL = process.env.OLLAMA_REASONING_MODEL || 'iradukundadev/finetuned-deepseek-r1_7b:latest';
+const REASONING_MODEL = process.env.OLLAMA_REASONING_MODEL || 'qwen3:8b';
 
 function cosineSimilarity(vecA, vecB) {
   let dot = 0, normA = 0, normB = 0;

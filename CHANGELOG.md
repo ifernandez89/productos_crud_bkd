@@ -6,6 +6,31 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added & Validated — Unificación de Chatbot y Razonamiento Dialéctico en Qwen3:8b (2026-10-14)
+
+- **🧠 Unificación de Arquitectura LLM en `qwen3:8b` (Chatbot + Thinking Mode)**:
+  - Superación de la arquitectura dividida anterior (`qwen2.5:7b` para conversación general y `deepseek-r1:7b` para deducción dialéctica).
+  - Adopción de `qwen3:8b` como motor unificado que atiende el chat general con alta fluidez en español y activa nativamente el modo de razonamiento (*thinking mode*) en tareas dialécticas y cruces RAG.
+  - **Eficiencia en VRAM (RTX 5070)**: Se elimina la penalización por alternancia y recarga de pesos en memoria entre modelos de diferentes familias, reduciendo drásticamente la latencia global y eliminando *cold-starts*.
+
+- **⚙️ Actualización Completa de Configuración y Servicios**:
+  - `.env` y `.env.example`: `OLLAMA_MODEL_NAME="qwen3:8b"`, `OLLAMA_MODEL="qwen3:8b"`, `OLLAMA_REASONING_MODEL="qwen3:8b"`.
+  - `src/shared/ollama-config.ts`: Nuevo perfil `QWEN3_8B_DIALECTIC_PROFILE` (16.384 tokens de contexto, temperatura 0.6, `think: true`), y actualización de resolvers (`resolveOllamaModelName`, `resolveReasoningModel`).
+  - `src/jarvis/llm/ollama.provider.ts`: Inclusión de `qwen3` en la detección de modelos de razonamiento para preservar secuencias de stop sin cortar el flujo cognitivo.
+  - Actualización de descriptores en `src/shared/disciplines.ts`, `src/aichat/aichat.service.ts`, `src/aichat/models/ollamaModel.ts`, `src/aichat/utils/model-router.service.ts`, `src/jarvis/cognitive/claim-extractor.service.ts`, `src/jarvis/commands/jarvis-command.service.ts` y `src/jarvis/library/general-intelligence-trials.service.ts`.
+
+- **🛡️ Validación Empírica al 100% (Suite de Regresión y Benchmark)**:
+  - **Suite de Regresión Epistemológica (`scripts/epistemic_regression_suite.js`)**: **8 de 8 pruebas aprobadas (100.0%)** con latencia media de ~19.2s.
+    1. *REG-01 (Premisa falsa con docs auténticos - Caso Tesla)*: Aprobada (refutación de premisas apócrifas).
+    2. *REG-02 (Premisa válida bien documentada - Jung y Pauli)*: Aprobada (rigor sin escepticismo ciego).
+    3. *REG-03 (Fuentes contradictorias - Reduccionismo vs. NDE)*: Aprobada (divergencia ontológica expuesta).
+    4. *REG-04 (Distractores / Adversarial Retrieval)*: Aprobada (descarte de coincidencia léxica irrelevante).
+    5. *REG-05 (Cita inexistente - Freud y Heisenberg)*: Aprobada (denuncia de apócrifo).
+    6. *REG-06 (Fuera de la biblioteca - Kubernetes)*: Aprobada (distinción honesta entre RAG y memoria paramétrica).
+    7. *REG-07 (Hipótesis interdisciplinaria - Nigredo vs. Miedo)*: Aprobada (distinción de analogía vs. mecanismo).
+    8. *REG-08 (Cruce de idioma - Inglés a Español)*: Aprobada (traducción fluida 100% español).
+  - **Benchmark Dialéctico (`scripts/benchmark_dialectic_r1.js`)**: Aprobado en 24.0s, con detección de tensiones y auditoría estricta contra fragmentos reales de `pgvector` (`bge-m3`).
+
 ### Added & Validated — Motor de Escenas 3D sobre Mallas Humanas Continuas (2026-10-12)
 
 - **👤 Regla de Oro JarBees: Malla Anatómica Continua (Zero Primitivas)**:

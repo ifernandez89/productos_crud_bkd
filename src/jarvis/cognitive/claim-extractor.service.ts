@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OllamaProvider } from '../llm/ollama.provider';
+import { resolveOllamaModelName } from '../../shared/ollama-config';
 
 export interface ExtractedClaim {
   claim: string;
@@ -57,7 +58,7 @@ Input: "Jung propuso la sincronicidad como principio acausal. Pauli colaboró co
 Output: ["Jung propuso la sincronicidad como principio acausal", "Pauli colaboró con Jung", "La sincronicidad no está demostrada científicamente"]`;
 
       const response = await this.ollamaProvider.generate({
-        model: 'qwen2.5:7b',
+        model: resolveOllamaModelName('qwen3:8b'),
         messages: [
           { role: 'system', content: systemPrompt },
           { 

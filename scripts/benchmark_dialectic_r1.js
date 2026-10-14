@@ -1,6 +1,6 @@
 /**
  * benchmark_dialectic_r1.js
- * Banco de pruebas de laboratorio para contrastación dialéctica profunda con DeepSeek-R1:7b.
+ * Banco de pruebas de laboratorio para contrastación dialéctica profunda con Qwen3:8b / Reasoning.
  * Evalúa:
  *  - Aislamiento de premisas por autor
  *  - Detección de tensiones y contradicciones
@@ -16,7 +16,7 @@ const { EmbeddingsService } = require('../dist/jarvis/library/embeddings.service
 
 async function main() {
   console.log('================================================================');
-  console.log('🧠 BENCHMARK DE RAZONAMIENTO DIALÉCTICO: DEEPSEEK-R1 (7B)');
+  console.log('🧠 BENCHMARK DE RAZONAMIENTO DIALÉCTICO: QWEN3 (8B)');
   console.log('================================================================\n');
 
   const app = await NestFactory.createApplicationContext(AppModule, { logger: ['warn', 'error'] });

@@ -66,7 +66,7 @@ export const QWEN3_17B_RAG_PROFILE: OllamaGenerationOptions = {
 };
 
 /** Modelo general / conversacional — OLLAMA_MODEL_NAME o OLLAMA_MODEL */
-export function resolveOllamaModelName(defaultModel = 'qwen3:1.7b'): string {
+export function resolveOllamaModelName(defaultModel = 'qwen3:8b'): string {
   const configuredModel = [
     process.env.OLLAMA_MODEL_NAME,
     process.env.OLLAMA_MODEL,
@@ -157,23 +157,26 @@ export function resolveEmbeddingModel(defaultModel = 'bge-m3:latest'): string {
  * Caso de uso: Cruce dialéctico de autores en RAG, evaluación de hipótesis y deducción estricta.
  */
 export function resolveReasoningModel(
-  defaultModel = 'deepseek-r1:7b',
+  defaultModel = 'qwen3:8b',
 ): string {
   return process.env.OLLAMA_REASONING_MODEL?.trim() || defaultModel;
 }
 
-/** Perfil Razonamiento Dialéctico y Cruce RAG (DeepSeek-R1) */
-export const DEEPSEEK_R1_DIALECTIC_PROFILE: OllamaGenerationOptions = {
-  model: 'deepseek-r1:7b',
+/** Perfil Razonamiento Dialéctico y Cruce RAG (Qwen3:8b) */
+export const QWEN3_8B_DIALECTIC_PROFILE: OllamaGenerationOptions = {
+  model: 'qwen3:8b',
   think: true,
-  temperature: 0.6, // Óptimo para R1 (0.5 a 0.7 para razonamiento paso a paso)
+  temperature: 0.6,
   topP: 0.95,
   topK: 40,
   repeatPenalty: 1.10,
   presencePenalty: 0,
   frequencyPenalty: 0,
   numCtx: 16384, // Contexto extendido para absorber múltiples chunks y autores
-  numPredict: 2048,
+  numPredict: 2500,
 };
+
+/** Compatibilidad retroactiva para perfil dialéctico */
+export const DEEPSEEK_R1_DIALECTIC_PROFILE = QWEN3_8B_DIALECTIC_PROFILE;
 
 

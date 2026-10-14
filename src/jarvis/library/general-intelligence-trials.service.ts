@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { OllamaProvider } from '../llm/ollama.provider';
+import { resolveOllamaModelName } from '../../shared/ollama-config';
 
 export interface TrialQuestion {
   id: string;
@@ -312,7 +313,7 @@ export class GeneralIntelligenceTrialsService {
       fs.writeFileSync(txtPath, txt, 'utf-8');
     };
 
-    const targetModel = options.model || 'qwen2.5:7b';
+    const targetModel = options.model || resolveOllamaModelName('qwen3:8b');
 
     for (const q of selected) {
       const startTime = Date.now();

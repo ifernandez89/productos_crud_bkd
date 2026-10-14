@@ -27,7 +27,7 @@ export class OllamaProvider implements ILLMProvider {
   }
 
   getDefaultModel(): string {
-    return resolveOllamaModelName('qwen3:1.7b');
+    return resolveOllamaModelName('qwen3:8b');
   }
 
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {
@@ -132,7 +132,7 @@ export class OllamaProvider implements ILLMProvider {
 
   /**
    * Devuelve un modelo con los parámetros solicitados.
-   * Soporta modelos de razonamiento (DeepSeek-R1) y modelos estándar.
+   * Soporta modelos de razonamiento (Qwen3, DeepSeek-R1) y modelos estándar.
    */
   private async getModel(
     numPredict: number,
@@ -141,7 +141,7 @@ export class OllamaProvider implements ILLMProvider {
     customStop?: string[],
   ): Promise<ChatOllama> {
     const targetModel = modelName || this.getDefaultModel();
-    const isReasoning = targetModel.includes('deepseek-r1') || targetModel.includes('reasoning');
+    const isReasoning = targetModel.includes('deepseek-r1') || targetModel.includes('reasoning') || targetModel.includes('qwen3');
 
     if (
       this.model &&

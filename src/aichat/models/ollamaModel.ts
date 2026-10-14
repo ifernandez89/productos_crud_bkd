@@ -53,7 +53,7 @@ export class OllamaModelService implements IModelService {
   }
 
   private async create(): Promise<void> {
-    const modelName = resolveOllamaModelName('qwen2.5:7b');
+    const modelName = resolveOllamaModelName('qwen3:8b');
     this.model = new ChatOllama({
       model: modelName,
       temperature: 0.20, // Conversación natural

@@ -468,7 +468,7 @@ export class AichatService {
   }
 
   private getActiveModelName(): string {
-    return resolveOllamaModelName('qwen2.5:7b');
+    return resolveOllamaModelName('qwen3:8b');
   }
 
   private formatAnswerWithModelNotice(
