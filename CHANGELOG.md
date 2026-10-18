@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Arquitectura JarBees Procedural 3D Studio y Render Submarino 'Ecco the Dolphin' (2026-10-18)
+
+- **🏛️ Arquitectura y Diseño Estratégico de JarBees Procedural 3D Studio ([`docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md))**:
+  - **4 Pilares Comerciales**:
+    1. *Product Studio*: Fotografías de catálogo y publicidad e-commerce B2B (4–12 tomas automatizadas, fondo blanco y temático).
+    2. *Game Asset Studio*: Dioramas, iconos, props de inventario y capturas de marketing para indies.
+    3. *Procedural Materials Lab*: Variantes de assets mediante desgaste, óxido, pátina y rayones sin alterar mallas.
+    4. *JarBees Avatar Factory*: Fábrica de estados y expresiones visuales de JarBees (idle, thinking, success, warning, error).
+  - **Estructura Modular en NestJS (`src/jarvis/3d/`)**: `AssetInspectorService` (auto-framing y escala), `SceneDirectorService` (presets e iluminación), `RenderJobService` (cola y control de concurrencia GPU), `RenderQualityService` (control de calidad y detección de renders vacíos).
+  - **Hoja de Ruta Comercial de 30 Días**: Fases estructuradas de calidad, MVP, portfolio comercial y validación de clientes.
+
+- **🌊 Pipeline Submarino Cinematográfico Estilo 'Ecco the Dolphin' (`scripts/blender/render_oceanic_abyss.py`)**:
+  - **Sujeto Hero**: Ballena jorobada (`G:\new models\Ballena jorobada.glb`) navegando en diagonal ascendente hacia la luz de superficie.
+  - **Volumetría Marina & God Rays**: Dispersión volumétrica EEVEE Next con anisotropía 0.70 y haz de rayos crepusculares penetrando el agua.
+  - **Cáusticas Proyectadas**: Spot cenital con textura procedural Voronoi simulando la refracción ondulante del agua sobre el lomo, rostro y aletas pectorales.
+  - **Sombreado Dérmico PBR**: Piel cetácea húmeda con Subsurface Scattering (SSS) sutil en bordes de aletas.
+  - **Profundidad y Escala**: Banco de peces secundario (`G:\new models\Banco de peces.glb`) en plano medio y 65 partículas de nieve marina/plancton bioluminiscente con desenfoque Bokeh a $f/2.8$.
+  - **Color Management AgX**: Gradiente vertical de abismo zafiro a turquesa caribeño radiante con look `AgX - Medium High Contrast`.
+  - **Rendimiento**: Render 1440p (2560x1440) generado en **4.96 segundos** en GPU local RTX 5070 ([`storage/assets/renders/ecco_whale_cinematic_abyss.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/ecco_whale_cinematic_abyss.png)).
+
 ### Added & Validated — Pipeline de Cinematografía 3D, Generador de Dioramas Headless y Props CC0 Platformer (2026-10-18)
 
 - **🎬 Motor de Cinematografía 3D y Generador de Dioramas Headless (`scripts/blender/render_cinematic_diorama.py`)**:
