@@ -60,6 +60,36 @@ export interface WeatheringResult {
   message?: string;
 }
 
+export interface CinematicDioramaOptions {
+  heroModel?: string;           // 'character' | ruta GLB relativa o absoluta
+  action?: 'jump' | 'walk' | 'idle' | 'static' | 'none';
+  frame?: number;               // frame de animación (default 6 para jump)
+  pedestal?: 'grass-round' | 'large' | 'none';
+  mood?: 'golden_hour' | 'cyberpunk' | 'daylight' | 'studio';
+  width?: number;               // default 2048
+  height?: number;              // default 1536
+  samples?: number;             // default 64
+  outputRenderPath?: string;
+  includeProps?: boolean;       // default true
+}
+
+export interface CinematicDioramaResult {
+  status: 'success' | 'error';
+  output: string;
+  width: number;
+  height: number;
+  hero: string;
+  action: string;
+  frame: number;
+  pedestal: string;
+  mood: string;
+  props: string[];
+  objects_in_scene: number;
+  materials_in_scene: number;
+  durationMs: number;
+  message?: string;
+}
+
 @Injectable()
 export class BlenderService {
   private readonly logger = new Logger(BlenderService.name);
@@ -206,6 +236,73 @@ export class BlenderService {
     this.logger.log(
       `[BlenderService] Desgaste completado en ${result.durationMs}ms: ` +
       `${result.materials_modified} materiales, ${result.total_vertices} vértices preservados.`
+    );
+
+    return result;
+  }
+
+  /**
+   * Genera un render cinematográfico 3D de diorama con pedestal, sujeto hero, props y DoF
+   */
+  async renderCinematicDiorama(options: CinematicDioramaOptions = {}): Promise<CinematicDioramaResult> {
+    if (!this.isAvailable()) {
+      throw new Error('Blender no está disponible en este entorno');
+    }
+
+    const startTime = Date.now();
+    const hero = options.heroModel ?? 'character';
+    const action = options.action ?? 'jump';
+    const frame = options.frame ?? 6;
+    const pedestal = options.pedestal ?? 'grass-round';
+    const mood = options.mood ?? 'golden_hour';
+    const width = options.width ?? 2048;
+    const height = options.height ?? 1536;
+    const samples = options.samples ?? 64;
+    const outputPath = options.outputRenderPath 
+      ? path.resolve(options.outputRenderPath)
+      : path.resolve('storage/assets/renders', `diorama_${action}_${mood}_${Date.now()}.png`);
+
+    const scriptPath = path.resolve('scripts/blender/render_cinematic_diorama.py');
+    const args = [
+      '-b',
+      '--python-exit-code', '1',
+      '-P', scriptPath,
+      '--',
+      '--hero', hero,
+      '--action', action,
+      '--frame', String(frame),
+      '--pedestal', pedestal,
+      '--mood', mood,
+      '--width', String(width),
+      '--height', String(height),
+      '--samples', String(samples),
+      '--output', outputPath,
+    ];
+
+    if (options.includeProps === false) {
+      // Por defecto el script incluye props
+    }
+
+    this.logger.log(`[BlenderService] Generando diorama cinematográfico (Hero: ${hero}, Mood: ${mood})...`);
+    const { stdout } = await execFileAsync(this.blenderPath!, args, { timeout: 60000 });
+
+    const startTag = '>>> DIORAMA_RENDER_START >>>';
+    const endTag = '<<< DIORAMA_RENDER_END <<<';
+
+    const startIndex = stdout.indexOf(startTag);
+    const endIndex = stdout.indexOf(endTag);
+
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error('No se pudo extraer el reporte del diorama de Blender');
+    }
+
+    const jsonStr = stdout.slice(startIndex + startTag.length, endIndex).trim();
+    const result = JSON.parse(jsonStr) as CinematicDioramaResult;
+    result.durationMs = Date.now() - startTime;
+
+    this.logger.log(
+      `[BlenderService] Diorama cinematográfico renderizado en ${result.durationMs}ms: ` +
+      `${result.objects_in_scene} objetos, salida: ${result.output}`
     );
 
     return result;

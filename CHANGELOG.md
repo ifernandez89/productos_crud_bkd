@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Pipeline de Cinematografía 3D, Generador de Dioramas Headless y Props CC0 Platformer (2026-10-18)
+
+- **🎬 Motor de Cinematografía 3D y Generador de Dioramas Headless (`scripts/blender/render_cinematic_diorama.py`)**:
+  - **Composición Modular de Escena**: Escenografía con pedestal circular de césped (`platform-grass-large-round.glb`), mechones de vegetación silvestre periférica (`grass.glb`, `grass-small.glb`) y props complementarios en capas de profundidad (`cloud.glb`, `block-coin.glb`, `coin.glb`).
+  - **Pose de Héroe con Animación Integrada**: Soporte para modelos GLB con armature/esqueleto (ej. `character.glb`), renderizando fotogramas clave específicos (ej. frame 6 de animación `jump` en el ápice de salto o `walk`/`idle`).
+  - **Iluminación Cinematográfica de 3 Puntos + Rim Kicker**:
+    - Key Sun cálido ámbar (`#FFF3D1`) a 45° con sombras de contacto.
+    - Fill Area suave celeste (`#7EC8E3`) de 4x3 metros para relleno sin aplanar.
+    - Rim Light Spot (`#FFA726`) de alta potencia para contraste de silueta.
+    - Bounce Ground Uplight verde césped suave ascendente desde el pedestal.
+  - **Óptica Física y Depth of Field (DoF Bokeh)**:
+    - Cámara cinematográfica de 54mm (sensor 35mm full-frame).
+    - Apertura `f/2.4` con 7 palas de diafragma (`aperture_blades = 7`) para bokeh heptagonal cremoso en nubes lejanas y primer plano.
+    - Constraint `Track-To` con Empty de enfoque automático colocado en el torso/cabeza del sujeto.
+  - **Gestión de Color Fílmica**: Configuración del pipeline EEVEE Next con espacio de color `AgX` y look `AgX - Medium High Contrast`.
+  - **Atmósferas Lumínicas Configurables (`--mood`)**: `golden_hour`, `cyberpunk`, `daylight` y `studio`.
+
+- **📦 Integración de Biblioteca de Assets CC0 Kenney Platformer (`storage/assets/`)**:
+  - Modelos GLB optimizados: `character.glb`, `platform-grass-large-round.glb`, `platform-large.glb`, `platform-medium.glb`, `platform.glb`, `platform-falling.glb`, `coin.glb`, `block-coin.glb`, `brick.glb`, `cloud.glb`, `dust.glb`, `flag.glb`, `grass.glb`, `grass-small.glb`.
+  - Skybox 360° panorámico en `storage/assets/textures/skybox/platformer_skybox.png`.
+  - SFX CC0 en `storage/assets/sounds/platformer/` (`jump.ogg`, `coin.ogg`, `fall.ogg`, `land.ogg`, `walking.ogg`, `break.ogg`).
+
+- **⚙️ Expansión de `BlenderService` en NestJS (`src/jarvis/3d/blender.service.ts`)**:
+  - Método `renderCinematicDiorama(options)` completamente tipado (`CinematicDioramaOptions`, `CinematicDioramaResult`).
+  - Parámetros dinámicos: `heroModel`, `action`, `frame`, `pedestal`, `mood`, `width`, `height`, `samples`, `outputRenderPath`.
+  - Manejo de reportes estructurados JSON en stdout (`>>> DIORAMA_RENDER_START >>> ... <<< DIORAMA_RENDER_END <<<`).
+
+- **🧪 Suite de Validación y Render de Alta Fidelidad**:
+  - Script de prueba NestJS `scripts/test_cinematic_diorama.js` validando ejecución en 4.4 segundos.
+  - Renders de referencia generados en `storage/assets/renders/platformer_cinematic_hero.png` (2048x1536) y `platformer_cinematic_hero_test.png` (1920x1080).
+  - Guía técnica detallada en [`docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md`](file:///c:/Projects/productos_crud_bkd/docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md).
+  - Actualización de patrones de diorama y bokeh en [`.agents/skills/blender-automation/SKILL.md`](file:///c:/Projects/productos_crud_bkd/.agents/skills/blender-automation/SKILL.md).
+
+- **🔧 Corrección en `JarvisController`**:
+  - Renombrado de colisión de método en `src/jarvis/jarvis.controller.ts` (`getCognitiveStats` -> `getGlobalCognitiveStats`) para asegurar compilación estricta de TypeScript en NestJS.
+
 ### Added & Validated — Robotización y Optimización Web del Avatar 3D JarBee (`jarbee_robot.glb`) (2026-10-14)
 
 - **🤖 Transformación de Abeja Orgánica a JarBee Cyber Avatar (`scripts/blender/robotize_bee.py`)**:

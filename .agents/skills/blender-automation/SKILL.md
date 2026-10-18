@@ -166,3 +166,21 @@ Para preservar compatibilidad total con Three.js y motores web:
 * `export_draco_mesh_compression_enable=False` (o True si se busca tamaño ultra liviano)
 * `export_colors=True`
 * `export_normals=True`
+
+---
+
+## 6. Generación de Dioramas y Cinematografía con Props CC0
+
+Para generar escenas de exhibición de productos, dioramas o tomas de héroe cinematográficas:
+1. **Composición Modular**: Usar pedestales base (`platform-grass-large-round.glb` en `storage/assets/models/platformer/`), vegetación en los bordes y props en capas de profundidad.
+2. **Cámara con Depth of Field (DoF Bokeh)**:
+   * En Blender 5.x / 4.x la propiedad para el objeto de enfoque es obligatoriamente `cam_data.dof.focus_object = target_empty` (no `focus_target`).
+   * Configurar `cam_data.dof.aperture_fstop = 2.4` y `cam_data.dof.aperture_blades = 7` para bokeh cremoso de cine.
+3. **Iluminación de 3 Puntos + Rim Light Kicker**:
+   * Key Light (Sun cálido a 45°).
+   * Fill Light (Area suave fría frontal-lateral).
+   * Rim Light Kicker (Spot trasero de alta intensidad para recortar silueta).
+   * Bounce Light suave ascendente desde el pedestal.
+4. **Color Management**:
+   * Usar `view_transform = 'AgX'` con `look = 'AgX - Medium High Contrast'` para retener detalle en altas luces sin quemar ni apagar los colores.
+

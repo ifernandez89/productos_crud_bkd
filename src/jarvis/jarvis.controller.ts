@@ -1293,7 +1293,7 @@ export class JarvisController {
   @ApiOperation({
     summary: 'Estadísticas globales de observabilidad y calibración cognitiva',
   })
-  async getCognitiveStats() {
+  async getGlobalCognitiveStats() {
     const stats = await this.jarvisService.getCognitiveStats();
     return {
       success: true,
