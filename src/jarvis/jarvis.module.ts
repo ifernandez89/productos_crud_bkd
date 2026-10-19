@@ -84,13 +84,15 @@ import { PosterQualityAssuranceService } from './tools/poster/qa/poster-qa.servi
 import { AssetCatalogService } from './tools/poster/assets/asset-catalog.service';
 import { PortraitDirectionService } from './tools/poster/portrait/portrait-direction.service';
 import { BlenderService } from './3d/blender.service';
+import { AssetMetadataService } from './3d/services/asset-metadata.service';
+import { AssetMetadataController } from './3d/controllers/asset-metadata.controller';
 import { VectorPortraitEngine } from './tools/poster/portrait/vector-portrait.engine';
 import { PortraitQaService } from './tools/poster/portrait/portrait-qa.service';
 import { PortraitService } from './tools/poster/portrait/portrait.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
-  controllers: [JarvisController, PosterController],
+  controllers: [JarvisController, PosterController, AssetMetadataController],
   providers: [
     JarvisService,
     MemoryRepository,
@@ -166,6 +168,7 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     AudiobookIngestService,
     // ── 3D & Blender Headless Engine ────────────────────────
     BlenderService,
+    AssetMetadataService,
 
     // ── Dialectic Reasoning & RAG Contrast ────────────────────
     DialecticReasoningService,
@@ -211,6 +214,7 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     AssetCatalogService,
     PortraitService,
     BlenderService,
+    AssetMetadataService,
     OllamaProvider,
     OpenRouterProvider,
     AstrologyTool,

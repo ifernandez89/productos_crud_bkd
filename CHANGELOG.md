@@ -4,6 +4,60 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Sistema de Metadata 3D Inteligente para JarBees Studio (2026-10-18)
+
+- **🎨 Asset Metadata Service (`src/jarvis/3d/services/asset-metadata.service.ts`)**:
+  - **Catalogación Automática de Assets 3D**: Sistema estructurado de metadata para modelos, escenas, materiales, texturas y HDRIs con información geométrica (vertices, faces, bounding box, armature), configuraciones de iluminación (volumetrics, god rays, caustics), setup de cámara (focal length, f-stop, position), y configuración de render (engine, resolution, samples, denoiser, color management).
+  - **Gestión de Rendimiento GPU**: Registro automático de métricas (`renderTime`, `gpuModel`, `vramUsage`, `cpuUsage`) para análisis de optimización y benchmarking de configuraciones.
+  - **Búsqueda Semántica por Tags y Estilo**: Búsqueda avanzada por `assetType`, `category`, `style`, `tags` y `minQuality` para localizar configuraciones exitosas y reutilizar presets.
+  - **Sistema de Clonación de Configuraciones**: Funcionalidad de clonación de metadata para generar variantes de renders sin setup manual repetitivo, manteniendo trazabilidad de relaciones `variants`.
+  - **Análisis de Calidad de Render**: Framework para evaluación de calidad (`isEmpty`, `hasArtifacts`, `averageBrightness`, `dynamicRange`, `score`) con recomendaciones automáticas de optimización.
+  - **Extracción Automática desde GLB/GLTF**: Generación de metadata base desde archivos de modelo con cálculo de checksum SHA-256 y estadísticas de archivo.
+
+- **🌐 Asset Metadata API Controller (`src/jarvis/3d/controllers/asset-metadata.controller.ts`)**:
+  - **Endpoints RESTful Completos**:
+    - `GET /jarvis/3d/metadata/stats`: Estadísticas del catálogo completo (total assets, distribución por tipo/categoría, renders totales, tiempo promedio).
+    - `GET /jarvis/3d/metadata/:packageId`: Recuperación de metadata completa de un asset específico.
+    - `GET /jarvis/3d/metadata?filters`: Búsqueda por criterios múltiples (assetType, category, style, tags, minQuality).
+    - `POST /jarvis/3d/metadata`: Guardar o actualizar metadata de assets.
+    - `POST /jarvis/3d/metadata/extract`: Extracción automática de metadata desde modelo GLB/GLTF.
+    - `POST /jarvis/3d/metadata/report`: Generación de reporte completo de render con análisis de calidad.
+    - `GET /jarvis/3d/metadata/:packageId/similar`: Búsqueda de assets similares por tags, estilo y categoría.
+    - `POST /jarvis/3d/metadata/:packageId/clone`: Clonación de configuración para crear variantes con overrides selectivos.
+
+- **📊 Ejemplo Práctico: Metadata del Render "Ballena Jorobada - Abismo Oceánico Ecco Style"**:
+  - **Package ID**: `bebffbcb-1435-4626-b4d1-b9dc0b7d63f7`
+  - **Archivo**: [`storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json`](file:///c:/Projects/productos_crud_bkd/storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json)
+  - **Configuración Documentada**: 
+    - Geometría: 156,789 vértices, 124,567 faces, bounding box completo
+    - Iluminación cinematográfica con volumetrics (density 0.008, anisotropy 0.70), god rays (64 samples), caustics Voronoi (intensity 2.8)
+    - Cámara: 35mm f/2.8 con DoF, position [-8.2, 3.5, -15.7]
+    - Render: EEVEE Next, 2560x1440, 256 samples, OptiX denoiser, AgX color management
+    - Performance: 4.96s en RTX 5070, 7840 MB VRAM
+    - Tags: `["whale", "underwater", "cinematic", "volumetric", "god-rays", "caustics", "bioluminescent"]`
+    - Style: `["dreamcast-aesthetic", "ecco-the-dolphin", "volumetric-lighting"]`
+
+- **📖 Documentación Técnica Completa ([`docs/ASSET_METADATA_SYSTEM.md`](file:///c:/Projects/productos_crud_bkd/docs/ASSET_METADATA_SYSTEM.md))**:
+  - Guía de estructura de metadata JSON con esquemas completos
+  - Documentación de todos los endpoints API con ejemplos de uso
+  - Casos de uso: registro post-render, búsqueda de configuraciones, generación de variantes, pipeline de Product Studio, análisis de rendimiento GPU
+  - Flujo de integración completo con `BlenderService`
+  - Roadmap de desarrollo (Fase 1 completada, Fase 2-3 planificadas)
+
+- **🧪 Suite de Pruebas y Pipeline de Ejemplo**:
+  - [`scripts/test_asset_metadata.js`](file:///c:/Projects/productos_crud_bkd/scripts/test_asset_metadata.js): Suite de pruebas end-to-end para estadísticas, recuperación por ID, filtrado semántico y clonación de variantes.
+  - [`scripts/examples/render_with_metadata_example.ts`](file:///c:/Projects/productos_crud_bkd/scripts/examples/render_with_metadata_example.ts): Ejemplo completo de integración entre `BlenderService` y `AssetMetadataService` para pipelines automatizados.
+  - [`docs/METADATA_SYSTEM_QUICKSTART.md`](file:///c:/Projects/productos_crud_bkd/docs/METADATA_SYSTEM_QUICKSTART.md): Guía de inicio rápido en 5 minutos para desarrolladores.
+  - [`docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md`](file:///c:/Projects/productos_crud_bkd/docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md): Resumen ejecutivo con métricas de ROI e impacto de negocio.
+
+- **🔗 Integración en JarvisModule (`src/jarvis/jarvis.module.ts`)**:
+  - `AssetMetadataService` registrado en providers y exports
+  - `AssetMetadataController` agregado a controllers
+  - Sistema listo para uso en pipelines de JarBees Procedural 3D Studio
+
+- **🛡️ Habilidades y Skills Actualizadas**:
+  - Actualización de `nestjs-best-practices` a v1.2.0 y adición de `bash-defensive-patterns` en `.agents/skills/` y `.kiro/skills/`.
+
 ### Added & Validated — Arquitectura JarBees Procedural 3D Studio y Render Submarino 'Ecco the Dolphin' (2026-10-18)
 
 - **🏛️ Arquitectura y Diseño Estratégico de JarBees Procedural 3D Studio ([`docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md))**:

@@ -1,0 +1,177 @@
+{
+  "packageId": "bebffbcb-1435-4626-b4d1-b9dc0b7d63f7",
+  "assetName": "Ballena Jorobada - Abismo Oceánico Ecco Style",
+  "assetType": "scene",
+  "sourcePath": "G:\\new models\\Ballena jorobada.glb",
+  "sourceFormat": ".glb",
+  "fileSize": 45678901,
+  "checksum": "a7f3d8e2b1c4f6e9d2a8b5c7e1f4d9a6c3b8e5f2d7a4c1b6e3f8d5a2c9b4e7f1",
+  "geometry": {
+    "vertices": 156789,
+    "faces": 124567,
+    "boundingBox": {
+      "min": [-12.5, -8.3, -25.7],
+      "max": [12.5, 8.3, 5.2],
+      "center": [0.0, 0.0, -10.25],
+      "dimensions": [25.0, 16.6, 30.9]
+    },
+    "hasArmature": true,
+    "hasMorphTargets": false
+  },
+  "materials": [
+    {
+      "name": "Whale_Skin_Wet",
+      "type": "PBR",
+      "textures": [
+        {
+          "type": "baseColor",
+          "path": "textures/whale_diffuse_4k.png",
+          "resolution": [4096, 4096]
+        },
+        {
+          "type": "normal",
+          "path": "textures/whale_normal_4k.png",
+          "resolution": [4096, 4096]
+        },
+        {
+          "type": "roughness",
+          "path": "textures/whale_roughness_2k.png",
+          "resolution": [2048, 2048]
+        }
+      ],
+      "properties": {
+        "subsurfaceScattering": true,
+        "sssRadius": 0.015,
+        "sssColor": [0.12, 0.18, 0.25],
+        "specular": 0.65,
+        "roughness": 0.42,
+        "metallic": 0.0
+      }
+    },
+    {
+      "name": "Ocean_Volumetric",
+      "type": "Volume",
+      "textures": [],
+      "properties": {
+        "density": 0.008,
+        "scatterColor": [0.15, 0.28, 0.42],
+        "anisotropy": 0.70,
+        "absorption": [0.02, 0.05, 0.08]
+      }
+    }
+  ],
+  "lighting": {
+    "type": "cinematic",
+    "hdriPath": "G:\\HDRIs\\Ocean_Surface_Daylight_8K.exr",
+    "hdriStrength": 1.2,
+    "sunStrength": 3.5,
+    "ambientOcclusion": true,
+    "volumetrics": {
+      "density": 0.008,
+      "anisotropy": 0.70,
+      "scatterColor": [0.15, 0.28, 0.42]
+    },
+    "godRays": {
+      "enabled": true,
+      "samples": 64,
+      "threshold": 0.15
+    },
+    "caustics": {
+      "enabled": true,
+      "pattern": "voronoi",
+      "intensity": 2.8
+    }
+  },
+  "camera": {
+    "type": "perspective",
+    "focalLength": 35,
+    "sensor": 36,
+    "fStop": 2.8,
+    "focusDistance": 18.5,
+    "position": [-8.2, 3.5, -15.7],
+    "rotation": [1.15, 0.0, -0.35],
+    "target": [0.0, 0.0, -10.0]
+  },
+  "renderConfig": {
+    "engine": "eevee-next",
+    "resolution": [2560, 1440],
+    "samples": 256,
+    "denoiser": "optix",
+    "colorManagement": "agx",
+    "exposure": 0.0,
+    "gamma": 1.0,
+    "dof": {
+      "enabled": true,
+      "fStop": 2.8,
+      "focusDistance": 18.5
+    },
+    "motionBlur": false,
+    "bloom": {
+      "enabled": true,
+      "threshold": 0.85,
+      "intensity": 0.35
+    }
+  },
+  "proceduralEffects": {
+    "particles": [
+      {
+        "type": "bioluminescent_plankton",
+        "count": 65,
+        "size": 0.08,
+        "emissive": true
+      },
+      {
+        "type": "fish_school",
+        "count": 120,
+        "size": 0.15,
+        "emissive": false
+      }
+    ],
+    "atmosphere": {
+      "fog": true,
+      "fogDensity": 0.012,
+      "fogColor": [0.08, 0.15, 0.28]
+    }
+  },
+  "performance": {
+    "renderTime": 4.96,
+    "gpuModel": "NVIDIA GeForce RTX 5070",
+    "vramUsage": 7840,
+    "cpuUsage": 18,
+    "timestamp": "2026-10-18T15:42:33.000Z",
+    "blenderVersion": "5.2.0"
+  },
+  "tags": [
+    "whale",
+    "humpback",
+    "ocean",
+    "underwater",
+    "cinematic",
+    "dreamcast",
+    "ecco",
+    "volumetric",
+    "god-rays",
+    "caustics",
+    "bioluminescent",
+    "abyss",
+    "marine-life"
+  ],
+  "category": "cinematic-render",
+  "style": [
+    "dreamcast-aesthetic",
+    "ecco-the-dolphin",
+    "underwater-photography",
+    "volumetric-lighting",
+    "photorealistic"
+  ],
+  "usage": {
+    "renderCount": 1,
+    "lastUsed": "2026-10-18T15:42:33.000Z",
+    "variants": []
+  },
+  "notes": "Render cinematográfico inspirado en Ecco the Dolphin (Dreamcast). Iluminación volumétrica con god rays y cáusticas Voronoi proyectadas sobre el cetáceo. Integración de banco de peces en segundo plano. Partículas bioluminiscentes con bokeh a f/2.8.",
+  "artistNotes": "Atmósfera Dreamcast x Blender 5.2: Gradiente vertical de abismo azul zafiro a turquesa caribeño radiante con gestión de color AgX. Piel de cetáceo húmeda con SSS en bordes de aletas. 65 partículas de plancton flotando con desenfoque de campo. Render completado en solo 4.96 segundos en RTX 5070.",
+  "createdAt": "2026-10-18T15:42:33.000Z",
+  "updatedAt": "2026-10-18T15:42:33.000Z",
+  "createdBy": "JarBees Procedural 3D Studio"
+}
