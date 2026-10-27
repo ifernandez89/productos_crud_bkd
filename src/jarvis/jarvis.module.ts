@@ -14,6 +14,10 @@ import { AssistantToolsService } from '../aichat/utils/assistant-tools.service';
 
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
+import { LlamaCppProvider } from './llm/llamacpp.provider';
+import { InferenceGatewayService } from './llm/inference-gateway.service';
+import { InferenceSupervisorService } from './llm/inference-supervisor.service';
+import { LLM_GATEWAY } from './llm/llm-provider.interface';
 import { OllamaRecoveryService } from './llm/ollama.recovery.service';
 import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
@@ -121,6 +125,13 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     SkillRegistryService,
     ToolRegistryService,
     OllamaProvider,
+    LlamaCppProvider,
+    InferenceSupervisorService,
+    InferenceGatewayService,
+    {
+      provide: LLM_GATEWAY,
+      useExisting: InferenceGatewayService,
+    },
     OllamaRecoveryService,
     OpenRouterProvider,
     EmbeddingsService,
@@ -216,6 +227,10 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     BlenderService,
     AssetMetadataService,
     OllamaProvider,
+    LlamaCppProvider,
+    InferenceSupervisorService,
+    InferenceGatewayService,
+    LLM_GATEWAY,
     OpenRouterProvider,
     AstrologyTool,
   ],

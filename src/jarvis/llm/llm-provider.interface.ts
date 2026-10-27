@@ -8,12 +8,24 @@ export interface LLMMessage {
   content: string;
 }
 
+export interface LLMTimeouts {
+  connectMs?: number;      // Tiempo máx para conectar con el servidor (ej: 3500ms)
+  queueWaitMs?: number;    // Tiempo máx de espera en cola de cambio de modelo (ej: 15000ms)
+  generationMs?: number;   // Tiempo máx para generar la respuesta completa (ej: 45000ms)
+}
+
 export interface LLMGenerateOptions {
   messages: LLMMessage[];
   model?: string;
   temperature?: number;
+  topP?: number;
+  topK?: number;
   maxTokens?: number;
   stopSequences?: string[];
+  think?: boolean;
+  timeoutMs?: number;       // Timeout global personalizado para esta petición
+  timeouts?: LLMTimeouts;   // Timeouts desglosados por fase operativa
+  abortSignal?: AbortSignal;// Señal para cancelación temprana (cliente desconectado)
 }
 
 export interface LLMGenerateResponse {
@@ -50,4 +62,11 @@ export interface ILLMProvider {
    * Modelo por defecto
    */
   getDefaultModel(): string;
+
+  /**
+   * Verifica disponibilidad y conectividad del motor
+   */
+  isAvailable?(): Promise<boolean>;
 }
+
+export const LLM_GATEWAY = Symbol('LLM_GATEWAY');

@@ -30,6 +30,20 @@ export class OllamaProvider implements ILLMProvider {
     return resolveOllamaModelName('qwen3:8b');
   }
 
+  async isAvailable(): Promise<boolean> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('http://localhost:11434/api/tags', {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   async generate(options: LLMGenerateOptions): Promise<LLMGenerateResponse> {
     const startTime = Date.now();
     const requestedModel = options.model || this.getDefaultModel();

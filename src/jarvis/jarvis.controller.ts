@@ -40,6 +40,7 @@ import { AudiobookIngestService } from './library/audiobook-ingest.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 import { getAvailableDisciplines } from '../shared/disciplines';
+import { InferenceGatewayService } from './llm/inference-gateway.service';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -63,7 +64,21 @@ export class JarvisController {
     private readonly voiceService: VoiceService,
     private readonly audiobookIngestService: AudiobookIngestService,
     private readonly trialsService: GeneralIntelligenceTrialsService,
+    private readonly inferenceGateway: InferenceGatewayService,
   ) {}
+
+  // ── Telemetría y Estado de Inferencia ───────────────────────────────────────
+
+  @Public()
+  @Get('inference/status')
+  @ApiOperation({
+    summary: 'Estado de pasarela de inferencia y motores locales',
+    description:
+      'Devuelve el estado de llama.cpp (RTX 5070), Ollama (fallback), modelo activo y política de conmutación.',
+  })
+  async getInferenceStatus() {
+    return await this.inferenceGateway.getHealthStatus();
+  }
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
 

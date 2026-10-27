@@ -10,6 +10,8 @@ import { FeedbackDto } from './dto/feedback.dto';
 import { ILLMProvider } from './llm/llm-provider.interface';
 import { OllamaProvider } from './llm/ollama.provider';
 import { OpenRouterProvider } from './llm/openrouter.provider';
+import { LlamaCppProvider } from './llm/llamacpp.provider';
+import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { AssistantToolsService } from '../aichat/utils/assistant-tools.service';
 import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
@@ -78,6 +80,10 @@ export class JarvisService {
     @Inject(OllamaProvider) private readonly ollamaProvider: ILLMProvider,
     @Inject(OpenRouterProvider)
     private readonly openRouterProvider: ILLMProvider,
+    @Inject(LlamaCppProvider)
+    private readonly llamaCppProvider: ILLMProvider,
+    @Inject(InferenceGatewayService)
+    private readonly inferenceGateway: InferenceGatewayService,
     private readonly googleCalendar: GoogleCalendarService,
     private readonly googleTasks: GoogleTasksService,
     private readonly googleGmail: GoogleGmailService,
@@ -104,6 +110,8 @@ export class JarvisService {
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
   ) {
     this.providers = new Map([
+      ['gateway', this.inferenceGateway],
+      ['llamacpp', this.llamaCppProvider],
       ['ollama', this.ollamaProvider],
       ['openrouter', this.openRouterProvider],
     ]);
@@ -120,8 +128,9 @@ export class JarvisService {
     const useMemory = options.useMemory !== false;
     const useDocuments = options.useDocuments !== false;
     const maxHistoryMessages = options.maxHistoryMessages || 6;
-    const providerName = options.provider || 'ollama';
-    const provider = this.providers.get(providerName)!;
+    const defaultProvider = process.env.INFERENCE_DEFAULT_PROVIDER || 'gateway';
+    const providerName = options.provider || defaultProvider;
+    const provider = this.providers.get(providerName) || this.inferenceGateway;
 
     const startTime = Date.now();
     const toolsUsed: string[] = [];

@@ -4,6 +4,51 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Migración de Inferencia Local a llama.cpp (CUDA 13 / RTX 5070) con Desacople Arquitectónico y Tolerancia a Fallos (2026-10-27)
+
+- **🚀 Motor de Inferencia Primario `LlamaCppProvider` (`src/jarvis/llm/llamacpp.provider.ts`)**:
+  - **Ejecución Local Nativa CUDA 13 en RTX 5070**: Integración directa con `llama-server.exe` (build `b11935` `win-cuda-13.4-x64`) optimizado para NVIDIA GeForce RTX 5070 12GB (arquitectura Blackwell, compute capability 12.0 sm_120, driver 617.42).
+  - **Rendimiento Comprobado**: Inferencia sostenida de ~104 tokens/s con `Qwen/Qwen3-8B-Q4_K_M` y latencia en frío Time-to-First-Token (TTFT) de ~360ms.
+  - **Supresión Estricta de Razonamiento `<think>`**: Integración con `chat_template_kwargs: { enable_thinking: false }` y sanitización regex de residuos para respuestas limpias y directas en modo conversacional.
+  - **Normalización Automática de Alias**: Mapeo transparente de alias (`qwen3`, `coder`, etc.) hacia los modelos GGUF oficiales del router.
+  - **Timeouts Granulares y Cancelación Anticipada (`AbortSignal`)**: Soporte para timeouts desglosados (`connectMs`, `queueWaitMs`, `generationMs`) y cancelación inmediata del procesamiento en GPU cuando el cliente aborta la petición.
+  - **Blindaje del Índice Vectorial**: Restricción estricta del método `embed()` para impedir que modelos de chat corrompan las dimensiones del índice semántico de pgvector.
+
+- **🛡️ Supervisor de Procesos y Gestión de VRAM `InferenceSupervisorService` (`src/jarvis/llm/inference-supervisor.service.ts`)**:
+  - **Administración del Ciclo de Vida**: Inicio bajo demanda, monitoreo de salud vía `/health`, reinicio automático y apagado limpio (`taskkill /T /F`) en `onApplicationShutdown` para garantizar 0 MB de VRAM residual.
+  - **Router Mode con Límite de VRAM**: Despliegue con `--models-dir C:\AI\models --models-max 1 --models-preset src/jarvis/llm/models_presets.ini`, descargando automáticamente el modelo inactivo de la GPU al alternar entre especialistas.
+  - **Coordinación de Memoria GPU con Ollama (`freeOllamaVram`)**: Descarga automática de modelos cargados en Ollama mediante llamadas `keep_alive: 0` antes de iniciar `llama-server`, asegurando el presupuesto completo de 12 GB para `llama.cpp`.
+  - **Circuit Breaker con Ventana Deslizante**: Bloqueo preventivo de auto-reinicio tras 3 fallos consecutivos en una ventana de 5 minutos, protegiendo al sistema de tormentas de reinicios.
+  - **Sanitización de Seguridad**: Eliminación de rutas locales del disco (`binaryPath`, `modelPath`, `modelsDir`) en el DTO de estado expuesto públicamente.
+
+- **🔀 Pasarela Unificada de Inferencia `InferenceGatewayService` (`src/jarvis/llm/inference-gateway.service.ts`)**:
+  - **Desacople Arquitectónico de Ollama**: JarBees trata a la inferencia como una capacidad interna modular; `llama.cpp` opera como motor primario local y `Ollama` como proveedor secundario de fallback autónomo.
+  - **Conmutación Automática por Fallo (Failover)**: Detección instantánea de caídas de conexión (`ECONNREFUSED`, `ECONNRESET`) y conmutación transparente a Ollama sin error visible para el usuario si no se habían entregado tokens.
+  - **Cerrojo Asíncrono para Concurrencia (`AsyncMutex`)**: Implementación con `Promise.race` que encola peticiones concurrentes con modelos diferentes, previene colisiones en VRAM y libera la cola en < 80ms ante cancelaciones tempranas.
+  - **Aislamiento de Embeddings RAG**: Delegación estricta de generación vectorial a Ollama con `bge-m3:latest` para preservar invariable la dimensionalidad de 1.024 floats de pgvector.
+  - **Telemetría Operativa Enriquecida**: Exposición diferenciada de `defaultModel`, `lastUsedModel`, `loadedModel`, `serverHealthy`, `modelReady`, `modelLoading`, `circuitBreaker`, `lastFailure` y `latencyMs`.
+
+- **🌐 Endpoint de Observabilidad (`src/jarvis/jarvis.controller.ts`)**:
+  - `GET /jarbees/inference/status`: Reporte completo de telemetría de inferencia, proveedores registrados y estado de salud GPU/supervisor sin fuga de rutas del sistema.
+
+- **🧪 Batería de Pruebas de Caos, Resistencia y Regresión**:
+  - **25 Pruebas Unitarias Automatizadas**: Cobertura al 100% en Jest para `llamacpp.provider.spec.ts`, `inference-supervisor.service.spec.ts` e `inference-gateway.service.spec.ts`.
+  - **Suite de Caos Real ([`scratch/test_live_resilience.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_live_resilience.mjs))**:
+    - Servidor apagado -> conmutación inmediata a Ollama sin bloqueo.
+    - Caída mid-flight (`taskkill` a mitad de generación) -> captura limpia de `ECONNRESET`, sin solicitudes duplicadas y fallback posterior 100% operativo.
+    - Conflicto de puerto 8080 -> detección inmediata por el supervisor sin bucles infinitos.
+    - Ping-pong de 20 iteraciones continuas entre `qwen3:8b` y `qwen2.5-coder:7b` -> VRAM oscilando limpiamente entre 6.727 MB y 5.485 MB con 0 MB de fuga de memoria.
+  - **Suite de Validación Avanzada ([`scratch/test_final_four.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_final_four.mjs))**:
+    - Soak test prolongado con LLM + embeddings paralelos -> varianza de VRAM de solo **4 MB** (7.524 MB con Qwen3, 6.282 MB con Coder).
+    - Concurrencia de 6 peticiones con `AbortSignal` -> cancelaciones liberadas en **71 ms**, peticiones en cola resueltas con éxito.
+    - Streaming mid-flight -> pre-token conmuta a Ollama limpiamente; corte mid-stream aborta sin mezclar texto corrupto ni duplicado.
+    - Blackout total de ambos motores -> respuesta inmediata `HTTP 503` en **2 ms** y auto-recuperación autónoma al restaurar procesos.
+
+- **📖 Documentación Técnica y Contratos**:
+  - [`docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md`](file:///c:/Projects/productos_crud_bkd/docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md): Especificación exhaustiva del contrato de inferencia, interfaces, políticas de cancelación, failover matrix y límites de GPU.
+  - Artefacto de migración completado: [`plan_migracion_llamacpp_jarbees.md`](file:///C:/Users/xiphos-pc1/.gemini/antigravity-ide/brain/7d206e9f-0052-413b-81a3-354587654499/plan_migracion_llamacpp_jarbees.md).
+  - Resultados reproducibles: [`scratch/resilience_results.json`](file:///c:/Projects/productos_crud_bkd/scratch/resilience_results.json) y [`scratch/final_four_results.json`](file:///c:/Projects/productos_crud_bkd/scratch/final_four_results.json).
+
 ### Added & Validated — Sistema de Metadata 3D Inteligente para JarBees Studio (2026-10-18)
 
 - **🎨 Asset Metadata Service (`src/jarvis/3d/services/asset-metadata.service.ts`)**:
