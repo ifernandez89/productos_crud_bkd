@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
@@ -136,41 +137,83 @@ export class BlenderService {
   }
 
   /**
-   * Inspecciona las propiedades geométricas y materiales de un archivo GLB
+   * Inspecciona las propiedades geométricas y materiales de un archivo GLB o contenedor .jb3d
    */
-  async inspectModel(glbPath: string): Promise<ModelInspectionResult> {
+  async inspectModel(modelPath: string): Promise<ModelInspectionResult> {
     if (!this.isAvailable()) {
       throw new Error('Blender no está instalado o no se encuentra la ruta en BLENDER_PATH');
     }
 
-    const absGlb = path.resolve(glbPath);
-    if (!fs.existsSync(absGlb)) {
-      throw new Error(`El archivo GLB no existe: ${absGlb}`);
+    const absPath = path.resolve(modelPath);
+    if (!fs.existsSync(absPath)) {
+      throw new Error(`El archivo de modelo no existe: ${absPath}`);
     }
 
-    const scriptPath = path.resolve('scripts/blender/inspect_glb.py');
-    const args = [
-      '-b',
-      '--python-exit-code', '1',
-      '-P', scriptPath,
-      '--',
-      '--input', absGlb,
-    ];
+    let targetGlb = absPath;
+    let tempGlbCreated = false;
 
-    const { stdout } = await execFileAsync(this.blenderPath!, args, { timeout: 30000 });
+    // Si es un contenedor protegido .jb3d, descifrar temporalmente para inspección
+    if (absPath.toLowerCase().endsWith('.jb3d')) {
+      const buffer = fs.readFileSync(absPath);
+      if (
+        buffer.length >= 30 &&
+        buffer[0] === 0x4a &&
+        buffer[1] === 0x42 &&
+        buffer[2] === 0x33 &&
+        buffer[3] === 0x44
+      ) {
+        const key = crypto
+          .createHash('sha256')
+          .update('JarbeesFlightSim_BeeMesh_SecureSignature_v1Jarbees:TheGame:ProtectedAsset:2026')
+          .digest();
+        const iv = buffer.subarray(6, 22);
+        const ciphertext = buffer.subarray(30);
+        const decipher = crypto.createDecipheriv('aes-256-ctr', key, iv);
+        const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
 
-    const startTag = '>>> INSPECTION_REPORT_START >>>';
-    const endTag = '<<< INSPECTION_REPORT_END <<<';
-
-    const startIndex = stdout.indexOf(startTag);
-    const endIndex = stdout.indexOf(endTag);
-
-    if (startIndex === -1 || endIndex === -1) {
-      throw new Error('No se pudo extraer el reporte JSON de la salida de Blender');
+        const tempDir = path.resolve('storage/trials');
+        fs.mkdirSync(tempDir, { recursive: true });
+        targetGlb = path.join(tempDir, `inspect_temp_${Date.now()}.glb`);
+        fs.writeFileSync(targetGlb, decrypted);
+        tempGlbCreated = true;
+      }
     }
 
-    const jsonStr = stdout.slice(startIndex + startTag.length, endIndex).trim();
-    return JSON.parse(jsonStr) as ModelInspectionResult;
+    try {
+      const scriptPath = path.resolve('scripts/blender/inspect_glb.py');
+      const args = [
+        '-b',
+        '--python-exit-code', '1',
+        '-P', scriptPath,
+        '--',
+        '--input', targetGlb,
+      ];
+
+      const { stdout } = await execFileAsync(this.blenderPath!, args, { timeout: 30000 });
+
+      const startTag = '>>> INSPECTION_REPORT_START >>>';
+      const endTag = '<<< INSPECTION_REPORT_END <<<';
+
+      const startIndex = stdout.indexOf(startTag);
+      const endIndex = stdout.indexOf(endTag);
+
+      if (startIndex === -1 || endIndex === -1) {
+        throw new Error('No se pudo extraer el reporte JSON de la salida de Blender');
+      }
+
+      const jsonStr = stdout.slice(startIndex + startTag.length, endIndex).trim();
+      const report = JSON.parse(jsonStr) as ModelInspectionResult;
+      report.file = absPath;
+      return report;
+    } finally {
+      if (tempGlbCreated && fs.existsSync(targetGlb)) {
+        try {
+          fs.unlinkSync(targetGlb);
+        } catch {
+          // Ignore temp cleanup error
+        }
+      }
+    }
   }
 
   /**
@@ -306,5 +349,58 @@ export class BlenderService {
     );
 
     return result;
+  }
+
+  /**
+   * Construye un objeto paramétrico en Blender a partir de una especificación JSON de Object Lab
+   */
+  async generateParametricObject(options: {
+    specPath: string;
+    outBlend?: string;
+    outGlb?: string;
+  }): Promise<{ status: string; glb: string; blend: string; durationMs: number }> {
+    if (!this.isAvailable()) {
+      throw new Error('Blender no está disponible en este entorno');
+    }
+
+    const startTime = Date.now();
+    const absSpec = path.resolve(options.specPath);
+    if (!fs.existsSync(absSpec)) {
+      throw new Error(`Especificación de objeto no encontrada: ${absSpec}`);
+    }
+
+    const parsed = path.parse(absSpec);
+    const baseName = parsed.name.replace(/\.object$/, '');
+    const outBlend = options.outBlend
+      ? path.resolve(options.outBlend)
+      : path.resolve('storage/assets/models', `${baseName}.blend`);
+    const outGlb = options.outGlb
+      ? path.resolve(options.outGlb)
+      : path.resolve('storage/assets/models', `${baseName}.glb`);
+
+    await fs.promises.mkdir(path.dirname(outBlend), { recursive: true });
+    await fs.promises.mkdir(path.dirname(outGlb), { recursive: true });
+
+    const scriptPath = path.resolve('scripts/blender/generate_jarbees_object.py');
+    const args = [
+      '-b',
+      '--python-exit-code', '1',
+      '-P', scriptPath,
+      '--',
+      '--spec', absSpec,
+      '--out', outBlend,
+      '--glb', outGlb,
+    ];
+
+    this.logger.log(`[BlenderService] Generando objeto paramétrico ${baseName}...`);
+    await execFileAsync(this.blenderPath!, args, { timeout: 60000 });
+
+    const durationMs = Date.now() - startTime;
+    return {
+      status: 'success',
+      glb: outGlb,
+      blend: outBlend,
+      durationMs,
+    };
   }
 }

@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Expansión Integral de JarBees Studio 3D, Seguridad .jb3d, Object Lab Paramétrico y Roster de Jarbees_the_game (2026-10-27)
+
+- **🛡️ Módulo de Seguridad y Cifrado `.jb3d` (`src/jarvis/3d/services/asset-security.service.ts`)**:
+  - **Cifrado y Empaquetado por Hardware AES-256-CTR**: Implementación nativa de protección criptográfica para modelos 3D en contenedores `.jb3d`.
+  - **Compatibilidad 100% con Jarbees_the_game**: Alineado con la Web Crypto API (`SubtleCrypto`) del simulador de vuelo y juego web.
+  - **Validación Robusta de Contenedores**: Detección de cabeceras binarias (`JB3D`), versiones, IVs aleatorios y descifrado seguro en memoria RAM.
+  - **Pipeline de Archivos en Disco**: Métodos `packFile()` y `unpackFile()` para conversión automática bidireccional entre `.glb` y `.jb3d`.
+
+- **🎮 Catálogo de Personajes 3D y Hall of Armors (`src/jarvis/3d/services/game-3d-roster.service.ts`)**:
+  - **Telemetría Integral de Avatares**: Especificaciones completas para `bee` (Abeja Guardiana), `colibri` (Colibrí Esmeralda PBR), `iron_man` (Mark 85) e `iron_man_cobalt_protocol` (NEXO-01).
+  - **Tabla de Tamaños y Métricas del Mundo Real**: Altura, envergadura, peso, escala relativa, sistema de propulsión, velocidad máxima y maniobras de acrobacia aérea.
+  - **Configuración Nativa para Three.js**: Escalas precisas, rotaciones, offsets de posición, multiplicadores de cabeceo/balanceo, oscilación hover y FX de repulsores.
+  - **Roster Completo de Villa Auren Hub (Hall of Armors)**: Registro de especificaciones de las 5 armaduras de combate (Mark VII, Heartbreaker, Silver Centurion, Mark 42, War Machine Mk II) con pods espaciales, reactores y estatus táctico.
+
+- **🛠️ Motor Paramétrico y Cinemático (`src/jarvis/3d/services/object-lab.service.ts`)**:
+  - **Validación de Esquemas de Object Lab**: Validador de especificaciones paramétricas `*.object.json` con jerarquía de piezas, roles y primitivas.
+  - **Vectores de Explosión para Despiece Técnico**: Soporte para `explosionVector` en cada pieza para vistas interactivas en WebGL/Three.js.
+  - **Anclajes Semánticos de Interacción y Colisionadores**: Mapeo de `chair_slot`, `item_placement`, `work_station` y cajas de colisión para integración con Auren IK.
+  - **Generador de Plantillas**: Plantilla paramétrica de Mesa de Trabajo NEXO-01 lista para personalización y renderizado.
+
+- **🎬 Controlador REST Unificado (`src/jarvis/3d/controllers/studio-3d.controller.ts`)**:
+  - `GET /jarvis/3d/studio/health`: Chequeo de estado de Blender, GPU y directorios de almacenamiento.
+  - `GET /jarvis/3d/studio/characters` & `/characters/:id`: Roster completo de personajes 3D.
+  - `GET /jarvis/3d/studio/armors` & `/armors/:id`: Hall of Armors y telemetría de pods.
+  - `POST /jarvis/3d/studio/security/pack` & `/unpack` & `/validate`: Gestión de contenedores `.jb3d`.
+  - `POST /jarvis/3d/studio/object-lab/validate` & `/build`: Validación y construcción paramétrica de objetos.
+  - `POST /jarvis/3d/studio/inspect`: Inspección de geometría y materiales con soporte nativo tanto para `.glb` como para `.jb3d`.
+  - `POST /jarvis/3d/studio/weathering`: Desgaste PBR procedural, musgo y normal maps.
+  - `POST /jarvis/3d/studio/render/diorama`: Render cinematográfico headless con profundidad de campo (DoF).
+
+- **⚡ Actualización de Blender Headless (`src/jarvis/3d/blender.service.ts`)**:
+  - Incorporación del script [`scripts/blender/generate_jarbees_object.py`](file:///c:/Projects/productos_crud_bkd/scripts/blender/generate_jarbees_object.py) para generación automatizada de modelos en Blender.
+  - Soporte de inspección transparente para contenedores `.jb3d` descifrados al vuelo en memoria temporal.
+
+- **🧪 Cobertura de Pruebas Unitarias Automatizadas**:
+  - 11 pruebas unitarias pasando al 100% en `asset-security.service.spec.ts`, `object-lab.service.spec.ts` y `game-3d-roster.service.spec.ts`.
+  - Ejecución serial estricta con `jest --runInBand` para máxima protección de memoria y prevención de OOM.
+
 ### Added & Validated — Migración de Inferencia Local a llama.cpp (CUDA 13 / RTX 5070) con Desacople Arquitectónico y Tolerancia a Fallos (2026-10-27)
 
 - **🚀 Motor de Inferencia Primario `LlamaCppProvider` (`src/jarvis/llm/llamacpp.provider.ts`)**:

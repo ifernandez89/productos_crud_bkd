@@ -90,13 +90,22 @@ import { PortraitDirectionService } from './tools/poster/portrait/portrait-direc
 import { BlenderService } from './3d/blender.service';
 import { AssetMetadataService } from './3d/services/asset-metadata.service';
 import { AssetMetadataController } from './3d/controllers/asset-metadata.controller';
+import { Studio3DController } from './3d/controllers/studio-3d.controller';
+import { AssetSecurityService } from './3d/services/asset-security.service';
+import { Game3DRosterService } from './3d/services/game-3d-roster.service';
+import { ObjectLabService } from './3d/services/object-lab.service';
 import { VectorPortraitEngine } from './tools/poster/portrait/vector-portrait.engine';
 import { PortraitQaService } from './tools/poster/portrait/portrait-qa.service';
 import { PortraitService } from './tools/poster/portrait/portrait.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
-  controllers: [JarvisController, PosterController, AssetMetadataController],
+  controllers: [
+    JarvisController,
+    PosterController,
+    AssetMetadataController,
+    Studio3DController,
+  ],
   providers: [
     JarvisService,
     MemoryRepository,
@@ -180,6 +189,9 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     // ── 3D & Blender Headless Engine ────────────────────────
     BlenderService,
     AssetMetadataService,
+    AssetSecurityService,
+    Game3DRosterService,
+    ObjectLabService,
 
     // ── Dialectic Reasoning & RAG Contrast ────────────────────
     DialecticReasoningService,
@@ -226,6 +238,9 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     PortraitService,
     BlenderService,
     AssetMetadataService,
+    AssetSecurityService,
+    Game3DRosterService,
+    ObjectLabService,
     OllamaProvider,
     LlamaCppProvider,
     InferenceSupervisorService,

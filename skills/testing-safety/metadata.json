@@ -1,0 +1,21 @@
+{
+  "name": "Seguridad y Eficiencia de Ejecución y Testing (Anti-OOM)",
+  "description": "Protocolos estrictos de ejecución de tests y gestión de recursos en el backend de JarBees. Evita la saturación del heap de V8/Chromium, el colapso por workers paralelos de Jest y caídas OOM en entornos de desarrollo e IDE.",
+  "category": "ingenieria",
+  "keywords": [
+    "test",
+    "testing",
+    "jest",
+    "oom",
+    "memoria",
+    "heap",
+    "runinband",
+    "workers",
+    "ejecucion",
+    "antigravity",
+    "estabilidad",
+    "recursos"
+  ],
+  "priority": 10,
+  "capabilities": ["testing", "systemDiagnostics", "resourceSafety"]
+}

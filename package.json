@@ -16,9 +16,9 @@
     "ngrok": "ngrok http 4000",
     "tunnel": "npx localtunnel --port 4000",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch --runInBand",
+    "test:cov": "jest --coverage --runInBand",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "migrate:embeddings": "ts-node scripts/migrate-embeddings.ts",
     "test:e2e": "jest --config ./test/jest-e2e.json"
@@ -118,7 +118,8 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "maxWorkers": 1
   },
   "allowScripts": {
     "esbuild@0.28.1": true,

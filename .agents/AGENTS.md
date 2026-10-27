@@ -26,5 +26,12 @@ Use the following guidelines for model selection and configurations:
 - **CODIFICACIÓN ANSI OBLIGATORIA EN SUBTÍTULOS (.srt):** Al generar o guardar archivos de subtítulos (`.srt`), la codificación del archivo final DEBE SER SIEMPRE ANSI (Windows-1252 / `latin1`), NUNCA UTF-8. Asimismo, se deben limpiar caracteres Unicode especiales (comillas curvas, guiones largos `—`, puntos suspensivos `…`) convirtiéndolos a sus equivalentes estándar ANSI/ASCII antes de escribir en disco.
 - **NUNCA ingestar en la base de datos (chunks, embeddings, etc.) durante la traducción de un libro o documento.** El flujo de traducción debe limitarse ÚNICAMENTE a traducir el texto, escribirlo incrementalmente en disco y generar el archivo PDF traducido al español.
 
+## Testing & Resource Safety Rules (Anti-OOM)
+
+- **EJECUCIÓN SERIAL ESTRICTA EN TESTS (`--runInBand`):** Queda TERMINANTEMENTE PROHIBIDO ejecutar Jest con múltiples workers concurrentes en paralelo sin límite en este proyecto. Todo comando de test DEBE ejecutarse con `--runInBand` o con `maxWorkers=1`. Cada worker de ts-jest compila TypeScript al vuelo y consume ~2.5 GB de heap de Node.js, provocando colapsos de memoria (`Allocation failed - JavaScript heap out of memory`) y crasheos del proceso renderer de Electron (`reason: oom, code: 536870904`).
+- **PROHIBIDO EL VOLCADO MASIVO DE LOGS A STDOUT EN PRUEBAS:** Las suites de prueba que iteren múltiples ítems o benchmarks deben emitir únicamente métricas consolidadas o resúmenes breves. Saturar la terminal del IDE con miles de líneas infla el árbol DOM del visor web y detona el límite de memoria del IDE.
+- **TEARDOWN LIMPIO OBLIGATORIO:** Cualquier servicio o prueba que inicialice `setInterval`, `setTimeout`, servidores HTTP o clientes Prisma debe liberar y desuscribir todos los recursos en `afterAll` / `afterEach` (`.unref()` o `.destroy()`) para impedir fugas de memoria y procesos zombi.
+
+
 
 

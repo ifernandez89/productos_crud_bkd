@@ -277,11 +277,18 @@ export class JarvisService {
       // ⚠️ GUARD ANTI-INGESTA / ANTI-SECUESTRO: si el intent es LOCAL con alta confianza Y el mensaje
       // es corto/conversacional, O si es una consulta panorámica de disciplina (ciencia, física, etc.),
       // NUNCA ejecutar el pipeline RAG ni disparar lazy-load.
-      const isShortConversational =
-        userMessage.trim().length < 40 &&
-        /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido)/i.test(
-          userMessage.trim(),
+      const isJokeOrHumor =
+        intent.reason === 'joke request' ||
+        /\b(chiste|chistes|broma|bromas|gracioso|adivinanza|reir|reirme)\b/i.test(
+          userMessage,
         );
+
+      const isShortConversational =
+        (userMessage.trim().length < 50 &&
+          /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido|contame|cuentame|decime)/i.test(
+            userMessage.trim(),
+          )) ||
+        isJokeOrHumor;
 
       const isDisciplinePanoramic =
         this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
@@ -323,7 +330,7 @@ export class JarvisService {
         }
       } else {
         this.logger.log(
-          `[rag:skip] Intent LOCAL/high + mensaje conversacional corto — omitiendo RAG. Mensaje: "${userMessage.slice(0, 60)}"`,
+          `[rag:skip] Intent LOCAL/high + mensaje conversacional o humor — omitiendo RAG. Mensaje: "${userMessage.slice(0, 60)}"`,
         );
       }
 
@@ -1208,10 +1215,39 @@ export class JarvisService {
         { role: 'user', content: userPrompt },
       ],
     });
-    const responseContent = this.formatProviderResponse(
+    let responseContent = this.formatProviderResponse(
       response.content,
       provider,
     );
+
+    // Safeguard: si el LLM devuelve una cadena vacía (por tokens consumidos en think, timeout o contradicción), reintentar sin RAG/directo
+    if (!responseContent || responseContent.trim() === '') {
+      this.logger.warn(
+        `[jarvis] Proveedor ${provider.getProviderName()} devolvió respuesta vacía. Reintentando con prompt directo...`,
+      );
+      try {
+        const retryRes = await provider.generate({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Sos JarBees, un asistente inteligente, empático y conversacional. Respondé en español de forma directa, cálida y natural.',
+            },
+            { role: 'user', content: userMessage },
+          ],
+        });
+        responseContent = this.formatProviderResponse(retryRes.content, provider);
+      } catch (retryErr: any) {
+        this.logger.error(
+          `[jarvis] Error al regenerar respuesta vacía: ${retryErr.message}`,
+        );
+      }
+
+      if (!responseContent || responseContent.trim() === '') {
+        responseContent =
+          'Disculpá, tuve una pequeña intermitencia al formular la respuesta. ¿Podrías repetirme la consulta?';
+      }
+    }
 
     let finalAnswer = responseContent;
     let confidenceScore = 100;
