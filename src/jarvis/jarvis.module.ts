@@ -42,6 +42,8 @@ import { AstrologyTool } from './tools/astrology/astrology-tool.service';
 import { MemoryExtractorService } from './memory/memory-extractor.service';
 import { TaskReminderService } from './tools/tasks/task-reminder.service';
 import { ExecutionEngine } from './planner/execution-engine.service';
+import { MissionCheckpointService } from './planner/mission-checkpoint.service';
+import { MissionRecoveryService } from './planner/mission-recovery.service';
 import { KnowledgeEvolutionService } from './memory/knowledge-evolution.service';
 import { VisionService } from './tools/vision/vision.service';
 import { DocumentEnrichmentService } from './library/document-enrichment.service';
@@ -62,6 +64,9 @@ import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
+import { ActionGatekeeperService } from './security/action-gatekeeper.service';
+import { RedactedObservabilityService } from './security/redacted-observability.service';
+import { SpecialistCapabilityRouterService } from './llm/specialist-capability-router.service';
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
 import { EntityGraphRepository } from './repositories/entity-graph.repository';
 import { EntityGraphService } from './knowledge/entity-graph.service';
@@ -152,6 +157,8 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     InvestigationService,
     TaskReminderService,
     ExecutionEngine,
+    MissionCheckpointService,
+    MissionRecoveryService,
     KnowledgeEvolutionService,
     VisionService,
     DocumentEnrichmentService,
@@ -169,6 +176,9 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     JarvisPromptBuilderService,
     AuditService,
     ActionExecutionGateService,
+    ActionGatekeeperService,
+    RedactedObservabilityService,
+    SpecialistCapabilityRouterService,
     HierarchicalParserService,
     // ── Knowledge Graph (KGRAPH v1) ──────────────────────────────────────────
     EntityGraphRepository,
@@ -248,6 +258,13 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     LLM_GATEWAY,
     OpenRouterProvider,
     AstrologyTool,
+    ActionGatekeeperService,
+    MissionCheckpointService,
+    MissionRecoveryService,
+    RedactedObservabilityService,
+    SpecialistCapabilityRouterService,
   ],
 })
 export class JarvisModule {}
+
+

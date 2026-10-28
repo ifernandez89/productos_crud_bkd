@@ -4,7 +4,80 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
-### Added & Validated — Expansión Integral de JarBees Studio 3D, Seguridad .jb3d, Object Lab Paramétrico y Roster de Jarbees_the_game (2026-10-27)
+### Added & Validated — Blindaje Criptográfico, Misiones Persistentes, Control Epistemológico y Especialistas (2026-10-27)
+
+- **📋 Plan de Arquitectura y Benchmarks en RTX 5070 (`docs/plan_jarbees_especialistas_rtx5070.md`)**:
+  - **Especialistas y Presupuesto VRAM (12 GB)**: Definición formal de roles: `Qwen 3 4B` (base/código rápido/RAG), `Gemma 3 4B` (síntesis/redacción), `Qwen 3 8B` (ingeniería avanzada) y `DeepSeek-R1 8B` (auditoría epistemológica).
+  - **Mecanismos de Drenaje (`DrainQueue`) y Escalamiento**: Diseño para conmutación de modelos sin interrupción de streams y escalamiento determinista 4B ➔ 8B ante fallos de sintaxis/tests.
+  - **Batería de Validación Empírica**: Hoja de ruta para benchmarking de TTFT, latencia de swapping en NVMe y límites de memoria.
+
+- **🔐 Bóveda Criptográfica en Reposo `CryptoVaultService` (`src/shared/crypto-vault.service.ts` & `src/shared/shared.module.ts`)**:
+  - **Cifrado Simétrico AES-256-GCM**: Cifrado con IV aleatorio de 12 bytes y verificación de etiqueta de autenticación (authTag) de 16 bytes.
+  - **Clave Derivada Segura**: Clave de 256 bits derivada de `CREDENTIALS_ENCRYPTION_KEY` o `JWT_SECRET` con SHA-256 + salt de dominio.
+  - **Retrocompatibilidad Transparente**: Detección de prefijo `enc:v1:`. Datos guardados en texto plano legacy se procesan y devuelven sin romper instancias existentes.
+  - **Enmascaramiento de Logs**: Método `maskSecret()` que previene la fuga accidental de tokens en stdout o logs de excepciones.
+
+- **🔑 Modo Zero-UI y Cifrado OAuth2 en `GoogleAuthService` (`src/google/google-auth.service.ts` & `src/google/google-auth.controller.ts`)**:
+  - **Configuración Exclusiva por Backend**: Detección y auto-inicialización en `onModuleInit` a partir de variables de entorno (`GOOGLE_REFRESH_TOKEN`, `GOOGLE_ACCESS_TOKEN`, `GOOGLE_SCOPES`). Si existen en `.env`, el backend las sincroniza y cifra automáticamente sin requerir interacción por frontend o navegador.
+  - **Endpoint Headless `POST /api/jarbees/google/configure`**: Permite inyectar o actualizar credenciales mediante scripts, CLI o curl de forma directa.
+  - **Protección Criptográfica en PostgreSQL**: Cifrado con AES-256-GCM tanto para `accessToken` como para `refreshToken` en `upsert` y auto-refresco en segundo plano (`refreshAccessToken`).
+  - **Descifrado Transparente en Memoria**: Solo se descifran los tokens al momento de interactuar con la API oficial de Google (`getAuthenticatedClient`).
+
+- **🛡️ Retos de Autorización HITL Anti-Replay `ActionGatekeeperService` (`src/jarvis/security/action-gatekeeper.service.ts`)**:
+  - **Sustitución de Confirmación Trivial**: Reemplazo de parámetros vulnerables a inyección (`?confirm=true`) por tokens de autorización criptográficos firmados con HMAC-SHA256.
+  - **Tokens de Un Solo Uso (Single-Use)**: Cada reto (`createChallenge`) cuenta con un nonce UUID y TTL estricto de 60 segundos. Al verificarse (`verifyAndConsumeChallenge`), el nonce se destruye inmediatamente para impedir ataques de repetición.
+  - **Endpoint `POST /api/jarbees/security/challenge`**: Genera un reto explícito vinculado estrictamente al `actionType` y `targetId` específico.
+  - **Protección en `DELETE /api/jarbees/library/document/:id`**: Requiere cabecera `x-action-token` o parámetro `actionToken` validado criptográficamente.
+
+- **📱 Blindaje del Gateway Móvil `MobileGatewayService` (`src/mobile-gateway/mobile-gateway.service.ts` & `src/mobile-gateway/mobile-gateway.controller.ts`)**:
+  - **Autenticación por Firma HMAC-SHA256**: Cabecera `x-jarbees-signature` con validación de integridad (`requestId:timestamp:intent`) en tiempo constante.
+  - **Ventana Anti-Replay Temporal**: Rechazo estricto de peticiones con desfase de reloj superior a 30 segundos (`drift > 30000ms`) y deduplicación de `requestId` procesados.
+  - **Lista Blanca Estricta de Aplicaciones (`MOBILE_ALLOWED_APPS`)**: `OPEN_APP` solo permite lanzar ejecutables seguros autorizados (`calc`, `notepad`, `code`, `explorer`). Cualquier comando arbitrario o inyección es rechazado de inmediato con `ForbiddenException`.
+  - **Protección Anti-SSRF en `OPEN_URL`**: Filtro estricto que bloquea accesos a `localhost`, `127.0.0.1`, `0.0.0.0`, `169.254.169.254` y subredes privadas RFC 1918 (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
+  - **Aislamiento de Ejecución y Teardown Limpio**: Implementación de `OnModuleDestroy` y encapsulación de llamadas a sistema operativo, eliminando fugas de procesos en tests unitarios.
+
+- **🌐 Data Privacy Gate en Inferencia `InferenceGatewayService` (`src/jarvis/llm/inference-gateway.service.ts`)**:
+  - **Confinamiento Local de Datos Privados**: Clasificación de sensibilidad en `LLMGenerateOptions` (`public`, `private`, `confidential`).
+  - **Fail-Closed Ante Fallos Locales**: Si los motores locales (`llamacpp` y `ollama`) fallan, la conmutación a proveedores remotos (`openrouter`) queda **estrictamente bloqueada** (`ForbiddenException`) cuando la solicitud contiene datos privados, documentos de biblioteca o credenciales.
+  - **Heurística de Detección de Secretos**: Bloqueo preventivo de conmutación a la nube si el prompt contiene patrones de credenciales (`token`, `password`, `secret`, `api_key`).
+
+- **🔄 Resiliencia de Misiones y Recuperación tras Caídas (`src/jarvis/planner/mission-recovery.service.ts` & `src/jarvis/planner/mission-checkpoint.service.ts`)**:
+  - **Persistencia Incremental en Disco (`MissionCheckpointService`)**: Cada paso ejecutado se guarda atómicamente en `storage/checkpoints/mission_<id>.checkpoint.json` (.tmp + rename) con contexto acumulado, artefactos y estado.
+  - **Ejecución Idempotente en `ExecutionEngine`**: Al reanudar una misión, los pasos ya completados se omiten de inmediato, reutilizando sus salidas cacheadas y evitando re-ejecutar búsquedas web o scraping innecesarios.
+  - **Ciclo de Auto-Recuperación en Arranque (`onApplicationBootstrap`)**: Detección automática de tareas huérfanas en estado `in_progress`. Las que estaban 100% completas se finalizan, y las interrumpidas se transicionan a `waiting_recovery` con diagnóstico estructurado.
+  - **Endpoints REST de Gestión de Misiones**:
+    - `GET /api/jarbees/missions/recoverable`: Lista misiones interrumpidas con telemetría de avance y estado de checkpoints en disco.
+    - `POST /api/jarbees/missions/:id/resume`: Reanuda la ejecución desde el último paso completado.
+
+- **⚖️ Control Epistemológico y Preservación Dialéctica (`src/jarvis/cognitive/evidence-gatekeeper.service.ts`)**:
+  - **Validación Factual Rigurosa**: Reclasifica afirmaciones presentadas como hechos pero carentes de un fragmento de respaldo directo (`supportingChunkIds`) a `[Inferencia / Sin respaldo directo]`.
+  - **Puntuación de Integridad Epistémica**: Cálculo proporcional de certidumbre documental (0.0 a 1.0) con inyección de alertas en caso de baja evidencia documental (< 0.5).
+  - **Preservación Estricta de Contrastes Dialécticos**: Valida que ante contradicciones entre múltiples autores o fuentes (ej. Jung vs. Freud), el sistema mantenga ambas posturas con sus respectivas atribuciones, prohibiendo la disolución o el colapso artificial en un falso consenso.
+
+- **🧭 Enrutamiento por Capacidad de Especialistas (`src/jarvis/llm/specialist-capability-router.service.ts`)**:
+  - **Heurística Oficial según AGENTS.md**:
+    - 🥇 Programación / RAG Técnico / Instrucciones estrictas: Enrutado a `Qwen 3 4B` / `qwen2.5-coder`.
+    - 🥈 Síntesis / Creatividad / Resúmenes largos: Enrutado a `Gemma 3 4B`.
+    - 🧠 Razonamiento profundo / Auditoría de premisas: Enrutado a `DeepSeek-R1`.
+  - **Validación de Hardware y Capacidad Multimodal**: Detección estricta de payloads visuales/imágenes. Si no hay un modelo de visión activo en la VRAM de la GPU (RTX 5070), rechaza la petición con `BadRequestException` informando el límite físico de hardware, impidiendo alucinaciones al enviar imágenes a modelos de texto puro.
+
+- **🕵️ Observabilidad Ofuscada y Anonimización de Telemetría (`src/jarvis/security/redacted-observability.service.ts`)**:
+  - **Sanitización Integral de Logs y Trazas**: Ofuscación automática de tokens de Google (`ya29...`), tokens JWT, API Keys (`sk-...`), credenciales `Bearer` y rutas absolutas de usuario en Windows (`C:\Users\[USER_HOME]\...`).
+  - **Recursión de Objetos Segura**: Sanitización recursiva de payloads para trazabilidad en `AgentRun` sin exposición de secretos.
+
+- **🧪 Cobertura Completa de Pruebas Unitarias Automatizadas**:
+  - **51 pruebas unitarias ejecutadas y aprobadas al 100%**:
+    - `src/shared/crypto-vault.service.spec.ts` (6 tests)
+    - `src/google/google-auth.service.spec.ts` (3 tests)
+    - `src/jarvis/security/action-gatekeeper.service.spec.ts` (6 tests)
+    - `src/mobile-gateway/mobile-gateway.service.spec.ts` (7 tests)
+    - `src/jarvis/llm/inference-gateway.privacy.spec.ts` (6 tests)
+    - `src/jarvis/planner/mission-recovery.service.spec.ts` (9 tests)
+    - `src/jarvis/cognitive/evidence-gatekeeper.service.spec.ts` (4 tests)
+    - `src/jarvis/llm/specialist-capability-router.service.spec.ts` (5 tests)
+    - `src/jarvis/security/redacted-observability.service.spec.ts` (5 tests)
+  - Cumplimiento riguroso de las reglas del proyecto: ejecución serial estricta (`--runInBand`), teardown limpio sin procesos zombi ni handles abiertos, y supresión de stdout masivo.
+
 
 - **🛡️ Módulo de Seguridad y Cifrado `.jb3d` (`src/jarvis/3d/services/asset-security.service.ts`)**:
   - **Cifrado y Empaquetado por Hardware AES-256-CTR**: Implementación nativa de protección criptográfica para modelos 3D en contenedores `.jb3d`.

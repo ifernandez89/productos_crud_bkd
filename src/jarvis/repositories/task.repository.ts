@@ -83,6 +83,27 @@ export class TaskRepository {
     });
   }
 
+  async findTasksByStatus(status: string, sessionId?: string) {
+    return this.prisma.task.findMany({
+      where: {
+        status,
+        ...(sessionId ? { sessionId } : {}),
+      },
+      include: { steps: { orderBy: { stepNumber: 'asc' } } },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async findAllInProgressOrRecoverable() {
+    return this.prisma.task.findMany({
+      where: {
+        status: { in: ['in_progress', 'waiting_recovery', 'waiting_approval'] },
+      },
+      include: { steps: { orderBy: { stepNumber: 'asc' } } },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   async updateStepStatus(stepId: number, status: string, result?: string) {
     return this.prisma.taskStep.update({
       where: { id: stepId },
@@ -90,3 +111,4 @@ export class TaskRepository {
     });
   }
 }
+

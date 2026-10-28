@@ -8,6 +8,7 @@ import { EpigeneticRegulatorService } from './epigenetic-regulator.service';
 import { PredictiveProcessingService } from './predictive-processing.service';
 import { MetacognitionEngineService } from './metacognition-engine.service';
 import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
+import { EvidenceGatekeeperService } from './evidence-gatekeeper.service';
 
 @Module({
   imports: [PrismaModule],
@@ -20,6 +21,7 @@ import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
     PredictiveProcessingService,
     MetacognitionEngineService,
     CognitiveOrchestratorService,
+    EvidenceGatekeeperService,
   ],
   exports: [
     CognitiveFieldService,
@@ -30,6 +32,8 @@ import { CognitiveOrchestratorService } from './cognitive-orchestrator.service';
     PredictiveProcessingService,
     MetacognitionEngineService,
     CognitiveOrchestratorService,
+    EvidenceGatekeeperService,
   ],
 })
 export class CognitiveModule {}
+

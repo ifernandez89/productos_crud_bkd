@@ -41,6 +41,8 @@ import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 import { getAvailableDisciplines } from '../shared/disciplines';
 import { InferenceGatewayService } from './llm/inference-gateway.service';
+import { ActionGatekeeperService } from './security/action-gatekeeper.service';
+import { MissionRecoveryService } from './planner/mission-recovery.service';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -65,7 +67,10 @@ export class JarvisController {
     private readonly audiobookIngestService: AudiobookIngestService,
     private readonly trialsService: GeneralIntelligenceTrialsService,
     private readonly inferenceGateway: InferenceGatewayService,
+    private readonly actionGatekeeper: ActionGatekeeperService,
+    private readonly missionRecovery: MissionRecoveryService,
   ) {}
+
 
   // ── Telemetría y Estado de Inferencia ───────────────────────────────────────
 
@@ -196,6 +201,31 @@ export class JarvisController {
     );
     return { success: true, ...result };
   }
+
+  @Public()
+  @Get('missions/recoverable')
+  @ApiOperation({
+    summary: 'Listar misiones interrumpidas o pendientes de recuperación',
+    description:
+      'Devuelve las misiones que quedaron en estado in_progress o waiting_recovery tras un reinicio, junto con sus checkpoints en disco.',
+  })
+  async getRecoverableMissions() {
+    const missions = await this.missionRecovery.getRecoverableMissions();
+    return { success: true, missions };
+  }
+
+  @Public()
+  @Post('missions/:id/resume')
+  @ApiOperation({
+    summary: 'Reanudar misión interrumpida de forma idempotente',
+    description:
+      'Reanuda una misión desde el último paso completado sin volver a ejecutar los pasos previos.',
+  })
+  async resumeMission(@Param('id', ParseIntPipe) id: number) {
+    const result = await this.missionRecovery.resumeMission(id);
+    return { success: true, ...result };
+  }
+
 
   // ── Dashboard ───────────────────────────────────────────────────────────────
 
@@ -391,21 +421,61 @@ export class JarvisController {
     return { document };
   }
 
+  // ── Seguridad y Autorización de Acciones Críticas (HITL) ───────────────────
+
+  @Public()
+  @Post('security/challenge')
+  @ApiOperation({
+    summary: 'Solicitar un Action Challenge Token (HITL criptográfico de un solo uso)',
+    description:
+      'Genera un token firmado con HMAC-SHA256 con validez de 60 segundos para autorizar una acción destructiva concreta (ej: LIBRARY_DELETE_DOCUMENT). Previene inyecciones indirectas.',
+  })
+  requestActionChallenge(
+    @Body()
+    body: {
+      actionType: string;
+      targetId: string | number;
+      payload?: Record<string, any>;
+    },
+  ) {
+    return this.actionGatekeeper.createChallenge(
+      body.actionType,
+      body.targetId,
+      body.payload,
+    );
+  }
+
   @Public()
   @Delete('library/document/:id')
-  @ApiOperation({ summary: 'Eliminar un documento' })
+  @ApiOperation({
+    summary: 'Eliminar un documento (Requiere Action Challenge Token o confirmación HITL autorizada)',
+  })
   async deleteDocument(
     @Param('id', ParseIntPipe) id: number,
+    @Headers('x-action-token') actionToken?: string,
+    @Query('actionToken') queryActionToken?: string,
     @Query('confirm') confirm?: string,
     @Headers('x-human-confirmation') humanConfirmation?: string,
   ) {
-    const humanOk =
-      confirm === 'true' ||
-      humanConfirmation === 'yes' ||
-      process.env.SKIP_HITL === 'true';
-    if (!humanOk) {
-      throw new BadRequestException(
-        'Operación destructiva requiere confirmación humana: enviar ?confirm=true o header x-human-confirmation: yes',
+    const token = actionToken || queryActionToken;
+
+    // Si no se proporcionó token firmado, pero se pasó confirmación legacy
+    if (!token) {
+      const isLegacyDevBypass =
+        (confirm === 'true' || humanConfirmation === 'yes') &&
+        process.env.SKIP_HITL === 'true';
+
+      if (!isLegacyDevBypass) {
+        throw new BadRequestException(
+          'Operación destructiva rechazada. Se requiere un Action Challenge Token firmado. Solicite un token primero en POST /api/jarbees/security/challenge con actionType="LIBRARY_DELETE_DOCUMENT" y targetId=' + id,
+        );
+      }
+    } else {
+      // Validar y consumir el token de un solo uso (Anti-Replay)
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        token,
+        'LIBRARY_DELETE_DOCUMENT',
+        id,
       );
     }
 
@@ -413,13 +483,16 @@ export class JarvisController {
     await this.auditService.log('deleteDocument.request', {
       id,
       by: 'api',
-      confirmVia: confirm ? 'query' : humanConfirmation ? 'header' : 'none',
+      tokenVerified: Boolean(token),
     });
 
     await this.documentRepo.deleteDocument(id);
 
     await this.auditService.log('deleteDocument.success', { id, by: 'api' });
-    return { success: true };
+    return {
+      success: true,
+      message: `Documento #${id} eliminado con autorización confirmada.`,
+    };
   }
 
   @Public()

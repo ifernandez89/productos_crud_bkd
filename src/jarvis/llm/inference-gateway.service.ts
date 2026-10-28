@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional, ForbiddenException } from '@nestjs/common';
 import {
   ILLMProvider,
   LLMGenerateOptions,
@@ -243,6 +243,13 @@ export class InferenceGatewayService implements ILLMProvider {
         const [prefix, ...rest] = options.model.split(':');
         const explicitProvider = this.getProvider(prefix);
         if (explicitProvider) {
+          // Data Privacy Gate: validar si se permite inferencia cloud
+          if (!this.isRemoteProviderAllowed(prefix, options)) {
+            throw new ForbiddenException(
+              `[Data Privacy Gate] Inferencia remota con '${prefix}' bloqueada: la consulta contiene datos privados/sensibles (sensitivity=${options.sensitivity || 'private'}) y no puede enviarse a un proveedor cloud.`,
+            );
+          }
+
           const cleanModel = rest.join(':');
           const res = await explicitProvider.generate({
             ...options,
@@ -255,6 +262,13 @@ export class InferenceGatewayService implements ILLMProvider {
 
       const primary = this.getPrimaryProvider();
       const primaryName = this.primaryProviderName;
+
+      // Data Privacy Gate para proveedor primario
+      if (!this.isRemoteProviderAllowed(primaryName, options)) {
+        throw new ForbiddenException(
+          `[Data Privacy Gate] Inferencia primaria con proveedor cloud '${primaryName}' bloqueada por contener datos sensibles.`,
+        );
+      }
 
       try {
         const res = await primary.generate(options);
@@ -290,6 +304,16 @@ export class InferenceGatewayService implements ILLMProvider {
         const fallback = this.getFallbackProvider();
         const fallbackName = this.fallbackProviderName;
 
+        // Data Privacy Gate para fallback
+        if (!this.isRemoteProviderAllowed(fallbackName, options)) {
+          this.logger.error(
+            `❌ [gateway] Conmutación a fallback '${fallbackName}' bloqueada por Data Privacy Gate: la solicitud contiene datos privados (sensitivity=${options.sensitivity || 'private'}). Prevaleciendo confinamiento local.`,
+          );
+          throw new ForbiddenException(
+            `[Data Privacy Gate] Inferencia cloud en fallback '${fallbackName}' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube.`,
+          );
+        }
+
         this.logger.warn(
           `⚠️ [gateway] Proveedor primario '${primaryName}' falló (${errMsg}). Conmutando automáticamente a fallback '${fallbackName}'...`,
         );
@@ -316,6 +340,54 @@ export class InferenceGatewayService implements ILLMProvider {
         releaseLock();
       }
     }
+  }
+
+  /**
+   * Data Privacy Gate:
+   * Determina si una petición puede enviarse a proveedores remotos/cloud (ej: OpenRouter).
+   * Por defecto, las peticiones que contienen datos privados, documentos de la biblioteca,
+   * correos, memorias personales o credenciales quedan CONFINADAS estrictamente a nivel local.
+   */
+  isRemoteProviderAllowed(providerName: string, options: LLMGenerateOptions): boolean {
+    const isRemote = providerName.toLowerCase() === 'openrouter';
+    if (!isRemote) return true;
+
+    // Si allowRemoteFallback está expresamente en false, bloquear
+    if (options.allowRemoteFallback === false) {
+      return false;
+    }
+
+    // Si la sensibilidad es 'private' o 'confidential', bloquear a menos que allowRemoteFallback sea explícitamente true
+    if (options.sensitivity === 'private' || options.sensitivity === 'confidential') {
+      return options.allowRemoteFallback === true;
+    }
+
+    // Heurística de detección de datos altamente sensibles si no se especificó sensitivity
+    const allContent = (options.messages || [])
+      .map((m) => m.content || '')
+      .join(' ')
+      .toLowerCase();
+
+    const sensitiveTokens = [
+      'password',
+      'token',
+      'secret',
+      'api_key',
+      'apikey',
+      'private_key',
+      'credencial',
+      'usercredential',
+      'refresh_token',
+      'access_token',
+    ];
+
+    for (const t of sensitiveTokens) {
+      if (allContent.includes(t)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private recordSuccess(

@@ -8,6 +8,10 @@ import { MemoryRepository } from '../repositories/memory.repository';
 import { DocumentRepository } from '../repositories/document.repository';
 import { EmbeddingsService } from '../library/embeddings.service';
 import { ActionExecutionGateService } from '../security/action-execution-gate.service';
+import {
+  MissionCheckpointService,
+  MissionCheckpoint,
+} from './mission-checkpoint.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -116,10 +120,11 @@ export class ExecutionEngine {
     @Inject(OllamaProvider) private readonly llm: ILLMProvider,
     private readonly embeddingsService: EmbeddingsService,
     private readonly actionGate: ActionExecutionGateService,
+    private readonly checkpointService?: MissionCheckpointService,
   ) {}
 
   /**
-   * Ejecuta un plan completo paso a paso.
+   * Ejecuta un plan completo paso a paso con persistencia incremental (checkpoints) e idempotencia.
    * Los resultados de pasos previos se acumulan como contexto.
    */
   async execute(plan: ExecutionPlan): Promise<ExecutionResult> {
@@ -128,10 +133,35 @@ export class ExecutionEngine {
       `[engine] ejecutando plan #${plan.taskId}: "${plan.objective.slice(0, 80)}"`,
     );
 
-    // Marcar task como in_progress
+    // Cargar o inicializar checkpoint en disco
+    let checkpoint: MissionCheckpoint | null = this.checkpointService
+      ? this.checkpointService.loadCheckpoint(plan.taskId)
+      : null;
+
+    if (!checkpoint && this.checkpointService) {
+      checkpoint = {
+        taskId: plan.taskId,
+        objective: plan.objective,
+        status: 'in_progress',
+        currentStepIndex: 0,
+        totalSteps: plan.steps.length,
+        completedSteps: [],
+        accumulatedContext: [],
+        artifacts: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      this.checkpointService.saveCheckpoint(checkpoint);
+    }
+
+    // Marcar task como in_progress en BD
     await this.taskRepo.updateTaskStatus(plan.taskId, 'in_progress');
 
     const accumulatedContext: string[] = [];
+    if (checkpoint && checkpoint.accumulatedContext) {
+      accumulatedContext.push(...checkpoint.accumulatedContext);
+    }
+
     let stepsCompleted = 0;
     let stepsFailed = 0;
     let finalAnswer = '';
@@ -139,6 +169,34 @@ export class ExecutionEngine {
 
     for (const step of plan.steps) {
       const stepStart = Date.now();
+
+      // Comprobar idempotencia: si el paso ya fue completado previamente en el checkpoint o BD
+      const previousOutput =
+        checkpoint?.completedSteps.find((s) => s.stepNumber === step.stepNumber)?.output ||
+        (step.status === 'completed' && step.output ? step.output.content : undefined);
+
+      if (previousOutput !== undefined) {
+        this.logger.log(
+          `[engine] step ${step.stepNumber}/${plan.steps.length} [OMITIDO - IDEMPOTENCIA]: "${step.description.slice(0, 60)}" (resultado reutilizado de disco/BD)`,
+        );
+        step.status = 'completed';
+        step.output = { content: previousOutput };
+        stepsCompleted++;
+
+        if (previousOutput.trim().length > 20) {
+          const ctxEntry = `[${step.type}] ${previousOutput.slice(0, 2000)}`;
+          if (!accumulatedContext.includes(ctxEntry)) {
+            accumulatedContext.push(ctxEntry);
+          }
+        }
+        if (step.type === 'respond') {
+          finalAnswer = previousOutput;
+        }
+        if (step.type === 'save') {
+          savedToKnowledge = true;
+        }
+        continue;
+      }
 
       try {
         // Marcar step como running
@@ -184,6 +242,21 @@ export class ExecutionEngine {
         step.status = 'completed';
         step.durationMs = Date.now() - stepStart;
         stepsCompleted++;
+
+        // Persistir avance en checkpoint en disco de inmediato
+        if (checkpoint && this.checkpointService) {
+          checkpoint.currentStepIndex = step.stepNumber;
+          checkpoint.completedSteps.push({
+            stepNumber: step.stepNumber,
+            type: step.type,
+            description: step.description,
+            output: output.content,
+            durationMs: step.durationMs,
+            completedAt: new Date().toISOString(),
+          });
+          checkpoint.accumulatedContext = [...accumulatedContext];
+          this.checkpointService.saveCheckpoint(checkpoint);
+        }
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         this.logger.error(`[engine] step ${step.stepNumber} falló: ${msg}`);
@@ -197,6 +270,12 @@ export class ExecutionEngine {
         step.error = msg;
         step.durationMs = Date.now() - stepStart;
         stepsFailed++;
+
+        if (checkpoint && this.checkpointService) {
+          checkpoint.status = 'failed';
+          checkpoint.error = msg;
+          this.checkpointService.saveCheckpoint(checkpoint);
+        }
 
         // Si un paso crítico falla y no tenemos contexto, abortar
         if (accumulatedContext.length === 0 && step.type !== 'save') {
@@ -231,9 +310,15 @@ export class ExecutionEngine {
       finalAnswer.slice(0, 1000),
     );
 
+    if (checkpoint && this.checkpointService) {
+      checkpoint.status = finalStatus;
+      this.checkpointService.saveCheckpoint(checkpoint);
+    }
+
     this.logger.log(
       `[engine] plan #${plan.taskId} finalizado: ${stepsCompleted} ok, ${stepsFailed} errores, ${totalDurationMs}ms`,
     );
+
 
     // Construir registro de ejecución para aprendizaje
     const executionLog = {

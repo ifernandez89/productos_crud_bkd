@@ -59,17 +59,27 @@ export class OllamaProvider implements ILLMProvider {
 
     // Convertir mensajes a formato LangChain
     const messages = options.messages.map((msg) => {
+      const textContent =
+        typeof msg.content === 'string'
+          ? msg.content
+          : Array.isArray(msg.content)
+            ? msg.content
+                .map((c: any) => c.text || JSON.stringify(c))
+                .join(' ')
+            : JSON.stringify(msg.content);
+
       switch (msg.role) {
         case 'system':
-          return new SystemMessage(msg.content);
+          return new SystemMessage(textContent);
         case 'user':
-          return new HumanMessage(msg.content);
+          return new HumanMessage(textContent);
         case 'assistant':
-          return new AIMessage(msg.content);
+          return new AIMessage(textContent);
         default:
-          return new HumanMessage(msg.content);
+          return new HumanMessage(textContent);
       }
     });
+
 
     try {
       const response = await model.invoke(messages);

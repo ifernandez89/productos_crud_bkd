@@ -18,10 +18,13 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
+import { SharedModule } from './shared/shared.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    SharedModule,
     LoggerModule,
     PrismaModule,
     ProductsModule,

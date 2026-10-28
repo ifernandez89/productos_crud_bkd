@@ -5,7 +5,7 @@
 
 export interface LLMMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  content: string | Array<{ type: string; text?: string; image_url?: any; image?: string; [key: string]: any }>;
 }
 
 export interface LLMTimeouts {
@@ -14,8 +14,11 @@ export interface LLMTimeouts {
   generationMs?: number;   // Tiempo máx para generar la respuesta completa (ej: 45000ms)
 }
 
+export type DataSensitivityLevel = 'public' | 'private' | 'confidential';
+
 export interface LLMGenerateOptions {
   messages: LLMMessage[];
+  images?: string[];                  // Base64 o URLs de imágenes para modelos de visión
   model?: string;
   temperature?: number;
   topP?: number;
@@ -26,7 +29,10 @@ export interface LLMGenerateOptions {
   timeoutMs?: number;       // Timeout global personalizado para esta petición
   timeouts?: LLMTimeouts;   // Timeouts desglosados por fase operativa
   abortSignal?: AbortSignal;// Señal para cancelación temprana (cliente desconectado)
+  sensitivity?: DataSensitivityLevel; // Nivel de confidencialidad de la consulta
+  allowRemoteFallback?: boolean;      // Si false, prohíbe conmutar a proveedores cloud
 }
+
 
 export interface LLMGenerateResponse {
   content: string;

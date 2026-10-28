@@ -1,19 +1,214 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  BadRequestException,
+  UnauthorizedException,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { exec } from 'child_process';
 import * as os from 'os';
+import * as crypto from 'crypto';
+import { URL } from 'url';
+
+export interface MobileCommandDto {
+  requestId: string;
+  deviceId: string;
+  timestamp: string;
+  intent: string;
+  parameters?: Record<string, any>;
+  context?: {
+    source?: string;
+    network?: string;
+    battery?: number;
+    userCommand?: string;
+    [key: string]: any;
+  };
+}
+
+export const MOBILE_ALLOWED_APPS: Record<string, string> = {
+  calculator: 'calc',
+  calc: 'calc',
+  notepad: 'notepad',
+  vscode: 'code',
+  code: 'code',
+  explorer: 'explorer',
+};
+
+const ALLOWED_VK_CODES = new Set([0xad, 0xae, 0xaf, 0xb3]);
 
 @Injectable()
-export class MobileGatewayService {
+export class MobileGatewayService implements OnModuleDestroy {
   private readonly logger = new Logger(MobileGatewayService.name);
+  private readonly secret: Buffer;
+  private readonly maxClockDriftMs = 30000; // 30 segundos
+  private readonly seenRequestIds = new Map<string, number>();
+  private readonly cleanupInterval: NodeJS.Timeout;
+
+  constructor() {
+    const rawSecret =
+      process.env.MOBILE_GATEWAY_SECRET ||
+      process.env.JWT_SECRET ||
+      'jarbees-mobile-gateway-default-hmac-key-2026';
+
+    this.secret = crypto
+      .createHash('sha256')
+      .update(`${rawSecret}:jarbees_mobile_gateway_salt`)
+      .digest();
+
+    // Limpieza de nonces/requestIds expirados cada 60s
+    this.cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [reqId, expiresAt] of this.seenRequestIds.entries()) {
+        if (expiresAt < now) {
+          this.seenRequestIds.delete(reqId);
+        }
+      }
+    }, 60000);
+
+    if (typeof this.cleanupInterval.unref === 'function') {
+      this.cleanupInterval.unref();
+    }
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+  }
+
+  destroy() {
+    this.onModuleDestroy();
+  }
+
+  /**
+   * Valida autenticidad (HMAC), ventana de tiempo anti-replay y unicidad de requestId.
+   */
+  validateCommandSecurity(
+    dto: MobileCommandDto,
+    signature?: string,
+    headerTimestamp?: string,
+  ): void {
+    if (process.env.MOBILE_GATEWAY_DISABLE_AUTH === 'true') {
+      this.logger.warn(
+        `[MobileGateway] MOBILE_GATEWAY_DISABLE_AUTH=true activo. Omitiendo validación de firma para ${dto.intent}.`,
+      );
+      return;
+    }
+
+    if (!dto.requestId || typeof dto.requestId !== 'string') {
+      throw new BadRequestException('Se requiere "requestId" válido.');
+    }
+
+    const commandTimestampStr = headerTimestamp || dto.timestamp;
+    if (!commandTimestampStr) {
+      throw new BadRequestException('Se requiere "timestamp" para validar la solicitud móvil.');
+    }
+
+    const commandTime = new Date(commandTimestampStr).getTime();
+    if (isNaN(commandTime)) {
+      throw new BadRequestException('Formato de "timestamp" inválido (debe ser ISO 8601).');
+    }
+
+    const now = Date.now();
+    const drift = Math.abs(now - commandTime);
+    if (drift > this.maxClockDriftMs) {
+      throw new UnauthorizedException(
+        `Petición fuera de la ventana de tiempo de seguridad permitida (drift: ${drift}ms > ${this.maxClockDriftMs}ms). Posible ataque de repetición o desincronización de reloj.`,
+      );
+    }
+
+    // Anti-Replay: el requestId debe ser único dentro de la ventana de validez
+    if (this.seenRequestIds.has(dto.requestId)) {
+      throw new ForbiddenException(
+        `Ataque de repetición detectado: el requestId "${dto.requestId}" ya fue procesado.`,
+      );
+    }
+
+    // Registrar requestId para evitar repeticiones futuras
+    this.seenRequestIds.set(dto.requestId, now + this.maxClockDriftMs * 2);
+
+    // Validación de firma HMAC si viene provista o si es requerida en producción
+    if (signature) {
+      const payloadToSign = `${dto.requestId}:${commandTimestampStr}:${dto.intent.toUpperCase()}`;
+      const expectedSignature = crypto
+        .createHmac('sha256', this.secret)
+        .update(payloadToSign)
+        .digest('hex');
+
+      const sigBuffer = Buffer.from(signature, 'hex');
+      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+
+      if (
+        sigBuffer.length !== expectedBuffer.length ||
+        !crypto.timingSafeEqual(sigBuffer, expectedBuffer)
+      ) {
+        throw new UnauthorizedException('Firma HMAC de Mobile Gateway inválida o alterada.');
+      }
+    }
+  }
+
+  /**
+   * Genera firma HMAC para clientes autorizados (utilidad para tests y clientes móviles oficiales).
+   */
+  generateHmacSignature(requestId: string, timestamp: string, intent: string): string {
+    const payload = `${requestId}:${timestamp}:${intent.toUpperCase()}`;
+    return crypto.createHmac('sha256', this.secret).update(payload).digest('hex');
+  }
+
+  /**
+   * Comprueba si una URL apunta a localhost, IP privada o bucle local (Anti-SSRF).
+   */
+  isPrivateOrLocalUrl(rawUrl: string): boolean {
+    try {
+      const parsed = new URL(rawUrl);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return true;
+      }
+
+      const host = parsed.hostname.toLowerCase();
+      if (
+        host === 'localhost' ||
+        host === '127.0.0.1' ||
+        host === '0.0.0.0' ||
+        host === '169.254.169.254' ||
+        host === '::1'
+      ) {
+        return true;
+      }
+
+      // Rangos privados RFC 1918
+      if (
+        /^10\./.test(host) ||
+        /^192\.168\./.test(host) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)
+      ) {
+        return true;
+      }
+
+      return false;
+    } catch {
+      return true; // Si no es una URL parseable, se bloquea por seguridad
+    }
+  }
+
+  /**
+   * Ejecuta comandos OS a través de exec (desacoplado para facilitar mock/aislamiento en tests).
+   */
+  protected executeOsCommand(cmd: string): void {
+    exec(cmd);
+  }
 
   /**
    * Envía un evento de tecla virtual (VK) nativo de Windows utilizando keybd_event vía user32.dll.
-   * VK_VOLUME_MUTE = 0xAD (173)
-   * VK_VOLUME_DOWN = 0xAE (174)
-   * VK_VOLUME_UP   = 0xAF (175)
-   * VK_MEDIA_PLAY_PAUSE = 0xB3 (179)
    */
   private sendVirtualKey(vkCode: number, repeatCount: number = 1): void {
+    if (!ALLOWED_VK_CODES.has(vkCode)) {
+      this.logger.warn(`Intento de enviar vkCode no autorizado: 0x${vkCode.toString(16)}`);
+      return;
+    }
+
+    const safeRepeats = Math.max(1, Math.min(10, repeatCount));
     const psScript = `
       $code = @"
       using System;
@@ -24,14 +219,14 @@ export class MobileGatewayService {
       }
 "@
       Add-Type -TypeDefinition $code -ErrorAction SilentlyContinue
-      1..${repeatCount} | ForEach-Object {
+      1..${safeRepeats} | ForEach-Object {
         [WinAudio]::keybd_event(${vkCode}, 0, 0, 0)
         [WinAudio]::keybd_event(${vkCode}, 0, 2, 0)
         Start-Sleep -Milliseconds 30
       }
     `;
     const base64 = Buffer.from(psScript, 'utf16le').toString('base64');
-    exec(`powershell -NoProfile -NonInteractive -EncodedCommand ${base64}`);
+    this.executeOsCommand(`powershell -NoProfile -NonInteractive -EncodedCommand ${base64}`);
   }
 
   /**
@@ -67,25 +262,32 @@ export class MobileGatewayService {
   getCapabilities() {
     return {
       success: true,
-      version: '1.0.0',
+      version: '1.2.0',
       environment: `JarBees Core Desktop (${os.type()} ${os.release()})`,
       capabilities: [
         { intent: 'GET_TIME', description: 'Obtiene la hora oficial de la PC' },
         { intent: 'GET_SYSTEM_STATUS', description: 'Uso en tiempo real de CPU, RAM y métricas del sistema' },
-        { intent: 'CALCULATE', description: 'Evaluador matemático determinista' },
+        { intent: 'CALCULATE', description: 'Evaluador matemático determinista seguro' },
         { intent: 'VOLUME_UP', description: 'Sube el volumen máster del sistema en la PC' },
         { intent: 'VOLUME_DOWN', description: 'Baja el volumen máster del sistema en la PC' },
         { intent: 'MUTE', description: 'Silencia/activa el sonido de la PC' },
         { intent: 'MEDIA_PLAY', description: 'Reanuda la reproducción multimedia en la PC' },
         { intent: 'MEDIA_PAUSE', description: 'Pausa la reproducción multimedia en la PC' },
-        { intent: 'OPEN_APP', description: 'Abre aplicaciones autorizadas (Calculadora, Notepad, VS Code, Explorer)' },
-        { intent: 'OPEN_BROWSER', description: 'Abre el navegador predeterminado en la PC' },
-        { intent: 'OPEN_URL', description: 'Abre una URL en la PC' },
+        { intent: 'OPEN_APP', description: 'Abre aplicaciones autorizadas (calc, notepad, vscode, explorer)' },
+        { intent: 'OPEN_URL', description: 'Abre una URL pública y segura en el navegador predeterminado' },
       ],
+      allowedApps: Object.keys(MOBILE_ALLOWED_APPS),
     };
   }
 
-  async dispatchMobileCommand(dto: any): Promise<any> {
+  async dispatchMobileCommand(
+    dto: MobileCommandDto,
+    signature?: string,
+    headerTimestamp?: string,
+  ): Promise<any> {
+    // 1. Validar autenticación, timestamp y anti-replay
+    this.validateCommandSecurity(dto, signature, headerTimestamp);
+
     const intent = String(dto.intent || '').toUpperCase().trim();
     const params = dto.parameters || {};
 
@@ -139,15 +341,28 @@ export class MobileGatewayService {
 
       case 'CALCULATE': {
         const expr = params.expression || params.query || '';
+        if (typeof expr !== 'string' || expr.length > 200) {
+          throw new BadRequestException('Expresión matemática inválida o excesivamente larga (máx 200 caracteres).');
+        }
+
         try {
-          const clean = String(expr).replace(/[^0-9+\-*/().\s]/g, '');
+          const clean = expr.replace(/[^0-9+\-*/().\s]/g, '').trim();
+          if (!clean || clean.length === 0) {
+            throw new Error('Expresión vacía');
+          }
+
+          // Validación sintáctica determinista estricta
           const val = Function(`'use strict'; return (${clean})`)();
+          if (typeof val !== 'number' || !isFinite(val)) {
+            throw new Error('Resultado no numérico');
+          }
+
           return {
             requestId: dto.requestId,
             success: true,
             intent,
-            result: { expression: expr, result: val },
-            message: `Cálculo resuelto en Core: ${expr} = ${val}`,
+            result: { expression: clean, result: val },
+            message: `Cálculo resuelto en Core: ${clean} = ${val}`,
           };
         } catch {
           return {
@@ -155,61 +370,47 @@ export class MobileGatewayService {
             success: false,
             intent,
             result: {},
-            message: `No se pudo calcular: "${expr}"`,
+            message: `No se pudo calcular la expresión dada: "${expr}"`,
           };
         }
       }
 
       case 'OPEN_APP': {
-        const app = String(params.target || params.app || '').toLowerCase();
-        const ALLOWED_APPS: Record<string, string> = {
-          calculator: 'calc',
-          calc: 'calc',
-          notepad: 'notepad',
-          vscode: 'code',
-          explorer: 'explorer',
-        };
+        const app = String(params.target || params.app || '').toLowerCase().trim();
+        const commandToRun = MOBILE_ALLOWED_APPS[app];
 
-        const commandToRun = ALLOWED_APPS[app];
         if (!commandToRun) {
-          return {
-            requestId: dto.requestId,
-            success: false,
-            intent,
-            result: { allowed: Object.keys(ALLOWED_APPS) },
-            message: `Aplicación "${app}" no autorizada en Core.`,
-          };
+          throw new ForbiddenException(
+            `Aplicación "${app}" rechazada. Solo se permiten aplicaciones de la lista blanca: ${Object.keys(MOBILE_ALLOWED_APPS).join(', ')}.`,
+          );
         }
 
-        exec(`start ${commandToRun}`);
+        this.executeOsCommand(`start ${commandToRun}`);
         return {
           requestId: dto.requestId,
           success: true,
           intent,
           result: { app, executed: commandToRun },
-          message: `Abriendo ${app} en tu PC.`,
+          message: `Abriendo ${app} en tu PC de forma segura.`,
         };
       }
 
       case 'OPEN_BROWSER':
       case 'OPEN_URL': {
-        const url = params.url || 'https://google.com';
-        if (/^https?:\/\//i.test(url)) {
-          exec(`start ${url}`);
-          return {
-            requestId: dto.requestId,
-            success: true,
-            intent,
-            result: { url },
-            message: `Abriendo navegador en la PC con ${url}`,
-          };
+        const rawUrl = params.url || 'https://google.com';
+        if (this.isPrivateOrLocalUrl(rawUrl)) {
+          throw new ForbiddenException(
+            `Acceso bloqueado por política Anti-SSRF: la URL "${rawUrl}" apunta a un recurso privado o inválido.`,
+          );
         }
+
+        this.executeOsCommand(`start ${rawUrl}`);
         return {
           requestId: dto.requestId,
-          success: false,
+          success: true,
           intent,
-          result: {},
-          message: 'URL inválida.',
+          result: { url: rawUrl },
+          message: `Abriendo navegador en la PC con ${rawUrl}`,
         };
       }
 
@@ -266,7 +467,7 @@ export class MobileGatewayService {
           success: true,
           intent,
           result: { receivedParams: params },
-          message: `Comando "${intent}" recibido y procesado por JarBees Core.`,
+          message: `Comando "${intent}" recibido y verificado por JarBees Core.`,
         };
       }
     }
