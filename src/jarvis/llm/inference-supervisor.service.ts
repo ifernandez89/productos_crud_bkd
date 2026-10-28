@@ -14,6 +14,7 @@ export enum InferenceServerStatus {
   STOPPED = 'STOPPED',
   STARTING = 'STARTING',
   RUNNING = 'RUNNING',
+  DRAINING = 'DRAINING',
   FAILED = 'FAILED',
   UNKNOWN = 'UNKNOWN',
 }
@@ -58,6 +59,8 @@ export class InferenceSupervisorService
   private readonly modelsDir: string;
   private readonly presetsPath: string;
   private readonly modelsMax: string;
+  private readonly ctk: string;
+  private readonly ctv: string;
 
   private serverProcess?: ChildProcess;
   private status: InferenceServerStatus = InferenceServerStatus.UNKNOWN;
@@ -77,7 +80,7 @@ export class InferenceSupervisorService
     this.host = process.env.LLAMACPP_HOST || '127.0.0.1';
     this.port = parseInt(process.env.LLAMACPP_PORT || '8080', 10);
     this.ngl = process.env.LLAMACPP_NGL || '99';
-    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '8192';
+    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '16384';
     this.parallel = process.env.LLAMACPP_PARALLEL || '1';
     this.autoStart = process.env.LLAMACPP_AUTO_START === 'true';
     this.routerMode = process.env.LLAMACPP_ROUTER_MODE !== 'false';
@@ -86,6 +89,8 @@ export class InferenceSupervisorService
       process.env.LLAMACPP_PRESETS_PATH ||
       path.resolve(__dirname, 'models_presets.ini');
     this.modelsMax = process.env.LLAMACPP_MODELS_MAX || '1';
+    this.ctk = process.env.LLAMACPP_CTK || 'q8_0';
+    this.ctv = process.env.LLAMACPP_CTV || 'q8_0';
   }
 
   async onModuleInit(): Promise<void> {
@@ -226,6 +231,10 @@ export class InferenceSupervisorService
         this.ngl,
         '-c',
         this.ctxSize,
+        '--ctk',
+        this.ctk,
+        '--ctv',
+        this.ctv,
         '--jinja',
         '--parallel',
         this.parallel,
@@ -236,7 +245,7 @@ export class InferenceSupervisorService
       }
 
       this.logger.log(
-        `[supervisor] Iniciando llama-server en Router Mode (directorio: ${this.modelsDir}, max: ${this.modelsMax})`,
+        `[supervisor] Iniciando llama-server en Router Mode (directorio: ${this.modelsDir}, max: ${this.modelsMax}, ctk: ${this.ctk}, ctv: ${this.ctv})`,
       );
     } else {
       if (!fs.existsSync(this.modelPath)) {
@@ -254,6 +263,10 @@ export class InferenceSupervisorService
         this.ngl,
         '-c',
         this.ctxSize,
+        '--ctk',
+        this.ctk,
+        '--ctv',
+        this.ctv,
         '--jinja',
         '--alias',
         'qwen3:8b',
@@ -262,7 +275,7 @@ export class InferenceSupervisorService
       ];
 
       this.logger.log(
-        `[supervisor] Iniciando proceso: ${this.binaryPath} con modelo ${this.modelPath}`,
+        `[supervisor] Iniciando proceso: ${this.binaryPath} con modelo ${this.modelPath} (ctk: ${this.ctk}, ctv: ${this.ctv})`,
       );
     }
 

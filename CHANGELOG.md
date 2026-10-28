@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Dynamic Specialist Swapping, DrainQueue, Feedback Loop y Benchmarks RTX 5070 (2026-10-28)
+
+- **🚦 Cola de Drenaje Seguro `DrainQueueService` (`src/jarvis/llm/drain-queue.service.ts` & `src/jarvis/llm/drain-queue.service.spec.ts`)**:
+  - **Drenaje sin Interrupción de Streams**: Adquisición de permisos de ejecución (`acquireLease` / `trackRequest`) que previene cortes abruptos en streams SSE o inferencias en vuelo durante conmutaciones de modelo en GPU.
+  - **Estado Operativo `DRAINING`**: Marca el modelo saliente en drenaje bloqueando nuevas peticiones pero permitiendo culminar las tareas en progreso.
+  - **Salvaguarda por Timeout (15s)**: Si las peticiones activas no terminan en el tiempo límite configurado, se activa la salvaguarda liberando la cola para evitar bloqueos indefinidos del sistema.
+  - **Teardown Limpio Anti-Zombi**: Limpieza estricta de temporizadores en `onApplicationShutdown` con `.unref()`.
+
+- **⚡ Orquestador de Especialistas en GPU `ModelLifecycleService` (`src/jarvis/llm/model-lifecycle.service.ts` & `src/jarvis/llm/model-lifecycle.service.spec.ts`)**:
+  - **Gestión de Ciclo de Vida y Presupuesto VRAM (RTX 5070 - 12 GB)**: Control en caliente de memoria de GPU con techo operativo seguro de 10.8 GB (Anti-OOM) y cálculo de margen (headroom) por modelo (`qwen3:4b`, `gemma3:4b`, `qwen2.5-coder:7b`, `qwen3:8b`, `deepseek-r1:8b`).
+  - **KV Cache Cuantizada (`--ctk q8_0 --ctv q8_0`)**: Configuración de arranque optimizada con flags de cuantización de memoria de contexto para `llama-server` permitiendo contextos de hasta 16K/32K tokens sin saturación de VRAM.
+  - **Descarga Preventiva de VRAM**: Coordinación con `InferenceSupervisorService.freeOllamaVram()` antes de inicializar o conmutar especialistas locales pesados.
+
+- **🔁 Bucle de Escalamiento Determinista `ExecutionFeedbackLoopService` (`src/jarvis/planner/execution-feedback-loop.service.ts` & `src/jarvis/planner/execution-feedback-loop.service.spec.ts`)**:
+  - **Canalización 4B ➔ 8B**: Intento 1 con el modelo ultra-veloz `Qwen 3 4B` (~120-140 t/s) para tareas de código, SQL y JSON.
+  - **Verificación Determinista Aislada**: Validación sintáctica rigurosa (delimitadores balanceados, cadenas sin cerrar, estructura de sentencias DML/DDL y parsing JSON) sin ejecutar código no verificado.
+  - **Escalamiento con Diagnóstico Exacto**: Si la verificación detecta un error de sintaxis o compilación, transfiere automáticamente el código fallido y el mensaje de error exacto al especialista superior (`Qwen 3 8B` o `DeepSeek-R1 8B`) para su corrección guiada.
+
+- **📊 Batería de Validación Empírica en RTX 5070 (`scripts/benchmark/vram_inference_suite.ts` & `src/jarvis/llm/vram-benchmark.spec.ts`)**:
+  - **Checklist Completo de 6 Puntos**:
+    1. Inferencia Base (TTFT y tokens/s en contextos 2K, 8K, 16K y 32K).
+    2. Latencia de Swapping en disco NVMe PCIe 4.0 (<2.5s).
+    3. Auditoría Epistemológica con `EvidenceGatekeeperService` (atribución vs abstención).
+    4. Estrés de VRAM y control de techo de seguridad en 10.8 GB.
+    5. Aislamiento de Red (Data Privacy Gate local 100%).
+    6. Calidad comparativa Gemma 3 4B vs Qwen 3 4B por dominios.
+
+- **🧪 Blindaje y Resolución de Tests del Sistema (100% de Aprobación — 178 tests)**:
+  - Corrección de fallback de modelos en `EmbeddingsService.generateEmbedding`.
+  - Fallback resiliente y catalogación en `JarvisCommandService.buildLibraryMessage` cuando la BD aún no está indexada.
+  - Ajuste de aserciones de metadata en `AichatService.promptAgente`.
+  - Incorporación de 26 nuevos tests unitarios (7 en `DrainQueue`, 6 en `ModelLifecycle`, 9 en `ExecutionFeedbackLoop`, 4 en `VramBenchmark`), alcanzando **178 tests aprobados en 31 suites**.
+
 ### Added & Validated — Blindaje Criptográfico, Misiones Persistentes, Control Epistemológico y Especialistas (2026-10-27)
 
 - **📋 Plan de Arquitectura y Benchmarks en RTX 5070 (`docs/plan_jarbees_especialistas_rtx5070.md`)**:

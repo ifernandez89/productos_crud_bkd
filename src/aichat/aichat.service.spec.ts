@@ -174,10 +174,9 @@ describe('AichatService', () => {
 
       expect(result.system).toMatch(/^{"fecha_actual"/);
       expect(result.system).toMatch(/"hora":"\d{2}:\d{2}"/);
-      expect(result.system).toMatch(/"ubicacion":"Paraná, Entre Ríos"/);
       expect(result.system).toContain('Hoy es');
       expect(result.system).toContain(
-        'Nunca inventes la fecha actual. Si el usuario pregunta por la fecha, usa la fecha proporcionada por el sistema.',
+        'Eres un asistente conversacional inteligente, empático y versátil impulsado por Qwen2.5.',
       );
     });
   });

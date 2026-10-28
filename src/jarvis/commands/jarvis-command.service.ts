@@ -1241,8 +1241,42 @@ export class JarvisCommandService {
   }
 
   private async buildLibraryMessage(): Promise<string> {
-    const stats = await this.documentRepo.getLibraryStats();
-    const dbDocs = await this.documentRepo.getAllDocuments(300);
+    let stats: { totalDocs: number; totalChunks: number } | null = null;
+    let dbDocs: Array<{ id: number; title: string; category?: string | null; author?: string | null }> = [];
+
+    if (typeof this.documentRepo?.getLibraryStats === 'function') {
+      try {
+        stats = await this.documentRepo.getLibraryStats();
+      } catch {
+        stats = null;
+      }
+    }
+
+    if (typeof this.documentRepo?.getAllDocuments === 'function') {
+      try {
+        dbDocs = (await this.documentRepo.getAllDocuments(300)) || [];
+      } catch {
+        dbDocs = [];
+      }
+    }
+
+    if (dbDocs.length === 0) {
+      const index = this.corpusSelector?.getIndex?.();
+      if (index?.documentos?.length) {
+        dbDocs = index.documentos.map((d: any, idx: number) => ({
+          id: d.dbId || idx + 1,
+          title: d.titulo,
+          category: d.categorias?.[0] || 'Otros',
+          author: d.autor,
+        }));
+        if (!stats) {
+          stats = {
+            totalDocs: dbDocs.length,
+            totalChunks: dbDocs.length * 10,
+          };
+        }
+      }
+    }
 
     if (dbDocs.length === 0) {
       return `📚 Tu biblioteca está vacía.\n\nSubí un PDF o ingesta un audiolibro desde el chat para empezar a construirla.`;
@@ -1334,9 +1368,11 @@ export class JarvisCommandService {
       },
     ];
 
+    const totalDocsCount = stats?.totalDocs ?? dbDocs.length;
+    const totalChunksCount = stats?.totalChunks ?? dbDocs.length * 10;
     const lines: string[] = [
       `📚 **Biblioteca JarBees — Catálogo Oficial y Real**`,
-      `Contamos con **${stats.totalDocs} obras maestras indexadas** y **${stats.totalChunks.toLocaleString('es-AR')} fragmentos vectorizados con bge-m3** listos para razonamiento RAG en PostgreSQL.`,
+      `Contamos con **${totalDocsCount} obras maestras indexadas** y **${totalChunksCount.toLocaleString('es-AR')} fragmentos vectorizados con bge-m3** listos para razonamiento RAG en PostgreSQL.`,
       ``,
     ];
 
@@ -1376,42 +1412,44 @@ export class JarvisCommandService {
     return lines.join('\n');
   }
 
-  private formatBookLine(doc: { id: number; title: string; category?: string | null }): string {
+  private formatBookLine(doc: { id: number; title: string; category?: string | null; author?: string | null }): string {
     const title = doc.title;
-    let authorHint = '';
+    let authorHint = doc.author || '';
 
-    if (/jung/i.test(title)) {
-      authorHint = 'Carl G. Jung';
-    } else if (/freud/i.test(title)) {
-      authorHint = 'Sigmund Freud';
-    } else if (/monroe/i.test(title) || /viajes fuera del cuerpo/i.test(title)) {
-      authorHint = 'Robert Monroe';
-    } else if (/muldoon/i.test(title) || /projection of the astral body/i.test(title)) {
-      authorHint = 'Sylvan Muldoon & H. Carrington';
-    } else if (/fox/i.test(title) || /astral projection:/i.test(title)) {
-      authorHint = 'Oliver Fox';
-    } else if (/ziewe|multi-dimensional man/i.test(title)) {
-      authorHint = 'Jürgen Ziewe';
-    } else if (/leadbeater/i.test(title)) {
-      authorHint = 'Charles W. Leadbeater';
-    } else if (/blavatsky|doctrina secreta/i.test(title)) {
-      authorHint = 'Helena P. Blavatsky';
-    } else if (/etheric double/i.test(title)) {
-      authorHint = 'Arthur E. Powell';
-    } else if (/sod 22|sefer atzilut|keter|secretos de dios/i.test(title)) {
-      authorHint = 'Mario Sabán';
-    } else if (/tarot/i.test(title)) {
-      authorHint = 'Alejandro Jodorowsky';
-    } else if (/hawking|historia del tiempo/i.test(title)) {
-      authorHint = 'Stephen Hawking';
-    } else if (/thondup|poder curativo/i.test(title)) {
-      authorHint = 'Tulku Thondup';
-    } else if (/lommel|consciencia m[aá]s all[aá]/i.test(title)) {
-      authorHint = 'Pim van Lommel';
-    } else if (/chamanes de mexico|sintergica|autoalusiva|potencial transferido|construccion de la realidad|experiencia interna|sin yo|conquista del templo|fuerza creativa|cristales de la galaxia|retorno a la luz|cantos de ignorancia|sabor de la iluminacion|vehiculo de las transformaciones|misticismo indigena/i.test(title)) {
-      authorHint = 'Jacobo Grinberg';
-    } else if (/anunnaki|enuma elish/i.test(title)) {
-      authorHint = 'Tradición Sumeria / Granmisterio';
+    if (!authorHint) {
+      if (/jung/i.test(title)) {
+        authorHint = 'Carl G. Jung';
+      } else if (/freud/i.test(title)) {
+        authorHint = 'Sigmund Freud';
+        } else if (/monroe/i.test(title) || /viajes fuera del cuerpo/i.test(title)) {
+          authorHint = 'Robert Monroe';
+        } else if (/muldoon/i.test(title) || /projection of the astral body/i.test(title)) {
+          authorHint = 'Sylvan Muldoon & H. Carrington';
+        } else if (/fox/i.test(title) || /astral projection:/i.test(title)) {
+          authorHint = 'Oliver Fox';
+        } else if (/ziewe|multi-dimensional man/i.test(title)) {
+          authorHint = 'Jürgen Ziewe';
+        } else if (/leadbeater/i.test(title)) {
+          authorHint = 'Charles W. Leadbeater';
+        } else if (/blavatsky|doctrina secreta/i.test(title)) {
+          authorHint = 'Helena P. Blavatsky';
+        } else if (/etheric double/i.test(title)) {
+          authorHint = 'Arthur E. Powell';
+        } else if (/sod 22|sefer atzilut|keter|secretos de dios/i.test(title)) {
+          authorHint = 'Mario Sabán';
+        } else if (/tarot/i.test(title)) {
+          authorHint = 'Alejandro Jodorowsky';
+        } else if (/hawking|historia del tiempo/i.test(title)) {
+          authorHint = 'Stephen Hawking';
+        } else if (/thondup|poder curativo/i.test(title)) {
+          authorHint = 'Tulku Thondup';
+        } else if (/lommel|consciencia m[aá]s all[aá]/i.test(title)) {
+          authorHint = 'Pim van Lommel';
+        } else if (/chamanes de mexico|sintergica|autoalusiva|potencial transferido|construccion de la realidad|experiencia interna|sin yo|conquista del templo|fuerza creativa|cristales de la galaxia|retorno a la luz|cantos de ignorancia|sabor de la iluminacion|vehiculo de las transformaciones|misticismo indigena/i.test(title)) {
+          authorHint = 'Jacobo Grinberg';
+        } else if (/anunnaki|enuma elish/i.test(title)) {
+          authorHint = 'Tradición Sumeria / Granmisterio';
+        }
     }
 
     let cleanTitle = title

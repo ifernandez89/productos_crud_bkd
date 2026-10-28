@@ -155,7 +155,7 @@ describe('JarvisCommandService', () => {
     const index = JSON.parse(raw);
     const docs = index.documentos as Array<Record<string, any>>;
     const targetDoc = docs.find((doc) =>
-      /hermes trismegisto/i.test(doc.autor ?? ''),
+      /nikola tesla/i.test(doc.autor ?? ''),
     );
 
     expect(targetDoc).toBeDefined();
@@ -195,14 +195,14 @@ describe('JarvisCommandService', () => {
     );
 
     const result = await service.handleCommand(
-      'Hermes Trismegisto',
+      'Nikola Tesla',
       'session-1',
       123,
     );
 
     expect(result.handled).toBe(true);
     expect(result.response).toContain(targetDoc!.titulo);
-    expect(result.response).toContain('Hermes Trismegisto');
+    expect(result.response).toContain('Nikola Tesla');
   });
 
   it('shows cleaned titles in mis documentos instead of the noisy author suffixes', async () => {

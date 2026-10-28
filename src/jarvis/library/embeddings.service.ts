@@ -34,26 +34,41 @@ export class EmbeddingsService {
    * Retorna un array de números (floats).
    */
   async generateEmbedding(text: string): Promise<number[]> {
-    try {
-      const response = await axios.post(
-        this.OLLAMA_URL,
-        {
-          model: this.EMBEDDING_MODEL,
-          prompt: text,
-        },
-        { timeout: 20000 },
-      );
+    const modelsToTry = [
+      this.EMBEDDING_MODEL,
+      ...this.getEmbeddingModelFallbacks().filter(
+        (m) => m !== this.EMBEDDING_MODEL,
+      ),
+    ];
+    let lastError: any;
 
-      if (response.data?.embedding) {
-        return response.data.embedding;
+    for (const model of modelsToTry) {
+      try {
+        const response = await axios.post(
+          this.OLLAMA_URL,
+          {
+            model,
+            prompt: text,
+          },
+          { timeout: 20000 },
+        );
+
+        if (response.data?.embedding) {
+          return response.data.embedding;
+        }
+        throw new Error('Respuesta inválida de Ollama embeddings');
+      } catch (error: any) {
+        lastError = error;
+        this.logger.warn(
+          `[EmbeddingsService] Falló modelo ${model} (${error.message}). Probando alternativo...`,
+        );
       }
-      throw new Error('Respuesta inválida de Ollama embeddings');
-    } catch (error: any) {
-      this.logger.error(
-        `[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${error.message}`,
-      );
-      throw new Error(`Fallo al generar embedding: ${error.message}`);
     }
+
+    this.logger.error(
+      `[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${lastError?.message}`,
+    );
+    throw new Error(`Fallo al generar embedding: ${lastError?.message}`);
   }
 
   /**

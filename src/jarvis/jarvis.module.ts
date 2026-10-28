@@ -17,6 +17,9 @@ import { OpenRouterProvider } from './llm/openrouter.provider';
 import { LlamaCppProvider } from './llm/llamacpp.provider';
 import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { InferenceSupervisorService } from './llm/inference-supervisor.service';
+import { DrainQueueService } from './llm/drain-queue.service';
+import { ModelLifecycleService } from './llm/model-lifecycle.service';
+import { ExecutionFeedbackLoopService } from './planner/execution-feedback-loop.service';
 import { LLM_GATEWAY } from './llm/llm-provider.interface';
 import { OllamaRecoveryService } from './llm/ollama.recovery.service';
 import { JarvisIdentityService } from './config/jarvis-identity.service';
@@ -142,6 +145,9 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     LlamaCppProvider,
     InferenceSupervisorService,
     InferenceGatewayService,
+    DrainQueueService,
+    ModelLifecycleService,
+    ExecutionFeedbackLoopService,
     {
       provide: LLM_GATEWAY,
       useExisting: InferenceGatewayService,
@@ -263,6 +269,9 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     MissionRecoveryService,
     RedactedObservabilityService,
     SpecialistCapabilityRouterService,
+    DrainQueueService,
+    ModelLifecycleService,
+    ExecutionFeedbackLoopService,
   ],
 })
 export class JarvisModule {}
