@@ -4,9 +4,9 @@ import {
   evaluateContextWindowBudget,
 } from './inference-context-budget';
 import { evaluateInferenceHealth } from './inference-diagnostics-evaluator';
-import type { InferenceGatewayService } from './inference-gateway.service';
-import type { InferenceSupervisorService } from './inference-supervisor.service';
-import type { LlamaCppProvider } from './llamacpp.provider';
+import { InferenceGatewayService } from './inference-gateway.service';
+import { InferenceSupervisorService } from './inference-supervisor.service';
+import { LlamaCppProvider } from './llamacpp.provider';
 
 export type InferenceOverallHealth = 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE';
 

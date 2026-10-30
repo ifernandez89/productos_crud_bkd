@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 
 export interface WorkingMemoryItem<T = any> {
   key: string;
@@ -52,7 +52,7 @@ export class WorkingMemoryService {
   private maxItemsPerSession: number;
   private defaultTtlMs: number;
 
-  constructor(options?: WorkingMemoryOptions) {
+  constructor(@Optional() options?: WorkingMemoryOptions) {
     const envMax = parseInt(process.env.WORKING_MEMORY_MAX_ITEMS || '', 10);
     this.maxItemsPerSession =
       options?.maxItemsPerSession ??

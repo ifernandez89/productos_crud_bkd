@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 
 export interface SessionTurn {
   role: 'user' | 'assistant';
@@ -52,14 +52,15 @@ export class ContextManagerService {
    */
   private readonly sessions = new Map<string, SessionTurn[]>();
 
-  constructor(options: ContextWindowOptions = {}) {
-    this.maxSessions = options.maxSessions ?? (Number(process.env.CONTEXT_MAX_SESSIONS) || 200);
+  constructor(@Optional() options?: ContextWindowOptions) {
+    const opts = options || {};
+    this.maxSessions = opts.maxSessions ?? (Number(process.env.CONTEXT_MAX_SESSIONS) || 200);
     this.maxTurnsPerSession =
-      options.maxTurnsPerSession ?? (Number(process.env.CONTEXT_MAX_TURNS) || 12);
+      opts.maxTurnsPerSession ?? (Number(process.env.CONTEXT_MAX_TURNS) || 12);
     this.defaultMaxContextTokens =
-      options.defaultMaxContextTokens ?? (Number(process.env.CONTEXT_MAX_TOKENS) || 6144);
+      opts.defaultMaxContextTokens ?? (Number(process.env.CONTEXT_MAX_TOKENS) || 6144);
     this.defaultReservedOutputTokens =
-      options.defaultReservedOutputTokens ?? (Number(process.env.CONTEXT_RESERVED_OUTPUT_TOKENS) || 1024);
+      opts.defaultReservedOutputTokens ?? (Number(process.env.CONTEXT_RESERVED_OUTPUT_TOKENS) || 1024);
   }
 
   /**

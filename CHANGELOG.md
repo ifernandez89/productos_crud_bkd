@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added & Validated — Agente DSH Capabilities, Tripartite Memory, Dynamic CapabilityRegistry & Autonomous Token Telemetry (2026-10-30)
 
+- **🔧 Corrección de Inyección de Dependencias en NestJS (`ContextManagerService`, `WorkingMemoryService`, `InferenceDiagnosticsService`)**:
+  - Decoración con `@Optional()` en parámetros de constructor que reciben interfaces de opciones (`ContextWindowOptions`, `WorkingMemoryOptions`), evitando que NestJS intente resolver el token runtime `Object`.
+  - Reemplazo de `import type` por importaciones de clase en `InferenceDiagnosticsService` para que TypeScript emita los metadatos de tipo reales de `InferenceGatewayService`, `LlamaCppProvider` e `InferenceSupervisorService`.
+  - Verificación exitosa del arranque y resolución de dependencias de `AppModule` en NestJS (`BOOTSTRAP_SUCCESS`).
+
 - **📊 Telemetría Programática de Tokens para Auto-Inspección de la IA (`TelemetryInspectionService`)**:
   - Exposición de telemetría de tokens y presupuestos para consumo autónomo por JarBees y el asistente IA (eliminando la necesidad de dashboards visuales humanos superfluos).
   - Endpoints públicos: `GET /jarbees/telemetry/tokens` y `GET /jarbees/telemetry/budget`.
