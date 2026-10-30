@@ -112,6 +112,12 @@ import { RepairControllerService } from './verification/repair-controller.servic
 import { VerificationHarnessService } from './verification/verification-harness.service';
 import { InferenceDiagnosticsService } from './llm/inference-diagnostics.service';
 import { EngineeringMissionManagerService } from './verification/engineering-mission-manager.service';
+import { TelemetryInspectionService } from './llm/telemetry-inspection.service';
+import { CapabilityRegistryService } from './config/capability-registry.service';
+import { CoreContextService } from './prompt/core-context.service';
+import { WorkingMemoryService } from './memory/working-memory.service';
+import { TripartiteMemoryService } from './memory/tripartite-memory.service';
+import { MemoryConsolidationService } from './memory/memory-consolidation.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -242,6 +248,12 @@ import { EngineeringMissionManagerService } from './verification/engineering-mis
     VerificationHarnessService,
     InferenceDiagnosticsService,
     EngineeringMissionManagerService,
+    TelemetryInspectionService,
+    CapabilityRegistryService,
+    CoreContextService,
+    WorkingMemoryService,
+    TripartiteMemoryService,
+    MemoryConsolidationService,
   ],
   exports: [
     JarvisService,
@@ -293,6 +305,12 @@ import { EngineeringMissionManagerService } from './verification/engineering-mis
     VerificationHarnessService,
     InferenceDiagnosticsService,
     EngineeringMissionManagerService,
+    TelemetryInspectionService,
+    CapabilityRegistryService,
+    CoreContextService,
+    WorkingMemoryService,
+    TripartiteMemoryService,
+    MemoryConsolidationService,
   ],
 })
 export class JarvisModule {}

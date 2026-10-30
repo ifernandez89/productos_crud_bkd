@@ -255,3 +255,4 @@ Para preservar la estabilidad actual de software engineering sin interferir con 
 JarBees evoluciona desde un asistente de código hacia una **mente técnica generalista con capacidad de orquestación de especialistas**. 
 
 Al dotar al sistema de rigor metodológico, verificación empírica y la habilidad de generar su propio software instrumental, se transforma en una herramienta de investigación de amplio espectro, manteniendo intactos los principios de contención, seguridad y supervisión humana (HITL) que constituyen el núcleo de su arquitectura.
+

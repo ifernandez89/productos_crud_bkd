@@ -1,6 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { readdirSync, readFileSync, existsSync } from 'fs';
 import * as path from 'path';
+import {
+  CapabilityId,
+  CapabilityRegistryService,
+} from '../config/capability-registry.service';
 import { Skill, SkillMetadata } from './skill.interface';
 
 interface ParsedFrontmatter {
@@ -10,6 +14,10 @@ interface ParsedFrontmatter {
   keywords?: string[];
   priority?: number;
   capabilities?: string[];
+  preconditions?: string[];
+  steps?: string[];
+  pitfalls?: string[];
+  verificationSteps?: string[];
   content?: string;
 }
 
@@ -19,7 +27,9 @@ export class SkillRegistryService {
   private readonly skillsDir = path.join(process.cwd(), 'skills');
   private skills: Skill[] = [];
 
-  constructor() {
+  constructor(
+    @Optional() private readonly capabilityRegistry?: CapabilityRegistryService,
+  ) {
     this.loadSkillsFromFilesystem();
   }
 
@@ -27,7 +37,50 @@ export class SkillRegistryService {
     return [...this.skills];
   }
 
-  findRelevant(query: string, limit = 5): Skill[] {
+  getProceduralSkills(): Skill[] {
+    return this.skills.filter((s) => s.isProceduralSop === true);
+  }
+
+  /**
+   * Comprueba si todas las capacidades requeridas por la skill (capabilities y preconditions)
+   * están operativas en CapabilityRegistryService.
+   */
+  isSkillExecutable(skill: Skill): {
+    executable: boolean;
+    missingCapabilities: string[];
+  } {
+    if (!this.capabilityRegistry) {
+      return { executable: true, missingCapabilities: [] };
+    }
+
+    const required = [
+      ...(skill.capabilities ?? []),
+      ...(skill.preconditions ?? []),
+    ];
+    if (required.length === 0) {
+      return { executable: true, missingCapabilities: [] };
+    }
+
+    const snapshot = this.capabilityRegistry.getSnapshot();
+    const missing: string[] = [];
+
+    for (const reqRaw of required) {
+      const normalized = reqRaw.replace(/^capability:\s*/i, '').trim();
+      const capId = normalized as CapabilityId;
+      if (snapshot.capabilities[capId]) {
+        if (!this.capabilityRegistry.isCapabilityOperational(capId)) {
+          missing.push(capId);
+        }
+      }
+    }
+
+    return {
+      executable: missing.length === 0,
+      missingCapabilities: missing,
+    };
+  }
+
+  findRelevant(query: string, limit = 5, onlyExecutable = false): Skill[] {
     const STOP_WORDS = new Set([
       'que', 'del', 'los', 'las', 'por', 'para', 'con', 'una', 'uno', 'unos',
       'unas', 'sin', 'mas', 'más', 'fue', 'son', 'ser', 'era', 'esto', 'esta',
@@ -42,12 +95,16 @@ export class SkillRegistryService {
     const terms = query
       .toLowerCase()
       .split(/\s+/)
-      .map((t) => t.replace(/[^a-záéíóúüñ]/g, ''))
+      .map((t) => t.replace(/[^a-záéíóúüñ0-9_-]/g, ''))
       .filter((term) => term.length >= 3 && !STOP_WORDS.has(term));
 
     if (terms.length === 0) return [];
 
     const matched = this.skills
+      .filter((skill) => {
+        if (!onlyExecutable) return true;
+        return this.isSkillExecutable(skill).executable;
+      })
       .map((skill) => {
         const score = terms.reduce((acc, term) => {
           if (skill.name.toLowerCase().includes(term)) return acc + 5;
@@ -113,12 +170,19 @@ export class SkillRegistryService {
       const metadata = JSON.parse(metadataRaw) as SkillMetadata;
       const content = readFileSync(skillPath, 'utf-8');
       const summary = this.buildSummary(content);
+      const isProceduralSop = Boolean(
+        metadata.preconditions?.length ||
+          metadata.steps?.length ||
+          metadata.pitfalls?.length ||
+          metadata.verificationSteps?.length,
+      );
 
       this.skills.push({
         ...metadata,
         content,
         summary,
         source: folderName,
+        isProceduralSop,
       });
     } catch (error: unknown) {
       const message =
@@ -135,12 +199,19 @@ export class SkillRegistryService {
         fileName,
       );
       const summary = this.buildSummary(skillContent);
+      const isProceduralSop = Boolean(
+        metadata.preconditions?.length ||
+          metadata.steps?.length ||
+          metadata.pitfalls?.length ||
+          metadata.verificationSteps?.length,
+      );
 
       this.skills.push({
         ...metadata,
-        content: skillContent,
+        content,
         summary,
         source: fileName,
+        isProceduralSop,
       });
     } catch (error: unknown) {
       const message =
@@ -169,6 +240,10 @@ export class SkillRegistryService {
       : this.extractKeywords(skillContent, name);
     const priority = frontmatter.priority ?? 5;
     const capabilities = frontmatter.capabilities ?? [];
+    const preconditions = frontmatter.preconditions ?? [];
+    const steps = frontmatter.steps ?? [];
+    const pitfalls = frontmatter.pitfalls ?? [];
+    const verificationSteps = frontmatter.verificationSteps ?? [];
 
     return {
       metadata: {
@@ -178,6 +253,10 @@ export class SkillRegistryService {
         keywords,
         priority,
         capabilities,
+        preconditions,
+        steps,
+        pitfalls,
+        verificationSteps,
       },
       content: skillContent,
     };
@@ -193,13 +272,27 @@ export class SkillRegistryService {
     const lines = match[1].split(/\r?\n/);
     let currentKey: keyof ParsedFrontmatter | undefined;
 
+    const listKeyMap: Record<string, keyof ParsedFrontmatter> = {
+      keywords: 'keywords',
+      capabilities: 'capabilities',
+      preconditions: 'preconditions',
+      steps: 'steps',
+      pitfalls: 'pitfalls',
+      pitfalls_to_avoid: 'pitfalls',
+      verification_steps: 'verificationSteps',
+      verificationSteps: 'verificationSteps',
+    };
+
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (!line) continue;
 
       if (line.startsWith('- ')) {
         if (!currentKey) continue;
-        const item = line.slice(2).trim();
+        const item = line
+          .slice(2)
+          .trim()
+          .replace(/^['"]|['"]$/g, '');
         const currentValue = parsed[currentKey];
         if (Array.isArray(currentValue)) {
           currentValue.push(item);
@@ -210,29 +303,36 @@ export class SkillRegistryService {
       const keyValue = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
       if (!keyValue) continue;
 
-      const [, key, value] = keyValue;
-      currentKey = key as keyof ParsedFrontmatter;
+      const [, rawKey, value] = keyValue;
 
-      if (key === 'keywords' || key === 'capabilities') {
+      if (rawKey in listKeyMap) {
+        const mappedKey = listKeyMap[rawKey];
+        currentKey = mappedKey;
         if (value.trim()) {
           const entries = value
             .split(',')
-            .map((entry) => entry.trim())
+            .map((entry) => entry.trim().replace(/^['"]|['"]$/g, ''))
             .filter(Boolean);
-          parsed[key as 'keywords' | 'capabilities'] = entries;
+          (parsed as any)[mappedKey] = entries;
         } else {
-          parsed[key as 'keywords' | 'capabilities'] = [];
+          (parsed as any)[mappedKey] = [];
         }
         continue;
       }
 
-      if (key === 'priority') {
+      currentKey = rawKey as keyof ParsedFrontmatter;
+
+      if (rawKey === 'priority') {
         parsed.priority = Number(value) || 5;
         continue;
       }
 
-      if (key === 'name' || key === 'description' || key === 'category') {
-        parsed[key as 'name' | 'description' | 'category'] = value.replace(
+      if (
+        rawKey === 'name' ||
+        rawKey === 'description' ||
+        rawKey === 'category'
+      ) {
+        parsed[rawKey as 'name' | 'description' | 'category'] = value.replace(
           /^['"]|['"]$/g,
           '',
         );

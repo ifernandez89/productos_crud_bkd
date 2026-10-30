@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import axios from 'axios';
 import { resolveIntentModel } from '../../../shared/ollama-config';
 import { DisciplinesCatalogService } from '../../knowledge/disciplines-catalog.service';
+import { CapabilityRegistryService } from '../../config/capability-registry.service';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,8 @@ export class IntentRouterService {
   constructor(
     @Optional()
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
+    @Optional()
+    private readonly capabilityRegistry?: CapabilityRegistryService,
   ) {}
 
   // ── API pública ─────────────────────────────────────────────────────────────
@@ -75,7 +78,7 @@ export class IntentRouterService {
       this.logger.log(
         `[intent:fast] ${fastResult.intent} (${fastResult.confidence}) — "${message.slice(0, 60)}"`,
       );
-      return fastResult;
+      return this.applyCapabilityGate(fastResult);
     }
 
     // 2. Clasificador LLM solo para casos de baja confianza — usa texto truncado
@@ -84,16 +87,27 @@ export class IntentRouterService {
       this.logger.log(
         `[intent:llm] ${llmResult.intent} — "${message.slice(0, 60)}"`,
       );
-      return llmResult;
+      return this.applyCapabilityGate(llmResult);
     } catch {
       this.logger.warn(`[intent] LLM no disponible, usando fast classify`);
       // Si fast dice LOCAL con low confidence, escalar a WEB como fallback seguro
-      return {
+      return this.applyCapabilityGate({
         ...fastResult,
         intent: 'WEB',
         reason: 'LLM unavailable → WEB fallback',
-      };
+      });
     }
+  }
+
+  private applyCapabilityGate(result: IntentResult): IntentResult {
+    if (!this.capabilityRegistry) return result;
+    const evalSupport = this.capabilityRegistry.evaluateIntentSupport(result.intent);
+    if (evalSupport.supported) return result;
+    return {
+      ...result,
+      intent: evalSupport.effectiveIntent as IntentType,
+      reason: `${result.reason} [${evalSupport.reason}]`,
+    };
   }
 
   // ── Clasificación rápida (reglas) ────────────────────────────────────────────

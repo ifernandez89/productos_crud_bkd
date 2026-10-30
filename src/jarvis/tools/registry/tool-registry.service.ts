@@ -96,6 +96,27 @@ export class ToolRegistryService {
       category: 'external_api',
       enabled: true,
     });
+    this.register({
+      name: 'telemetry_inspection',
+      description:
+        'Permite a JarBees o al asistente IA consultar su propio consumo de tokens, escalón de contexto (BELOW_2K..5K_6K), velocidad (tokens/s) y presupuesto de misión disponible',
+      category: 'system_introspection',
+      enabled: true,
+    });
+    this.register({
+      name: 'capability_registry',
+      description:
+        'Consulta o refresca el registro dinámico de capacidades operativas (AVAILABLE, DEGRADED, UNAVAILABLE) de JarBees',
+      category: 'system_introspection',
+      enabled: true,
+    });
+    this.register({
+      name: 'memory_sleep',
+      description:
+        'Ejecuta bajo demanda la rutina sleep de consolidación, deduplicación, detección de contradicciones (DECISION_SUPERSEDED) y calibración epistémica de memoria',
+      category: 'memory_management',
+      enabled: true,
+    });
     this.logger.log(
       `Tool registry inicializado con ${this.tools.length} herramientas.`,
     );

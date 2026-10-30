@@ -51,6 +51,14 @@ import {
   EngineeringMissionManagerService,
   ManagedMissionRequest,
 } from './verification/engineering-mission-manager.service';
+import { TelemetryInspectionService } from './llm/telemetry-inspection.service';
+import { CapabilityRegistryService } from './config/capability-registry.service';
+import { CoreContextService } from './prompt/core-context.service';
+import { TripartiteMemoryService } from './memory/tripartite-memory.service';
+import {
+  MemoryConsolidationService,
+  SleepConsolidationOptions,
+} from './memory/memory-consolidation.service';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -83,6 +91,16 @@ export class JarvisController {
     private readonly executionEngine?: ExecutionEngine,
     @Optional()
     private readonly engineeringMissionManager?: EngineeringMissionManagerService,
+    @Optional()
+    private readonly telemetryInspection?: TelemetryInspectionService,
+    @Optional()
+    private readonly capabilityRegistry?: CapabilityRegistryService,
+    @Optional()
+    private readonly coreContextService?: CoreContextService,
+    @Optional()
+    private readonly tripartiteMemory?: TripartiteMemoryService,
+    @Optional()
+    private readonly memoryConsolidation?: MemoryConsolidationService,
   ) {}
 
 
@@ -115,6 +133,131 @@ export class JarvisController {
       runInferenceProbe: probe === 'true',
       requestedModel: model,
     });
+    return { success: true, report };
+  }
+
+  @Public()
+  @Get('telemetry/tokens')
+  @ApiOperation({
+    summary: 'Telemetría programática de consumo de tokens y escalones de contexto para auto-inspección de la IA',
+  })
+  getTokenTelemetry(
+    @Query('missionId') missionId?: string,
+    @Query('currentPromptTokens') currentPromptTokens?: string,
+  ) {
+    if (!this.telemetryInspection) {
+      throw new BadRequestException('TelemetryInspectionService no está inicializado.');
+    }
+    const parsedPrompt = currentPromptTokens ? parseInt(currentPromptTokens, 10) : undefined;
+    const report = this.telemetryInspection.getTokenTelemetryReport({
+      missionId,
+      currentPromptTokens: Number.isFinite(parsedPrompt) ? parsedPrompt : undefined,
+    });
+    return { success: true, report };
+  }
+
+  @Public()
+  @Get('telemetry/budget')
+  @ApiOperation({
+    summary: 'Consulta programática de presupuesto de tokens, reparaciones y límites de misión para la IA',
+  })
+  getBudgetTelemetry(
+    @Query('missionId') missionId?: string,
+    @Query('currentPromptTokens') currentPromptTokens?: string,
+  ) {
+    if (!this.telemetryInspection) {
+      throw new BadRequestException('TelemetryInspectionService no está inicializado.');
+    }
+    const parsedPrompt = currentPromptTokens ? parseInt(currentPromptTokens, 10) : undefined;
+    const report = this.telemetryInspection.getBudgetTelemetryReport({
+      missionId,
+      currentPromptTokens: Number.isFinite(parsedPrompt) ? parsedPrompt : undefined,
+    });
+    return { success: true, report };
+  }
+
+  @Public()
+  @Get('context/core')
+  @ApiOperation({
+    summary: 'Obtiene el CoreContext compacto permanente (máximo 25 líneas) de JarBees',
+  })
+  async getCoreContext(
+    @Query('sessionId') sessionId?: string,
+    @Query('mode') mode?: string,
+  ) {
+    if (!this.coreContextService) {
+      throw new BadRequestException('CoreContextService no está inicializado.');
+    }
+    const coreContext = await this.coreContextService.buildCoreContext({
+      sessionId,
+      mode,
+    });
+    return { success: true, coreContext };
+  }
+
+  @Public()
+  @Get('capabilities/registry')
+  @ApiOperation({
+    summary: 'Consulta el registro dinámico de capacidades reales (AVAILABLE, DEGRADED, UNAVAILABLE)',
+  })
+  getCapabilityRegistry() {
+    if (!this.capabilityRegistry) {
+      throw new BadRequestException('CapabilityRegistryService no está inicializado.');
+    }
+    return {
+      success: true,
+      registry: this.capabilityRegistry.getSnapshot(),
+    };
+  }
+
+  @Post('capabilities/refresh')
+  @ApiOperation({
+    summary: 'Fuerza un sondeo activo del entorno y actualiza el CapabilityRegistry (soporta dryRun)',
+  })
+  async refreshCapabilityRegistry(
+    @Body() body?: { dryRun?: boolean; probeNetwork?: boolean },
+  ) {
+    if (!this.capabilityRegistry) {
+      throw new BadRequestException('CapabilityRegistryService no está inicializado.');
+    }
+    const registry = await this.capabilityRegistry.refreshCapabilities({
+      dryRun: body?.dryRun,
+      probeNetwork: body?.probeNetwork,
+    });
+    return { success: true, registry };
+  }
+
+  @Public()
+  @Get('memory/tripartite')
+  @ApiOperation({
+    summary: 'Consulta unificada de la Memoria Tripartita (Working + Episodic 50/30/20 + Associative TripleStore)',
+  })
+  async getTripartiteMemory(
+    @Query('query') query?: string,
+    @Query('sessionId') sessionId?: string,
+  ) {
+    if (!this.tripartiteMemory) {
+      throw new BadRequestException('TripartiteMemoryService no está inicializado.');
+    }
+    const stats = await this.tripartiteMemory.getStats();
+    const recall = query
+      ? await this.tripartiteMemory.recallTripartiteContext(
+          query,
+          sessionId || 'global',
+        )
+      : null;
+    return { success: true, stats, recall };
+  }
+
+  @Post('memory/sleep')
+  @ApiOperation({
+    summary: 'Ejecuta bajo demanda la rutina sleep de consolidación, deduplicación y calibración epistémica',
+  })
+  async runMemorySleep(@Body() options?: SleepConsolidationOptions) {
+    if (!this.memoryConsolidation) {
+      throw new BadRequestException('MemoryConsolidationService no está inicializado.');
+    }
+    const report = await this.memoryConsolidation.executeSleepCycle(options || {});
     return { success: true, report };
   }
 

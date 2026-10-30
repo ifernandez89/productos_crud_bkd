@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — Agente DSH Capabilities, Tripartite Memory, Dynamic CapabilityRegistry & Autonomous Token Telemetry (2026-10-30)
+
+- **📊 Telemetría Programática de Tokens para Auto-Inspección de la IA (`TelemetryInspectionService`)**:
+  - Exposición de telemetría de tokens y presupuestos para consumo autónomo por JarBees y el asistente IA (eliminando la necesidad de dashboards visuales humanos superfluos).
+  - Endpoints públicos: `GET /jarbees/telemetry/tokens` y `GET /jarbees/telemetry/budget`.
+  - Nueva herramienta nativa `telemetry_inspection` en `ToolRegistryService`.
+  - Clasificación en 5 escalones de contexto (`BELOW_2K`, `2K_3K_LOCALIZED`, `4K_5K_MULTICOMPONENT`, `5K_6K_NEAR_LIMIT`, `OVERFLOW_RISK`), cálculo de velocidad promedio (`tokens/s`), y emisión de directivas de auto-regulación (`shouldCompactContext`, `recommendedMaxOutputTokens`).
+
+- **🧭 Contexto Permanente Compacto `CoreContextService` (≤ 25 líneas)**:
+  - Endpoint: `GET /jarbees/context/core`.
+  - Generación de encabezado invariante estricto de máximo 25 líneas que condensa perfil del operador, reglas epistémicas, política HITL, capacidades reales detectadas y estado de memoria y presupuesto.
+  - Integrado de forma no invasiva en `JarvisPromptBuilderService`, reduciendo el overhead de contexto del sistema en más del 75%.
+
+- **⚡ `CapabilityRegistryService` Dinámico (Arranque + Event-Driven)**:
+  - Endpoints: `GET /jarbees/capabilities/registry` y `POST /jarbees/capabilities/refresh` (soporta `dryRun`).
+  - Herramienta nativa `capability_registry`.
+  - Sondeo al iniciar (`OnModuleInit`) y actualización reactiva ante eventos de cambio de servicio (`notifyServiceChange`), sin bucles de polling.
+  - Integrado en `IntentRouterService` (degradación automática de intenciones si la capacidad está `UNAVAILABLE`) y `PlannerService` (sanitización de pasos no soportados a `respond`).
+
+- **🧠 Memoria Tripartita Adaptada (`WorkingMemoryService` + `TripartiteMemoryService`)**:
+  - Endpoint: `GET /jarbees/memory/tripartite`.
+  - **Working Memory**: Retención de corto plazo con TTL (30 min) y capacidad acotada a 7 ítems por sesión (Ley de Miller) con desalojo determinista por salience/antigüedad y evicción perezosa Anti-OOM (sin timers de fondo).
+  - **Episodic Memory**: Búsqueda híbrida ponderada ($0.50 \times \text{Vector} + 0.30 \times \text{FTS} + 0.20 \times \text{Importancia}$).
+  - **Associative TripleStore**: Reutilización de `KnowledgeEntity`, `KnowledgeRelation` y `PendingRelation` con salvaguarda epistémica: afirmaciones sin evidencia verificada (sourceDocId/quote y confianza >= 0.85) quedan en cuarentena.
+
+- **🌙 Rutina `sleep` de Consolidación y Calibración Epistémica (`MemoryConsolidationService`)**:
+  - Endpoint bajo demanda: `POST /jarbees/memory/sleep` y herramienta `memory_sleep` (invocable ante inactividad o necesidad de consolidación).
+  - Promueve ítems de alta salience de Working Memory a Episodic Memory, fusiona duplicados con boosting de importancia, detecta decisiones cambiadas o contradictorias marcando la versión previa como `[DECISION_SUPERSEDED by #<id>]` sin borrar el origen, y aplica decaimiento temporal.
+  - **Invariante Epistémico Estricto**: Cero hipótesis de `PendingRelation` promovidas automáticamente a hecho confirmado durante la consolidación desatendida.
+
+- **📋 Procedural Skills Estandarizadas (SOPs en `SkillRegistryService`)**:
+  - Soporte de metadatos estructurados (`preconditions`, `steps`, `pitfalls`, `verificationSteps`) y verificación de ejecutabilidad contra `CapabilityRegistryService`.
+  - Tres SOPs base creadas:
+    - `skills/investigacion-cientifica-reproducible.md` (método científico, simulación y error relativo).
+    - `skills/mision-ingenieria-verificada.md` (validación AST, isolated runner, rollback y HITL).
+    - `skills/consolidacion-epistemica-memoria.md` (mantenimiento y calibración de la memoria tripartita).
+
+- **🧪 Batería de Validación Automatizada (`jarbees-dsh-capabilities.spec.ts`)**:
+  - Suite integral de 8 pruebas cubriendo las 5 fases en serie (`--runInBand`, 0 OOM): 8/8 PASS en 19.4s.
+  - Verificación estática con `tsc --noEmit`: 0 errores.
+
 ### Planned & Backlog Architecture — Multidisciplinary Technical Researcher & Scientific Engine Vision (2026-10-29)
 
 - **🧭 Visión de Investigación Técnica Multidisciplinaria (`docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md`)**:

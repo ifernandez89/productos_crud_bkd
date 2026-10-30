@@ -15,6 +15,7 @@ import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from '../knowledge/disciplines-catalog.service';
+import { CoreContextService } from './core-context.service';
 
 @Injectable()
 export class JarvisPromptBuilderService {
@@ -38,6 +39,8 @@ export class JarvisPromptBuilderService {
     private readonly gamesCatalog: GamesCatalogService,
     @Optional()
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
+    @Optional()
+    private readonly coreContextService?: CoreContextService,
   ) {}
 
   async buildJarvisContext(
@@ -139,6 +142,15 @@ export class JarvisPromptBuilderService {
         '3. Para chistes, humor, consejos, reflexiones o charlas cotidianas, respondé con creatividad sin bloqueos artificiales.',
         '4. Si no tenés un dato verificado o de actualidad, decílo con sinceridad sin inventar.',
       ].join('\n');
+    }
+
+    if (this.coreContextService) {
+      const coreCtx = await this.coreContextService.buildCoreContext({
+        sessionId,
+        profileOverride: profile,
+        mode,
+      });
+      systemPrompt = `${coreCtx.markdown}\n\n${systemPrompt}`;
     }
 
     const contextParts: string[] = [];

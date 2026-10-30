@@ -354,5 +354,32 @@ Se ha documentado formalmente la evolución estratégica de JarBees más allá d
 - **Misión Piloto Propuesta**: *Investigación y Simulación Orbital del Sistema Solar* con Python, efemérides de referencia de la NASA/JPL y cuantificación rigurosa de errores de deriva.
 - **Variables Futuras de Activación**: `USE_SCIENTIFIC_RESEARCH` y `USE_EXPERIMENTAL_TOOLS` (manteniendo `USE_LLAMACPP_CODER` enfocado en ingeniería de software).
 
+---
 
+## 9. Capacidades Adoptadas de Agente DSH y Telemetría Autónoma para IA (Implementado)
 
+En lugar de construir un panel visual humano para consumo de tokens, se implementó **auto-inspección programática para la IA y JarBees**, junto con las 5 capacidades de alto impacto inspiradas en **Agente DSH**:
+
+1. **Telemetría Programática para Auto-Inspección de la IA (`TelemetryInspectionService`)**:
+   - Endpoints: `GET /jarbees/telemetry/tokens` y `GET /jarbees/telemetry/budget`.
+   - Herramienta nativa `telemetry_inspection` en `ToolRegistryService`.
+   - Calcula distribución por escalones de contexto (`BELOW_2K`, `2K_3K_LOCALIZED`, `4K_5K_MULTICOMPONENT`, `5K_6K_NEAR_LIMIT`, `OVERFLOW_RISK`), velocidad promedio (`tokens/s`) y emite directivas de auto-regulación (`shouldCompactContext`, `recommendedMaxOutputTokens`).
+2. **`CoreContextService` Compacto Permanente (≤ 25 líneas)**:
+   - Endpoint: `GET /jarbees/context/core`.
+   - Integrado en `JarvisPromptBuilderService`, garantizando un encabezado invariante de máximo 25 líneas con identidad, perfil del operador, reglas epistémicas, política HITL, capacidades reales operativas y estado resumido de memoria y presupuesto.
+3. **`CapabilityRegistryService` Dinámico (Arranque + Event-Driven)**:
+   - Endpoints: `GET /jarbees/capabilities/registry` y `POST /jarbees/capabilities/refresh` (con soporte `dryRun`).
+   - Herramienta nativa `capability_registry`.
+   - Sondea al iniciar (`OnModuleInit`) y se actualiza reactivamente ante eventos de cambio de servicio (`notifyServiceChange`).
+   - Conecta directamente con `IntentRouterService` y `PlannerService` para degradar intenciones o filtrar pasos cuyas capacidades estén `UNAVAILABLE`.
+4. **Memoria Tripartita Nativa (`WorkingMemoryService` + `TripartiteMemoryService`)**:
+   - Endpoint: `GET /jarbees/memory/tripartite`.
+   - **Working Memory**: Corto plazo con TTL y límite de capacidad de 7 ítems por sesión (Ley de Miller), sin timers en background (evicción perezosa Anti-OOM).
+   - **Episodic Memory**: Búsqueda híbrida ponderada ($0.50 \times \text{Vector} + 0.30 \times \text{FTS} + 0.20 \times \text{Importancia}$).
+   - **Associative TripleStore**: Reutiliza `KnowledgeEntity`, `KnowledgeRelation` y `PendingRelation` con cuarentena epistémica obligatoria para afirmaciones sin evidencia verificada.
+5. **Rutina `sleep` de Consolidación y Calibración Epistémica (`MemoryConsolidationService`)**:
+   - Endpoint bajo demanda: `POST /jarbees/memory/sleep` y herramienta `memory_sleep`.
+   - Promueve ítems relevantes de Working Memory, fusiona duplicados episódicos, etiqueta decisiones cambiadas como `[DECISION_SUPERSEDED by #<id>]` sin borrar historia previa, aplica decaimiento temporal y **garantiza que ninguna hipótesis en `PendingRelation` se convierta automáticamente en hecho confirmado**.
+6. **Procedural Skills Estandarizadas (SOPs en `SkillRegistryService`)**:
+   - Soporte de metadatos estructurados (`preconditions`, `steps`, `pitfalls`, `verificationSteps`) y verificación de ejecutabilidad contra `CapabilityRegistryService`.
+   - Nuevas SOPs base: `skills/investigacion-cientifica-reproducible.md`, `skills/mision-ingenieria-verificada.md` y `skills/consolidacion-epistemica-memoria.md`.
