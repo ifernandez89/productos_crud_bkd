@@ -383,3 +383,18 @@ En lugar de construir un panel visual humano para consumo de tokens, se implemen
 6. **Procedural Skills Estandarizadas (SOPs en `SkillRegistryService`)**:
    - Soporte de metadatos estructurados (`preconditions`, `steps`, `pitfalls`, `verificationSteps`) y verificación de ejecutabilidad contra `CapabilityRegistryService`.
    - Nuevas SOPs base: `skills/investigacion-cientifica-reproducible.md`, `skills/mision-ingenieria-verificada.md` y `skills/consolidacion-epistemica-memoria.md`.
+
+### 9.1 Validación Profunda de Integración y Comportamiento Cognitivo (16/16 Tests PASS)
+
+Suite ejecutada con éxito con `--runInBand` (`src/jarvis/memory/jarbees-deep-validation-5tests.spec.ts`):
+
+| Prueba | Dimensión Validada | Resultado Empírico Demostrado |
+| :--- | :--- | :--- |
+| **Prueba 1: Capability Failure** | Resiliencia ante caída de dependencias | Al marcar `LLM_FALLBACK_OLLAMA` o `WEB_BROWSER_SEARCH` como `UNAVAILABLE`, el `IntentRouterService` degrada inmediatamente `WEB` -> `RAG` / `LOCAL` y el `PlannerService` sanitiza los pasos rotos a `respond` sin lanzar excepciones ni alucinar acciones. |
+| **Prueba 2: Memory Retrieval** | Precisión de búsqueda híbrida y no-contaminación | Consultas técnicas específicas (`llama.cpp GPU RTX 5070`) obtienen puntuación híbrida > 0.85 en recuerdos arquitectónicos afines, mientras que recuerdos distractorios (cocina, deportes, viajes) obtienen < 0.25 (relación señal/ruido > 3.4x). |
+| **Prueba 3: Epistemic Integrity** | Cortafuegos contra falsos hechos automáticos | Las hipótesis en `PendingRelation` con confianza de hasta 0.99 permanecen en cuarentena durante la consolidación `sleep` (`autoPromotedToFact: 0`, `EPISTEMIC_GUARDRAIL_ACTIVE`). |
+| **Prueba 4: Sleep Idempotency** | Estabilidad en ejecuciones consecutivas | Correr `sleep` dos o tres veces seguidas no duplica recuerdos, no altera timestamps ni genera etiquetas duplicadas tipo `[DECISION_SUPERSEDED by #X [DECISION_SUPERSEDED...]]`. |
+| **Prueba 5: Context Stress** | Invariancia en zonas de alta saturación | Al aproximarse a 5.120 tokens (escalón `5K_6K_NEAR_LIMIT`), el sistema emite directivas de compactación (`shouldCompactContext: true`) mientras `CoreContextService` conserva intacto el 100% de los invariantes (HITL, gobernanza, seguridad, honestidad) en ≤ 25 líneas. |
+| **Prueba A: Cambio de Decisión** | Trazabilidad histórica vs decisión vigente | Registrar que un proyecto usa Ollama y luego migrar a llama.cpp genera tras `sleep` la marca `[DECISION_SUPERSEDED by #2 at <isoDate>]` en el recuerdo antiguo (con importancia reducida a 1), mientras la decisión vigente queda como la única activa, sin confundir presente y pasado. |
+| **Prueba B: Recuperación Dinámica** | Hot-Recovery de capacidades sin reinicios | Un servicio que pasa de `AVAILABLE` -> `UNAVAILABLE` -> `AVAILABLE` permite al `PlannerService` y al `IntentRouterService` recuperar de inmediato la capacidad de planificación sin reiniciar la instancia de NestJS. |
+| **Auditoría C: Working Memory Configurable** | Superación del dogmatismo de Miller | Se parametrizó `maxItemsPerSession` (vía constructor, variable de entorno `WORKING_MEMORY_MAX_ITEMS` o método dinámico `setMaxItemsPerSession`), permitiendo probar límites de 5, 7, 10 o 15 ítems con desalojo determinista por salience y antigüedad. |

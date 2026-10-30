@@ -277,7 +277,9 @@ export class MemoryConsolidationService {
     }
 
     const opposing = this.hasOpposingPolarity(newerText, olderText);
-    if (!opposing) {
+    const substitution = this.hasSubstitutionIntent(newerText, olderText);
+
+    if (!opposing && !substitution) {
       return { isContradiction: false, topicKey: '' };
     }
 
@@ -285,6 +287,12 @@ export class MemoryConsolidationService {
       isContradiction: true,
       topicKey: shared.slice(0, 3).join('_'),
     };
+  }
+
+  private hasSubstitutionIntent(newerText: string, _olderText: string): boolean {
+    const subPattern =
+      /(?:en lugar de|en vez de|reemplaz(?:ar|a|ando|ado)?|sustitu(?:ir|ye|yendo)?|migra(?:r|ndo|cion|ción)?|cambiar(?:\s+\w+)?\s+por|depreca(?:r|ndo|do)?)/i;
+    return subPattern.test(newerText);
   }
 
   private hasOpposingPolarity(a: string, b: string): boolean {

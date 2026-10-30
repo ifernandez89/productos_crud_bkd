@@ -30,13 +30,18 @@ export interface WorkingMemoryStats {
   defaultTtlMs: number;
 }
 
+export interface WorkingMemoryOptions {
+  maxItemsPerSession?: number;
+  defaultTtlMs?: number;
+}
+
 /**
  * WorkingMemoryService — Nivel 1 de la Memoria Tripartita de JarBees.
  *
  * Responde a la pregunta: "¿Qué estamos haciendo ahora?"
  * - Mantiene el contexto inmediato de la tarea/sesión con expiración estricta (TTL).
- * - Límite de capacidad por sesión (7 ítems por defecto, Ley de Miller) con desalojo
- *   determinístico por menor relevancia (salience) y antigüedad.
+ * - Capacidad por sesión configurable (configurable vía options o WORKING_MEMORY_MAX_ITEMS;
+ *   no restringido dogmáticamente a 7 ítems) con desalojo determinístico por menor salience.
  * - Sin timers en background (evicción perezosa en lectura/escritura) para garantizar
  *   cero fugas de memoria y cumplimiento Anti-OOM.
  */
@@ -44,8 +49,29 @@ export interface WorkingMemoryStats {
 export class WorkingMemoryService {
   private readonly logger = new Logger(WorkingMemoryService.name);
   private readonly store = new Map<string, Map<string, WorkingMemoryItem>>();
-  private readonly maxItemsPerSession = 7;
-  private readonly defaultTtlMs = 30 * 60 * 1000; // 30 minutos
+  private maxItemsPerSession: number;
+  private defaultTtlMs: number;
+
+  constructor(options?: WorkingMemoryOptions) {
+    const envMax = parseInt(process.env.WORKING_MEMORY_MAX_ITEMS || '', 10);
+    this.maxItemsPerSession =
+      options?.maxItemsPerSession ??
+      (Number.isFinite(envMax) && envMax > 0 ? envMax : 7);
+    this.defaultTtlMs = options?.defaultTtlMs ?? 30 * 60 * 1000; // 30 minutos
+  }
+
+  /**
+   * Permite ajustar dinámicamente el límite de ítems de memoria de trabajo por sesión.
+   */
+  setMaxItemsPerSession(newLimit: number): void {
+    if (newLimit > 0) {
+      this.maxItemsPerSession = Math.floor(newLimit);
+    }
+  }
+
+  getMaxItemsPerSession(): number {
+    return this.maxItemsPerSession;
+  }
 
   /**
    * Inserta o actualiza un ítem en la memoria de trabajo de la sesión.

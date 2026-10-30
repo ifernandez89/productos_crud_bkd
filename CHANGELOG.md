@@ -41,6 +41,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     - `skills/mision-ingenieria-verificada.md` (validación AST, isolated runner, rollback y HITL).
     - `skills/consolidacion-epistemica-memoria.md` (mantenimiento y calibración de la memoria tripartita).
 
+- **🧪 Suite de Validación Profunda y Resiliencia Cognitiva (`jarbees-deep-validation-5tests.spec.ts` & `jarbees-dsh-capabilities.spec.ts`)**:
+  - **Prueba 1 — Capability Failure**: Degrada intenciones (`WEB` -> `RAG` / `LOCAL`) y sanitiza pasos no permitidos a `respond` cuando Ollama o la búsqueda web caen.
+  - **Prueba 2 — Memory Retrieval**: Alta precisión (>0.85) en búsquedas semánticas y léxicas afines sin contaminación de recuerdos distractorios (<0.25).
+  - **Prueba 3 — Epistemic Integrity**: Garantiza que ninguna hipótesis de `PendingRelation` se transforme en hecho confirmado durante la consolidación `sleep`.
+  - **Prueba 4 — Sleep Idempotency**: Ejecuciones repetidas consecutivas son 100% idempotentes; no duplican registros ni corrompen metadatos.
+  - **Prueba 5 — Context Stress**: Emite alertas de compactación (`shouldCompactContext: true`) al límite de 5.120 tokens (`5K_6K_NEAR_LIMIT`) manteniendo el 100% de los invariantes en `CoreContext` (≤ 25 líneas).
+  - **Prueba A — Cambio de Decisión**: Migración de Ollama a llama.cpp genera trazabilidad histórica etiquetando `[DECISION_SUPERSEDED by #2 at <isoDate>]` en el registro antiguo sin confundir el estado vigente.
+  - **Prueba B — Recuperación de Capacidades en Caliente**: Transición `AVAILABLE` -> `UNAVAILABLE` -> `AVAILABLE` restaura la capacidad de planificación de `verify_code` de inmediato sin reiniciar el proceso.
+  - **Auditoría C — Límite Configurable de Working Memory**: Desacoplado de la regla dogmática de Miller; configurable vía constructor, variable de entorno `WORKING_MEMORY_MAX_ITEMS` o método dinámico `setMaxItemsPerSession()` (5, 7, 10, 15 ítems).
+  - **Total Pruebas en Serie (`--runInBand`)**: 16/16 tests PASS en 17.5s (0 OOM).
+
 - **🧪 Batería de Validación Automatizada (`jarbees-dsh-capabilities.spec.ts`)**:
   - Suite integral de 8 pruebas cubriendo las 5 fases en serie (`--runInBand`, 0 OOM): 8/8 PASS en 19.4s.
   - Verificación estática con `tsc --noEmit`: 0 errores.
