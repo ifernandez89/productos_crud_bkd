@@ -105,6 +105,13 @@ import { ObjectLabService } from './3d/services/object-lab.service';
 import { VectorPortraitEngine } from './tools/poster/portrait/vector-portrait.engine';
 import { PortraitQaService } from './tools/poster/portrait/portrait-qa.service';
 import { PortraitService } from './tools/poster/portrait/portrait.service';
+import { StaticPreValidatorService } from './verification/static-pre-validator.service';
+import { IsolatedTestRunnerService } from './verification/isolated-test-runner.service';
+import { CheckpointManagerService } from './verification/checkpoint-manager.service';
+import { RepairControllerService } from './verification/repair-controller.service';
+import { VerificationHarnessService } from './verification/verification-harness.service';
+import { InferenceDiagnosticsService } from './llm/inference-diagnostics.service';
+import { EngineeringMissionManagerService } from './verification/engineering-mission-manager.service';
 
 @Module({
   imports: [PrismaModule, GoogleModule, CognitiveModule],
@@ -228,6 +235,13 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     VectorPortraitEngine,
     PortraitQaService,
     PortraitService,
+    StaticPreValidatorService,
+    IsolatedTestRunnerService,
+    CheckpointManagerService,
+    RepairControllerService,
+    VerificationHarnessService,
+    InferenceDiagnosticsService,
+    EngineeringMissionManagerService,
   ],
   exports: [
     JarvisService,
@@ -272,6 +286,13 @@ import { PortraitService } from './tools/poster/portrait/portrait.service';
     DrainQueueService,
     ModelLifecycleService,
     ExecutionFeedbackLoopService,
+    StaticPreValidatorService,
+    IsolatedTestRunnerService,
+    CheckpointManagerService,
+    RepairControllerService,
+    VerificationHarnessService,
+    InferenceDiagnosticsService,
+    EngineeringMissionManagerService,
   ],
 })
 export class JarvisModule {}

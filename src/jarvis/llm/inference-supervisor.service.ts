@@ -19,6 +19,14 @@ export enum InferenceServerStatus {
   UNKNOWN = 'UNKNOWN',
 }
 
+export interface GpuTelemetryReport {
+  vramUsedMiB: number;
+  vramFreeMiB: number;
+  vramTotalMiB: number;
+  gpuTempC: number;
+  gpuUtilPercent: number;
+}
+
 export interface SupervisorState {
   status: InferenceServerStatus;
   pid?: number;
@@ -29,6 +37,7 @@ export interface SupervisorState {
   lastError?: string;
   restartAttempts: number;
   circuitBreakerTripped: boolean;
+  gpu?: GpuTelemetryReport;
 }
 
 const MAX_RESTARTS = 3;
@@ -65,6 +74,7 @@ export class InferenceSupervisorService
   private serverProcess?: ChildProcess;
   private status: InferenceServerStatus = InferenceServerStatus.UNKNOWN;
   private managedByJarBees = false;
+  private stoppedExplicitly = false;
   private lastStarted?: Date;
   private lastError?: string;
   private restartAttempts = 0;
@@ -80,7 +90,7 @@ export class InferenceSupervisorService
     this.host = process.env.LLAMACPP_HOST || '127.0.0.1';
     this.port = parseInt(process.env.LLAMACPP_PORT || '8080', 10);
     this.ngl = process.env.LLAMACPP_NGL || '99';
-    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '16384';
+    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '6144';
     this.parallel = process.env.LLAMACPP_PARALLEL || '1';
     this.autoStart = process.env.LLAMACPP_AUTO_START === 'true';
     this.routerMode = process.env.LLAMACPP_ROUTER_MODE !== 'false';
@@ -192,6 +202,7 @@ export class InferenceSupervisorService
    * Inicia el proceso llama-server.exe
    */
   async startServer(): Promise<void> {
+    this.stoppedExplicitly = false;
     if (await this.isServerAlive()) {
       this.status = InferenceServerStatus.RUNNING;
       return;
@@ -252,6 +263,8 @@ export class InferenceSupervisorService
         throw new Error(`Modelo GGUF no encontrado en ${this.modelPath}`);
       }
 
+      const defaultAlias =
+        process.env.LLAMACPP_DEFAULT_MODEL || 'qwen2.5-coder:14b';
       args = [
         '-m',
         this.modelPath,
@@ -263,52 +276,51 @@ export class InferenceSupervisorService
         this.ngl,
         '-c',
         this.ctxSize,
-        '--ctk',
-        this.ctk,
-        '--ctv',
-        this.ctv,
-        '--jinja',
-        '--alias',
-        'qwen3:8b',
-        '--parallel',
+        '-np',
         this.parallel,
+        '--alias',
+        defaultAlias,
       ];
 
       this.logger.log(
-        `[supervisor] Iniciando proceso: ${this.binaryPath} con modelo ${this.modelPath} (ctk: ${this.ctk}, ctv: ${this.ctv})`,
+        `[supervisor] Iniciando proceso: ${this.binaryPath} con modelo ${this.modelPath} (-c ${this.ctxSize}, -ngl ${this.ngl}, -np ${this.parallel})`,
       );
     }
 
-    this.serverProcess = spawn(this.binaryPath, args, {
+    const proc = spawn(this.binaryPath, args, {
       windowsHide: true,
       stdio: 'ignore',
       detached: false,
     });
+    this.serverProcess = proc;
 
     this.managedByJarBees = true;
 
-    this.serverProcess.on('error', (err) => {
+    proc.on('error', (err) => {
+      if (this.serverProcess !== proc) return;
       this.logger.error(`[supervisor] Error en llama-server: ${err.message}`);
       this.lastError = err.message;
       this.status = InferenceServerStatus.FAILED;
       this.recordFailure();
     });
 
-    this.serverProcess.on('exit', (code, signal) => {
+    proc.on('exit', (code, signal) => {
       this.logger.warn(
         `[supervisor] llama-server finalizó (code: ${code}, signal: ${signal})`,
       );
-      this.status = InferenceServerStatus.STOPPED;
-      this.serverProcess = undefined;
-      this.managedByJarBees = false;
+      if (this.serverProcess === proc) {
+        this.status = InferenceServerStatus.STOPPED;
+        this.serverProcess = undefined;
+        this.managedByJarBees = false;
+      }
     });
 
     try {
-      await this.waitUntilReady(25000);
+      await this.waitUntilReady(25000, proc);
       this.status = InferenceServerStatus.RUNNING;
       this.lastStarted = new Date();
       this.logger.log(
-        `✅ [supervisor] llama-server listo en ${this.host}:${this.port} (PID: ${this.serverProcess.pid})`,
+        `✅ [supervisor] llama-server listo en ${this.host}:${this.port} (PID: ${proc.pid})`,
       );
     } catch (err: any) {
       this.lastError = err.message;
@@ -322,6 +334,7 @@ export class InferenceSupervisorService
    * Detiene el proceso y libera la VRAM
    */
   async stopServer(): Promise<void> {
+    this.stoppedExplicitly = true;
     const pid = this.serverProcess?.pid;
     if (!pid) {
       this.status = InferenceServerStatus.STOPPED;
@@ -344,6 +357,14 @@ export class InferenceSupervisorService
       this.logger.warn(`[supervisor] Error deteniendo proceso: ${err.message}`);
     }
 
+    // Esperar a que el kernel libere efectivamente el socket TCP y el contexto CUDA
+    const stopDeadline = Date.now() + 5000;
+    while (Date.now() < stopDeadline) {
+      if (!(await this.isServerAlive())) break;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    await new Promise((r) => setTimeout(r, 250));
+
     this.serverProcess = undefined;
     this.managedByJarBees = false;
     this.status = InferenceServerStatus.STOPPED;
@@ -351,19 +372,65 @@ export class InferenceSupervisorService
   }
 
   /**
-   * Intenta recuperar el servidor si cayó
+   * Intenta recuperar el servidor si cayó (evitando reinicios innecesarios si ya responde /health)
    */
   async recover(): Promise<void> {
-    if (this.status === InferenceServerStatus.STARTING) return;
+    if (
+      this.status === InferenceServerStatus.STARTING ||
+      this.stoppedExplicitly
+    ) {
+      return;
+    }
+    if (await this.isServerAlive()) {
+      this.status = InferenceServerStatus.RUNNING;
+      return;
+    }
     this.logger.log('[supervisor] Solicitud de recuperación recibida...');
     await this.startServer();
   }
 
+  /**
+   * Obtiene métricas reales de la GPU (NVIDIA RTX 5070) vía nvidia-smi.
+   */
+  getGpuTelemetry(): GpuTelemetryReport | undefined {
+    try {
+      const out = execSync(
+        'nvidia-smi --query-gpu=memory.used,memory.free,memory.total,temperature.gpu,utilization.gpu --format=csv,noheader,nounits',
+        { timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] },
+      )
+        .toString('utf8')
+        .trim();
+      const firstLine = out.split(/\r?\n/)[0];
+      if (!firstLine) return undefined;
+      const parts = firstLine.split(',').map((s) => Number(s.trim()));
+      if (parts.length < 5 || parts.some((n) => Number.isNaN(n))) {
+        return undefined;
+      }
+      return {
+        vramUsedMiB: parts[0],
+        vramFreeMiB: parts[1],
+        vramTotalMiB: parts[2],
+        gpuTempC: parts[3],
+        gpuUtilPercent: parts[4],
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
   // ── Internals ─────────────────────────────────────────────────────────────
 
-  private async waitUntilReady(timeoutMs: number): Promise<void> {
+  private async waitUntilReady(
+    timeoutMs: number,
+    proc?: ChildProcess,
+  ): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
+      if (proc && proc.exitCode !== null) {
+        throw new Error(
+          `llama-server finalizó prematuramente durante el arranque (exitCode: ${proc.exitCode})`,
+        );
+      }
       if (await this.isServerAlive()) return;
       await new Promise((r) => setTimeout(r, READY_POLL_INTERVAL_MS));
     }

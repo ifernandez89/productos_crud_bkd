@@ -14,6 +14,7 @@ import {
   BadRequestException,
   Headers,
   Res,
+  Optional,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
@@ -43,6 +44,13 @@ import { getAvailableDisciplines } from '../shared/disciplines';
 import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { ActionGatekeeperService } from './security/action-gatekeeper.service';
 import { MissionRecoveryService } from './planner/mission-recovery.service';
+import { InferenceDiagnosticsService } from './llm/inference-diagnostics.service';
+import { ExecutionEngine, ExecutionPlan } from './planner/execution-engine.service';
+import { VerificationMissionRequest } from './verification/verification-harness.types';
+import {
+  EngineeringMissionManagerService,
+  ManagedMissionRequest,
+} from './verification/engineering-mission-manager.service';
 
 @ApiTags('jarbees')
 @Controller('jarbees')
@@ -69,6 +77,12 @@ export class JarvisController {
     private readonly inferenceGateway: InferenceGatewayService,
     private readonly actionGatekeeper: ActionGatekeeperService,
     private readonly missionRecovery: MissionRecoveryService,
+    @Optional()
+    private readonly inferenceDiagnostics?: InferenceDiagnosticsService,
+    @Optional()
+    private readonly executionEngine?: ExecutionEngine,
+    @Optional()
+    private readonly engineeringMissionManager?: EngineeringMissionManagerService,
   ) {}
 
 
@@ -83,6 +97,160 @@ export class JarvisController {
   })
   async getInferenceStatus() {
     return await this.inferenceGateway.getHealthStatus();
+  }
+
+  @Public()
+  @Get('inference/diagnostics')
+  @ApiOperation({
+    summary: 'Diagnóstico estructurado de inferencia llama.cpp, latencia, VRAM y aislamiento bge-m3',
+  })
+  async getInferenceDiagnostics(
+    @Query('probe') probe?: string,
+    @Query('model') model?: string,
+  ) {
+    if (!this.inferenceDiagnostics) {
+      throw new BadRequestException('InferenceDiagnosticsService no está inicializado.');
+    }
+    const report = await this.inferenceDiagnostics.runDiagnostics({
+      runInferenceProbe: probe === 'true',
+      requestedModel: model,
+    });
+    return { success: true, report };
+  }
+
+  @Post('engineering/mission')
+  @ApiOperation({
+    summary: 'Ejecutar misión interactiva de ingeniería verificada (Protegido por Auth + Confinamiento + HITL)',
+  })
+  async executeEngineeringMission(
+    @Body() mission: ManagedMissionRequest,
+    @Headers('x-action-token') actionToken?: string,
+  ) {
+    if (!mission?.missionId || !mission?.objective || !mission?.entryFile) {
+      throw new BadRequestException(
+        'Se requieren missionId, objective y entryFile para ejecutar la misión de ingeniería.',
+      );
+    }
+
+    if (this.engineeringMissionManager) {
+      const record = await this.engineeringMissionManager.executeManagedMission({
+        ...mission,
+        humanApprovalToken: actionToken || mission.humanApprovalToken,
+      });
+      return {
+        success:
+          record.status === 'completed' ||
+          record.status === 'awaiting_human_approval',
+        planStatus: record.status,
+        durationMs: record.budgetUsage.durationMs,
+        managedRecord: record,
+        verificationReport: record.verificationReport,
+      };
+    }
+
+    if (!this.executionEngine) {
+      throw new BadRequestException('ExecutionEngine no está inicializado.');
+    }
+    const plan: ExecutionPlan = {
+      taskId: Date.now() % 1000000,
+      objective: mission.objective,
+      steps: [
+        {
+          id: 1,
+          stepNumber: 1,
+          description: `Misión de ingeniería verificada: ${mission.missionId}`,
+          type: 'verify_code',
+          status: 'pending',
+          input: { verificationMission: mission },
+        },
+      ],
+    };
+    const planResult = await this.executionEngine.execute(plan);
+    const stepContent = plan.steps[0]?.output?.content;
+    const stepOutput = stepContent ? JSON.parse(stepContent) : null;
+    return {
+      success: Boolean(stepOutput?.success),
+      planStatus: planResult.stepsFailed === 0 ? 'completed' : 'failed',
+      durationMs: planResult.totalDurationMs,
+      verificationReport: stepOutput,
+    };
+  }
+
+  @Get('engineering/missions')
+  @ApiOperation({
+    summary: 'Listar misiones de ingeniería administradas y sus estados',
+  })
+  listEngineeringMissions() {
+    if (!this.engineeringMissionManager) {
+      throw new BadRequestException(
+        'EngineeringMissionManagerService no está inicializado.',
+      );
+    }
+    return {
+      success: true,
+      missions: this.engineeringMissionManager.listMissionRecords(),
+    };
+  }
+
+  @Get('engineering/mission/:missionId')
+  @ApiOperation({
+    summary: 'Consultar estado detallado, diffs, presupuesto y checkpoints de una misión de ingeniería',
+  })
+  getEngineeringMission(@Param('missionId') missionId: string) {
+    if (!this.engineeringMissionManager) {
+      throw new BadRequestException(
+        'EngineeringMissionManagerService no está inicializado.',
+      );
+    }
+    const record = this.engineeringMissionManager.getMissionRecord(missionId);
+    if (!record) {
+      throw new BadRequestException(`Misión "${missionId}" no encontrada.`);
+    }
+    return { success: true, mission: record };
+  }
+
+  @Post('engineering/mission/:missionId/approve')
+  @ApiOperation({
+    summary: 'Aprobar humanamente (HITL) e integrar los cambios verificados de una misión en el workspace',
+  })
+  approveEngineeringMission(
+    @Param('missionId') missionId: string,
+    @Headers('x-action-token') actionToken?: string,
+  ) {
+    if (!this.engineeringMissionManager) {
+      throw new BadRequestException(
+        'EngineeringMissionManagerService no está inicializado.',
+      );
+    }
+    const record = this.engineeringMissionManager.approveAndIntegrateMission(
+      missionId,
+      actionToken,
+    );
+    return { success: true, mission: record };
+  }
+
+  @Post('engineering/mission/:missionId/restore-checkpoint')
+  @ApiOperation({
+    summary: 'Restaurar manualmente un checkpoint previo de una misión de ingeniería',
+  })
+  restoreEngineeringMissionCheckpoint(
+    @Param('missionId') missionId: string,
+    @Body() body: { attemptIndex: number },
+  ) {
+    if (!this.engineeringMissionManager) {
+      throw new BadRequestException(
+        'EngineeringMissionManagerService no está inicializado.',
+      );
+    }
+    const restored = this.engineeringMissionManager.restoreCheckpointManually(
+      missionId,
+      body.attemptIndex,
+    );
+    return { success: true, ...restored };
+  }
+
+  private _noopInferenceStatusPlaceholder() {
+    return null;
   }
 
   // ── Sesión persistente ──────────────────────────────────────────────────────

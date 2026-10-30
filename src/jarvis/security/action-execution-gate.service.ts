@@ -25,6 +25,7 @@ export class ActionExecutionGateService {
     'deduplicate',
     'save',
     'respond',
+    'verify_code',
   ]);
 
   constructor(private readonly auditService: AuditService) {}

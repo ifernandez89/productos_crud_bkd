@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger, Inject, Optional } from '@nestjs/common';
 import { TaskRepository } from '../repositories/task.repository';
 import { ILLMProvider } from '../llm/llm-provider.interface';
 import { OllamaProvider } from '../llm/ollama.provider';
@@ -12,6 +12,8 @@ import {
   MissionCheckpointService,
   MissionCheckpoint,
 } from './mission-checkpoint.service';
+import { VerificationHarnessService } from '../verification/verification-harness.service';
+import { VerificationMissionRequest } from '../verification/verification-harness.types';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -23,6 +25,7 @@ export type StepType =
   | 'summarize' // resumir contenido acumulado
   | 'save' // guardar resultado en Knowledge
   | 'deduplicate' // eliminar duplicados
+  | 'verify_code' // verificar, reparar y aplicar Best-Checkpoint Rollback
   | 'respond'; // generar respuesta final al usuario
 
 export interface StepInput {
@@ -30,6 +33,7 @@ export interface StepInput {
   url?: string;
   content?: string;
   context?: string;
+  verificationMission?: VerificationMissionRequest;
 }
 
 export interface StepOutput {
@@ -120,7 +124,10 @@ export class ExecutionEngine {
     @Inject(OllamaProvider) private readonly llm: ILLMProvider,
     private readonly embeddingsService: EmbeddingsService,
     private readonly actionGate: ActionExecutionGateService,
+    @Optional()
     private readonly checkpointService?: MissionCheckpointService,
+    @Optional()
+    private readonly verificationHarness?: VerificationHarnessService,
   ) {}
 
   /**
@@ -564,12 +571,46 @@ export class ExecutionEngine {
       case 'save':
         return this.executeSave(step, context, objective);
 
+      case 'verify_code':
+        return this.executeVerifyCode(step, objective);
+
       case 'respond':
         return this.executeRespond(step, context, objective);
 
       default:
         throw new Error(`Tipo de paso desconocido: ${step.type}`);
     }
+  }
+
+  private async executeVerifyCode(
+    step: ExecutionStep,
+    objective: string,
+  ): Promise<StepOutput> {
+    if (!this.verificationHarness) {
+      throw new Error(
+        'VerificationHarnessService no está disponible en ExecutionEngine.',
+      );
+    }
+    const mission = step.input.verificationMission;
+    if (!mission) {
+      throw new Error(
+        'El paso verify_code requiere step.input.verificationMission.',
+      );
+    }
+    const report = await this.verificationHarness.runMission({
+      ...mission,
+      objective: mission.objective || objective,
+      llmProviderOverride: mission.llmProviderOverride || this.llm,
+    });
+    return {
+      content: JSON.stringify(report),
+      metadata: {
+        success: report.success,
+        bestCheckpointId: report.bestCheckpointId,
+        rollbacksCount: report.rollbacksCount,
+        finalWorkingTreeHash: report.finalWorkingTreeHash,
+      },
+    };
   }
 
   // ── Implementación de cada tipo de paso ─────────────────────────────────────

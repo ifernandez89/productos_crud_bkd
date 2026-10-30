@@ -13,6 +13,11 @@ import {
   ExecutionStep,
   StepType,
 } from './execution-engine.service';
+import { reconcileTaskWithCheckpoint } from './mission-recovery-inspector';
+import {
+  buildRecoverableSteps,
+  inferMissionStepType,
+} from './mission-step-classifier';
 
 @Injectable()
 export class MissionRecoveryService implements OnApplicationBootstrap {
@@ -94,6 +99,11 @@ export class MissionRecoveryService implements OnApplicationBootstrap {
     const tasks = await this.taskRepo.findAllInProgressOrRecoverable();
     return tasks.map((t) => {
       const checkpoint = this.checkpointService.loadCheckpoint(t.id);
+      const reconciliation = reconcileTaskWithCheckpoint(
+        t.id,
+        t.steps || [],
+        checkpoint,
+      );
       return {
         id: t.id,
         objective: t.objective,
@@ -101,12 +111,15 @@ export class MissionRecoveryService implements OnApplicationBootstrap {
         createdAt: t.createdAt,
         updatedAt: t.updatedAt,
         stepsTotal: t.steps.length,
-        stepsCompleted: t.steps.filter((s: any) => s.status === 'completed').length,
+        stepsCompleted: reconciliation.completedCount,
+        recoveredFromDiskCount: reconciliation.recoveredFromDiskCount,
+        progressRatio: reconciliation.progressRatio,
         hasCheckpointOnDisk: !!checkpoint,
         checkpointSummary: checkpoint
           ? {
               completedStepsCount: checkpoint.completedSteps.length,
               accumulatedContextCount: checkpoint.accumulatedContext.length,
+              checkpointStepsHash: reconciliation.checkpointStepsHash,
               updatedAt: checkpoint.updatedAt,
             }
           : null,
@@ -129,18 +142,28 @@ export class MissionRecoveryService implements OnApplicationBootstrap {
 
     this.logger.log(`Reanudando misión #${taskId}: "${task.objective}"`);
 
-    // Cargar o inferir plan de ejecución
+    const checkpoint = this.checkpointService.loadCheckpoint(task.id);
+    const descriptors = buildRecoverableSteps(
+      task.objective,
+      task.steps || [],
+      checkpoint,
+    );
+
+    // Cargar o inferir plan de ejecución reconciliado con checkpoint en disco
     const executionPlan: ExecutionPlan = {
       taskId: task.id,
       objective: task.objective,
-      steps: (task.steps || []).map((s: any) => ({
-        id: s.id,
-        stepNumber: s.stepNumber,
-        description: s.description,
-        type: this.inferStepType(s.description),
-        input: this.inferStepInput(s.description, task.objective),
-        status: s.status,
-        output: s.result ? { content: s.result } : undefined,
+      steps: descriptors.map((d) => ({
+        id: d.id,
+        stepNumber: d.stepNumber,
+        description: d.description,
+        type: d.type as StepType,
+        input: {
+          query: d.query,
+          url: d.url,
+        },
+        status: d.status,
+        output: d.outputContent ? { content: d.outputContent } : undefined,
       })) as ExecutionStep[],
     };
 
@@ -148,15 +171,7 @@ export class MissionRecoveryService implements OnApplicationBootstrap {
   }
 
   private inferStepType(description: string): StepType {
-    const d = description.toLowerCase();
-    if (/(buscar|busca|search|investigar)/.test(d)) return 'search';
-    if (/(scrapear|scrape|extraer de url|leer url)/.test(d)) return 'scrape';
-    if (/(memoria|recuerdo|preferencias|historial)/.test(d)) return 'read_memory';
-    if (/(documento|pdf|biblioteca|archivo)/.test(d)) return 'read_docs';
-    if (/(resumir|resumen|sintetizar|condensar)/.test(d)) return 'summarize';
-    if (/(deduplicar|duplicados|limpiar)/.test(d)) return 'deduplicate';
-    if (/(guardar|salvar|almacenar|indexar)/.test(d)) return 'save';
-    return 'respond';
+    return inferMissionStepType(description) as StepType;
   }
 
   private inferStepInput(description: string, objective: string) {

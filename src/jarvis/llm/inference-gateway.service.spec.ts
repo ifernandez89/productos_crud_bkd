@@ -129,6 +129,59 @@ describe('InferenceGatewayService', () => {
       );
       expect(llamaCppMock.generate).not.toHaveBeenCalled();
     });
+
+    it('debe bloquear el fallback a Ollama si llamacpp falla mid-stream (después de emitir tokens) para evitar respuestas duplicadas', async () => {
+      llamaCppMock.generate.mockImplementationOnce(async (opts) => {
+        opts.onToken?.('function partial() {');
+        throw new Error('Socket hang up mid-stream');
+      });
+
+      const receivedTokens: string[] = [];
+      await expect(
+        gateway.generate({
+          model: 'qwen2.5-coder:14b',
+          onToken: (t) => receivedTokens.push(t),
+          messages: [{ role: 'user', content: 'Stream test' }],
+        }),
+      ).rejects.toThrow(/MID_STREAM_FAILURE/);
+
+      expect(receivedTokens).toEqual(['function partial() {']);
+      expect(ollamaMock.generate).not.toHaveBeenCalled();
+    });
+
+    it('debe serializar peticiones concurrentes hacia llamacpp respetando -np 1', async () => {
+      const executionOrder: string[] = [];
+      llamaCppMock.generate.mockImplementation(async (opts) => {
+        const label = String(opts.messages[0].content);
+        executionOrder.push(`start:${label}`);
+        await new Promise((r) => setTimeout(r, 30));
+        executionOrder.push(`end:${label}`);
+        return {
+          content: `ok:${label}`,
+          model: 'qwen2.5-coder:14b',
+          provider: 'llamacpp',
+          latencyMs: 30,
+        };
+      });
+
+      await Promise.all([
+        gateway.generate({
+          model: 'qwen2.5-coder:14b',
+          messages: [{ role: 'user', content: 'req1' }],
+        }),
+        gateway.generate({
+          model: 'qwen2.5-coder:14b',
+          messages: [{ role: 'user', content: 'req2' }],
+        }),
+      ]);
+
+      expect(executionOrder).toEqual([
+        'start:req1',
+        'end:req1',
+        'start:req2',
+        'end:req2',
+      ]);
+    });
   });
 
   describe('getHealthStatus', () => {

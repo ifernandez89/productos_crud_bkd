@@ -143,6 +143,50 @@ describe('LlamaCppProvider', () => {
         expect.any(Object),
       );
     });
+
+    it('debe soportar streaming SSE con onToken y ensamblar el contenido completo', async () => {
+      const { EventEmitter } = require('events');
+      const fakeStream = new EventEmitter();
+
+      mockedAxios.post.mockImplementationOnce(async () => {
+        setImmediate(() => {
+          fakeStream.emit(
+            'data',
+            Buffer.from(
+              'data: {"choices":[{"delta":{"content":"export const "}}]}\n\n' +
+                'data: {"choices":[{"delta":{"content":"x = 42;"}}]}\n\n' +
+                'data: [DONE]\n\n',
+            ),
+          );
+          fakeStream.emit('end');
+        });
+        return { status: 200, data: fakeStream } as any;
+      });
+
+      const tokens: string[] = [];
+      const res = await provider.generate({
+        model: 'qwen2.5-coder:14b',
+        stream: true,
+        onToken: (t) => tokens.push(t),
+        messages: [{ role: 'user', content: 'Genera x = 42' }],
+      });
+
+      expect(tokens).toEqual(['export const ', 'x = 42;']);
+      expect(res.content).toBe('export const x = 42;');
+      expect(res.model).toBe('qwen2.5-coder:14b');
+    });
+
+    it('debe cancelar inmediatamente si abortSignal ya está abortado', async () => {
+      const controller = new AbortController();
+      controller.abort();
+
+      await expect(
+        provider.generate({
+          messages: [{ role: 'user', content: 'Cancelado' }],
+          abortSignal: controller.signal,
+        }),
+      ).rejects.toThrow(/ABORTED/);
+    });
   });
 
   describe('embed', () => {

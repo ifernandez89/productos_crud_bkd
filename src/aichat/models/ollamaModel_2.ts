@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ChatOllama } from '@langchain/ollama';
 import { SystemMessage, HumanMessage } from '@langchain/core/messages';
 import {
@@ -6,6 +6,7 @@ import {
   AIMessageResponse,
 } from '../interfaces/model.interface';
 import { resolveCoderModel } from '../../shared/ollama-config';
+import { LlamaCppProvider } from '../../jarvis/llm/llamacpp.provider';
 
 export interface StructuredPrompt {
   system: string;
@@ -16,6 +17,11 @@ export interface StructuredPrompt {
 export class OllamaQwenModelService implements IModelService {
   private readonly logger = new Logger(OllamaQwenModelService.name);
   private model: ChatOllama | null = null;
+
+  constructor(
+    @Optional()
+    private readonly llamaCppProvider: LlamaCppProvider = new LlamaCppProvider(),
+  ) {}
 
   /**
    * Sistema de prompt para Especialista en Código / Programación
@@ -36,15 +42,54 @@ DIRECTRICES DE RESPUESTA:
 3. Si el usuario te pide resolver un error o bug, analiza la causa raíz y explica la solución paso a paso.
 4. No te limites innecesariamente en la extensión si la explicación técnica o el código lo requieren.`;
 
+  private isLlamaCppEnabled(): boolean {
+    return process.env.USE_LLAMACPP_CODER === 'true';
+  }
+
   async getModel(): Promise<ChatOllama> {
     if (!this.model) {
       await this.create();
     }
-    return this.model;
+    return this.model!;
   }
 
   /** Invocación con string plano (compatibilidad hacia atrás) */
   async invoke(prompt: string): Promise<AIMessageResponse> {
+    if (this.isLlamaCppEnabled() && this.llamaCppProvider) {
+      try {
+        const coderModel =
+          process.env.LLAMACPP_CODER_MODEL || 'qwen2.5-coder:14b';
+        const aliasCheck =
+          typeof this.llamaCppProvider.verifyModelAlias === 'function'
+            ? this.llamaCppProvider.verifyModelAlias(coderModel)
+            : { resolvedAlias: coderModel, isRegisteredPreset: true };
+
+        if (!aliasCheck.isRegisteredPreset) {
+          this.logger.warn(
+            `[OllamaQwenModelService] El alias '${coderModel}' no está registrado como preset GGUF en LlamaCppProvider; usando fallback ChatOllama.`,
+          );
+        } else {
+          const res = await this.llamaCppProvider.generate({
+            model: aliasCheck.resolvedAlias,
+            temperature: 0.1,
+            reservedOutputTokens: parseInt(
+              process.env.LLAMA_RESERVED_OUTPUT_TOKENS || '1024',
+              10,
+            ),
+            messages: [
+              { role: 'system', content: this.TECH_EXPERT_SYSTEM_PROMPT },
+              { role: 'user', content: prompt },
+            ],
+          });
+          return { content: res.content };
+        }
+      } catch (err: any) {
+        this.logger.warn(
+          `[OllamaQwenModelService] Fallo en llama.cpp directo (${err.message}); conmutando a fallback ChatOllama...`,
+        );
+      }
+    }
+
     const model = await this.getModel();
     const response = await model.invoke(prompt);
     return {
@@ -53,13 +98,51 @@ DIRECTRICES DE RESPUESTA:
   }
 
   /**
-   * Invocación con mensajes estructurados.
+   * Invocación con mensajes estructurados: intenta primero llama-server.exe (Qwen2.5-Coder-14B, -c 6144)
+   * si está habilitado manualmente (USE_LLAMACPP_CODER=true) y el alias GGUF es válido,
+   * y cae de forma reversible a ChatOllama en caso contrario.
    */
   async invokeWithMessages(
     prompt: StructuredPrompt,
   ): Promise<AIMessageResponse> {
-    const model = await this.getModel();
     const systemMsg = prompt.system || this.TECH_EXPERT_SYSTEM_PROMPT;
+
+    if (this.isLlamaCppEnabled() && this.llamaCppProvider) {
+      try {
+        const coderModel =
+          process.env.LLAMACPP_CODER_MODEL || 'qwen2.5-coder:14b';
+        const aliasCheck =
+          typeof this.llamaCppProvider.verifyModelAlias === 'function'
+            ? this.llamaCppProvider.verifyModelAlias(coderModel)
+            : { resolvedAlias: coderModel, isRegisteredPreset: true };
+
+        if (!aliasCheck.isRegisteredPreset) {
+          this.logger.warn(
+            `[OllamaQwenModelService] El alias '${coderModel}' no está registrado como preset GGUF en LlamaCppProvider; usando fallback ChatOllama.`,
+          );
+        } else {
+          const res = await this.llamaCppProvider.generate({
+            model: aliasCheck.resolvedAlias,
+            temperature: 0.1,
+            reservedOutputTokens: parseInt(
+              process.env.LLAMA_RESERVED_OUTPUT_TOKENS || '1024',
+              10,
+            ),
+            messages: [
+              { role: 'system', content: systemMsg },
+              { role: 'user', content: prompt.user },
+            ],
+          });
+          return { content: res.content };
+        }
+      } catch (err: any) {
+        this.logger.warn(
+          `[OllamaQwenModelService] Fallo en llama.cpp directo (${err.message}); conmutando a fallback ChatOllama...`,
+        );
+      }
+    }
+
+    const model = await this.getModel();
     const messages = [
       new SystemMessage(systemMsg),
       new HumanMessage(prompt.user),
@@ -75,17 +158,16 @@ DIRECTRICES DE RESPUESTA:
     this.model = new ChatOllama({
       baseUrl: 'http://localhost:11434',
       model: modelName,
-      temperature: 0.10, // Código determinista
+      temperature: 0.1, // Código determinista
       topP: 0.85,
       topK: 20,
-      numPredict: 2048, // Permitir código completo sin truncamiento artificial
-      repeatPenalty: 1.10,
-      numCtx: 8192,
+      numPredict: 1024, // Reserva de salida alineada con presupuesto de 6144 tokens
+      repeatPenalty: 1.1,
+      numCtx: 6144,
     });
 
     this.logger.log(
-      `💻 Coder Expert Model initialized: ${modelName} | temp=0.10, ctx=8192, predict=2048`,
+      `💻 Coder Expert Fallback Model initialized: ${modelName} | temp=0.10, ctx=6144, predict=1024`,
     );
   }
 }
-

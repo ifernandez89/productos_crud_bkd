@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Validated — JarBees Senior Coder v1.0, Verification Harness, Best-Checkpoint Rollback & Multi-Context Engineering (2026-10-29)
+
+- **🚀 Motor de Inferencia Nativo `LlamaCppProvider` (`src/jarvis/llm/llamacpp.provider.ts`)**:
+  - Inferencia local ultrarrápida impulsada por GPU (`Qwen2.5-Coder-14B Q4_K_M` en `llama-server.exe`) sobre NVIDIA RTX 5070 (12 GB Blackwell).
+  - Rendimiento verificado: ~55–61 tokens/s en generación sostenida y contextos de hasta 5,118 prompt tokens.
+  - Mitigación de desconexiones SSE keep-alive mediante encabezados `Connection: close`.
+  - Verificación estricta de alias GGUF registrados (`verifyModelAlias`) y telemetría por llamada (`LlmCallAuditEntry`).
+
+- **🛡️ Arnés de Verificación y Recuperación `VerificationHarnessService` (`src/jarvis/verification/`)**:
+  - Validación estática estricta en dos fases: AST TypeScript, alcance léxico y reglas de seguridad (`StaticPreValidatorService`).
+  - Ejecución en subproceso aislado sanitizado con hash SHA-256 e intercepción de errores asíncronos (`IsolatedTestRunnerService`).
+  - Snapshots inmutables por contenido SHA-256 en disco (`CheckpointManagerService`).
+  - Evaluación jerárquica de 5 niveles con Best-Checkpoint Rollback físico ante regresiones (`RepairControllerService`).
+
+- **🏛️ Gestor de Misiones de Ingeniería `EngineeringMissionManagerService` (`src/jarvis/verification/engineering-mission-manager.service.ts`)**:
+  - Persistencia atómica de misiones (`storage/engineering-missions/<id>.json`), presupuestos y cálculo de diff antes/después.
+  - Autoprotección criptográfica: bloqueo de modificaciones a `verification/**`, `security/**` y `.env*`.
+  - Compuerta de aprobación humana obligatoria (`requireHumanApprovalBeforeIntegrate: true` + `ActionGatekeeperService`).
+
+- **🧩 Mejoras en Módulos Reales de JarBees (`src/jarvis/planner/` & `src/jarvis/llm/`)**:
+  - `mission-recovery.contracts.ts`: Contratos compartidos de persistencia y recuperación.
+  - `mission-recovery-inspector.ts`: Reconciliación de pasos BD↔Disco y cálculo de hash SHA-256 tras reinicios o caídas.
+  - `mission-step-classifier.ts`: Clasificación de pasos `verify_code` y reutilización idempotente de outputs.
+  - `inference-context-budget.ts`: Evaluación de ventanas de contexto en 4 escalones (`BELOW_2K`, `2K_3K`, `4K_5K`, `5K_6K`).
+  - Integración nativa en `MissionRecoveryService` e `InferenceDiagnosticsService`.
+
+- **🧪 Batería de Validación Empírica Completa (100 % PASS)**:
+  - Stress Test de 20 misiones auditado: inferencia real vs sandbox determinista.
+  - Canary Operativo de 18 misiones (`canary-18-missions.spec.ts`): 18/18 PASS en 75.8s, 0 huérfanos, VRAM liberada.
+  - Etapa 3 de 12 misiones (`stage3-real-code-12-missions.spec.ts`): 3A multicomponente real con HITL, 3B escala de contexto (2K–6K), 3C seguridad y contención.
+
 ### Added & Validated — Dynamic Specialist Swapping, DrainQueue, Feedback Loop y Benchmarks RTX 5070 (2026-10-28)
 
 - **🚦 Cola de Drenaje Seguro `DrainQueueService` (`src/jarvis/llm/drain-queue.service.ts` & `src/jarvis/llm/drain-queue.service.spec.ts`)**:

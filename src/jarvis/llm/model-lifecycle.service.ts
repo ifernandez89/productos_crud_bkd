@@ -73,6 +73,12 @@ export class ModelLifecycleService implements OnApplicationShutdown {
       contextLimit: 16384,
       description: 'Especialista en refactorización profunda y algoritmos complejos',
     },
+    'qwen2.5-coder:14b': {
+      name: 'qwen2.5-coder:14b',
+      estimatedVramMb: 10250,
+      contextLimit: 6144,
+      description: 'Especialista principal de ingeniería de software JarBees (RTX 5070 12GB, -c 6144)',
+    },
     'qwen3:8b': {
       name: 'qwen3:8b',
       estimatedVramMb: 5500,

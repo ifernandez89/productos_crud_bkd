@@ -13,6 +13,7 @@ import { ProductsRepository } from '../products/repositories/products.repository
 import { OllamaModelService, StructuredPrompt } from './models/ollamaModel';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { ModelRouterService } from './utils/model-router.service';
+import { ContextManagerService } from './utils/context-manager.service';
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
 import { SafeExecService } from '../jarvis/security/safe-exec.service';
 import * as path from 'path';
@@ -65,6 +66,8 @@ export class AichatService {
     @Optional()
     @Inject(QWEN_MODEL_TOKEN)
     private readonly qwenModel?: OllamaModelService,
+    @Optional()
+    private readonly contextManager: ContextManagerService = new ContextManagerService(),
   ) {}
 
   // ── Caché de productos ────────────────────────────────────────────────────────
@@ -80,7 +83,23 @@ export class AichatService {
     return data;
   }
 
-  private getSessionContext(sessionId?: string, limit = 8) {
+  private getSessionContext(
+    sessionId?: string,
+    limit = 8,
+    budgetContext?: { systemPrompt?: string; userPrompt?: string; catalogBlock?: string },
+  ) {
+    if (!sessionId) return [];
+    if (this.contextManager?.isEnabled()) {
+      this.contextManager.syncFromLegacyMap(this.sessionContextStore, sessionId);
+      if (budgetContext) {
+        return this.contextManager.selectContextForPrompt({
+          sessionId,
+          maxTurns: limit,
+          ...budgetContext,
+        }).turns;
+      }
+      return this.contextManager.getTurns(sessionId, limit);
+    }
     if (!sessionId) return [];
     const turns = this.sessionContextStore.get(sessionId) ?? [];
     return turns.slice(-limit);
@@ -92,12 +111,16 @@ export class AichatService {
     content: string,
   ) {
     if (!sessionId) return;
-    const turns = this.sessionContextStore.get(sessionId) ?? [];
-    turns.push({ role, content });
-    if (turns.length > 12) {
-      turns.splice(0, turns.length - 12);
+    if (this.contextManager?.isEnabled()) {
+      this.contextManager.rememberTurn(sessionId, role, content);
+      return;
     }
-    this.sessionContextStore.set(sessionId, turns);
+    const localTurns = this.sessionContextStore.get(sessionId) ?? [];
+    localTurns.push({ role, content });
+    if (localTurns.length > 12) {
+      localTurns.splice(0, localTurns.length - 12);
+    }
+    this.sessionContextStore.set(sessionId, localTurns);
   }
 
   private rememberSessionPair(
@@ -157,7 +180,10 @@ export class AichatService {
     const now = DateTime.now()
       .setZone('America/Argentina/Buenos_Aires')
       .setLocale('es');
-    const sessionHistoryText = this.getSessionContext(sessionId, 6)
+    const sessionHistoryText = this.getSessionContext(sessionId, 6, {
+      userPrompt: texto,
+      catalogBlock: catalogoTexto,
+    })
       .map(
         (turn) =>
           `${turn.role === 'user' ? 'Usuario' : 'Asistente'}: ${turn.content}`,
@@ -292,26 +318,34 @@ export class AichatService {
           }
         }
 
+        let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
         const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => {
+          timeoutHandle = setTimeout(() => {
             reject(new Error(`Tiempo de espera de ${timeout}ms excedido`));
           }, timeout);
+          timeoutHandle.unref?.();
         });
 
-        let taskPromise: Promise<string>;
-        if (agente) {
-          this.logger.log('Ejecución con agente externo');
-          const prompt = await this.promptAgente(texto, sessionId, selectedMode);
-          const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
-          taskPromise = this.callExternalAI(textoParaIA);
-        } else {
-          const prompt = await this.promptAgente(texto, sessionId, selectedMode);
-          taskPromise = this.callOllamaModel(prompt, texto, selectedMode);
+        try {
+          let taskPromise: Promise<string>;
+          if (agente) {
+            this.logger.log('Ejecución con agente externo');
+            const prompt = await this.promptAgente(texto, sessionId, selectedMode);
+            const textoParaIA = `${prompt.system}\n\n${prompt.user}`;
+            taskPromise = this.callExternalAI(textoParaIA);
+          } else {
+            const prompt = await this.promptAgente(texto, sessionId, selectedMode);
+            taskPromise = this.callOllamaModel(prompt, texto, selectedMode);
+          }
+          respuesta = (await Promise.race([
+            taskPromise,
+            timeoutPromise,
+          ])) as string;
+        } finally {
+          if (timeoutHandle !== undefined) {
+            clearTimeout(timeoutHandle);
+          }
         }
-        respuesta = (await Promise.race([
-          taskPromise,
-          timeoutPromise,
-        ])) as string;
         const finalAnswer = this.validateAnswerContent(respuesta, texto);
         this.rememberSessionPair(sessionId, texto, finalAnswer);
         this.lastAssistantMessage = finalAnswer;

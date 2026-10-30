@@ -9,10 +9,12 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ConverterService } from './utils/converter.service';
 import { AssistantToolsService } from './utils/assistant-tools.service';
 import { ModelRouterService } from './utils/model-router.service';
+import { ContextManagerService } from './utils/context-manager.service';
 import { BrowserToolService } from '../jarvis/tools/browser/browser-tool.service';
 
 import { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN } from './aichat.tokens';
 import { SafeExecService } from '../jarvis/security/safe-exec.service';
+import { LlamaCppProvider } from '../jarvis/llm/llamacpp.provider';
 
 // Re-export para compatibilidad con código externo que importe desde el módulo
 export { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN };
@@ -39,6 +41,8 @@ export { LLAMA_MODEL_TOKEN, QWEN_MODEL_TOKEN };
     BrowserToolService,
     AssistantToolsService,
     ModelRouterService,
+    ContextManagerService,
+    LlamaCppProvider,
     // Safe exec wrapper for running bounded python processes
     SafeExecService,
   ],

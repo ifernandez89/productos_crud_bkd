@@ -224,11 +224,17 @@ export class InferenceGatewayService implements ILLMProvider {
     const requestedModel = options.model || this.getDefaultModel();
     this.lastUsedModel = requestedModel;
     const isModelSwitch = requestedModel !== this.loadedModel;
+    const usesSingleSlotLlamaCpp =
+      this.primaryProviderName === 'llamacpp' ||
+      Boolean(options.model?.startsWith('llamacpp:'));
 
     let releaseLock: (() => void) | undefined;
-    if (isModelSwitch) {
-      const queueTimeout = options.timeouts?.queueWaitMs ?? 15000;
-      releaseLock = await this.acquireModelSwitchLock(queueTimeout, options.abortSignal);
+    if (isModelSwitch || usesSingleSlotLlamaCpp) {
+      const queueTimeout = options.timeouts?.queueWaitMs ?? 30000;
+      releaseLock = await this.acquireModelSwitchLock(
+        queueTimeout,
+        options.abortSignal,
+      );
     }
 
     try {
@@ -270,13 +276,37 @@ export class InferenceGatewayService implements ILLMProvider {
         );
       }
 
+      let emittedTokensCount = 0;
+      const primaryOptions: LLMGenerateOptions = options.onToken
+        ? {
+            ...options,
+            onToken: (chunk: string) => {
+              if (chunk && chunk.length > 0) {
+                emittedTokensCount++;
+              }
+              options.onToken?.(chunk);
+            },
+          }
+        : options;
+
       try {
-        const res = await primary.generate(options);
+        const res = await primary.generate(primaryOptions);
         this.recordSuccess(res, requestedModel, isModelSwitch);
         return res;
       } catch (primaryErr: any) {
         const errMsg = primaryErr?.message || String(primaryErr);
         this.recordFailure(primaryName, errMsg);
+
+        // Si el proveedor primario falló DESPUÉS de haber emitido tokens parciales al stream,
+        // está PROHIBIDO re-ejecutar en el proveedor de fallback (duplicaría texto parcial).
+        if (emittedTokensCount > 0) {
+          const midStreamErr: any = new Error(
+            `MID_STREAM_FAILURE: el proveedor primario '${primaryName}' falló tras emitir ${emittedTokensCount} fragmentos (${errMsg}). Fallback bloqueado para impedir duplicación de respuesta parcial.`,
+          );
+          midStreamErr.code = 'MID_STREAM_FAILURE';
+          midStreamErr.emittedTokensCount = emittedTokensCount;
+          throw midStreamErr;
+        }
 
         if (!this.autoFallback) {
           this.logger.error(
@@ -286,7 +316,13 @@ export class InferenceGatewayService implements ILLMProvider {
         }
 
         // Si fue una cancelación del cliente, no hacer fallback a Ollama (evita trabajo innecesario)
-        if (options.abortSignal?.aborted || errMsg.includes('canceled') || errMsg.includes('cancelada')) {
+        if (
+          options.abortSignal?.aborted ||
+          primaryErr?.code === 'ABORTED' ||
+          errMsg.includes('ABORTED') ||
+          errMsg.includes('canceled') ||
+          errMsg.includes('cancelada')
+        ) {
           throw primaryErr;
         }
 
@@ -459,7 +495,15 @@ export class InferenceGatewayService implements ILLMProvider {
     }
 
     const fallbackAvailable = status[this.fallbackProviderName]?.available ?? false;
-    const supervisorState = this.supervisor ? this.supervisor.getState() : undefined;
+    const supervisorState = this.supervisor
+      ? {
+          ...this.supervisor.getState(),
+          gpu:
+            typeof this.supervisor.getGpuTelemetry === 'function'
+              ? this.supervisor.getGpuTelemetry()
+              : undefined,
+        }
+      : undefined;
     const circuitBreaker: 'closed' | 'open' =
       supervisorState?.circuitBreakerTripped ? 'open' : 'closed';
 

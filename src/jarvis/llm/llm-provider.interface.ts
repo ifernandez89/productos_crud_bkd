@@ -31,6 +31,9 @@ export interface LLMGenerateOptions {
   abortSignal?: AbortSignal;// Señal para cancelación temprana (cliente desconectado)
   sensitivity?: DataSensitivityLevel; // Nivel de confidencialidad de la consulta
   allowRemoteFallback?: boolean;      // Si false, prohíbe conmutar a proveedores cloud
+  stream?: boolean;                   // Habilita recepción SSE token a token
+  onToken?: (token: string) => void;  // Callback invocado en cada fragmento emitido
+  reservedOutputTokens?: number;      // Reserva configurable de tokens de salida (ej: 1024)
 }
 
 
@@ -38,7 +41,13 @@ export interface LLMGenerateResponse {
   content: string;
   model: string;
   provider: string;
+  requestId?: string;
+  httpStatus?: number;
+  endpointUrl?: string;
   tokensUsed?: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  tokensPerSecond?: number;
   latencyMs: number;
 }
 
@@ -46,6 +55,9 @@ export interface LLMEmbeddingResponse {
   embedding: number[];
   model: string;
   provider: string;
+  requestId?: string;
+  httpStatus?: number;
+  endpointUrl?: string;
 }
 
 export interface ILLMProvider {
