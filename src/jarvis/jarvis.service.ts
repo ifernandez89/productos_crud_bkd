@@ -293,15 +293,26 @@ export class JarvisService {
       const isDisciplinePanoramic =
         this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
 
+      const isTemporalQuery =
+        /(fecha|hora|dia de hoy|día de hoy|que dia|qué día|que hora|qué hora|en que dia|en qué día|en que año|en qué año|año actual|que mes|qué mes|no me dijiste la fecha)/i.test(
+          userMessage,
+        );
+
       const isLocalHighConfidence =
         (intent.intent === 'LOCAL' &&
           intent.confidence === 'high' &&
           isShortConversational) ||
-        isDisciplinePanoramic;
+        isDisciplinePanoramic ||
+        isTemporalQuery;
 
       if (isDisciplinePanoramic) {
         this.logger.log(
           `[rag:skip] Consulta panorámica de disciplina detectada ("${userMessage.slice(0, 60)}"). Omitiendo pre-search RAG.`,
+        );
+      }
+      if (isTemporalQuery) {
+        this.logger.log(
+          `[rag:skip] Consulta temporal detectada ("${userMessage.slice(0, 60)}"). Omitiendo pre-search RAG para evitar contaminación de fechas históricas.`,
         );
       }
 

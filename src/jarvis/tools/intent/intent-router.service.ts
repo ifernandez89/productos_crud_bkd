@@ -270,12 +270,14 @@ export class IntentRouterService {
     if (/(feriado|asueto|dia no laborable)/i.test(n)) {
       return { intent: 'TOOL', confidence: 'high', reason: 'holiday tool' };
     }
-    // Hora: solo si NO es contexto deportivo
+    // Hora y Fecha: solo si NO es contexto deportivo
     if (
-      /(que hora|hora actual|hora en|zona horaria)/i.test(n) &&
+      /(que hora|hora actual|hora en|zona horaria|que dia|qué día|dia es hoy|día es hoy|que fecha|qué fecha|fecha actual|fecha de hoy|dia actual|en que dia|en qué día|en que fecha|en qué fecha|cual es la fecha|cuál es la fecha|sabes que dia|sabes qué día|sabes que fecha|sabes qué fecha|no me dijiste la fecha|dime la fecha|decime la fecha)/i.test(
+        n,
+      ) &&
       !/(partido|juego|match)/i.test(n)
     ) {
-      return { intent: 'TOOL', confidence: 'high', reason: 'time tool' };
+      return { intent: 'TOOL', confidence: 'high', reason: 'time_date tool' };
     }
     if (
       /(calendario maya|tzolkin|haab|calendario hebreo|fecha hebrea)/i.test(n)

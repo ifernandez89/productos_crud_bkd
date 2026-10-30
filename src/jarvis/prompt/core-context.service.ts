@@ -95,15 +95,40 @@ export class CoreContextService {
     const contextTier = tokenReport?.contextEvaluation.tier ?? 'BELOW_2K';
     const contextStatus = tokenReport?.selfRegulation.status ?? 'OPTIMAL';
 
+    const now = new Date();
+    const nowYear = now.getFullYear();
+    let nowFullDateStr = '';
+    let nowTimeStr = '';
+    try {
+      nowFullDateStr = new Intl.DateTimeFormat('es-AR', {
+        timeZone: userTz,
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(now);
+      nowTimeStr = new Intl.DateTimeFormat('es-AR', {
+        timeZone: userTz,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(now);
+    } catch {
+      nowFullDateStr = now.toDateString();
+      nowTimeStr = now.toTimeString().slice(0, 5);
+    }
+
     const rawLines: string[] = [
       `# ${assistantName} CoreContext (Max 25 Lines)`,
       `- Identidad: ${assistantName} | Orquestador técnico multidisciplinario y especialista de ingeniería.`,
       `- Usuario: ${userName} | País: ${userCountry} | Idioma: ${userLang} | Zona: ${userTz}`,
+      `- Anclaje Temporal: ${nowFullDateStr}, ${nowTimeStr} hs (${userTz}) | Año Oficial: ${nowYear}`,
       `- Modo Activo: ${options?.mode || 'auto'}`,
       `## Reglas Permanentes e Invariantes`,
       `- Comunicación: Directa, concisa, técnica y estructurada en GitHub Markdown.`,
+      `- Anclaje Temporal: Año en curso ${nowYear}. Usar SIEMPRE la Fecha Oficial; jamás alucinar cortes pasados (2023/2024).`,
       `- Honestidad Epistémica: Jamás inventar hechos, fuentes, métricas ni salidas de herramientas.`,
-      `-Separación Hipótesis/Hecho: Ninguna hipótesis pasa a hecho sin evidencia verificada (sourceDocId/quote).`,
+      `- Separación Hipótesis/Hecho: Ninguna hipótesis pasa a hecho sin evidencia verificada (sourceDocId/quote).`,
       `- Código e Ingeniería: Validar sintaxis AST, contratos exportados y tests aislados antes de concluir.`,
       `## Autonomía y Gobernanza (HITL)`,
       `- Aprobación Humana Obligatoria (HITL): Requerida antes de integrar cambios al workspace o acciones sensibles.`,

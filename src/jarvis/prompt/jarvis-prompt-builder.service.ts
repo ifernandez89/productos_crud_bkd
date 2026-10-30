@@ -209,7 +209,12 @@ export class JarvisPromptBuilderService {
     const isDisciplinePanoramic =
       this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
 
-    if (useDocuments && !isDisciplinePanoramic) {
+    const isTemporalQuery =
+      /(fecha|hora|dia de hoy|día de hoy|que dia|qué día|que hora|qué hora|en que dia|en qué día|en que año|en qué año|año actual|que mes|qué mes|no me dijiste la fecha)/i.test(
+        userMessage,
+      );
+
+    if (useDocuments && !isDisciplinePanoramic && !isTemporalQuery) {
       const docSummary = await this.detectDocumentSummaryRequest(userMessage);
 
       if (docSummary.isRequest && docSummary.title) {

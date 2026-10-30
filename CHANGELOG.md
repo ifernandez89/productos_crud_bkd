@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — Respuestas Temporales Actualizadas, Fusión Multidominio y Anclaje Temporal Antialucinación (2026-10-30)
+
+- **⏰ Anclaje Temporal Oficial en `CoreContextService` (<= 25 líneas)**:
+  - Inyección de la fecha completa en español, hora oficial y zona horaria (`America/Argentina/Buenos_Aires`) junto con el año en curso oficial (2026) en el encabezado permanente de JarBees.
+  - Regla invariante obligatoria: año oficial 2026 y prohibición expresa de alucinar fechas de corte de entrenamiento (ej: 2023 o 2024). Cumplimiento estricto del límite de 25 líneas.
+
+- **📅 Expansión de Detección Temporal en `IntentRouterService` & `AssistantToolsService`**:
+  - Detección de consultas sobre fecha, día actual y seguimiento (`'Sabes que día es hoy?'`, `'No me dijiste la fecha'`, `'que dia es hoy'`, `'fecha actual'`).
+  - Resolución determinista e instantánea con Luxon en `getTimeAnswer`, devolviendo la fecha completa en español (ej: *'Hoy es viernes 30 de octubre de 2026. Hora actual en Argentina: 16:35 (ART).'*).
+
+- **🌤️ Soporte Compuesto Clima + Ubicación + Fecha en `AssistantToolsService`**:
+  - `getWeatherAnswer` ahora detecta si la consulta del usuario incluye preguntas sobre el día o la fecha y sintetiza la cabecera temporal junto con la ubicación geocodificada y el reporte meteorológico en tiempo real (OpenMeteo + Nominatim).
+  - Consultas compuestas como *'Sabes que día es hoy? Clima? Ubicación?'* son resueltas íntegramente con fecha, ubicación y clima en una única respuesta estructurada y precisa.
+  - `isMixedQuery` optimizado para no fracturar consultas que integran clima con fecha/hora/ubicación, manteniéndolas en la herramienta directa para máxima velocidad y cero alucinaciones.
+
+- **🛡️ Guard Anti-Contaminación RAG en Consultas Temporales (`JarvisService` & `JarvisPromptBuilderService`)**:
+  - Exclusión de consultas temporales (`isTemporalQuery`) del pipeline RAG de búsqueda de documentos en la biblioteca.
+  - Evita que preguntas como *'No me dijiste la fecha'* realicen búsquedas semánticas que inyectaban fragmentos de libros antiguos con fechas históricas (1810, 1925, 2023), eliminando de raíz la causa de las alucinaciones temporales.
+
+- **🧪 Cobertura de Pruebas Unitarias**:
+  - 3 nuevos tests en `assistant-tools.service.spec.ts` verificando resolución de consultas de fecha aislada, preguntas de seguimiento y consultas compuestas de clima + día + ubicación.
+
 ### Added & Validated — Agente DSH Capabilities, Tripartite Memory, Dynamic CapabilityRegistry & Autonomous Token Telemetry (2026-10-30)
 
 - **🔧 Corrección de Inyección de Dependencias en NestJS (`ContextManagerService`, `WorkingMemoryService`, `InferenceDiagnosticsService`)**:

@@ -129,15 +129,22 @@ export class AssistantToolsService {
 
   // Detecta preguntas que combinan 2 o más dominios distintos → mejor dejarlas a Ollama
   private isMixedQuery(query: string, n: string): boolean {
-    const domains = [
-      this.isWeatherQuery(n),
+    // Si la combinación es Clima + Fecha/Hora/Ubicación, getWeatherAnswer ya sintetiza fecha, ubicación y clima
+    const hasWeather = this.isWeatherQuery(n);
+    const hasTime = this.isTimeQuery(n);
+    const otherDomains = [
       this.isAstronomyQuery(n),
       this.isHolidayQuery(n),
       this.isCountryQuery(n),
       this.isMathQuery(query, n),
       this.isEconomyQuery(n),
-    ];
-    return domains.filter(Boolean).length >= 2;
+    ].filter(Boolean).length;
+
+    // Si combina múltiples dominios externos, delegar a Ollama
+    if (otherDomains >= 2 || (otherDomains >= 1 && (hasWeather || hasTime))) {
+      return true;
+    }
+    return false;
   }
 
   // Detecta saludos simples para evitar falsos positivos en clima/hora
@@ -174,7 +181,7 @@ export class AssistantToolsService {
   }
 
   private isTimeQuery(n: string): boolean {
-    return /(que hora es|qué hora es|hora actual|hora local|que hora tiene|qué hora tiene|zona horaria|horario actual)/i.test(
+    return /(que hora|qué hora|hora actual|hora local|que hora tiene|qué hora tiene|que dia|qué día|dia es hoy|día es hoy|que fecha|qué fecha|fecha actual|fecha de hoy|dia actual|en que dia|en qué día|en que fecha|en qué fecha|cual es la fecha|cuál es la fecha|sabes que dia|sabes qué día|sabes que fecha|sabes qué fecha|no me dijiste la fecha|dime la fecha|decime la fecha|zona horaria|horario actual)/i.test(
       n,
     );
   }
@@ -470,14 +477,27 @@ export class AssistantToolsService {
       }
 
       const weather = await this.fetchCurrentWeather(lat, lon);
-      return [
-        `Clima para ${displayName}:`,
-        `Temperatura: ${weather.temperature}°C`,
-        `Sensación térmica: ${weather.apparentTemperature}°C`,
-        `Viento: ${weather.windSpeed} km/h`,
-        `Humedad: ${weather.humidity}%`,
-        `Estado: ${weather.label}`,
-      ].join('\n');
+      const normalized = this.normalize(query);
+      const isAskingDate = /(dia|día|fecha|hoy)/i.test(normalized);
+      const now = DateTime.now()
+        .setZone('America/Argentina/Buenos_Aires')
+        .setLocale('es');
+      const dateHeader = isAskingDate
+        ? `📅 Fecha: ${now.toFormat("cccc d 'de' MMMM 'de' yyyy")} (Hora: ${now.toFormat('HH:mm')} ART)`
+        : '';
+
+      const lines = [
+        ...(dateHeader ? [dateHeader] : []),
+        `📍 Ubicación: ${displayName}`,
+        `🌤️ Clima actual:`,
+        `- Temperatura: ${weather.temperature}°C`,
+        `- Sensación térmica: ${weather.apparentTemperature}°C`,
+        `- Viento: ${weather.windSpeed} km/h`,
+        `- Humedad: ${weather.humidity}%`,
+        `- Estado: ${weather.label}`,
+      ];
+
+      return lines.join('\n');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.warn(
@@ -692,49 +712,30 @@ export class AssistantToolsService {
     }
   }
 
-  // ── HORA (WorldTimeAPI) ──────────────────────────────────────────────────────
+  // ── HORA Y FECHA (Luxon & WorldTimeAPI) ──────────────────────────────────────
 
   private async getTimeAnswer(query: string): Promise<string> {
     const normalized = this.normalize(query);
     let timezone = 'America/Argentina/Buenos_Aires';
     if (normalized.includes('utc')) timezone = 'Etc/UTC';
-    try {
-      const response = await axios.get<WorldTimeResponse>(
-        `https://worldtimeapi.org/api/timezone/${timezone}`,
-        { timeout: 4000 },
+
+    const isDateQuery =
+      /(dia|día|fecha|ano|año|mes|hoy|cuando es|no me dijiste la fecha)/i.test(
+        normalized,
       );
-      if (response?.data?.datetime) {
-        const dt = DateTime.fromISO(response.data.datetime).setZone(timezone);
-        const abbrev =
-          timezone === 'America/Argentina/Buenos_Aires'
-            ? 'ART'
-            : dt.offsetNameShort || dt.zoneName;
-        return `Hora actual en ${dt.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
-      }
-      this.logger.warn(
-        `[tool:time] worldtimeapi devolvió sin datetime para ${timezone}`,
-      );
-    } catch (error) {
-      this.logger.warn(
-        `[tool:time] fallo en worldtimeapi (${timezone}): ${error?.message || error}`,
-      );
+
+    const now = DateTime.now().setZone(timezone).setLocale('es');
+    const abbrev =
+      timezone === 'America/Argentina/Buenos_Aires'
+        ? 'ART'
+        : now.offsetNameShort || now.zoneName;
+
+    if (isDateQuery) {
+      const fullDate = now.toFormat("cccc d 'de' MMMM 'de' yyyy");
+      return `Hoy es ${fullDate}. Hora actual en Argentina: ${now.toFormat('HH:mm')} (${abbrev}).`;
     }
 
-    // Fallback local si la API externa falla
-    try {
-      const now = DateTime.now().setZone(timezone);
-      const abbrev =
-        timezone === 'America/Argentina/Buenos_Aires'
-          ? 'ART'
-          : now.offsetNameShort || now.zoneName;
-      return `Hora actual en ${now.toFormat('dd/MM/yyyy HH:mm')} (${abbrev})`;
-    } catch (err) {
-      // Último recurso: hora local del servidor en ISO
-      this.logger.warn(
-        `[tool:time] fallback local simple por error: ${err?.message || err}`,
-      );
-      return `Hora actual (servidor): ${new Date().toISOString()}`;
-    }
+    return `Hora actual: ${now.toFormat('HH:mm')} (${abbrev}), ${now.toFormat("cccc d 'de' MMMM 'de' yyyy")}.`;
   }
 
   // ── PAÍSES (REST Countries) ──────────────────────────────────────────────────
