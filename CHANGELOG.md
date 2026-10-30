@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — Consultas Compuestas de Identidad, Pronóstico de Lluvia y Geocodificación Segura (2026-10-30)
+
+- **👤 Protección de Consultas de Identidad y Memoria Personal en `IntentRouterService`**:
+  - Las preguntas sobre la identidad del usuario (`'quien soy'`, `'que sabes sobre mi'`, `'como me llamo'`, `'mis proyectos'`) son ruteadas obligatoriamente a `LOCAL` (con acceso a `UserProfile` y `TripartiteMemory`).
+  - Queda terminantemente prohibido que una tool meteorológica o matemática secuestre consultas que indagan sobre el operador.
+
+- **🌧️ Pronóstico Horario de Lluvia para la Noche en `AssistantToolsService`**:
+  - Incorporación del bloque horario (`hourly: 'precipitation_probability,precipitation,weather_code'`) de OpenMeteo para 2 días.
+  - Cálculo dinámico de la probabilidad máxima y volumen de precipitación acumulado para la noche en curso (20:00 a 23:59 hs), informando con exactitud si hay previsión de lluvia o lloviznas.
+
+- **📍 Geocodificación Segura y Filtro Anti-Palabras Temporales**:
+  - Creación de `NON_LOCATION_WORDS` en `AssistantToolsService`.
+  - Evita que frases temporales como *'para está noche'*, *'hoy'* o *'esta tarde'* sean interpretadas como nombres de ciudades por Nominatim (eliminando geocodificaciones anómalas). Si no se detecta una localidad real, recurre de forma fiable a la ubicación predeterminada (Paraná, Entre Ríos).
+
+- **🧠 Fusión Multidominio en `JarvisService` & `JarvisPromptBuilderService`**:
+  - Inyección de contexto meteorológico y pronóstico en tiempo real (`weatherSummary`) a `respondWithLLM` cuando la consulta combina identidad, fecha y clima (ej: *'Sabes quién soy? Que sabes sobre mi? Que fecha es hoy? Y dime, esta pronosticado lluvia para está noche?'*).
+  - En `buildJarvisContext`, se flexibilizó la directiva restrictiva web para permitir la coexistencia armónica de recuerdos del usuario, perfil del operador y datos meteorológicos en tiempo real en una única respuesta completa.
+  - Búsqueda reforzada de recuerdos de identidad en `MemoryRepository` y persistencia del perfil de Ignacio Fernández (@ifernandez89) en `UserProfileRepository`.
+
 ### Fixed & Enhanced — Respuestas Temporales Actualizadas, Fusión Multidominio y Anclaje Temporal Antialucinación (2026-10-30)
 
 - **⏰ Anclaje Temporal Oficial en `CoreContextService` (<= 25 líneas)**:

@@ -233,6 +233,18 @@ export class IntentRouterService {
       };
     }
 
+    // Identidad del usuario y memoria personal — debe ir a LOCAL (con soporte de LLM + memoria)
+    // NUNCA desviar a TOOL directa si el usuario pregunta quién es o qué se sabe sobre él
+    const personalIdentityPattern =
+      /(quien soy|quién soy|que sabes (sobre|de) mi|qué sabes (sobre|de) mi|sabes algo de mi|como me llamo|cómo me llamo|te acordas de mi|te acordás de mí|mi nombre|mis proyectos|mi perfil|sobre mi|acerca de mi)/i;
+    if (personalIdentityPattern.test(n)) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'personal identity and memory query',
+      };
+    }
+
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
     // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología

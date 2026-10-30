@@ -25,6 +25,13 @@ type OpenMeteoCurrentResponse = {
     relative_humidity_2m?: number;
     time?: string;
   };
+  hourly?: {
+    time?: string[];
+    precipitation_probability?: number[];
+    precipitation?: number[];
+    weather_code?: number[];
+    temperature_2m?: number[];
+  };
 };
 type HolidayRecord = { date: string; localName: string; name?: string };
 type WorldTimeResponse = {
@@ -50,6 +57,16 @@ export class AssistantToolsService {
   private readonly defaultWeatherLocation = 'Paraná, Entre Rios, Argentina';
 
   constructor(private readonly browserTool: BrowserToolService) {}
+
+  /**
+   * Obtiene un resumen estructurado del clima y pronóstico en tiempo real para inyección de contexto en LLM.
+   */
+  async getWeatherSummary(
+    query: string,
+    coordinates?: { latitude?: number; longitude?: number },
+  ): Promise<string | null> {
+    return this.getWeatherAnswer(query, coordinates);
+  }
 
   // ── Router principal ────────────────────────────────────────────────────────
 
@@ -368,6 +385,21 @@ export class AssistantToolsService {
       .toLowerCase();
   }
 
+  private static readonly NON_LOCATION_WORDS = new Set([
+    'esta', 'este', 'está', 'esto', 'estos', 'estas',
+    'noche', 'tarde', 'dia', 'día', 'hoy', 'mañana', 'manana',
+    'pasado', 'semana', 'mes', 'ano', 'año', 'ahora', 'luego', 'despues', 'después',
+    'antes', 'pronto', 'siempre', 'nunca',
+    'mi', 'mí', 'ti', 'conmigo', 'vos', 'tu', 'tú', 'su', 'sus', 'usted', 'nosotros', 'ellos',
+    'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'al', 'del', 'a', 'de', 'en', 'para', 'por', 'con',
+    'lluvia', 'lluvias', 'clima', 'tiempo', 'pronostico', 'pronóstico', 'temperatura',
+    'viento', 'frio', 'frío', 'calor', 'sol', 'nublado', 'cielo', 'tormenta', 'llovizna',
+    'aqui', 'aquí', 'aca', 'acá', 'alla', 'allá', 'donde', 'dónde', 'cuando', 'cuándo',
+    'quien', 'quién', 'como', 'cómo', 'que', 'qué', 'cual', 'cuál',
+    'saber', 'sabes', 'saberlo', 'decir', 'dime', 'decime', 'contar', 'contame',
+    'ver', 'mirar', 'consultar'
+  ]);
+
   private extractLocation(query: string): string | null {
     const patterns = [
       /(?:en|para|de)\s+([\p{L}][\p{L}\s\-]{2,})/iu,
@@ -376,13 +408,10 @@ export class AssistantToolsService {
     for (const pattern of patterns) {
       const match = query.match(pattern);
       if (match?.[1]) {
-        let location = match[1].trim();
-        if (location.length >= 3) {
-          // Remover palabras temporales y referencias al clima
-          location = this.cleanLocationString(location);
-          if (location.length >= 3) {
-            return location.replace(/\s+/g, ' ');
-          }
+        const raw = match[1].trim();
+        const cleaned = this.cleanLocationString(raw);
+        if (cleaned && cleaned.length >= 3) {
+          return cleaned;
         }
       }
     }
@@ -390,25 +419,19 @@ export class AssistantToolsService {
   }
 
   private cleanLocationString(location: string): string {
-    // Remover referencias temporales y palabras no-ubicación
-    const temporalPatterns = [
-      /\s+(esta|hoy|mañana|pasado mañana|noche|tarde|mañana|tarde|madrugada|amanecer|atardecer)/gi,
-      /\s+(al atardecer|a la noche|en la noche|durante la noche|esta noche)/gi,
-      /\s+(ahora|luego|después|antes|próximamente|pronto)/gi,
-    ];
+    const words = location
+      .toLowerCase()
+      .replace(/[^\p{L}\s\-]/gu, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
 
-    let cleaned = location;
-    for (const pattern of temporalPatterns) {
-      cleaned = cleaned.replace(pattern, '').trim();
-    }
+    const validWords = words.filter(
+      (w) => !AssistantToolsService.NON_LOCATION_WORDS.has(w),
+    );
 
-    // Si quedó vacío o muy corto, retornar original limitado a primera palabra
-    if (cleaned.length < 3) {
-      const firstWord = location.split(/[\s,;]/)[0];
-      return firstWord.length >= 3 ? firstWord : '';
-    }
-
-    return cleaned;
+    if (validWords.length === 0) return '';
+    const res = validWords.join(' ').trim();
+    return res.length >= 3 ? res : '';
   }
 
   private extractCountry(query: string): string | null {
@@ -479,6 +502,10 @@ export class AssistantToolsService {
       const weather = await this.fetchCurrentWeather(lat, lon);
       const normalized = this.normalize(query);
       const isAskingDate = /(dia|día|fecha|hoy)/i.test(normalized);
+      const isAskingRainOrForecast =
+        /(lluvia|llover|noche|pronostico|pronóstico|precipitacion|precipitación)/i.test(
+          normalized,
+        );
       const now = DateTime.now()
         .setZone('America/Argentina/Buenos_Aires')
         .setLocale('es');
@@ -496,6 +523,13 @@ export class AssistantToolsService {
         `- Humedad: ${weather.humidity}%`,
         `- Estado: ${weather.label}`,
       ];
+
+      if (
+        weather.tonightSummary &&
+        (isAskingRainOrForecast || weather.tonightPrecipProb >= 25)
+      ) {
+        lines.push(`🌧️ Pronóstico de lluvia para esta noche:\n- ${weather.tonightSummary}`);
+      }
 
       return lines.join('\n');
     } catch (err: unknown) {
@@ -572,6 +606,9 @@ export class AssistantToolsService {
           longitude: lon,
           current:
             'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,relative_humidity_2m',
+          hourly:
+            'precipitation_probability,precipitation,weather_code,temperature_2m',
+          forecast_days: 2,
           timezone: 'auto',
         },
       },
@@ -582,12 +619,56 @@ export class AssistantToolsService {
         'No pude obtener el clima actual.',
         HttpStatus.BAD_GATEWAY,
       );
+
+    const hourly = response.data.hourly;
+    let tonightSummary = '';
+    let tonightPrecipProb = 0;
+
+    if (hourly?.time && hourly.precipitation_probability) {
+      const now = DateTime.now().setZone('America/Argentina/Buenos_Aires');
+      const todayIso = now.toISODate();
+      let maxProb = 0;
+      let maxMm = 0;
+      let dominantCode = 0;
+      let count = 0;
+
+      for (let i = 0; i < hourly.time.length; i++) {
+        const t = hourly.time[i];
+        if (t && t.startsWith(todayIso)) {
+          const hour = parseInt(t.slice(11, 13), 10);
+          if (hour >= 20 && hour <= 23) {
+            count++;
+            const p = hourly.precipitation_probability[i] ?? 0;
+            const mm = hourly.precipitation?.[i] ?? 0;
+            if (p > maxProb) {
+              maxProb = p;
+              dominantCode = hourly.weather_code?.[i] ?? dominantCode;
+            }
+            if (mm > maxMm) maxMm = mm;
+          }
+        }
+      }
+
+      if (count > 0) {
+        tonightPrecipProb = maxProb;
+        if (maxProb >= 60 || maxMm >= 1.0) {
+          tonightSummary = `Alta probabilidad de lluvia para esta noche (${maxProb}%, acumulado estimado ${maxMm} mm).`;
+        } else if (maxProb >= 30 || maxMm > 0.1) {
+          tonightSummary = `Baja a moderada probabilidad de lloviznas aisladas para esta noche (${maxProb}%, acumulado ~${maxMm} mm).`;
+        } else {
+          tonightSummary = `No se pronostican lluvias para esta noche (probabilidad de precipitación ${maxProb}%, cielo mayormente ${this.describeWeatherCode(dominantCode).toLowerCase()}).`;
+        }
+      }
+    }
+
     return {
       temperature: current.temperature_2m ?? 'desconocida',
       apparentTemperature: current.apparent_temperature ?? 'desconocida',
       windSpeed: current.wind_speed_10m ?? 'desconocida',
       humidity: current.relative_humidity_2m ?? 'desconocida',
       label: this.describeWeatherCode(current.weather_code),
+      tonightSummary,
+      tonightPrecipProb,
     };
   }
 

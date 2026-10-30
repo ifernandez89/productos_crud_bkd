@@ -196,11 +196,27 @@ export class JarvisPromptBuilderService {
     }
 
     if (useMemory) {
-      const memories = await this.memoryRepo.search(userMessage, 3);
+      const isPersonalOrIdentity =
+        /(quien soy|quién soy|que sabes (sobre|de) mi|qué sabes (sobre|de) mi|sabes algo de mi|como me llamo|cómo me llamo|te acordas de mi|te acordás de mí|mi nombre|mis proyectos|mi perfil|sobre mi|acerca de mi)/i.test(
+          userMessage,
+        );
+      const memoryLimit = isPersonalOrIdentity ? 6 : 3;
+      let memories = await this.memoryRepo.search(userMessage, memoryLimit);
+      if (isPersonalOrIdentity && memories.length < 2) {
+        // Fallback: recuperar recuerdos clave sobre el operador e identidad
+        const fallbackMemories = await this.memoryRepo.search(
+          'Ignacio proyectos ecosistema',
+          5,
+        );
+        const existingIds = new Set(memories.map((m) => m.id));
+        for (const fm of fallbackMemories) {
+          if (!existingIds.has(fm.id)) memories.push(fm);
+        }
+      }
       if (memories.length > 0) {
         usedMemory = true;
         contextParts.push(
-          `### MEMORIA\n${memories.map((m) => m.content).join('\n')}`,
+          `### MEMORIA PERSISTENTE DEL USUARIO\n${memories.map((m) => m.content).join('\n')}`,
         );
       }
     }
@@ -388,7 +404,7 @@ export class JarvisPromptBuilderService {
 
     const webInstruction =
       browserContext || hasWebContext
-        ? '\n\n⚠️ INSTRUCCIÓN OBLIGATORIA: Respondé EXCLUSIVAMENTE usando los datos de "CONTENIDO WEB EXTRAÍDO EN TIEMPO REAL" o "BÚSQUEDA WEB AUTOMÁTICA" que están arriba. PROHIBIDO decir que no tenés información — los datos ya están en este prompt. Si el contenido está en inglés, traducílo al español.'
+        ? '\n\n📌 DATOS EN TIEMPO REAL / HERRAMIENTAS: Integrá los datos en tiempo real (clima, pronóstico, web) provistos arriba para responder con exactitud a las preguntas sobre actualidad o meteorología, complementándolo armónicamente con la memoria del usuario y las directrices del asistente.'
         : '';
 
     const docInstruction =

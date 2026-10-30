@@ -627,6 +627,29 @@ export class JarvisService {
 
       // ── 8. Ejecutar intent TOOL (directa: clima, math, etc.) ──────────────
       if (intent.intent === 'TOOL') {
+        const hasConversationalOrIdentity =
+          /(quien soy|quién soy|que sabes|qué sabes|como me llamo|cómo me llamo|te acordas|te acordás|sobre mi|acerca de mi)/i.test(
+            userMessage,
+          );
+        if (hasConversationalOrIdentity) {
+          const toolContext = await this.assistantTools.resolve(userMessage);
+          toolsUsed.push('direct_tool');
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            toolContext || undefined,
+            prefetchedRagContext,
+            mode,
+            retrievedChunksList,
+            options.mode,
+            intent,
+          );
+        }
+
         const toolAnswer = await this.assistantTools.resolve(userMessage);
         if (toolAnswer) {
           toolsUsed.push('direct_tool');
@@ -1107,6 +1130,26 @@ export class JarvisService {
       }
 
       // ── 20. LOCAL LLM query ────────────────────────────────────────────────
+      let localToolContext: string | undefined = undefined;
+      if (
+        /(clima|temperatura|lluvia|llover|pronostico|pronóstico)/i.test(
+          userMessage,
+        )
+      ) {
+        try {
+          const weatherSummary =
+            await this.assistantTools.getWeatherSummary(userMessage);
+          if (weatherSummary) {
+            toolsUsed.push('weather_forecast');
+            localToolContext = weatherSummary;
+          }
+        } catch (err: any) {
+          this.logger.warn(
+            `[jarvis:weatherSummary] No se pudo obtener clima para LLM: ${err?.message || err}`,
+          );
+        }
+      }
+
       return await this.respondWithLLM(
         userMessage,
         sessionId,
@@ -1114,7 +1157,7 @@ export class JarvisService {
         provider,
         toolsUsed,
         startTime,
-        undefined,
+        localToolContext,
         prefetchedRagContext,
         mode,
         retrievedChunksList,

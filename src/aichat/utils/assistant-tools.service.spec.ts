@@ -120,5 +120,54 @@ describe('AssistantToolsService', () => {
       expect(result).toContain('Temperatura: 20.7°C');
       expect(result).toContain('Estado: Despejado');
     });
+
+    it('ignores temporal phrases like "para está noche" when extracting location and reports rain forecast', async () => {
+      mockedAxios.get.mockImplementation((url: string) => {
+        if (url.includes('nominatim')) {
+          return Promise.resolve({
+            data: [
+              {
+                lat: '-31.73',
+                lon: '-60.52',
+                display_name: 'Paraná, Entre Ríos, Argentina',
+              },
+            ],
+          }) as never;
+        }
+        if (url.includes('open-meteo')) {
+          const nowIso = new Date().toISOString().slice(0, 10);
+          return Promise.resolve({
+            data: {
+              current: {
+                temperature_2m: 20.5,
+                apparent_temperature: 23.0,
+                weather_code: 51,
+                wind_speed_10m: 3.0,
+                relative_humidity_2m: 85,
+              },
+              hourly: {
+                time: [
+                  `${nowIso}T20:00`,
+                  `${nowIso}T21:00`,
+                  `${nowIso}T22:00`,
+                  `${nowIso}T23:00`,
+                ],
+                precipitation_probability: [35, 20, 15, 10],
+                precipitation: [0.2, 0.0, 0.0, 0.0],
+                weather_code: [51, 0, 0, 0],
+              },
+            },
+          }) as never;
+        }
+        return Promise.reject(new Error('unhandled mock url')) as never;
+      });
+
+      const result = await service.resolve('esta pronosticado lluvia para está noche?');
+      expect(result).not.toBeNull();
+      // Verificamos que cayó al default de Paraná y no a un lugar falso
+      expect(result).toContain('Ubicación: Paraná, Entre Ríos, Argentina');
+      expect(result).toContain('Pronóstico de lluvia para esta noche');
+      expect(result).toContain('probabilidad de lloviznas');
+    });
   });
 });

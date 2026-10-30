@@ -221,6 +221,15 @@ describe('JarBees DSH Capabilities & Autonomous Telemetry Suite (Phases 1-5)', (
       expect(createdSteps[0].type).toBe('respond');
       expect(createdSteps[1].type).toBe('summarize');
     });
+
+    it('routes composite user identity and personal memory queries to LOCAL instead of direct TOOL', async () => {
+      const router = new IntentRouterService();
+      const res = await router.classify(
+        'Sabes quién soy? Que sabes sobre mi? Que fecha es hoy? Y dime, esta pronosticado lluvia para está noche?',
+      );
+      expect(res.intent).toBe('LOCAL');
+      expect(res.reason).toBe('personal identity and memory query');
+    });
   });
 
   // ── FASE 3: Memoria Tripartita (Working + Episodic 50/30/20 + TripleStore) ───

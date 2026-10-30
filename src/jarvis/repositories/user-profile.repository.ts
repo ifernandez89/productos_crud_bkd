@@ -16,10 +16,19 @@ export class UserProfileRepository {
 
   async getOrCreate(): Promise<UserProfile> {
     const existing = await this.prisma.userProfile.findFirst();
-    if (existing) return existing;
+    if (existing) {
+      if (!existing.name) {
+        return this.prisma.userProfile.update({
+          where: { id: existing.id },
+          data: { name: 'Ignacio Fernández (@ifernandez89)' },
+        });
+      }
+      return existing;
+    }
 
     return this.prisma.userProfile.create({
       data: {
+        name: 'Ignacio Fernández (@ifernandez89)',
         timezone: 'America/Argentina/Buenos_Aires',
         country: 'Argentina',
         language: 'es-AR',
