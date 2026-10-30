@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Planned & Backlog Architecture — Multidisciplinary Technical Researcher & Scientific Engine Vision (2026-10-29)
+
+- **🧭 Visión de Investigación Técnica Multidisciplinaria (`docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md`)**:
+  - Documentada formalmente la hoja de ruta estratégica para evolucionar JarBees como **Orquestador Multidisciplinario** y `Qwen2.5-Coder-14B` como **Especialista en Software e Instrumentación Computacional** (creador de simuladores, scripts analíticos y pipelines para otras ciencias).
+  - Definida la federación de roles especializados: *JarBees (Orquestador)*, *Software Engineer*, *Research Analyst*, *Scientific Researcher*, *Knowledge Researcher*, *Experimental Technician* y *Verification & Evidence Engine*.
+  - Mapeo de disciplinas de extensión empírica: Astronomía (modelos orbitales y efemérides), Arqueología e Historia (cronologías y fotogrametría documental), Electrónica y Robótica (datasheets y firmware), Biología y Bioinformática (expresión génica y datasets públicos) y Geología (modelos de terreno y datos GIS).
+  - Diseño conceptual del motor transversal **`ScientificResearchEngine`** con ciclo de 8 fases (*Research Planning → Source Discovery → Evidence Extraction → Hypothesis Engine → Experiment Planner → Execution → Verification → Research Report*).
+  - Mapeo de reutilización del 100% de la infraestructura desarrollada: `Planner`, `ExecutionEngine`, `RAG`, `CheckpointManagerService`, `VerificationHarnessService`, `MissionRecoveryService` y `ActionGatekeeperService` (HITL).
+  - Blueprint detallado para la futura misión piloto: *Investigación y Simulación Orbital del Sistema Solar* en Python (integrador RK4, comparación con efemérides JPL/NASA, cuantificación de deriva y límites de incertidumbre).
+  - Roadmap de variables de activación modular: `USE_SCIENTIFIC_RESEARCH` y `USE_EXPERIMENTAL_TOOLS` (conservando `USE_LLAMACPP_CODER` para ingeniería de software).
+
 ### Added & Validated — JarBees Senior Coder v1.0, Verification Harness, Best-Checkpoint Rollback & Multi-Context Engineering (2026-10-29)
 
 - **🚀 Motor de Inferencia Nativo `LlamaCppProvider` (`src/jarvis/llm/llamacpp.provider.ts`)**:

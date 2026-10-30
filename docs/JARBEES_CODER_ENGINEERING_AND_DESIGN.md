@@ -340,4 +340,19 @@ flowchart LR
   - Supervisar en cada misión que el uso combinado de tokens permanezca en los escalones seguros (`2K–3K` o `4K–5K`), alertando si una misión se aproxima a `5K–6K`.
   - Mantener la aprobación humana obligatoria hasta consolidar la confianza operativa.
 
+---
+
+## 8. Visión Futura y Backlog: JarBees como Investigador Técnico Multidisciplinario
+
+> **Documento Detallado de Arquitectura**: [`docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md)  
+> **Estado**: 🟡 **Pendiente / Backlog para Reanálisis Futuro**
+
+Se ha documentado formalmente la evolución estratégica de JarBees más allá del desarrollo de software:
+- **Separación de Responsabilidades**: JarBees como **Orquestador Multidisciplinario de Investigación** y `Qwen2.5-Coder-14B` como **Especialista en Software e Instrumentación Computacional** (creador de simuladores, scripts de análisis de datos y pipelines de cálculo).
+- **Disciplinas de Extensión**: Astronomía y astrofísica (modelos orbitales y efemérides), arqueología e historia (cronologías y fotogrametría documental), electrónica y robótica (datasheets y firmware), biología y bioinformática (datasets públicos y estadística) y ciencias de la Tierra (modelos de elevación y datos geoespaciales).
+- **Nuevo Motor Transversal**: `ScientificResearchEngine`, reutilizando de manera inmediata los componentes ya certificados: `Planner`, `ExecutionEngine`, `RAG`, `CheckpointManagerService`, `VerificationHarnessService`, `MissionRecoveryService` y `ActionGatekeeperService` (HITL).
+- **Misión Piloto Propuesta**: *Investigación y Simulación Orbital del Sistema Solar* con Python, efemérides de referencia de la NASA/JPL y cuantificación rigurosa de errores de deriva.
+- **Variables Futuras de Activación**: `USE_SCIENTIFIC_RESEARCH` y `USE_EXPERIMENTAL_TOOLS` (manteniendo `USE_LLAMACPP_CODER` enfocado en ingeniería de software).
+
+
 
