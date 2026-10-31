@@ -23,7 +23,7 @@ export class LlamaCppProvider implements ILLMProvider {
   constructor() {
     this.baseURL = process.env.LLAMACPP_BASE_URL || 'http://127.0.0.1:8080';
     this.defaultModel = process.env.LLAMACPP_DEFAULT_MODEL || 'qwen3:8b';
-    this.timeoutMs = parseInt(process.env.LLAMACPP_TIMEOUT_MS || '45000', 10);
+    this.timeoutMs = parseInt(process.env.LLAMACPP_TIMEOUT_MS || '60000', 10);
     this.defaultConnectTimeoutMs = parseInt(
       process.env.LLAMACPP_CONNECT_TIMEOUT_MS || '5000',
       10,

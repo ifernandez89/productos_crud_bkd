@@ -130,7 +130,11 @@ export class TaskReminderService {
       /\b(editar|edita|edito|cambiar|cambia|cambio|modificar|modifica|modifico|renombrar|renombrá|actualizar|actualiza|actualizá|corregir|corregí)\b/i.test(
         normalized,
       );
-    if (editIntent && /\b(pendiente|tarea|el|la|los)\b/i.test(normalized)) {
+    const isExplicitTaskEdit =
+      editIntent &&
+      (/\b(pendiente|pendientes|tarea|tareas|recordatorio|recordatorios)\b/i.test(normalized) ||
+        /^(?:cambia|cambiá|edita|editá|modifica|modificá|renombra|renombrá)\s+#?\d+/i.test(normalized));
+    if (isExplicitTaskEdit) {
       // Editar por número: "cambia el 2 a pagar la factura"
       const byNumber = normalized.match(
         /\b(?:el|la|pendiente|tarea)?\s*#?(\d+)\b/,

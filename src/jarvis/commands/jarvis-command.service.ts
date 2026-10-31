@@ -749,9 +749,24 @@ export class JarvisCommandService {
     const normalized = message
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-    return /\b(repiti[rt]|repeti[rt]|repite|repitelo|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat|say it again)\b/.test(
-      normalized,
+      .toLowerCase()
+      .trim();
+
+    if (
+      /(?:se repite|que se repite|al repetirse|repetirse|repetitiva|repetitivo|cada \d+)/i.test(
+        normalized,
+      )
+    ) {
+      return false;
+    }
+
+    return (
+      /^(?:por favor\s+)?(?:repeti(?:lo)?|repite(?:lo)?|podes repetir(?:lo)?|puedes repetir(?:lo)?|me repetis(?:lo)?|me repites(?:lo)?|dilo de nuevo|decilo de nuevo|voz alta|en voz alta|repeat(?: that)?|say it again)(?:\s+(?:eso|la respuesta|lo que dijiste|lo anterior|de nuevo))?[\s.!?]*$/i.test(
+        normalized,
+      ) ||
+      /\b(repeti(?:lo)?|repite(?:lo)?|dilo de nuevo|decilo de nuevo)\s+(?:por favor|lo anterior|lo ultimo|la respuesta)\b/i.test(
+        normalized,
+      )
     );
   }
 
@@ -978,20 +993,37 @@ export class JarvisCommandService {
       return null;
     }
 
-    const explicitMatch = trimmed.match(
-      /^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i,
-    );
+    const explicitMatch =
+      trimmed.match(
+        /^(?:libros?|documentos?|obras?)\s+(?:de|del|sobre|de los|de las)\s+(.{2,80})$/i,
+      ) ||
+      trimmed.match(
+        /^(?:que libros (?:tiene|hay de)|buscar libros de|autor:?)\s+(.{2,80})$/i,
+      );
     if (explicitMatch?.[1]?.trim()) {
       const candidate = explicitMatch[1].trim();
       const matchedAuthor = this.findAuthorInIndex(candidate);
-      if (matchedAuthor) {
+      if (
+        matchedAuthor &&
+        !/^(desconocido|sin autor|anonimo|n\/a)$/i.test(matchedAuthor)
+      ) {
         return { author: matchedAuthor };
       }
     }
 
-    const matchedAuthor = this.findAuthorInIndex(trimmed);
-    if (matchedAuthor) {
-      return { author: matchedAuthor };
+    // Solo si el mensaje completo consta únicamente del nombre de un autor (máximo 3 palabras)
+    const wordCount = trimmed.split(/\s+/).length;
+    if (
+      wordCount <= 3 &&
+      !/^(si|no|como|que|por que|cuando|donde|hola|ayuda)\b/i.test(trimmed)
+    ) {
+      const matchedAuthor = this.findAuthorInIndex(trimmed);
+      if (
+        matchedAuthor &&
+        !/^(desconocido|sin autor|anonimo|n\/a)$/i.test(matchedAuthor)
+      ) {
+        return { author: matchedAuthor };
+      }
     }
 
     return null;
@@ -1003,14 +1035,19 @@ export class JarvisCommandService {
     if (docs.length === 0) return null;
 
     const normQuery = this.normalizeText(query);
-    if (normQuery.length < 3) return null;
+    if (
+      normQuery.length < 3 ||
+      /^(desconocido|sin autor|anonimo)$/i.test(normQuery)
+    )
+      return null;
 
     for (const doc of docs) {
       if (!doc.autor) continue;
       const normAutor = this.normalizeText(doc.autor);
+      if (/^(desconocido|sin autor|anonimo)$/i.test(normAutor)) continue;
       if (normAutor === normQuery) return doc.autor;
-      if (normAutor.includes(normQuery) && normQuery.length >= 4) return doc.autor;
-      if (normQuery.includes(normAutor) && normAutor.length >= 4) return doc.autor;
+      if (normAutor.includes(normQuery) && normQuery.length >= 4)
+        return doc.autor;
     }
 
     return null;

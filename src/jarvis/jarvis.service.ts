@@ -45,6 +45,7 @@ import {
   DialecticChunkInput,
 } from './cognitive/dialectic-reasoning.service';
 import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
+import { ToolResultValidatorService } from './tools/validation/tool-result-validator.service';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -106,6 +107,7 @@ export class JarvisService {
     private readonly cognitiveTrace: CognitiveTraceService,
     private readonly claimExtractor: ClaimExtractorService,
     private readonly dialecticReasoning: DialecticReasoningService,
+    private readonly toolValidator: ToolResultValidatorService,
     @Optional()
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
   ) {
@@ -200,36 +202,49 @@ export class JarvisService {
     }
 
     try {
-      // ── 4. Comprobar tareas y recordatorios ────────────────────────────────
-      const taskReminderReply =
-        await this.taskReminderService.handleTaskCommand(
-          userMessage,
-          taskSessionId,
+      // ── 4. Clasificar intención PRIMERO (Desacople estricto de pre-parsers) ───────────────────────────
+      const intent = await this.intentRouter.classify(userMessage);
+      this.logger.log(
+        `[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`,
+      );
+
+      // ── 4.1 Comprobar tareas y recordatorios SOLO si intent === 'TASKS' o comando explícito ──
+      const isExplicitTask =
+        intent.intent === 'TASKS' ||
+        /^(?:anotar|agregar|eliminar|borrar|listar|cambiar|editar)\s+(?:tarea|pendiente|recordatorio)/i.test(
+          userMessage.trim(),
         );
-      if (taskReminderReply) {
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'assistant',
-          content: taskReminderReply,
-          metadata: { source: 'task_reminder' },
-        });
-        await this.agentRunRepo.create({
-          sessionId,
-          question: userMessage,
-          answer: taskReminderReply,
-          toolsUsed: ['task_reminder'],
-          modelUsed: 'none',
-          provider: 'task_reminder',
-          durationMs: Date.now() - startTime,
-          success: true,
-        });
-        return taskReminderReply;
+      if (isExplicitTask) {
+        const taskReminderReply =
+          await this.taskReminderService.handleTaskCommand(
+            userMessage,
+            taskSessionId,
+          );
+        if (taskReminderReply) {
+          await this.conversationRepo.create({
+            sessionId,
+            role: 'assistant',
+            content: taskReminderReply,
+            metadata: { source: 'task_reminder' },
+          });
+          await this.agentRunRepo.create({
+            sessionId,
+            question: userMessage,
+            answer: taskReminderReply,
+            toolsUsed: ['task_reminder'],
+            modelUsed: 'none',
+            provider: 'task_reminder',
+            durationMs: Date.now() - startTime,
+            success: true,
+          });
+          return taskReminderReply;
+        }
       }
 
-      // ── 4.1 Comprobar consultas de inventario de biblioteca/libros del backend ──
+      // ── 4.2 Consultas explícitas de inventario de biblioteca ──
       const isLibraryInventoryQuery =
-        /(cuant[oa]s|lista|tienes|disponibles|total|cuales|cuáles|que hay)\s+.*(libros|documentos|obras|archivos|biblioteca|backend)/i.test(
-          userMessage,
+        /^(?:cuant[oa]s|lista(?:r)?|total|cuales|cuáles|que)\s+(?:libros|documentos|obras|archivos)\s+(?:hay|tenemos|disponibles|guardados|en la biblioteca)/i.test(
+          userMessage.trim(),
         );
       if (isLibraryInventoryQuery) {
         const count = await this.documentRepo.countDocuments();
@@ -264,9 +279,6 @@ export class JarvisService {
         });
         return reply;
       }
-
-      // ── 5. Clasificar intención ───────────────────────────────────────────
-      const intent = await this.intentRouter.classify(userMessage);
       this.logger.log(
         `[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`,
       );
@@ -467,7 +479,7 @@ export class JarvisService {
           const rerankedChunks = this.rerankChunks(chunks, userMessage);
           retrievedChunksList = rerankedChunks;
 
-          const formattedParts = rerankedChunks.slice(0, 5).map((c) => {
+          const formattedParts = rerankedChunks.slice(0, 3).map((c) => {
             const docTitle = c.document?.title || 'Documento';
             const docInIndex = this.corpusSelector.getIndex().documentos.find(
               (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
@@ -478,6 +490,10 @@ export class JarvisService {
             const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
             const category = docInIndex?.categorias?.join(', ') || 'General';
             const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
+            const snippet =
+              c.content && c.content.length > 800
+                ? c.content.slice(0, 800) + '... [fragmento truncado]'
+                : c.content;
 
             return [
               `---`,
@@ -488,7 +504,7 @@ export class JarvisService {
               `CATEGORÍAS: ${category}`,
               `CONCEPTOS PRINCIPALES: ${concepts}`,
               `CONTENIDO:`,
-              c.content,
+              snippet,
             ].join('\n');
           });
 
@@ -672,24 +688,41 @@ export class JarvisService {
 
         const toolAnswer = await this.assistantTools.resolve(userMessage);
         if (toolAnswer) {
-          toolsUsed.push('direct_tool');
-          await this.conversationRepo.create({
-            sessionId,
-            role: 'assistant',
-            content: toolAnswer,
-            metadata: { source: 'tool' },
-          });
-          await this.agentRunRepo.create({
-            sessionId,
-            question: userMessage,
-            answer: toolAnswer,
-            toolsUsed,
-            modelUsed: 'none',
-            provider: 'tool',
-            durationMs: Date.now() - startTime,
-            success: true,
-          });
-          return toolAnswer;
+          const validation = this.toolValidator.validateToolResult(
+            userMessage,
+            'direct_tool',
+            toolAnswer,
+          );
+
+          if (
+            validation.valid &&
+            validation.effectiveAnswer &&
+            !validation.fallbackToLLM
+          ) {
+            const finalToolAnswer = validation.effectiveAnswer;
+            toolsUsed.push('direct_tool');
+            await this.conversationRepo.create({
+              sessionId,
+              role: 'assistant',
+              content: finalToolAnswer,
+              metadata: { source: 'tool' },
+            });
+            await this.agentRunRepo.create({
+              sessionId,
+              question: userMessage,
+              answer: finalToolAnswer,
+              toolsUsed,
+              modelUsed: 'none',
+              provider: 'tool',
+              durationMs: Date.now() - startTime,
+              success: true,
+            });
+            return finalToolAnswer;
+          } else {
+            this.logger.warn(
+              `[jarvis:tool-validation-failed] ${validation.reason || 'Resultado no validado'}. Derivando a LLM...`,
+            );
+          }
         }
       }
 
@@ -889,24 +922,35 @@ export class JarvisService {
 
       // ── 14. Ejecutar Astrology ─────────────────────────────────────────────
       if (intent.intent === 'ASTROLOGY') {
-        const wantsFullChart =
-          /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance|conjuncion|oposicion|eventos astronomicos)/i.test(
-            userMessage,
-          );
-        const astroData = wantsFullChart
-          ? this.astrologyTool.getPlanetaryPositions()
-          : this.astrologyTool.getTodaySkyData();
-
-        toolsUsed.push('astrology_calculated');
-        return await this.respondWithAstrologyPrompt(
+        const astroValidation = this.toolValidator.validateToolResult(
           userMessage,
-          sessionId,
-          providerName,
-          provider,
-          toolsUsed,
-          startTime,
-          astroData,
+          'astrology',
+          'Clima Astrológico',
         );
+        if (astroValidation.fallbackToLLM) {
+          this.logger.warn(
+            `[astrology:validation-fallback] ${astroValidation.reason}. Derivando a LLM...`,
+          );
+        } else {
+          const wantsFullChart =
+            /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance|conjuncion|oposicion|eventos astronomicos)/i.test(
+              userMessage,
+            );
+          const astroData = wantsFullChart
+            ? this.astrologyTool.getPlanetaryPositions()
+            : this.astrologyTool.getTodaySkyData();
+
+          toolsUsed.push('astrology_calculated');
+          return await this.respondWithAstrologyPrompt(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            astroData,
+          );
+        }
       }
 
       // ── 15. Ejecutar URL scraping ──────────────────────────────────────────
@@ -981,23 +1025,34 @@ export class JarvisService {
           userMessage,
           site,
         );
-        await this.conversationRepo.create({
-          sessionId,
-          role: 'assistant',
-          content: noEvidenceMsg,
-          metadata: { source: 'site_search_fail' },
-        });
-        await this.agentRunRepo.create({
-          sessionId,
-          question: userMessage,
-          answer: noEvidenceMsg,
-          toolsUsed: [...toolsUsed, 'site_search_fail'],
-          modelUsed: 'none',
-          provider: 'none',
-          durationMs: Date.now() - startTime,
-          success: false,
-        });
-        return noEvidenceMsg;
+        const searchValidation = this.toolValidator.validateToolResult(
+          userMessage,
+          'site_search',
+          noEvidenceMsg,
+        );
+        if (searchValidation.fallbackToLLM) {
+          this.logger.warn(
+            `[site_search:validation-fallback] ${searchValidation.reason}. Continuando a LLM...`,
+          );
+        } else {
+          await this.conversationRepo.create({
+            sessionId,
+            role: 'assistant',
+            content: noEvidenceMsg,
+            metadata: { source: 'site_search_fail' },
+          });
+          await this.agentRunRepo.create({
+            sessionId,
+            question: userMessage,
+            answer: noEvidenceMsg,
+            toolsUsed: [...toolsUsed, 'site_search_fail'],
+            modelUsed: 'none',
+            provider: 'none',
+            durationMs: Date.now() - startTime,
+            success: false,
+          });
+          return noEvidenceMsg;
+        }
       }
 
       // ── 17. SPORTS ─────────────────────────────────────────────────────────
@@ -1283,12 +1338,37 @@ export class JarvisService {
       finalSystemPrompt += `\n=== DIRECTIVAS DE ÁNGULOS COGNITIVOS ===\n${qicaResult.collapseResult.collapsedPromptDirectives}\n`;
     }
 
-    const response = await provider.generate({
-      messages: [
-        { role: 'system', content: finalSystemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    });
+    let response: any;
+    try {
+      response = await provider.generate({
+        messages: [
+          { role: 'system', content: finalSystemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      });
+    } catch (genErr: any) {
+      this.logger.warn(
+        `[jarvis:respondWithLLM] Error en generación con ${provider.getProviderName()}: ${genErr.message}. Intentando recuperación local directa sin RAG/contexto pesado...`,
+      );
+      try {
+        response = await this.llamaCppProvider.generate({
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Sos JarBees, un asistente inteligente y riguroso. Respondé en español de forma analítica, precisa y fundamentada a la pregunta del usuario.',
+            },
+            { role: 'user', content: userMessage },
+          ],
+          timeoutMs: 30000,
+        });
+      } catch (localFallbackErr: any) {
+        this.logger.error(
+          `[jarvis:respondWithLLM] Falló la recuperación local directa: ${localFallbackErr.message}`,
+        );
+        throw genErr;
+      }
+    }
     let responseContent = this.formatProviderResponse(
       response.content,
       provider,

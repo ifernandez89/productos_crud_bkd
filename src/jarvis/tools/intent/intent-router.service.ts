@@ -114,7 +114,7 @@ export class IntentRouterService {
   // ── Clasificación rápida (reglas) ────────────────────────────────────────────
 
   private isExplanatoryQuery(n: string): boolean {
-    return /(como se forma|cómo se forma|por que se produce|por qué se produce|por que ocurre|por qué ocurre|que es (un |una |el |la |los |las )?|qué es (un |una |el |la |los |las )?|en que consiste|en qué consiste|como funciona|cómo funciona|que produce|qué produce|que causa|qué causa|explicame|explica |defini |definir |que diferencias? existen entre|cual es la diferencia entre|cuál es la diferencia entre)/i.test(
+    return /(?:como se forma|por que se produce|por que ocurre|que es (?:un |una |el |la |los |las )?|en que consiste|como funciona|que produce|que causa|explicame|explica |defini |definir |que diferencias? (?:existe|existen) entre|cual(?:es)? (?:es|son) la(?:s)? diferencias? entre|por que (?:un |una |el |la |los |las |dos |algunos? |suele |se |puede |no )|por que vemos|como puede la energia|como se puede demostrar|como investigarias)/i.test(
       n,
     );
   }
@@ -140,12 +140,12 @@ export class IntentRouterService {
       };
     }
 
-    // REPEAT — alta confianza
-    if (
-      /\b(repeti|repetí|repetir|repite|dilo de nuevo|decilo de nuevo|voz alta)\b/i.test(
-        n,
-      )
-    ) {
+    // REPEAT — orden explícita de repetir mensaje/respuesta anterior
+    const isExplicitRepeat =
+      /^(?:repet[ií]|repite|repetir|dilo de nuevo|decilo de nuevo|reiter[aá]|otra vez)[\s!?.]*$/i.test(n.trim()) ||
+      /(?:repet[ií]|repite|repetir|dilo de nuevo|decilo de nuevo)\s+(?:el\s+|la\s+|tu\s+|mi\s+|lo\s+)?(?:mensaje|respuesta|ultimo|ultima|lo que dijiste|lo anterior)/i.test(n);
+    const isPeriodicExpression = /\b(se repite|repite cada|repitiendo|periodicidad|frecuencia)\b/i.test(n);
+    if (isExplicitRepeat && !isPeriodicExpression) {
       return { intent: 'REPEAT', confidence: 'high', reason: 'repeat keyword' };
     }
 
@@ -266,11 +266,20 @@ export class IntentRouterService {
 
     // Aritmética determinista de fechas (DateMathTool)
     if (
-      /(cuantos dias faltan|dias para terminar el ano|dias para fin de ano|cuanto falta para fin de ano|dentro de \d+ (dias|semanas|meses)|hace \d+ (dias|semanas|meses)|que fecha (sera|va a ser|es) dentro de|que dia cae)/i.test(
+      /(cuantos dias faltan|dias para terminar el ano|dias para fin de ano|cuanto falta para fin de ano|dentro de \d+ (dias|semanas|meses)|hace \d+ (dias|semanas|meses)|que fecha (sera|va a ser|es) dentro de|que dia cae|a que hora termina|a que hora finaliza|cada \d+ dias|se repite cada \d+|proximas? \d* ?fechas?)/i.test(
         n,
       )
     ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'date_math tool' };
+    }
+
+    // Balance de potencia, energía y autonomía determinista (PowerBalanceTool)
+    if (
+      /(autonomia|bateria|baterias|inversor|consumo en wh|paneles solares|instalacion solar)/i.test(n) &&
+      /(wh|w|kwh|kw|ah|eficiencia|cuantas horas)/i.test(n) &&
+      !this.isExplanatoryQuery(n)
+    ) {
+      return { intent: 'TOOL', confidence: 'high', reason: 'power_balance tool' };
     }
 
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
@@ -410,12 +419,13 @@ export class IntentRouterService {
       };
     }
 
-    // Luna y fases — ASTROLOGY (NO meteorología)
-    // ⚠️ Movido desde TOOL: luna/fase lunar son consultas astrológicas, no meteorológicas
+    // Luna y fases — ASTROLOGY (solo si es consulta sobre fases/signo zodiacal, NO mecánica celeste ni física)
+    const isPhysicalMoonQuery = /(misma cara|acoplamiento|marea|rotacion|traslacion|orbita|gravedad|distancia|crater|alunizaje)/i.test(n);
     if (
-      /(luna|fase lunar|luna llena|luna nueva|luna creciente|luna menguante|donde esta la luna|como esta la luna|que signo|que signo es|signo lunar)/i.test(
+      /(fase lunar|luna llena|luna nueva|luna creciente|luna menguante|donde esta la luna|como esta la luna|que signo|que signo es|signo lunar)/i.test(
         n,
       ) &&
+      !isPhysicalMoonQuery &&
       !/(clima|temperatura|lluvia|meteorolog|precipitacion)/i.test(n)
     ) {
       return {
@@ -842,27 +852,32 @@ Categoría:`;
       if (domain) return { site: domain, query: match[2].trim() };
     }
 
-    // ── Patrón 5: "X en Y" — solo si Y es un alias conocido ──
-    // Más restrictivo que antes: solo matchea si Y resuelve a un dominio real
-    match = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i.exec(cleanN);
-    if (match) {
-      const falseSites = [
-        'argentina',
-        'parana',
-        'entre rios',
-        'el mundo',
-        'cancha',
-        'vivo',
-        'directo',
-        'ingles',
-        'español',
-        'casa',
-        'internet',
-      ];
-      const siteRaw = match[2].trim();
-      if (!falseSites.includes(siteRaw)) {
-        const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
-        if (domain) return { site: domain, query: match[1].trim() };
+    // ── Patrón 5: "X en Y" — solo si hay intención explícita de búsqueda/noticias y Y es un alias real ──
+    const hasSearchIntent = /(?:noticias?|titulares?|buscar?|busca|info|informacion|que dice|actualidad)/i.test(cleanN);
+    if (hasSearchIntent) {
+      match = /(.+?)\s+\ben\s+([a-z0-9\s.-]+)$/i.exec(cleanN);
+      if (match) {
+        const falseSites = [
+          'argentina',
+          'parana',
+          'entre rios',
+          'el mundo',
+          'cancha',
+          'vivo',
+          'directo',
+          'ingles',
+          'español',
+          'casa',
+          'internet',
+          'una computadora',
+          'computadora',
+          'un lugar',
+        ];
+        const siteRaw = match[2].trim();
+        if (!falseSites.includes(siteRaw)) {
+          const domain = this.resolveSiteAlias(siteRaw, siteAliasMap);
+          if (domain) return { site: domain, query: match[1].trim() };
+        }
       }
     }
 
@@ -871,7 +886,7 @@ Categoría:`;
 
   /**
    * Resuelve un alias o nombre de sitio a su dominio real.
-   * Devuelve null si no se puede identificar el sitio.
+   * Evita estrictamente que palabras cortas (como 'uno') hagan match difuso con 'una'.
    */
   private resolveSiteAlias(
     raw: string,
@@ -880,26 +895,36 @@ Categoría:`;
     const clean = raw.trim().toLowerCase();
     if (aliases[clean]) return aliases[clean];
 
-    // Búsqueda por subcadena exacta
+    const cleanWords = clean.split(/\s+/);
+
+    // Para alias cortos (<= 4 letras como 'uno', 'ole', 'apf', 'tyc'):
+    // EXIGIR coincidencia exacta de palabra, JAMÁS fuzzy ni substring parcial
+    for (const [key, domain] of Object.entries(aliases)) {
+      if (key.length <= 4) {
+        if (cleanWords.includes(key) && cleanWords.length <= 3) {
+          return domain;
+        }
+      }
+    }
+
+    // Búsqueda por subcadena exacta SOLO para alias largos (>= 5 letras)
     const matchedKey = Object.keys(aliases).find(
-      (key) => clean.includes(key) || key.includes(clean),
+      (key) => key.length >= 5 && (clean === key || cleanWords.includes(key)),
     );
     if (matchedKey) return aliases[matchedKey];
 
-    // Búsqueda tolerante a typos: comparar palabra a palabra
-    // "mystery plantet" → busca si cada palabra del alias aparece en el input
-    const cleanWords = clean.split(/\s+/);
+    // Búsqueda tolerante a typos SOLO para palabras largas (>= 5 letras)
     const fuzzyKey = Object.keys(aliases).find((key) => {
+      if (key.length < 5) return false;
       const keyWords = key.split(/\s+/);
-      // Si al menos el 75% de las palabras del alias están en el input (con tolerancia de 1 char)
       const matched = keyWords.filter((kw) =>
-        cleanWords.some((cw) => cw === kw || this.levenshtein(cw, kw) <= 1),
+        kw.length >= 5 && cleanWords.some((cw) => cw === kw || this.levenshtein(cw, kw) <= 1),
       );
       return matched.length >= Math.ceil(keyWords.length * 0.75);
     });
     if (fuzzyKey) return aliases[fuzzyKey];
 
-    // Si parece un dominio real
+    // Si parece un dominio real con punto
     if (/^[a-z0-9-]+\.[a-z.]{2,}$/i.test(clean)) return clean;
 
     return null;

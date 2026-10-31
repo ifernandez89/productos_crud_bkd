@@ -10,6 +10,7 @@ import {
 import { create, all } from 'mathjs';
 import { BrowserToolService } from '../../jarvis/tools/browser/browser-tool.service';
 import { DateMathTool } from '../../jarvis/tools/date-math/date-math.tool';
+import { PowerBalanceTool } from '../../jarvis/tools/energy/power-balance.tool';
 
 const math = create(all);
 
@@ -58,6 +59,7 @@ export class AssistantToolsService {
   private readonly defaultWeatherLocation =
     'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina';
   private readonly dateMathTool = new DateMathTool();
+  private readonly powerBalanceTool = new PowerBalanceTool();
 
   constructor(private readonly browserTool: BrowserToolService) {}
 
@@ -108,6 +110,13 @@ export class AssistantToolsService {
     if (dateMathRes.handled && dateMathRes.result) {
       this.logger.log(`[tool:date-math] "${query}"`);
       return dateMathRes.result;
+    }
+
+    // Balance de potencia, energía y autonomía determinista (PowerBalanceTool)
+    const powerRes = this.powerBalanceTool.resolve(query);
+    if (powerRes.handled && powerRes.result) {
+      this.logger.log(`[tool:power-balance] "${query}"`);
+      return powerRes.result;
     }
 
     if (this.isWeatherQuery(normalized)) {

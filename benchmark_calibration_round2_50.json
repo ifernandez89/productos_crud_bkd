@@ -1,0 +1,1354 @@
+{
+  "1": {
+    "id": 1,
+    "block": "Bloque 1 — Memoria, identidad y contexto",
+    "question": "Si una información que tienes guardada sobre mí contradice algo que acabo de decirte, ¿cuál deberías considerar vigente y por qué?",
+    "expected": "Principio de actualización epistémica / Primacía del input del usuario en tiempo real",
+    "answer": "¡Hola Ignacio! Es una excelente pregunta que refleja tu pensamiento crítico y tu interés por la precisión. En este contexto, si una información que tengo guardada sobre ti contradice algo que acabas de decirme, **debería considerar vigente la última información que me proporcionaste**. \n\nLa razón es simple: **la información más reciente suele ser más actual y relevante**, especialmente si se trata de datos personales o situaciones que pueden haber cambiado. Por ejemplo, si mencionas un nuevo proyecto, una actualización en tu ubicación o una decisión reciente, estos datos son más precisos que los que podrían estar archivados o en desuso.\n\nAdemás, en el ámbito de la inteligencia artificial y la gestión de información, **la actualización constante de datos es clave para mantener la relevancia y la precisión**. Esto se aplica tanto en sistemas de gestión de proyectos como en la interacción humana, donde la comunicación fluida y actualizada es esencial.\n\nPor supuesto, siempre valoro y guardo la información que me das, pero **la vigencia de la información depende de su fecha y contexto**. Si hay una contradicción, priorizo la más reciente, siempre que sea verificable y coherente con el contexto que me das.\n\n¿Te gustaría que te ayude a revisar o actualizar algún dato específico? Estoy aquí para ayudarte. 🌟",
+    "durationMs": 14227,
+    "timestamp": "2026-10-31T21:15:37.537Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4163,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "2": {
+    "id": 2,
+    "block": "Bloque 1 — Memoria, identidad y contexto",
+    "question": "¿Qué diferencias existen entre recordar un dato, inferirlo y suponerlo?",
+    "expected": "Distinción epistemológica: recuperación factual vs deducción lógica vs hipótesis sin evidencia",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre esto. Vamos a ver, la diferencia entre **recordar**, **inferir** y **suponer** es clave para entender cómo procesamos la información. Aquí te lo explico de forma sencilla:\n\n### ✅ **Recordar**  \nEs cuando **recuperamos información que ya conocemos** y está **almacenada en nuestra memoria**. Por ejemplo, si te pregunto: *\"¿Cuál es la capital de Argentina?\"*, y tú respondes *\"Buenos Aires\"*, estás recordando algo que ya sabías.\n\n### 🔍 **Inferir**  \nEs cuando **deducimos algo nuevo a partir de lo que ya sabemos**. No lo recordamos directamente, sino que lo **construimos** usando lo que tenemos. Por ejemplo, si te digo que *\"Luis es médico y trabaja en un hospital\"*, puedes inferir que *\"Luis atiende pacientes\"*, aunque no te lo haya dicho explícitamente.\n\n### 🤔 **Suponer**  \nEs cuando **asumimos algo que no tenemos evidencia** para confirmar. Es una **hipótesis** o una **idea que no está probada**. Por ejemplo, si te digo que *\"Luis es médico\"*, podrías suponer que *\"Luis es muy responsable\"*, pero eso no es algo que sepas con certeza.\n\n### 📌 En resumen:\n- **Recordar** = Recuperar algo que ya sabes.  \n- **Inferir** = Deducir algo nuevo a partir de lo que sabes.  \n- **Suponer** = Asumir algo sin evidencia.\n\n¿Querés que te dé un ejemplo con algo que tengas en tu vida diaria? 😊",
+    "durationMs": 10435,
+    "timestamp": "2026-10-31T21:15:48.580Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3764,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "3": {
+    "id": 3,
+    "block": "Bloque 1 — Memoria, identidad y contexto",
+    "question": "¿Cómo distinguirías mis proyectos activos de aquellos que solamente mencioné alguna vez?",
+    "expected": "Heurística de frecuencia, persistencia temporal, detalle y estado de desarrollo",
+    "answer": "¡Claro que sí! Para distinguir entre los proyectos activos y los que mencionaste alguna vez, puedo ayudarte a identificarlos basándome en la **actividad reciente**, **documentación actualizada** y **presencia en tu ecosistema de desarrollo**. Aquí te explico cómo:\n\n### 📌 Proyectos **activos** (en desarrollo o en uso):\nEstos son los que **están en marcha**, con **actualizaciones recientes**, **documentación actualizada** o **integrales en tu ecosistema**. Por ejemplo:\n- **JarBees Mobile**: Es un asistente on-device Android con LLM local, delegando al Core. Está en uso y se integra con otros proyectos.\n- **productos_crud_bkd**: Backend NestJS con RAG PostgreSQL/pgvector y modelos de razonamiento. Está en desarrollo y se usa para gestionar productos.\n- **productos_crud_frd**: Frontend Next.js de productos y chat IA. Está en uso y se conecta con el backend.\n- **ArcheoScope**: Proyecto insignia que combina exploración 3D arqueológica y observatorio astronómico. Está en desarrollo y tiene componentes implementados como \"HOY\", \"ASTROLOGÍA\" y \"CLIMA\".\n- **Radar-Dev**: Relevamiento tecnológico e IA. Está en uso y se actualiza regularmente.\n\n### 📝 Proyectos **mencionados alguna vez** (no activos o en fase conceptual):\nEstos son proyectos que **has mencionado en el pasado**, pero **no están en desarrollo activo** o **no tienen documentación actualizada**. Por ejemplo:\n- **Calendarios antiguos** (Tzolk'in Maya, Haab, Cuenta Larga): Son ideas conceptuales que no están implementadas.\n- **Cálculo de aspectos planetarios angulares con orbes**: Es una funcionalidad que aún no está desarrollada.\n- **Nodos lunares y búsqueda de eclipses**: Son ideas que no han sido implementadas.\n- **Brújula física**: Requiere sensores de hardware móvil y no está en desarrollo actual.\n\n### ✅ Cómo identificarlos:\n- **Proyectos activos**: Tienen **código actualizado**, **documentación en GitHub**, **integrales en tu ecosistema** o **usos reales**.\n- **Proyectos mencionados alguna vez**: No tienen **actividad reciente**, **documentación actualizada** o **implementación en tu sistema**.\n\n¿Querés que te liste los proyectos activos y los que mencionaste alguna vez de forma clara?",
+    "durationMs": 16205,
+    "timestamp": "2026-10-31T21:16:05.391Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory"
+      ],
+      "tokensUsed": 2209,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "4": {
+    "id": 4,
+    "block": "Bloque 1 — Memoria, identidad y contexto",
+    "question": "Si te pregunto algo sobre mi computadora y no tienes acceso a una inspección de hardware, ¿qué puedes afirmar y qué no?",
+    "expected": "Límites explícitos / Reconocimiento de falta de telemetría de hardware",
+    "answer": "¡Hola, Ignacio! 😊\n\nSi te pregunto algo sobre tu computadora y no tengo acceso a una inspección de hardware, puedo afirmar lo siguiente:\n\n- **Puedo ayudarte a identificar problemas comunes** como errores de software, configuraciones incorrectas o sugerencias para optimizar el rendimiento, siempre que me cuentes qué síntomas o comportamientos estás experimentando.\n- **Puedo recomendarte herramientas o métodos de diagnóstico** que podrías usar desde tu computadora, como programas de diagnóstico de hardware, comandos de terminal o ajustes en el sistema operativo.\n- **Puedo explicarte cómo interpretar mensajes de error** o qué significan ciertos comportamientos de tu equipo, siempre que me des detalles específicos.\n\nSin embargo, **no puedo acceder directamente a tu hardware ni a los datos de tu computadora**, ni tampoco puedo realizar diagnósticos en tiempo real o inspecciones técnicas profundas. Mi capacidad está limitada a la información que me proporcionés y a mis conocimientos previos.\n\nSi tienes algún problema específico con tu computadora, ¡avísame y te ayudo a resolverlo paso a paso! 🖥️",
+    "durationMs": 14908,
+    "timestamp": "2026-10-31T21:16:20.916Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "web_fallback",
+        "cache:tecnologia"
+      ],
+      "tokensUsed": 2249,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": true,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "5": {
+    "id": 5,
+    "block": "Bloque 1 — Memoria, identidad y contexto",
+    "question": "¿Qué información personal sería útil recordar a largo plazo y cuál sería innecesario conservar?",
+    "expected": "Criterio de persistencia: preferencias, proyectos y contexto estable vs estados efímeros o datos triviales",
+    "answer": "La información personal que sería útil recordar a largo plazo, según los documentos de la biblioteca personal, se relaciona con aspectos espirituales, numerológicos y de autoconocimiento. Estos incluyen:\n\n1. **Fecha de nacimiento**: Es fundamental para calcular la tónica fundamental y comprender la energía personal y los ciclos de vida. Por ejemplo, la fecha de nacimiento de Victor Manuel Chávez (17 de noviembre de 1921) se utiliza para determinar su tónica fundamental y el momento óptimo para realizar actividades importantes.\n\n2. **Urgencia interior**: Este concepto se refiere a la energía espiritual que guía el individuo. Por ejemplo, en el caso de Victor Manuel Chávez, la urgencia interior es 5, lo cual indica una necesidad de equilibrio y reflexión.\n\n3. **Tónica fundamental**: Calculada a partir de la fecha de nacimiento, la tónica fundamental representa la energía dominante del individuo. Por ejemplo, la tónica fundamental de Victor Manuel Chávez es 5, lo cual se relaciona con la necesidad de equilibrio y reflexión.\n\n4. **Tónica del día**: Se calcula sumando la tónica fundamental más la suma cabalística de la fecha elegida. Esta tónica ayuda a determinar el momento óptimo para realizar actividades importantes.\n\n5. **Horas y fechas específicas**: Algunos documentos mencionan la importancia de elegir horas específicas para realizar actividades, como las 9 de la mañana, que se consideran más auspiciosas.\n\nEn cuanto a la información innecesaria, se recomienda no conservar datos que no aporten valor espiritual o práctico, como detalles irrelevantes de la vida cotidiana que no contribuyan al autoconocimiento o al desarrollo personal. La clave está en mantener solo aquella información que nos permita comprender mejor nuestra energía espiritual y tomar decisiones alineadas con nuestro propósito.",
+    "durationMs": 16963,
+    "timestamp": "2026-10-31T21:16:38.484Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "rag"
+      ],
+      "tokensUsed": 4097,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "6": {
+    "id": 6,
+    "block": "Bloque 2 — Tiempo, calendario y geografía",
+    "question": "¿Por qué algunos años tienen 366 días y cómo se determina un año bisiesto?",
+    "expected": "Regla del calendario gregoriano (divisible por 4, no por 100 salvo que sea divisible por 400) y año solar (365.2422 días)",
+    "answer": "¡Hola Ignacio! Es una pregunta muy interesante. Los años tienen 366 días porque son **años bisiestos**, y su determinación se basa en un sistema establecido para mantener alineados los meses con las estaciones del año.\n\n### ¿Por qué algunos años tienen 366 días?\n\nLos años bisiestos tienen un día adicional, el **29 de febrero**, para compensar la discrepancia entre el calendario gregoriano y el año solar. Un año solar dura aproximadamente **365 días, 5 horas, 48 minutos y 46 segundos**, lo que significa que cada año se acumula un pequeño exceso de tiempo.\n\n### ¿Cómo se determina un año bisiesto?\n\nEl sistema para determinar si un año es bisiesto es el siguiente:\n\n1. **Si el año es divisible entre 4**, es bisiesto.\n2. **Pero si el año es divisible entre 100**, no es bisiesto.\n3. **A menos que también sea divisible entre 400**, en cuyo caso sí es bisiesto.\n\nEjemplos:\n- **2020** es bisiesto (divisible entre 4 y no entre 100).\n- **1900** no es bisiesto (divisible entre 100 pero no entre 400).\n- **2000** sí es bisiesto (divisible entre 400).\n\nEste sistema fue introducido en el **Calendario Gregoriano** en 1582, con el objetivo de corregir la desviación acumulada en el calendario juliano.\n\n¿Querés que te diga cuál será el próximo año bisiesto? 😊",
+    "durationMs": 13515,
+    "timestamp": "2026-10-31T21:16:52.612Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4055,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "7": {
+    "id": 7,
+    "block": "Bloque 2 — Tiempo, calendario y geografía",
+    "question": "Si un evento comienza a las 23:30 y dura 150 minutos, ¿a qué hora termina?",
+    "expected": "Cálculo temporal exacto: 23:30 + 2h 30m = 02:00 del día siguiente",
+    "answer": "Hora actual: 18:16 (ART), sábado 31 de octubre de 2026.",
+    "durationMs": 12,
+    "timestamp": "2026-10-31T21:16:53.224Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "tool",
+      "toolsUsed": [
+        "direct_tool"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "8": {
+    "id": 8,
+    "block": "Bloque 2 — Tiempo, calendario y geografía",
+    "question": "¿Por qué dos ciudades pueden tener la misma hora aunque estén en países diferentes?",
+    "expected": "Husos horarios / Zonas horarias civiles compartidas por longitud o decisión política",
+    "answer": "¡Hola, Ignacio! La razón por la cual dos ciudades pueden tener la misma hora aunque estén en países diferentes es porque **comparten la misma zona horaria**. \n\nLas zonas horarias se dividen en 24 horarios globales, cada uno con una diferencia de una hora respecto al anterior. Por ejemplo, si una ciudad está en la zona horaria de **UTC-3** (como Buenos Aires), otra ciudad en **UTC-3** (como Montevideo o Santiago de Chile) también tendrá la misma hora, incluso si están en países diferentes.\n\nAdemás, **algunas zonas horarias se ajustan con el horario de verano**, lo que puede hacer que ciertas ciudades cambien su hora temporalmente, pero en ese caso, seguirían compartiendo la misma zona horaria.\n\nEn resumen: **la hora depende de la zona horaria, no de la ubicación geográfica exacta**. ¡Espero que te haya quedado claro! 😊",
+    "durationMs": 7556,
+    "timestamp": "2026-10-31T21:17:01.385Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory"
+      ],
+      "tokensUsed": 1536,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "9": {
+    "id": 9,
+    "block": "Bloque 2 — Tiempo, calendario y geografía",
+    "question": "¿Qué diferencia existe entre hora solar, hora civil y tiempo universal coordinado (UTC)?",
+    "expected": "Astronomía y metrología: cenit solar local vs huso horario administrativo vs estándar atómico coordinado",
+    "answer": "¡Hola Ignacio! La diferencia entre hora solar, hora civil y tiempo universal coordinado (UTC) está en cómo se miden y usan para marcar el tiempo. Vamos a ver:\n\n- **Hora solar**: Es el tiempo que se mide según la posición del Sol en el cielo. Varía según la ubicación geográfica y la época del año. Por ejemplo, en Tala, Entre Ríos, la hora solar será diferente a la de Buenos Aires o de otras ciudades.\n\n- **Hora civil**: Es la hora que usamos en la vida diaria, basada en la hora solar pero ajustada para tener un horario más práctico. Por ejemplo, si en Tala la hora solar es 10:00, la hora civil podría ser 10:00, pero si hay horario de verano, podría ser 9:00.\n\n- **Tiempo universal coordinado (UTC)**: Es un estándar global para medir el tiempo, basado en el meridiano de Greenwich. No tiene horario de verano ni variaciones según la ubicación. Es el tiempo que usan los relojes atómicos y es la base para otros husos horarios.\n\nEn resumen, la hora solar es natural, la hora civil es la que usamos en la vida cotidiana y el UTC es el tiempo estándar global. ¡Espero que te haya quedado claro! Si querés, puedo explicarte cómo se calcula cada una con ejemplos.",
+    "durationMs": 10898,
+    "timestamp": "2026-10-31T21:17:12.885Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory"
+      ],
+      "tokensUsed": 1795,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "10": {
+    "id": 10,
+    "block": "Bloque 2 — Tiempo, calendario y geografía",
+    "question": "Si una actividad se repite cada 17 días desde el 1 de noviembre, ¿cuáles serán sus tres próximas fechas?",
+    "expected": "Aritmética de calendario: 18 de noviembre, 5 de diciembre y 22 de diciembre",
+    "answer": "No encuentro una respuesta anterior para repetir dentro de esta conversación. Hacé otra pregunta primero y luego intentá repetirla.",
+    "durationMs": 2,
+    "timestamp": "2026-10-31T21:17:13.488Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "N/A",
+      "intentConfidence": null,
+      "modelUsed": "unknown",
+      "provider": "unknown",
+      "toolsUsed": [],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "11": {
+    "id": 11,
+    "block": "Bloque 3 — Clima y meteorología",
+    "question": "¿Por qué puede llover en un lugar mientras a pocos kilómetros no cae una sola gota?",
+    "expected": "Meteorología: lluvias convectivas locales, nubes de desarrollo vertical (cumulonimbus) y microclimas",
+    "answer": "⚠️ No tengo datos verificados para responder esto (06:17 p. m. hs).\n\nIntenté buscar en **unoentrerios.com.ar** pero no pude obtener contenido en este momento.\n\nNo voy a inventar información sobre eventos actuales. Podés:\n- Consultar directamente: https://unoentrerios.com.ar\n- Volver a preguntarme en unos segundos",
+    "durationMs": 2274,
+    "timestamp": "2026-10-31T21:17:16.369Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "none",
+      "toolsUsed": [
+        "site_search_fail"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "12": {
+    "id": 12,
+    "block": "Bloque 3 — Clima y meteorología",
+    "question": "¿Qué diferencia existe entre temperatura, sensación térmica y temperatura aparente?",
+    "expected": "Termodinámica vs biometeorología: energía cinética molecular vs efecto del viento (wind chill) y humedad (humindex/heat index)",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre el clima. Vamos a ver, la temperatura es la medida real del calor que tiene el aire en un momento dado. En tu zona, ahora está a 27.2°C.\n\nLa sensación térmica, por otro lado, es cómo percibimos la temperatura, y puede ser más alta o más baja que la temperatura real. Esto se debe a factores como la humedad y el viento. En tu caso, la sensación térmica es de 28.3°C, lo que significa que el aire se siente un poco más cálido que la temperatura real.\n\nLa temperatura aparente es un término similar a la sensación térmica, pero a veces se usa para describir cómo el cuerpo humano percibe la temperatura en condiciones específicas, como la humedad o el viento. En este caso, la sensación térmica ya abarca esos factores.\n\nEn resumen, la temperatura es la medida real, la sensación térmica es cómo la percibimos, y la temperatura aparente es una forma de describir esa percepción en condiciones específicas. ¡Espero que te haya quedado claro! Si necesitas más detalles, estoy aquí para ayudarte. 🌞",
+    "durationMs": 9817,
+    "timestamp": "2026-10-31T21:17:26.789Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "weather_forecast",
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4004,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "13": {
+    "id": 13,
+    "block": "Bloque 3 — Clima y meteorología",
+    "question": "¿Qué información necesitamos para determinar si existe riesgo de granizo?",
+    "expected": "Identificación de variables críticas (CAPE, nivel de congelación/isocero, corrientes ascendentes, radar Doppler)",
+    "answer": "Para determinar si existe riesgo de granizo, necesitamos la siguiente información:\n\n1. **Ubicación geográfica**: Conocer la zona geográfica exacta donde se quiere evaluar el riesgo de granizo, ya que la probabilidad de ocurrencia varía según la región y las condiciones climáticas locales.\n\n2. **Datos meteorológicos actuales**: Incluir información como temperatura, humedad, presión atmosférica, velocidad y dirección del viento, y la presencia de nubes cumulonimbos (Cb), que son las responsables de la formación del granizo.\n\n3. **Predicción del tiempo**: Revisar las previsiones meteorológicas para el área en cuestión, especialmente si se espera actividad convectiva intensa, tormentas eléctricas o sistemas de baja presión que puedan generar condiciones propicias para el granizo.\n\n4. **Historial climático**: Considerar el historial de eventos de granizo en la zona durante la temporada de tormentas, ya que algunas regiones tienen mayor probabilidad de experimentar este fenómeno.\n\n5. **Herramientas de monitoreo**: Utilizar datos de sensores meteorológicos, satélites y radares para detectar la formación de granizo en la atmósfera.\n\nEstos elementos nos permiten evaluar el riesgo de granizo de manera precisa y tomar medidas de prevención si es necesario.",
+    "durationMs": 13391,
+    "timestamp": "2026-10-31T21:17:40.786Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3695,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "14": {
+    "id": 14,
+    "block": "Bloque 3 — Clima y meteorología",
+    "question": "¿Por qué la presión atmosférica suele cambiar antes de una tormenta?",
+    "expected": "Dinámica de fluidos y frentes: convergencia de masas de aire, ascenso convectivo y centros de baja presión",
+    "answer": "No tenés pendientes para editar.",
+    "durationMs": 7,
+    "timestamp": "2026-10-31T21:17:41.396Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "task_reminder",
+      "toolsUsed": [
+        "task_reminder"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "15": {
+    "id": 15,
+    "block": "Bloque 3 — Clima y meteorología",
+    "question": "Si el pronóstico indica un 70% de probabilidad de lluvia, ¿significa que lloverá durante el 70% del día?",
+    "expected": "Comprensión probabilística de PoP (Probability of Precipitation = Confianza x Área de cobertura, no duración temporal)",
+    "answer": "No, no significa que lloverá durante el 70% del día. La probabilidad de lluvia del 70% indica que, según el pronóstico, hay un alto nivel de posibilidad de que **llueva en algún momento del período previsto**, pero no necesariamente durante el 70% del tiempo total. \n\nPor ejemplo, si el pronóstico dice que hay un 70% de probabilidad de lluvia durante las próximas 24 horas, eso significa que **es más probable que haya lluvia en algún momento de ese periodo**, pero no que llueva el 70% del tiempo. La lluvia puede ocurrir en un intervalo más corto, como una hora o dos, pero no necesariamente durante el 70% del día completo.\n\nEn tu caso, el pronóstico actual indica una **baja a moderada probabilidad de precipitaciones (43%)** para las próximas 24 horas, lo cual sugiere que **no es muy probable que llueva** durante el día. Por eso, es importante seguir las actualizaciones del clima para tomar decisiones informadas.",
+    "durationMs": 10272,
+    "timestamp": "2026-10-31T21:17:52.283Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "weather_forecast",
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4306,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "16": {
+    "id": 16,
+    "block": "Bloque 4 — Astronomía y astrología",
+    "question": "¿Por qué vemos siempre prácticamente la misma cara de la Luna desde la Tierra?",
+    "expected": "Mecánica celeste: acoplamiento de marea (rotación sincrónica, período orbital = período de rotación)",
+    "answer": "🌌 **Clima Astrológico para sábado, 31 de octubre de 2026**\n\n**Luna 🌖 (61% iluminada)**\n- Fase: Gibosa Menguante\n- Posición: ♉ Tauro 8.6°\n- Próxima fase: Cuarto Menguante el 1 de noviembre\n\n**Sol ☀️**\n- Posición: ♏ Escorpio 8.5°\n\n**Planetas visibles esta noche:**\n- ☿ **Mercurio** en Aries 21.2°\n- ♀ **Venus** en Tauro 13.1°\n- ♂ **Marte** en Cáncer 10.7°\n- ♃ **Júpiter** en Leo 14.0°\n- ♄ **Saturno** en Aries 12.2°\n\n**Energías del día:**\n- Luna en Tauro (Tierra): estabilidad emocional, conexión con lo material\n- Gibosa Menguante: compartir sabiduría y gratitud\n\n**Aspectos Planetarios Destacados:**\n- ☍ **Oposición ☀️ Sol (Escorpio 8.5°) - 🌙 Luna (Tauro 8.6°)** — Orbe: 0.1° (tensión y polaridad arquetípica entre Escorpio y Tauro)\n- ⚹ **Sextil ♅ Urano (Géminis 3.4°) - ♆ Neptuno (Aries 3.2°)** — Orbe: 0.2° (oportunidad constructiva y estímulo mental)\n- □ **Cuadratura ♀ Venus (Tauro 13.1°) - ♃ Júpiter (Leo 14.0°)** — Orbe: 0.8° (fricción dinámica que exige resolución y acción)\n- △ **Trígono ♅ Urano (Géminis 3.4°) - ♇ Plutón (Acuario 4.7°)** — Orbe: 1.3° (fluidez armónica y facilidad energética)\n- □ **Cuadratura ♂ Marte (Cáncer 10.7°) - ♄ Saturno (Aries 12.2°)** — Orbe: 1.5° (fricción dinámica que exige resolución y acción)\n- ⚹ **Sextil ♆ Neptuno (Aries 3.2°) - ♇ Plutón (Acuario 4.7°)** — Orbe: 1.5° (oportunidad constructiva y estímulo mental)",
+    "durationMs": 45739,
+    "timestamp": "2026-10-31T21:18:38.625Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": 0.3,
+      "modelUsed": "unknown",
+      "provider": "astronomy_calculated",
+      "toolsUsed": [
+        "astrology_calculated"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "17": {
+    "id": 17,
+    "block": "Bloque 4 — Astronomía y astrología",
+    "question": "¿Qué diferencia existe entre rotación, traslación y precesión?",
+    "expected": "Cinemática planetaria: giro sobre eje propio vs órbita alrededor del Sol vs bamboleo del eje en el espacio (ciclo de ~25.772 años)",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre física. Vamos a ver, la diferencia entre **rotación**, **traslación** y **precesión** es bastante clara, aunque a veces puede ser un poco confusa. Aquí te explico:\n\n### 1. **Rotación**\nLa **rotación** es el movimiento de un objeto alrededor de un **eje que pasa por su propio cuerpo**. Por ejemplo, cuando giras una llave en la cerradura, estás aplicando una rotación. O cuando una rueda gira sobre su eje central, también es un ejemplo de rotación.\n\n### 2. **Traslación**\nLa **traslación** es el movimiento de un objeto **de un lugar a otro**, sin que cambie su orientación. Es decir, el objeto se mueve en línea recta o en una trayectoria curva, pero **no gira**. Por ejemplo, si un coche se mueve por una carretera sin girar, está en traslación.\n\n### 3. **Precesión**\nLa **precesión** es un tipo de movimiento más complejo. Se refiere al **giro de un objeto alrededor de un eje que no pasa por su centro de masa**, y que se produce como resultado de una **fuerza externa** aplicada al objeto. Un ejemplo clásico es la **precesión de la Tierra**, que es el movimiento lento del eje terrestre alrededor del Sol, lo que da lugar a las estaciones.\n\n### ¿Y cómo se relacionan?\n- La **rotación** es un movimiento circular alrededor de un eje propio.\n- La **traslación** es un movimiento lineal sin rotación.\n- La **precesión** es un movimiento de giro alrededor de un eje externo, generalmente causado por una fuerza externa.\n\nSi querés, puedo explicarte con ejemplos más concretos o incluso dibujar un esquema para que lo entiendas mejor. ¿Te gustaría?",
+    "durationMs": 32484,
+    "timestamp": "2026-10-31T21:19:11.726Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3825,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "18": {
+    "id": 18,
+    "block": "Bloque 4 — Astronomía y astrología",
+    "question": "¿Por qué una conjunción planetaria no significa necesariamente que dos planetas estén físicamente cerca?",
+    "expected": "Perspectiva geométrica y profundidad celeste: alineación visual en la misma línea de visión bidimensional vs millones de km de distancia real",
+    "answer": "Una conjunción planetaria no significa que dos planetas estén físicamente cerca en el cielo, sino que están alineados desde la perspectiva terrestre. Esto ocurre porque los planetas orbitan alrededor del Sol a velocidades diferentes, y desde la Tierra, a veces se ven en la misma dirección, incluso si están en distintas posiciones en su órbita. Por ejemplo, si dos planetas están en la misma constelación o signo zodiacal, se dice que están en conjunción, pero eso no implica que estén cerca en el espacio, sino que su alineación desde la Tierra crea una energía intensa y concentrada.\n\nEn el cielo actual, la oposición entre Sol y Luna, aunque muy cercana (0.1°), no significa que estén físicamente juntos, sino que están en extremos opuestos del cielo, lo que crea una tensión arquetípica entre Escorpio y Tauro. Esta energía puede manifestarse como una polaridad interna o externa que exige equilibrio.\n\n💡 **Reflexión:** La conjunción es una herramienta astrológica para entender cómo las energías se combinan, no una medida de distancia física. Aprovecha esta energía para integrar lo que estás viviendo con sabiduría y gratitud.",
+    "durationMs": 12972,
+    "timestamp": "2026-10-31T21:19:25.301Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": 0.3,
+      "modelUsed": "qwen3-8b-q4_k_m",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "astrology_calculated"
+      ],
+      "tokensUsed": 1358,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "19": {
+    "id": 19,
+    "block": "Bloque 4 — Astronomía y astrología",
+    "question": "¿Qué factores determinan si un planeta es visible a simple vista?",
+    "expected": "Magnitud aparente, distancia Tierra-Sol-planeta, albedo, elongación angular respecto al Sol, atmósfera y polución lumínica",
+    "answer": "🔍 **Resumen astronómico:**  \nEsta noche, Mercurio, Venus, Marte, Júpiter y Saturno están visibles en el cielo. Mercurio se encuentra en Aries, Venus en Tauro, Marte en Cáncer, Júpiter en Leo y Saturno en Aries. La Luna está en fase de Gibosa Menguante en Tauro, y el Sol en Escorpio. La energía del día refleja estabilidad emocional y conexión con lo material, con tensiones y oportunidades en los aspectos planetarios.\n\n🌠 **Interpretación astrológica:**  \nLa visibilidad de los planetas está ligada a su posición en el cielo y a la interacción con la Tierra. En este momento, los planetas mencionados están en posiciones favorables para ser observados a simple vista, lo que trae una energía de claridad y conexión con lo material. La oposición Sol-Luna y los aspectos como el sextil Urano-Neptuno generan una atmósfera de transformación y expansión mental.\n\n💡 **Consejo o reflexión:**  \nPara observar planetas a simple vista, es importante considerar su brillo, posición en el cielo y la hora del día. Hoy, la energía del cielo invita a reflexionar sobre lo que está en tu vida material y emocional, y a aprovechar las oportunidades que se presentan para crecer. La Luna en Tauro te ayuda a conectar con lo terrenal y a disfrutar de lo que tienes.",
+    "durationMs": 13790,
+    "timestamp": "2026-10-31T21:19:39.699Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": 0.3,
+      "modelUsed": "qwen3-8b-q4_k_m",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "astrology_calculated"
+      ],
+      "tokensUsed": 1394,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "20": {
+    "id": 20,
+    "block": "Bloque 4 — Astronomía y astrología",
+    "question": "¿Qué diferencia existe entre calcular una posición planetaria y atribuirle un significado astrológico?",
+    "expected": "Distinción epistemológica: cálculo astronómico físico verificable vs sistema simbólico interpretativo cultural",
+    "answer": "La diferencia está en el **nivel de interpretación**. Calcular una posición planetaria es una tarea **científica y matemática**, basada en la **astronomía precisa** y en el movimiento real de los cuerpos celestes. Por ejemplo, sabemos exactamente dónde está Mercurio en Aries 21.2°, o cuál es la fase de la Luna. Estos datos son **objetivos**, **verificables** y **independientes de la mente humana**.\n\nPor otro lado, **atribuirle un significado astrológico** implica **interpretar esos datos desde una perspectiva simbólica, espiritual o psicológica**. En la astrología, cada posición, aspecto o fase se relaciona con **arquetipos, energías, tendencias y potenciales**. Por ejemplo, una Luna en Tauro puede sugerir estabilidad emocional, conexión con lo material o una necesidad de seguridad.\n\nEn resumen:  \n- **Calcular** es **conocimiento objetivo**.  \n- **Interpretar** es **conocimiento subjetivo y simbólico**.  \n\nAmbos son importantes: uno nos ayuda a **entender el cielo**, el otro a **entendernos mejor**. 🌌✨",
+    "durationMs": 7975,
+    "timestamp": "2026-10-31T21:19:48.286Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": 0.3,
+      "modelUsed": "qwen3-8b-q4_k_m",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "astrology_calculated"
+      ],
+      "tokensUsed": 1348,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "21": {
+    "id": 21,
+    "block": "Bloque 5 — Ciencia, física y método científico",
+    "question": "¿Por qué un objeto pesado no necesariamente cae más rápido que uno liviano?",
+    "expected": "Física newtoniana / Principio de equivalencia: la aceleración de gravedad g es independiente de la masa (resistencia del aire como factor diferenciador real)",
+    "answer": "La pregunta de por qué un objeto pesado no cae más rápido que uno liviano tiene raíces en la física clásica y en la ley de la gravedad, que fue formalizada por Isaac Newton. Según la **segunda ley de Newton**, la aceleración de un objeto en caída libre depende exclusivamente de la **fuerza gravitatoria** que actúa sobre él y de su **masa**. La fórmula que describe esta relación es:\n\n$$\na = \\frac{F}{m}\n$$\n\nDonde:\n- $ a $ es la aceleración,\n- $ F $ es la fuerza gravitatoria (que es proporcional a la masa del objeto),\n- $ m $ es la masa del objeto.\n\nEn el vacío, la **fuerza gravitatoria** que actúa sobre un objeto es directamente proporcional a su masa. Por lo tanto, la masa se cancela en la ecuación, lo que significa que **todos los objetos caen con la misma aceleración** (en ausencia de resistencia del aire), independientemente de su masa.\n\nEste principio fue demostrado experimentalmente por **Galileo Galilei** al dejar caer objetos de diferentes masas desde la Torre de Pisa, aunque esta historia tiene un componente de leyenda. Sin embargo, la idea de que la aceleración de la gravedad es constante para todos los objetos es fundamental en la física.\n\nEn resumen: **un objeto pesado no cae más rápido que uno liviano en el vacío**, porque la gravedad actúa sobre todos de la misma manera, y la masa no influye en la aceleración de caída libre.",
+    "durationMs": 16532,
+    "timestamp": "2026-10-31T21:20:05.424Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4080,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "22": {
+    "id": 22,
+    "block": "Bloque 5 — Ciencia, física y método científico",
+    "question": "¿Qué diferencia existe entre temperatura y cantidad de calor?",
+    "expected": "Termodinámica: temperatura = promedio de energía cinética por partícula; calor = energía térmica total en tránsito",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre la diferencia entre temperatura y cantidad de calor. Vamos a verlo con claridad, usando lo que sabemos de física y también algo de lo que te comparto sobre el clima en Tala.\n\nLa **temperatura** es una medida de la **energía térmica promedio** de las partículas de un cuerpo. Es como la \"escala\" que nos dice cuán caliente o frío está algo. Por ejemplo, si estás en Tala y la temperatura es de 27.2°C, eso significa que las moléculas del aire están moviéndose a una velocidad que corresponde a esa temperatura.\n\nPor otro lado, la **cantidad de calor** se refiere a la **energía total que se transfiere** entre cuerpos debido a una diferencia de temperatura. Es como la \"cantidad de energía\" que tiene un objeto o un lugar. Por ejemplo, si hay un río que está a 25°C y otro que está a 30°C, el río más caliente contiene más energía térmica, aunque la temperatura no sea tan alta.\n\nEn resumen:\n- La **temperatura** es como la \"escala\" que nos dice cuán caliente está algo.\n- La **cantidad de calor** es la **energía total** que tiene algo debido a su temperatura.\n\nEn Tala, con una temperatura de 27.2°C y una sensación térmica de 28.3°C, el clima es cálido, pero no extremo. La humedad es baja (46%), lo que significa que el aire no está muy denso y el calor no se siente tan opresivo. Por eso, aunque la temperatura es alta, la sensación térmica es solo un poco más.\n\n¿Querés que te diga algo más sobre el clima de Tala o sobre cómo se relaciona con la física? 😊",
+    "durationMs": 26349,
+    "timestamp": "2026-10-31T21:20:32.387Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "weather_forecast",
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4144,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "23": {
+    "id": 23,
+    "block": "Bloque 5 — Ciencia, física y método científico",
+    "question": "¿Cómo puede la energía transformarse sin desaparecer?",
+    "expected": "Primer principio de la termodinámica / Ley de conservación de la energía y conversión a entropía/calor residual",
+    "answer": "🔭 **Resumen astronómico:**  \nEsta noche, la Luna en Tauro se mueve hacia una fase de despedida, mientras el Sol en Escorpio trae una energía intensa y profunda. Mercurio y Saturno se encuentran en Aries, mientras que Venus y Júpiter brillan en Tauro y Leo respectivamente. La oposición entre Sol y Luna, junto con la cuadratura entre Venus y Júpiter, crea una tensión que impulsa la transformación. Urano y Neptuno forman un sextil, abriendo caminos de creatividad y expansión.\n\n🌠 **Interpretación astrológica:**  \nLa energía del día refleja una fase de transformación activa, donde lo viejo se deja atrás para dar paso a lo nuevo. La oposición entre Escorpio y Tauro simboliza la necesidad de integrar lo profundo con lo material, mientras que la cuadratura entre Venus y Júpiter exige equilibrio entre deseo y expansión. La energía de Urano y Neptuno invita a la innovación y a la conexión con lo espiritual.\n\n💡 **Consejo o reflexión:**  \nLa transformación no es la pérdida, sino la evolución. Como la Luna se mueve hacia su fase final, recuerda que lo que termina es para dar lugar a algo más poderoso. Permítete liberar lo que no te sirve, pero mantén la conexión con lo que te fortalece. La energía del día te invita a transformar sin desaparecer, integrando lo antiguo en lo nuevo. 🌌",
+    "durationMs": 15738,
+    "timestamp": "2026-10-31T21:20:48.728Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": 0.3,
+      "modelUsed": "qwen3-8b-q4_k_m",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "astrology_calculated"
+      ],
+      "tokensUsed": 1411,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "24": {
+    "id": 24,
+    "block": "Bloque 5 — Ciencia, física y método científico",
+    "question": "¿Qué significa que una medición tenga un margen de incertidumbre?",
+    "expected": "Metrología: limitaciones instrumentales, error sistemático y aleatorio, límites del conocimiento experimental",
+    "answer": "Un margen de incertidumbre en una medición significa que el valor obtenido no es exacto, sino que está dentro de un rango de posibles valores. Este rango refleja la precisión y la confiabilidad de la medición. Por ejemplo, si medimos la longitud de un objeto y obtenemos 10 cm con un margen de incertidumbre de ±0,5 cm, eso significa que la verdadera longitud está entre 9,5 cm y 10,5 cm.\n\nEste concepto es fundamental en ciencias y tecnología, ya que nos permite evaluar la calidad de los datos y tomar decisiones basadas en ellos con un nivel de confianza adecuado. La incertidumbre puede surgir por diversos factores, como errores instrumentales, variaciones ambientales o limitaciones en la precisión del método de medición.",
+    "durationMs": 14276,
+    "timestamp": "2026-10-31T21:21:03.613Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag",
+        "qica_superposition"
+      ],
+      "tokensUsed": 3697,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "25": {
+    "id": 25,
+    "block": "Bloque 5 — Ciencia, física y método científico",
+    "question": "¿Cómo investigarías experimentalmente si un material conduce mejor el calor que otro?",
+    "expected": "Diseño experimental controlado: variables fijas (longitud, sección, gradiente térmico), medición de tasa de transferencia térmica dQ/dt",
+    "answer": "No encontré resultados en internet para: \"¿Cómo investigarías experimentalmente si un material conduce mejor el calor que otro?\"",
+    "durationMs": 1242,
+    "timestamp": "2026-10-31T21:21:05.466Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "tool",
+      "toolsUsed": [
+        "direct_tool"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "26": {
+    "id": 26,
+    "block": "Bloque 6 — Tecnología e informática",
+    "question": "¿Qué ocurre cuando una aplicación necesita más memoria RAM de la que tiene disponible?",
+    "expected": "Sistemas operativos: memoria virtual, paging, swap, thrashing y eventualmente OOM killer",
+    "answer": "Cuando una aplicación necesita más memoria RAM de la que tiene disponible en el sistema, puede ocurrir una serie de situaciones que afectan su funcionamiento y el rendimiento general del equipo. A continuación, te explico lo que sucede en detalle:\n\n1. **Sobrecarga de memoria (Memory Overcommit):**  \n   El sistema operativo puede asignar más memoria de la que realmente está disponible, usando una técnica llamada *overcommit*. Esto significa que la aplicación puede seguir funcionando temporalmente, pero la memoria que se le asigna no es física, sino virtual. El sistema operativo maneja esta memoria usando el disco duro como espacio de intercambio (*swap*), lo cual puede ralentizar el rendimiento.\n\n2. **Uso del intercambio (Swap):**  \n   Si el sistema no tiene suficiente RAM, el operador del sistema operativo puede mover parte de la memoria usada por la aplicación desde la RAM al disco duro (swap). Esto permite que la aplicación siga funcionando, pero con un desempeño mucho más lento, ya que el acceso a la memoria del disco es más lento que el de la RAM.\n\n3. **Cierre de procesos (OOM Killer):**  \n   En sistemas Linux, si la memoria se agota completamente, el *Out-Of-Memory (OOM) Killer* puede intervenir. Este proceso identifica cuál es la aplicación que está usando más memoria y la termina para liberar espacio. Esto puede causar que la aplicación se cierre de forma inesperada, lo cual puede ser problemático si la aplicación es crítica.\n\n4. **Ralentización del sistema:**  \n   La falta de memoria RAM puede afectar no solo a la aplicación, sino también al sistema operativo y a otros procesos en ejecución. Esto puede provocar que el sistema se vuelva lento, se produzcan errores de tipo *page fault* (falta de página), y en casos graves, que el sistema se bloquee o se reinicie.\n\n5. **Errores de ejecución:**  \n   Algunas aplicaciones pueden fallar al intentar acceder a memoria que no está disponible, lo que puede resultar en errores como *Segmentation Fault* o *Access Violation*, que detienen la ejecución de la aplicación.\n\n6. **Soluciones posibles:**  \n   - **Aumentar la RAM del sistema:**  \n     La forma más directa de resolver el problema es aumentar la cantidad de memoria RAM disponible en el equipo.\n   - **Optimizar la aplicación:**  \n     Revisar el código y la gestión de memoria de la aplicación para que no utilice más de lo necesario.\n   - **Usar memoria virtual (swap):**  \n     Aunque no es la solución óptima, el uso de espacio de intercambio puede ayudar a evitar que el sistema se bloquee.\n   - **Monitorear el uso de memoria:**  \n     Usar herramientas como `top`, `htop`, `free`, o `vmstat` en Linux para monitorear el uso de memoria y detectar posibles problemas antes de que se agraven.\n\nEn resumen, cuando una aplicación necesita más memoria RAM de la que tiene disponible, el sistema operativo intenta manejar la situación mediante técnicas como el intercambio, pero esto puede afectar negativamente el rendimiento. La mejor solución es aumentar la memoria física o optimizar el uso de la memoria por parte de la aplicación.",
+    "durationMs": 19638,
+    "timestamp": "2026-10-31T21:21:25.709Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4569,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "27": {
+    "id": 27,
+    "block": "Bloque 6 — Tecnología e informática",
+    "question": "¿Por qué una GPU potente puede quedarse sin memoria VRAM aunque todavía tenga capacidad de procesamiento?",
+    "expected": "Desacoplamiento entre throughput computacional (CUDA cores / TFLOPS) y capacidad de almacenamiento de tensores/pesos/activaciones/KV cache en VRAM",
+    "answer": "¡Hola, Ignacio! Es una excelente pregunta. Una GPU potente puede quedarse sin memoria VRAM (memoria de video) aunque aún tenga capacidad de procesamiento por varias razones técnicas. Aquí te explico de forma clara:\n\nLa VRAM es la memoria dedicada exclusivamente a la GPU, utilizada para almacenar datos temporales durante el procesamiento gráfico, como texturas, modelos 3D, shaders y otros elementos que requieren acceso rápido. Aunque una GPU tenga mucha potencia de procesamiento (como núcleos de cálculo o frecuencia alta), si no tiene suficiente VRAM, no podrá manejar ciertos tipos de datos que requieren almacenamiento temporal.\n\nPor ejemplo, si estás jugando un videojuego con gráficos muy detallados o usando una aplicación que requiere renderizar imágenes de alta resolución, la GPU puede necesitar más VRAM de la que tiene disponible. En ese caso, la GPU puede recurrir a la memoria RAM del sistema (RAM system), lo cual es más lento y puede causar que el sistema se ralentice.\n\nAdemás, en algunos casos, la GPU puede estar usando toda su VRAM para tareas específicas, como el renderizado de escenas complejas, lo que deja menos espacio para otros procesos. Esto puede suceder incluso si la GPU tiene capacidad de procesamiento, pero no suficiente VRAM para manejar la carga de datos.\n\nEn resumen, la VRAM es un recurso limitado y esencial para el rendimiento gráfico, y aunque una GPU sea potente, si no tiene suficiente VRAM, no podrá funcionar al máximo. ¡Espero que te haya ayudado a entender mejor el tema! Si quieres, puedo explicarte cómo optimizar el uso de la VRAM en tu sistema.",
+    "durationMs": 36188,
+    "timestamp": "2026-10-31T21:22:02.512Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4023,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "28": {
+    "id": 28,
+    "block": "Bloque 6 — Tecnología e informática",
+    "question": "¿Qué diferencias existen entre aumentar los parámetros de un modelo y mejorar su contexto RAG?",
+    "expected": "Arquitectura de IA: conocimiento paramétrico implícito congelado vs recuperación dinámica no paramétrica fundamentada en fuentes externas",
+    "answer": "¡Hola Ignacio! Me encantaría ayudarte a entender la diferencia entre aumentar los parámetros de un modelo y mejorar su contexto RAG. Vamos a verlo con claridad:\n\n### ✅ Aumentar los parámetros de un modelo\n\nCuando aumentamos los parámetros de un modelo, lo que hacemos es **expandir su capacidad de procesamiento**. Los parámetros son como las \"reglas internas\" que el modelo usa para aprender y generar respuestas. Al aumentarlos, el modelo puede:\n\n- **Procesar más información** a la vez.\n- **Generar respuestas más complejas y detalladas**.\n- **Mejorar su capacidad de generalización** en tareas como traducción, resumen o generación de texto.\n\nSin embargo, esto no significa que el modelo entienda mejor. Solo significa que tiene más espacio para aprender y procesar información. Es como tener una computadora más potente: puede hacer más cosas, pero no necesariamente mejor.\n\n### 📚 Mejorar el contexto RAG\n\nPor otro lado, mejorar el contexto RAG (Retrieval-Augmented Generation) se enfoca en **mejorar la calidad de la información que el modelo usa para generar respuestas**. Esto se logra:\n\n- **Incorporando una base de datos o documentos relevantes** que el modelo puede consultar.\n- **Aumentando la precisión y relevancia de la información** que se le da al modelo.\n- **Haciendo que las respuestas sean más basadas en hechos verificados** y no solo en patrones de lenguaje.\n\nEste enfoque es especialmente útil cuando se necesita **precisión en respuestas técnicas, científicas o de datos**, ya que el modelo no solo genera, sino que **usa información externa** para respaldar sus respuestas.\n\n### 🔄 ¿Cuál es la diferencia?\n\n| **Aspecto**               | **Aumentar parámetros**                     | **Mejorar contexto RAG**                     |\n|---------------------------|---------------------------------------------|-----------------------------------------------|\n| **Objetivo principal**    | Aumentar capacidad de procesamiento         | Mejorar calidad y precisión de la información |\n| **Impacto en el modelo** | Más potencia, pero no necesariamente mejor | Más precisión, pero no más capacidad         |\n| **Uso común**             | Tareas generales, creativas, resumen        | Tareas técnicas, científicas, respuestas basadas en datos |\n| **Requiere**              | Más recursos computacionales                | Una base de datos o documentos relevantes     |\n\n### 🧠 Conclusión\n\nAumentar los parámetros es como **mejorar la computadora** que usa el modelo, mientras que mejorar el contexto RAG es como **darle mejores libros para leer**. Ambos son importantes, pero para diferentes propósitos.\n\n¿Querés que te explique cómo se aplican estos conceptos en proyectos como ArcheoScope o JarBees? 😊",
+    "durationMs": 30785,
+    "timestamp": "2026-10-31T21:22:33.902Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4285,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "29": {
+    "id": 29,
+    "block": "Bloque 6 — Tecnología e informática",
+    "question": "Si una API deja de responder temporalmente, ¿cómo debería actuar un sistema robusto?",
+    "expected": "Patrones de resiliencia: retry con backoff exponencial, jitter, circuit breaker, timeout, fallbacks y colas",
+    "answer": "Si una API deja de responder temporalmente, un sistema robusto debe actuar con estrategias de resiliencia y tolerancia a fallos. Aquí te explico cómo debería manejar la situación:\n\n1. **Implementar retries con backoff exponencial**: El sistema debe intentar volver a contactar a la API después de un intervalo de tiempo creciente. Esto evita saturar la API con múltiples solicitudes en caso de fallos iniciales.\n\n2. **Usar circuit breakers**: Si la API falla repetidamente, el sistema debe \"apagar\" temporalmente la comunicación con esa API, evitando que se generen más intentos fallidos. Esto se puede hacer con herramientas como Hystrix o circuit breakers implementados en el backend.\n\n3. **Cacheo de datos**: Si la API proporciona datos que no cambian con frecuencia, el sistema puede usar un cache para servir esos datos temporalmente, reduciendo la dependencia de la API en momentos de caída.\n\n4. **Monitoreo y alertas**: El sistema debe estar monitoreando el estado de la API y generar alertas si se detecta una interrupción. Esto permite que los ingenieros respondan rápidamente al problema.\n\n5. **Fallbacks y manejo de errores**: Si la API no responde, el sistema debe tener un plan de acción alternativo, como mostrar un mensaje de error al usuario, usar datos preexistentes o redirigir la solicitud a otra fuente de datos.\n\n6. **Logs y diagnóstico**: Registrar los errores y el comportamiento del sistema durante la interrupción ayuda a identificar la causa del problema y mejorar la resiliencia en el futuro.\n\nEn resumen, un sistema robusto debe ser capaz de **reaccionar, tolerar fallos y mantener la funcionalidad** incluso cuando una API no responde temporalmente. Esto se logra mediante combinaciones de estrategias de resiliencia, monitoreo y planificación de respuestas alternativas.",
+    "durationMs": 33760,
+    "timestamp": "2026-10-31T21:23:08.275Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4315,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "30": {
+    "id": 30,
+    "block": "Bloque 6 — Tecnología e informática",
+    "question": "¿Qué ventajas y riesgos tiene permitir que un agente de IA ejecute comandos directamente en una computadora?",
+    "expected": "Automatización y autonomía vs riesgos de seguridad: inyección de prompts, ejecución destructiva, necesidad de sandboxing y HITL",
+    "answer": "⚠️ No tengo datos verificados para responder esto (06:23 p. m. hs).\n\nIntenté buscar en **unoentrerios.com.ar** pero no pude obtener contenido en este momento.\n\nNo voy a inventar información sobre eventos actuales. Podés:\n- Consultar directamente: https://unoentrerios.com.ar\n- Volver a preguntarme en unos segundos",
+    "durationMs": 2428,
+    "timestamp": "2026-10-31T21:23:11.317Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "none",
+      "toolsUsed": [
+        "site_search_fail"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "31": {
+    "id": 31,
+    "block": "Bloque 7 — Energía y electrónica",
+    "question": "¿Qué diferencia existe entre conectar dos baterías en serie y conectarlas en paralelo?",
+    "expected": "Electrónica de potencia: serie suma voltajes (misma capacidad Ah); paralelo suma capacidad Ah (mismo voltaje)",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre baterías. Vamos a ver, la diferencia entre conectar dos baterías en **serie** y en **paralelo** es bastante importante, y te lo explico con claridad:\n\n### 🔌 Conectar baterías en **serie**:\n- **Voltaje total**: Se suman. Si tienes dos baterías de 1.5 V cada una, al conectarlas en serie el voltaje total será **3 V**.\n- **Corriente**: La corriente que circula es la misma en toda la cadena.\n- **Uso común**: Se usa cuando necesitas un voltaje más alto, pero la capacidad (amperio-hora) se mantiene la misma que una sola batería.\n- **Ejemplo**: En una linterna, si usas dos pilas de 1.5 V en serie, obtendrás 3 V para encender la bombilla.\n\n### 🔌 Conectar baterías en **paralelo**:\n- **Voltaje total**: El voltaje sigue siendo el mismo que una sola batería. Si usas dos baterías de 1.5 V en paralelo, el voltaje sigue siendo **1.5 V**.\n- **Corriente**: La capacidad total (amperio-hora) se suma. Si tienes dos baterías de 2000 mAh, al conectarlas en paralelo obtendrás **4000 mAh**.\n- **Uso común**: Se usa cuando necesitas más capacidad de corriente, pero el voltaje no cambia.\n- **Ejemplo**: En un dispositivo que consume mucha energía, como un motor, se usan baterías en paralelo para prolongar la vida útil.\n\n### 📌 Resumen:\n- **Serie**: Más voltaje, misma capacidad.\n- **Paralelo**: Mismo voltaje, más capacidad.\n\n¿Querés que te dé un ejemplo práctico o que te explique cómo hacerlo en un circuito? 😊",
+    "durationMs": 23699,
+    "timestamp": "2026-10-31T21:23:35.624Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3882,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "32": {
+    "id": 32,
+    "block": "Bloque 7 — Energía y electrónica",
+    "question": "¿Por qué un inversor de corriente tiene pérdidas de eficiencia?",
+    "expected": "Pérdidas Joule en conmutación de MOSFETs/IGBTs, pérdidas en el núcleo del transformador, armónicos y consumo propio",
+    "answer": "La pregunta sobre por qué un inversor de corriente tiene pérdidas de eficiencia no está directamente relacionada con los documentos proporcionados, que se centran en temas esotéricos como el tarot, la kábala y la filosofía de Samael Aun Weor. Sin embargo, puedo ayudarte a entender la pregunta desde un punto de vista técnico.\n\nUn inversor de corriente (o inversor de energía) puede tener pérdidas de eficiencia por varias razones:\n\n1. **Pérdidas térmicas**: La conversión de energía de una forma a otra (por ejemplo, de corriente continua a alterna) genera calor, lo cual representa una pérdida de energía.\n\n2. **Pérdidas en los componentes**: Componentes como transistores, diodos, condensadores y bobinas pueden tener resistencias internas que generan pérdidas de energía.\n\n3. **Ineficiencia en la conversión**: La eficiencia de un inversor depende de cómo bien se convierte la energía. Si el diseño no es óptimo, se pierde energía en el proceso.\n\n4. **Frecuencia de operación**: Algunos inversores operan a frecuencias que no son ideales para la conversión eficiente de energía, lo que puede aumentar las pérdidas.\n\n5. **Carga no lineal**: Si la carga conectada al inversor no es lineal, puede causar distorsión en la corriente y, por lo tanto, pérdidas de eficiencia.\n\n6. **Calidad de la entrada de energía**: Si la energía de entrada (como la corriente continua) no es estable o tiene fluctuaciones, esto puede afectar la eficiencia del inversor.\n\nSi tienes más contexto sobre el tipo de inversor o el sistema en el que se está utilizando, puedo ofrecerte una explicación más específica.",
+    "durationMs": 33868,
+    "timestamp": "2026-10-31T21:24:10.099Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "rag"
+      ],
+      "tokensUsed": 3898,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "33": {
+    "id": 33,
+    "block": "Bloque 7 — Energía y electrónica",
+    "question": "¿Qué sucede si conectamos una carga que necesita más corriente de la que puede entregar una fuente?",
+    "expected": "Caída de tensión (voltage sag), sobrecalentamiento, disparo de protecciones (OCP) o daño térmico",
+    "answer": "Si conectamos una carga que necesita más corriente de la que puede entregar una fuente, puede ocurrir un **sobrecalentamiento** o incluso un **daño en la fuente o en la carga**. Esto sucede porque la fuente no puede suministrar la cantidad de corriente requerida por la carga, lo que puede provocar:\n\n1. **Sobrecalentamiento de la fuente**: La fuente puede calentarse excesivamente, lo que puede llevar a su daño o incluso a un incendio.\n2. **Daño a la carga**: La carga puede recibir una corriente superior a la que está diseñada para soportar, lo que puede causar su fallo o daño.\n3. **Fusión de fusibles o interruptores**: Para proteger el circuito, los fusibles o interruptores automáticos pueden abrirse, cortando la corriente.\n4. **Pérdida de eficiencia**: El sistema puede funcionar de manera ineficiente, ya que la fuente no puede satisfacer la demanda de la carga.\n\nEn resumen, **no es recomendable conectar una carga que requiera más corriente de la que la fuente puede entregar**, ya que puede causar daños a los componentes involucrados. Es importante asegurarse de que la fuente tenga una capacidad de corriente suficiente para la carga que se conecte.",
+    "durationMs": 30033,
+    "timestamp": "2026-10-31T21:24:40.747Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4142,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "34": {
+    "id": 34,
+    "block": "Bloque 7 — Energía y electrónica",
+    "question": "¿Cómo calcularías el tamaño aproximado de una instalación solar para alimentar un dispositivo que consume 200 W durante 8 horas diarias?",
+    "expected": "Reconocimiento de necesidad de variables (HSP locales, pérdidas del sistema, autonomía) y cálculo base: 1600 Wh/día",
+    "answer": "Para calcular el tamaño aproximado de una instalación solar que alimente un dispositivo que consume 200 W durante 8 horas diarias, seguimos estos pasos:\n\n1. **Calculamos el consumo diario del dispositivo:**\n   - 200 W × 8 horas = **1.600 Wh (watt-hora)**.\n\n2. **Convertimos el consumo a kilovatios-hora (kWh):**\n   - 1.600 Wh = **1,6 kWh**.\n\n3. **Determinamos la capacidad de producción de la instalación solar:**\n   - Para esto necesitamos saber la **potencia solar disponible** (en vatios) y el **tiempo de exposición solar** (en horas).\n   - Por ejemplo, si usamos paneles solares de 300 W y tenemos 5 horas de luz solar diaria, la producción sería:\n     - 300 W × 5 h = **1.500 Wh** o **1,5 kWh**.\n\n4. **Calculamos la cantidad de paneles necesarios:**\n   - Si el dispositivo consume 1,6 kWh diario y la instalación produce 1,5 kWh, necesitaríamos **1,07 paneles**.\n   - Redondeando, se necesitarían **2 paneles solares** para cubrir el consumo.\n\n5. **Consideramos un margen de seguridad:**\n   - Es recomendable incluir un **margen del 20-30%** para cubrir días nublados o fluctuaciones.\n   - Con un margen del 20%, necesitaríamos:\n     - 2 paneles × 1,2 = **2,4 paneles** → Redondeando, **3 paneles solares**.\n\n**Conclusión:** Para alimentar un dispositivo de 200 W durante 8 horas diarias, se necesitaría una instalación solar de aproximadamente **3 paneles solares de 300 W cada uno**, lo que daría una producción de alrededor de **3.600 Wh (3,6 kWh)** diarios, cubriendo con margen el consumo del dispositivo.",
+    "durationMs": 28175,
+    "timestamp": "2026-10-31T21:25:09.530Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory"
+      ],
+      "tokensUsed": 2040,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "35": {
+    "id": 35,
+    "block": "Bloque 7 — Energía y electrónica",
+    "question": "¿Por qué una batería de automóvil no es ideal para alimentar continuamente un equipo eléctrico?",
+    "expected": "Baterías de arranque (SLI) diseñadas para picos altos breves vs ciclo profundo (deep cycle) diseñadas para descargas sostenidas",
+    "answer": "Una batería de automóvil no es ideal para alimentar continuamente un equipo eléctrico por varias razones técnicas y prácticas:\n\n1. **Capacidad Limitada**: Las baterías de automóvil están diseñadas para proporcionar una cantidad de energía suficiente para arrancar el motor del vehículo, pero no están hechas para soportar un uso continuo durante largos períodos. Su capacidad de almacenamiento es limitada en comparación con baterías específicas para uso prolongado, como las de sistemas solares o de almacenamiento de energía.\n\n2. **Ciclo de Carga y Descarga**: Las baterías de automóvil están optimizadas para ciclos de carga y descarga cortos y frecuentes. Si se usan para alimentar equipos eléctricos de forma constante, pueden degradarse rápidamente, reduciendo su vida útil y eficiencia.\n\n3. **Riesgo de Sobrecalentamiento**: Al ser usadas continuamente, especialmente en condiciones de alta demanda, las baterías de automóvil pueden sobrecalentarse, lo que puede causar daños internos, incluso incendios o explosiones.\n\n4. **Inadecuación para Alimentación Continua**: Estas baterías no están diseñadas para mantener una corriente constante durante largos períodos. Su voltaje puede fluctuar, lo que puede afectar el funcionamiento correcto de los equipos eléctricos que dependen de una alimentación estable.\n\n5. **Eficiencia Energética**: Las baterías de automóvil no son eficientes para la conversión de energía en situaciones de uso prolongado. En cambio, se recomienda usar baterías de mayor capacidad y diseñadas para alimentación continua, como las baterías de litio o de plomo-ácido de alta capacidad, dependiendo del uso específico.\n\nEn resumen, aunque una batería de automóvil puede proporcionar energía temporalmente, no es la opción más adecuada para alimentar equipos eléctricos de forma continua debido a sus limitaciones técnicas y de diseño.",
+    "durationMs": 13348,
+    "timestamp": "2026-10-31T21:25:23.483Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4112,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "36": {
+    "id": 36,
+    "block": "Bloque 8 — Historia, arqueología y cultura",
+    "question": "¿Cómo pueden los arqueólogos determinar la antigüedad de un objeto sin conocer su fecha de fabricación?",
+    "expected": "Métodos de datación relativa (estratigrafía, tipología) y absoluta (Carbono-14, termoluminiscencia, dendrocronología)",
+    "answer": "Los arqueólogos pueden determinar la antigüedad de un objeto sin conocer su fecha de fabricación mediante una serie de métodos científicos y técnicos que analizan las características del objeto y su contexto arqueológico. Estos métodos son fundamentales para datar artefactos y comprender su historia. Aquí te explico algunos de los más comunes:\n\n1. **Datación por radiocarbono (C-14)**:  \n   Este método se utiliza para datar materiales orgánicos, como madera, huesos, tejidos o carbón. El carbono-14 es un isótopo radioactivo que se encuentra en todos los seres vivos. Al morir, dejan de absorberlo y comienza a descomponerse. Los arqueólogos miden la cantidad restante de carbono-14 para estimar cuánto tiempo ha pasado desde que el objeto dejó de tener contacto con la atmósfera.\n\n2. **Datación por termoluminiscencia (TL)**:  \n   Se usa para datar materiales como cerámica, arcilla o piedra. Los minerales en estos materiales acumulan energía de la radiación ambiental con el tiempo. Al calentarlos, liberan esta energía en forma de luz (luminiscencia), lo que permite calcular cuánto tiempo ha transcurrido desde que se formaron.\n\n3. **Datación por potasio-argon (K-Ar)**:  \n   Este método se aplica a rocas y minerales. El potasio-40 se descompone en argón-40, un gas inerte que se acumula en los minerales. Al medir la proporción de estos isótopos, los científicos pueden estimar la edad del material.\n\n4. **Datación por estratigrafía**:  \n   Los arqueólogos analizan la capa de suelo en la que se encuentra el objeto. Si el objeto está en una capa más profunda que otros, es probable que sea más antiguo. Este método se basa en el principio de superposición de capas, que establece que las capas más antiguas están debajo de las más recientes.\n\n5. **Análisis de estilo y contexto cultural**:  \n   A veces, los arqueólogos comparan el estilo del objeto con otros hallazgos en la misma región o época. Si el objeto tiene características similares a otros ya datados, pueden inferir su antigüedad basándose en la cronología cultural.\n\n6. **Análisis de materiales y técnicas de fabricación**:  \n   Al estudiar los materiales utilizados y las técnicas de elaboración, los arqueólogos pueden relacionar el objeto con ciertas épocas o culturas. Por ejemplo, ciertos tipos de cerámica o herramientas están asociados con períodos específicos de la historia.\n\n7. **Datación por fósiles y sedimentos**:  \n   Si el objeto se encuentra junto a fósiles o sedimentos que se conocen por su edad, se puede usar ese contexto para estimar la antigüedad del objeto.\n\nEstos métodos, combinados con el análisis del contexto arqueológico, permiten a los arqueólogos determinar la antigüedad de un objeto sin necesidad de conocer su fecha de fabricación exacta. La ciencia arqueológica se basa en la precisión de estos análisis para reconstruir la historia humana.",
+    "durationMs": 38551,
+    "timestamp": "2026-10-31T21:26:02.645Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory"
+      ],
+      "tokensUsed": 2372,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "37": {
+    "id": 37,
+    "block": "Bloque 8 — Historia, arqueología y cultura",
+    "question": "¿Por qué encontrar un objeto antiguo fuera de su contexto arqueológico original dificulta su interpretación?",
+    "expected": "Pérdida de tafonomía, estratigrafía, asociaciones materiales y riesgo de anacronismo o falsificación",
+    "answer": "Encuentrar un objeto antiguo fuera de su contexto arqueológico original dificulta su interpretación porque la información que nos permite comprender su significado, uso y función está estrechamente ligada al entorno en el que fue encontrado. El contexto arqueológico incluye elementos como la ubicación geográfica, la estratigrafía (capas de suelo), los otros artefactos que acompañaban al objeto, las condiciones de conservación, y la cultura o sociedad que lo produjo.\n\nCuando un objeto se encuentra fuera de su contexto, se pierde la posibilidad de relacionarlo con otros elementos que podrían aportar pistas sobre su propósito, ritual, tecnología o simbolismo. Por ejemplo, una herramienta encontrada sola en un lugar sin evidencia de su uso o sin otros artefactos asociados puede ser difícil de interpretar: ¿era una herramienta, un símbolo, un adorno o algo más? Sin el contexto, es más complicado determinar su función real.\n\nRobert A. Monroe, en sus reflexiones sobre experiencias fuera del cuerpo, también mencionaba la importancia de entender fenómenos en su contexto completo, lo cual se aplica igualmente al estudio de los objetos antiguos. La falta de contexto arqueológico puede llevar a interpretaciones erróneas o a la pérdida de información valiosa que podría ayudar a reconstruir la historia de una cultura.",
+    "durationMs": 12999,
+    "timestamp": "2026-10-31T21:26:16.263Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3691,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "38": {
+    "id": 38,
+    "block": "Bloque 8 — Historia, arqueología y cultura",
+    "question": "¿Qué información puede aportar el estudio de los restos de una antigua ciudad?",
+    "expected": "Urbanismo, estratificación social, demografía, tecnología constructiva, dieta, comercio y saneamiento",
+    "answer": "El estudio de los restos de una antigua ciudad puede aportar una gran cantidad de información valiosa, tanto a nivel histórico, cultural, arqueológico como científico. Aquí te explico algunos de los aspectos clave que se pueden descubrir:\n\n1. **Conocimiento sobre la vida cotidiana**: Los restos de edificios, herramientas, cerámica, vasijas, armas y otros artefactos pueden revelar cómo vivían las personas en esa época. Por ejemplo, se puede deducir su dieta, sus costumbres, su sistema de producción y su organización social.\n\n2. **Arquitectura y urbanismo**: La disposición de las calles, los edificios, los templos, los pozos, los sistemas de agua y drenaje, entre otros, nos dan una idea de cómo se planificaba la ciudad y qué importancia tenía cada espacio. Esto también ayuda a entender la tecnología y la ingeniería de la época.\n\n3. **Religión y espiritualidad**: Los templos, ofrendas, símbolos y artefactos religiosos pueden revelar creencias, rituales y prácticas espirituales de la sociedad. Por ejemplo, en el caso de ciudades antiguas como Teotihuacán o Tikal, se han encontrado evidencias de cultos a dioses específicos y de rituales de sacrificio.\n\n4. **Economía y comercio**: Los restos de mercancías, monedas, materiales de intercambio y rutas de transporte pueden mostrar cómo se desarrollaba la economía. Se puede identificar si la ciudad era un centro comercial, si había intercambios con otras regiones, o si dependía de recursos locales.\n\n5. **Conflictos y guerras**: Los restos de armas, fortificaciones, esqueletos de combate o evidencias de destrucción pueden indicar que la ciudad fue atacada, que hubo conflictos internos o que fue destruida por alguna causa externa.\n\n6. **Cultura y arte**: La cerámica, esculturas, pinturas, textos grabados o símbolos pueden revelar la identidad cultural, el lenguaje, las historias y las tradiciones de la sociedad. Por ejemplo, en la cultura maya se han encontrado representaciones de deidades, calendarios y relatos de mitología.\n\n7. **Conocimiento científico y técnico**: Algunas ciudades antiguas demostraban un alto nivel de conocimiento en áreas como la astronomía, la medicina, la ingeniería o la matemática. Por ejemplo, ciudades como Machu Picchu o Caral mostraban una planificación avanzada y un uso sofisticado de la naturaleza.\n\n8. **Historia de la migración y la población**: Los restos de fósiles, esqueletos, herramientas de caza o evidencias de asentamientos pueden ayudar a entender cómo se movía la población, si había migraciones, y cómo se adaptaban a su entorno.\n\n9. **Conocimiento sobre el entorno natural**: Los restos de cultivos, animales domesticados, sistemas de irrigación o evidencias de deforestación pueden mostrar cómo la sociedad interactuaba con su entorno y qué impacto tenía en la naturaleza.\n\n10. **Legado cultural y memoria colectiva**: Las ciudades antiguas suelen ser símbolos de identidad para las sociedades modernas. Su estudio ayuda a preservar la memoria histórica y a comprender la evolución de las civilizaciones.\n\nEn resumen, el estudio de los restos de una antigua ciudad no solo nos permite reconstruir el pasado, sino también comprender cómo las sociedades humanas han evolucionado, cómo han interactuado con su entorno y qué legados han dejado para las generaciones futuras.",
+    "durationMs": 41834,
+    "timestamp": "2026-10-31T21:26:58.710Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4581,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "39": {
+    "id": 39,
+    "block": "Bloque 8 — Historia, arqueología y cultura",
+    "question": "¿Cómo se puede demostrar que dos civilizaciones mantuvieron contacto comercial sin disponer de documentos escritos?",
+    "expected": "Materiales exógenos / no autóctonos (obsidiana, lapislázuli, ámbar), análisis de isótopos, estilos cerámicos y tecnología compartida",
+    "answer": "ERROR: [Data Privacy Gate] Inferencia cloud en fallback 'openrouter' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube.",
+    "durationMs": 46864,
+    "timestamp": "2026-10-31T21:27:46.190Z",
+    "success": false,
+    "error": "[Data Privacy Gate] Inferencia cloud en fallback 'openrouter' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube."
+  },
+  "40": {
+    "id": 40,
+    "block": "Bloque 8 — Historia, arqueología y cultura",
+    "question": "¿Por qué las reconstrucciones históricas pueden cambiar cuando aparecen nuevos descubrimientos?",
+    "expected": "Naturaleza provisional y científica del conocimiento histórico y arqueológico ante nueva evidencia empírica",
+    "answer": "Las reconstrucciones históricas pueden cambiar cuando aparecen nuevos descubrimientos porque la historia no es estática, sino un proceso dinámico de interpretación y comprensión. Cada nuevo hallazgo, ya sea un artefacto, un documento, una evidencia arqueológica o incluso una reinterpretación teórica, puede alterar la forma en que entendemos eventos, culturas o procesos pasados.\n\nPor ejemplo, cuando se descubre un nuevo texto o se analiza una estructura antigua con tecnología más avanzada, se puede revelar información que antes no se podía interpretar. Esto puede llevar a reevaluar teorías previas, corregir errores o incluso descubrir nuevas perspectivas sobre lo que ocurrió en el pasado.\n\nEn el contexto de la historia, como en el de la astronomía o la filosofía, lo que consideramos \"verdad\" puede evolucionar con el tiempo. Como mencionaba un texto sobre el simbolismo y la interpretación, \"la materia no es sino energía condensada\" y \"todo está en incesante movimiento\". Esto se aplica también a la historia: lo que sabemos hoy puede ser revisado mañana con nuevos datos.\n\nAsí, las reconstrucciones históricas son como un mapa que se actualiza constantemente, permitiendo una visión más precisa y completa del pasado.",
+    "durationMs": 5641,
+    "timestamp": "2026-10-31T21:27:52.442Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "WEB",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3711,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "41": {
+    "id": 41,
+    "block": "Bloque 9 — Biología y naturaleza",
+    "question": "¿Por qué las abejas son consideradas organismos fundamentales para numerosos ecosistemas?",
+    "expected": "Polinización de angiospermas, sostenimiento de biodiversidad vegetal y cadenas tróficas agrícolas y silvestres",
+    "answer": "ERROR: [Data Privacy Gate] Inferencia cloud en fallback 'openrouter' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube.",
+    "durationMs": 45416,
+    "timestamp": "2026-10-31T21:28:38.466Z",
+    "success": false,
+    "error": "[Data Privacy Gate] Inferencia cloud en fallback 'openrouter' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube."
+  },
+  "42": {
+    "id": 42,
+    "block": "Bloque 9 — Biología y naturaleza",
+    "question": "¿Qué consecuencias puede tener la desaparición de una especie dentro de una cadena alimentaria?",
+    "expected": "Efecto cascada trófica, desequilibrio en poblaciones de presas/depredadores y pérdida de resiliencia ecológica",
+    "answer": "La desaparición de una especie dentro de una cadena alimentaria puede tener consecuencias profundas y complejas en el ecosistema. Según los conocimientos científicos y los principios de la ecología, cada especie desempeña un papel específico en el equilibrio de su entorno. Cuando una especie desaparece, puede alterar las relaciones entre los productores, consumidores y descomponedores, lo que puede provocar una cascada ecológica.\n\nPor ejemplo, si una especie de depredador se extingue, los depredadores de nivel inferior pueden proliferar, lo que puede llevar a la sobreexplotación de sus presas, afectando a otras especies y, en algunos casos, incluso a la salud del ecosistema en su conjunto.\n\nAdemás, la pérdida de una especie puede afectar la biodiversidad, lo que reduce la capacidad del ecosistema para adaptarse a cambios ambientales, como el calentamiento global o la contaminación. La biodiversidad es clave para la resiliencia ecológica, por lo que su pérdida puede tener efectos a largo plazo.\n\nEn el contexto de los textos que mencionas, se habla de la evolución de los mundos y la creación de seres autoconscientes, lo que sugiere una visión más filosófica y espiritual de la interconexión entre las especies. Sin embargo, desde una perspectiva científica, la desaparición de una especie es un evento que puede tener consecuencias significativas en la estabilidad de la cadena alimentaria y el equilibrio ecológico.",
+    "durationMs": 6516,
+    "timestamp": "2026-10-31T21:28:45.591Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3825,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "43": {
+    "id": 43,
+    "block": "Bloque 9 — Biología y naturaleza",
+    "question": "¿Cómo puede un organismo adaptarse a un ambiente sin que esa adaptación implique una decisión consciente?",
+    "expected": "Mecanismo evolutivo de selección natural: mutación genética aleatoria y reproducción diferencial no teleológica",
+    "answer": "La adaptación de un organismo a un ambiente sin que implique una decisión consciente se lleva a cabo a través de **mecanismos biológicos y evolutivos** que operan a nivel **inconsciente y automático**. Estos procesos no requieren pensamiento, intención o conciencia, sino que son resultado de **interacciones genéticas, fisiológicas y ambientales** que se desarrollan a lo largo del tiempo. A continuación, te explico cómo ocurre esto:\n\n---\n\n### 1. **Adaptación genética (evolución natural)**\n- **Mecanismo**: A través de la **selección natural**, los organismos que poseen características que les permiten sobrevivir mejor en un ambiente específico tienden a **reproducirse más** y transmitir esas características a sus descendientes.\n- **Ejemplo**: Un insecto que desarrolla resistencia a un pesticida puede sobrevivir y reproducirse, mientras que los que no la tienen perecen. Con el tiempo, la población de insectos resistentes aumenta.\n- **No hay decisión consciente**: Es un proceso **automático y no dirigido** por la conciencia, sino por la **presión ambiental** y la **herencia genética**.\n\n---\n\n### 2. **Adaptación fisiológica (plasticidad fenotípica)**\n- **Mecanismo**: Algunos organismos pueden **modificar su estructura o funcionamiento** en respuesta a cambios en el ambiente, sin necesidad de alterar su ADN.\n- **Ejemplo**: Las plantas pueden **estirar sus tallos hacia la luz** (fototropismo) o **cerrar sus hojas** para reducir la pérdida de agua en ambientes secos.\n- **No hay decisión consciente**: Estos cambios son **reacciones inmediatas** a estímulos externos, regulados por **mecanismos internos** como hormonas o señales químicas.\n\n---\n\n### 3. **Adaptación conductual (reflejos y hábitos)**\n- **Mecanismo**: Algunos animales desarrollan **comportamientos innatos** que les ayudan a sobrevivir en un entorno específico.\n- **Ejemplo**: Las aves pueden **migrar** en respuesta a la temporada, o los animales pueden **esconderse** ante una amenaza.\n- **No hay decisión consciente**: Estos comportamientos son **reflejos o hábitos** que se transmiten a través de la **herencia genética** o la **experiencia de la especie**.\n\n---\n\n### 4. **Adaptación a nivel celular (homeostasis)**\n- **Mecanismo**: Las células pueden **ajustar su funcionamiento** para mantener el equilibrio interno (homeostasis) ante cambios externos.\n- **Ejemplo**: Los glóbulos rojos pueden **cambiar su forma** para pasar por capilares estrechos, o las células pueden **absorber más agua** en ambientes húmedos.\n- **No hay decisión consciente**: Estos ajustes son **automáticos** y regulados por **mecanismos internos** como la **regulación hormonal** o la **actividad de proteínas**.\n\n---\n\n### 5. **Adaptación a nivel ecológico (comportamiento colectivo)**\n- **Mecanismo**: Algunas especies desarrollan **comportamientos colectivos** que les permiten sobrevivir en un ambiente adverso.\n- **Ejemplo**: Las abejas pueden **organizar su colmena** para protegerse del frío, o los peces pueden **formar escuelas** para evitar depredadores.\n- **No hay decisión consciente**: Estos comportamientos son **resultados de la evolución** y la **interacción entre individuos**.\n\n---\n\n### Conclusión\nLa adaptación de un organismo a un ambiente sin decisión consciente es un proceso **automático, no dirigido y basado en la evolución y la biología**. No implica pensamiento, intención o conciencia, sino que es el resultado de **interacciones genéticas, fisiológicas y ambientales** que se desarrollan a lo largo del tiempo. Estos mecanismos permiten a los organismos sobrevivir y prosperar en distintos entornos, sin necesidad de una **decisión consciente**.",
+    "durationMs": 42319,
+    "timestamp": "2026-10-31T21:29:28.523Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "rag_general_knowledge_fallback",
+        "memory",
+        "rag",
+        "qica_superposition"
+      ],
+      "tokensUsed": 5210,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 0,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "44": {
+    "id": 44,
+    "block": "Bloque 9 — Biología y naturaleza",
+    "question": "¿Qué diferencias existen entre simbiosis, parasitismo y mutualismo?",
+    "expected": "Interacciones biológicas: simbiosis (término paraguas de convivencia cercana), mutualismo (+/+ beneficio mutuo), parasitismo (+/- daño al hospedador)",
+    "answer": "La **simbiosis**, el **parasitismo** y el **mutualismo** son tres tipos de relaciones entre organismos que se observan en la naturaleza, especialmente en ecosistemas. A continuación, te explico las diferencias entre ellos:\n\n### 1. **Mutualismo**\n- **Definición**: Es una relación en la que **ambos organismos se benefician**.\n- **Ejemplo**: Las **flor de la vaca** (una especie de bacteria) vive en el sistema digestivo de los rumiantes y ayuda a digerir la celulosa, mientras que el animal obtiene nutrientes de los alimentos que no puede digerir por sí solo.\n- **Características**: Ambos participantes obtienen ventajas, y la relación es **beneficiosa para ambos**.\n\n### 2. **Parasitismo**\n- **Definición**: Es una relación en la que **un organismo (parásito) se beneficia** y el otro (huésped) **se ve perjudicado**.\n- **Ejemplo**: Las **lombrices de tierra** que viven en el intestino humano se alimentan de nutrientes del huésped, lo cual puede causar problemas digestivos.\n- **Características**: El parásito obtiene beneficios, mientras que el huésped sufre daños, aunque no siempre muere.\n\n### 3. **Simbiosis**\n- **Definición**: Es un término más amplio que incluye tanto el **mutualismo** como el **parasitismo**, y se refiere a cualquier relación **beneficiosa o perjudicial** entre dos organismos.\n- **Ejemplo**: La relación entre **hongos y plantas** en una **micorriza** es un tipo de simbiosis mutualista, pero también existen relaciones parasitarias donde un hongo se alimenta de una planta sin beneficiarla.\n- **Características**: Puede ser **beneficiosa, perjudicial o neutral** para uno o ambos organismos.\n\n### Resumen:\n- **Mutualismo**: Ambos se benefician.\n- **Parasitismo**: Uno se beneficia, el otro se ve perjudicado.\n- **Simbiosis**: Es un término general que abarca tanto el mutualismo como el parasitismo, dependiendo de la relación específica entre los organismos.\n\n¿Querés que te dé más ejemplos de cada uno? 😊",
+    "durationMs": 12900,
+    "timestamp": "2026-10-31T21:29:42.039Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4268,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 9,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "45": {
+    "id": 45,
+    "block": "Bloque 9 — Biología y naturaleza",
+    "question": "¿Por qué dos organismos de la misma especie pueden desarrollar características diferentes según su ambiente?",
+    "expected": "Plasticidad fenotípica, expresión epigenética y presiones selectivas divergentes",
+    "answer": "¡Hola Ignacio! Es una excelente pregunta. La respuesta está en la **genética** y la **interacción entre el genoma y el ambiente**, algo que también se puede relacionar con ideas filosóficas y espirituales que mencionan la **transformación de la energía** y la **evolución**.\n\nSegún la ciencia, cada organismo tiene un **genoma** (conjunto de genes) que le da una base genética. Sin embargo, **el ambiente** (como la temperatura, la comida, la luz, etc.) puede **activar o inhibir ciertos genes**, lo que hace que dos individuos de la misma especie desarrollen características diferentes. Por ejemplo, dos plantas de la misma especie pueden crecer con hojas de distintos colores si están en ambientes con distintas condiciones de luz.\n\nEsto se llama **fenotipo**, y es la expresión de los genes en un ambiente específico. Como mencionan algunos textos espirituales, **todo está en constante movimiento y cambio**, y lo mismo ocurre en la naturaleza: el ambiente influye en cómo se manifiesta la vida.\n\nAdemás, en la filosofía esotérica, se habla de la **transformación de la energía** y la **evolución espiritual**, lo cual también puede verse como una metáfora de cómo el ambiente (interior o exterior) moldea el desarrollo de un ser.\n\n¿Te gustaría que profundice en algún aspecto en particular? 😊",
+    "durationMs": 36857,
+    "timestamp": "2026-10-31T21:30:19.504Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "LOCAL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 3772,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "46": {
+    "id": 46,
+    "block": "Bloque 10 — Razonamiento interdisciplinario",
+    "question": "Un panel solar produce menos electricidad de la esperada. ¿Qué variables investigarías antes de concluir que está defectuoso?",
+    "expected": "Descarte metódico: radiación solar/irradiancia, sombras parciales, ángulo/inclinación, temperatura del panel, suciedad/polvo, cableado e inversor",
+    "answer": "¡Hola Ignacio! Antes de concluir que un panel solar está defectuoso, es importante investigar varias variables que podrían estar afectando su rendimiento. Aquí te explico qué debes revisar:\n\n1. **Iluminación solar**: Verifica si el panel está recibiendo la cantidad de luz solar esperada. Factores como la nubosidad, la hora del día o la estación del año pueden influir en la producción de energía.\n\n2. **Ángulo de instalación**: Asegúrate de que el panel esté orientado correctamente según la latitud de tu ubicación. Un ángulo incorrecto puede reducir significativamente la eficiencia.\n\n3. **Sombra o obstáculos**: Revisa si hay sombras de árboles, edificios o cualquier otro objeto que pueda estar bloqueando parte del panel. La sombra reduce la capacidad del panel para generar electricidad.\n\n4. **Conexiones eléctricas**: Verifica que todas las conexiones eléctricas estén bien hechas y sin daños. Un cable suelto o un conector mal conectado puede causar una disminución en la producción.\n\n5. **Temperatura**: Los paneles solares son menos eficientes a temperaturas muy altas. Si el clima es extremo, podría estar afectando su rendimiento.\n\n6. **Estado del panel**: Revisa si hay daños visibles en el panel, como grietas, rayones o manchas. Estos pueden afectar la capacidad del panel para absorber la luz solar.\n\n7. **Sistema de seguimiento solar**: Si tu instalación incluye un sistema de seguimiento solar, asegúrate de que esté funcionando correctamente. Este sistema ajusta la posición del panel para maximizar la exposición a la luz solar.\n\n8. **Datos de producción**: Compara los datos de producción actuales con los históricos. A veces, una disminución temporal puede ser normal debido a factores externos, como la hora del día o la estación del año.\n\nSi después de revisar estas variables el panel sigue produciendo menos de lo esperado, entonces podría ser necesario realizar una prueba más detallada o contactar a un técnico especializado para una evaluación completa. ¡Espero que te sirva! Si necesitas más ayuda, no dudes en preguntar.",
+    "durationMs": 38669,
+    "timestamp": "2026-10-31T21:30:58.780Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "WEB",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4297,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "47": {
+    "id": 47,
+    "block": "Bloque 10 — Razonamiento interdisciplinario",
+    "question": "Dos sensores miden temperaturas diferentes en el mismo lugar. ¿Cómo determinarías cuál proporciona el valor más confiable?",
+    "expected": "Metodología metrológica: calibración con patrón de referencia, verificación de microambiente (radiación directa, corrientes de aire), tiempo de respuesta e historial",
+    "answer": "¡Hola Ignacio! Es una pregunta muy interesante y práctica. Para determinar cuál sensor proporciona el valor más confiable de temperatura en el mismo lugar, puedes seguir estos pasos:\n\n1. **Comparar la estabilidad**: Mira si uno de los sensores mantiene una temperatura constante y cercana a la que esperas, mientras que el otro fluctúa sin razón aparente. El que sea más estable probablemente es más confiable.\n\n2. **Verificar la calibración**: Si tienes acceso a un estándar de temperatura conocido (como un termómetro calibrado o un dispositivo de referencia), puedes comparar ambos sensores contra ese estándar. El que se acerque más al valor real es el más confiable.\n\n3. **Analizar la repetibilidad**: Si repites la medición varias veces en el mismo lugar y bajo las mismas condiciones, el sensor que da resultados consistentes es el más confiable.\n\n4. **Revisar la precisión y el rango de medición**: Asegúrate de que ambos sensores estén dentro del rango de temperatura que se espera en ese lugar. Un sensor con un rango inadecuado podría dar valores incorrectos.\n\n5. **Considerar la ubicación y el entorno**: Si uno de los sensores está expuesto a factores externos (como la luz solar directa, el viento o la humedad), podría dar lecturas menos precisas. El que esté protegido y en condiciones estables es más confiable.\n\n6. **Usar un tercer sensor como referencia**: Si tienes un tercer sensor de confianza, puedes comparar los valores de los dos sensores contra él. El que se acerque más al valor del sensor de referencia es el más confiable.\n\nEn resumen, la confiabilidad de un sensor se basa en su estabilidad, calibración, repetibilidad, precisión y condiciones de uso. Si tienes dudas, siempre es útil compararlos con un estándar conocido o usar un tercer sensor como referencia. ¿Querés que te ayude a analizar los datos de algún sensor en particular?",
+    "durationMs": 29235,
+    "timestamp": "2026-10-31T21:31:28.629Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4326,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  },
+  "48": {
+    "id": 48,
+    "block": "Bloque 10 — Razonamiento interdisciplinario",
+    "question": "Una batería tiene 600 Wh de capacidad nominal y alimenta una carga de 120 W mediante un inversor con eficiencia del 90%. ¿Cuál sería la autonomía ideal aproximada, ignorando otras pérdidas?",
+    "expected": "Cálculo exacto: Consumo efectivo = 120 W / 0.90 = 133.33 W; Autonomía = 600 Wh / 133.33 W = 4.5 horas (4h 30m)",
+    "answer": "Para calcular la autonomía ideal de la batería, debemos considerar la capacidad de la batería y la potencia que consume la carga, teniendo en cuenta la eficiencia del inversor.\n\n### Datos:\n- **Capacidad de la batería:** 600 Wh  \n- **Potencia de la carga:** 120 W  \n- **Eficiencia del inversor:** 90% (0.9 en forma decimal)\n\n### Fórmula:\n$$\n\\text{Autonomía (en horas)} = \\frac{\\text{Capacidad de la batería}}{\\text{Potencia de la carga} \\times \\text{Eficiencia del inversor}}\n$$\n\n### Cálculo:\n$$\n\\text{Autonomía} = \\frac{600}{120 \\times 0.9} = \\frac{600}{108} \\approx 5.56 \\text{ horas}\n$$\n\n### Respuesta:\nLa **autonomía ideal aproximada** sería **5.56 horas**, es decir, **más de 5 horas y media**.",
+    "durationMs": 45306,
+    "timestamp": "2026-10-31T21:32:14.551Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "TOOL",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4147,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "49": {
+    "id": 49,
+    "block": "Bloque 10 — Razonamiento interdisciplinario",
+    "question": "Alguien afirma haber construido un dispositivo que produce más energía de la que consume. ¿Cómo diseñarías un experimento para verificar esa afirmación?",
+    "expected": "Prueba experimental rigurosa de conservación de energía: sistema cerrado (caja negra), calorimetría completa, medición de potencia activa con vatímetros calibrados, descarte de fuentes ocultas, integración temporal de energía entrada vs salida",
+    "answer": "¡Hola Ignacio! Es una afirmación muy interesante y, por supuesto, importante verificarla con rigor científico. Para diseñar un experimento que pueda confirmar si un dispositivo produce más energía de la que consume, debemos seguir un enfoque claro, objetivo y basado en principios físicos. Aquí te explico cómo lo haría:\n\n### 1. **Definir el dispositivo y su funcionamiento**\n- Primero, se debe entender cómo funciona el dispositivo. ¿Qué tipo de energía utiliza? ¿Es eléctrica, térmica, solar, etc.? ¿Qué componentes tiene? ¿Qué proceso físico o químico se está utilizando para generar energía?\n- Es importante documentar el diseño del dispositivo, incluyendo esquemas, materiales, componentes y el proceso de construcción.\n\n### 2. **Establecer hipótesis**\n- La hipótesis principal sería: *“El dispositivo produce más energía de la que consume”*.\n- También se pueden plantear hipótesis secundarias, como: *“El dispositivo genera energía adicional en condiciones específicas”* o *“El dispositivo opera de manera eficiente en ciertos rangos de frecuencia o voltaje”*.\n\n### 3. **Diseñar el experimento**\n- **Materiales necesarios**: Un multímetro o analizador de energía para medir la entrada y salida de energía, un sistema de medición preciso (como un wattímetro), un cronómetro, y un entorno controlado (sin interferencias externas).\n- **Procedimiento**:\n  1. **Calibrar los instrumentos**: Asegurarse de que los medidores estén calibrados y funcionen correctamente.\n  2. **Medir la energía de entrada**: Registrar la cantidad de energía que se suministra al dispositivo (por ejemplo, en vatios o joules).\n  3. **Medir la energía de salida**: Registrar la energía que el dispositivo genera (por ejemplo, en forma de electricidad, calor, luz, etc.).\n  4. **Repetir el experimento varias veces**: Para asegurar la consistencia de los resultados y descartar errores aleatorios.\n  5. **Controlar variables externas**: Mantener constantes las condiciones ambientales (temperatura, humedad, presión) y evitar interferencias externas.\n\n### 4. **Analizar los resultados**\n- Comparar la energía de entrada con la energía de salida.\n- Si la energía de salida es mayor que la de entrada, se podría considerar que el dispositivo genera energía adicional.\n- Sin embargo, es crucial revisar si hay errores de medición, pérdidas de energía no consideradas, o si el dispositivo está utilizando energía de fuentes no detectadas (como energía ambiental o radiación).\n\n### 5. **Considerar factores externos**\n- **Efectos de la medición**: A veces, los instrumentos pueden no captar ciertos tipos de energía (como energía térmica o radiante).\n- **Efectos de la materia**: Algunos materiales pueden generar energía al interactuar con el entorno, lo que podría influir en los resultados.\n- **Efectos de la medición en el dispositivo**: Al medir, se puede alterar el comportamiento del dispositivo, lo que podría afectar los resultados.\n\n### 6. **Revisar teorías y principios físicos**\n- Es importante revisar si el dispositivo cumple con las leyes de la física, especialmente la **primera ley de la termodinámica**, que establece que la energía no se crea ni se destruye, solo se transforma.\n- Si el dispositivo parece violar estas leyes, es necesario revisar el experimento para descartar errores o malentendidos.\n\n### 7. **Publicar y validar**\n- Si los resultados son consistentes y se repiten, se debe publicar el experimento en una revista científica o plataforma de investigación para que otros científicos puedan replicarlo y validar los resultados.\n- Si se confirma que el dispositivo genera energía adicional, se podría explorar su potencial para aplicaciones prácticas, como fuentes de energía renovable.\n\n### Conclusión\nUn experimento bien diseñado y repetido puede ayudar a verificar si un dispositivo genera más energía de la que consume. Sin embargo, es fundamental seguir protocolos científicos, usar instrumentos precisos y considerar todas las variables posibles. Si tienes más detalles sobre el dispositivo, ¡puedo ayudarte a diseñar un experimento más específico! ¿Quieres compartir más información sobre el dispositivo?",
+    "durationMs": 40871,
+    "timestamp": "2026-10-31T21:32:56.029Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": "RAG",
+      "intentConfidence": 0.9,
+      "modelUsed": "qwen3:8b",
+      "provider": "llamacpp",
+      "toolsUsed": [
+        "memory",
+        "rag"
+      ],
+      "tokensUsed": 4729,
+      "sources": {
+        "ragContextUsed": true,
+        "chunksRetrievedCount": 15,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": true
+    }
+  },
+  "50": {
+    "id": 50,
+    "block": "Bloque 10 — Razonamiento interdisciplinario",
+    "question": "Si tuvieras que investigar un fenómeno desconocido utilizando conocimientos de física, electrónica, informática y biología, ¿cómo organizarías la investigación desde cero?",
+    "expected": "Arquitectura de investigación interdisciplinaria: definición ontológica del fenómeno, sensado biofísico, adquisición de datos embebida, modelado computacional y contrastación experimental de hipótesis",
+    "answer": "📚 **Libros de Desconocido** (31)\n\n  • Angeles Arrien Las Cuatro Sendas del Chaman — Desconocido [PDF]\n  • aventuras fuera del cuerpo buhlman william — Desconocido [PDF]\n  • Biodescodificacion — Desconocido [PDF]\n  • Charles Fort El Libro de los Condenados — Desconocido [PDF]\n  • COSMETICA NATURAL — Desconocido [PDF]\n  • Curso Básico AutoDefensa Psíquica (1 de 2) — Desconocido [PDF]\n  • Curso Básico AutoDefensa Psíquica (2 de 2) — Desconocido [PDF]\n  • El Uso Magico Del Tabaco En Un Contexto Urbano Lima — Desconocido [PDF]\n  • Eliphas Levi Claves mayores y claviculas de Salomon — Desconocido [PDF]\n  • El monte nos da comida — Desconocido [PDF]\n  • Existen los Hechizos y Maleficios — Desconocido [PDF]\n  • Fundamentos Racionales de la Astrología — Desconocido [PDF]\n  • Hacking Taller Attacking AD — Desconocido [PDF]\n  • Hermes El Kybalion — Desconocido [PDF]\n  • Hierbas info papás Alan — Desconocido [PDF]\n  • LA HISTORIA DEL TIEMPO — Desconocido [PDF]\n  • lista completa de patentes de nikola tesla — Desconocido [PDF]\n  • Malezas Comestibles Del Cono Sur — Desconocido [PDF]\n  • MANUAL SANACIONES POPULARES — Desconocido [PDF]\n  • Mas alla del ego Walsh — Desconocido [PDF]\n  • Munay Ki Apunte — Desconocido [PDF]\n  • Munay Ki ESPACIO SAGRADO — Desconocido [PDF]\n  • Munay ki — Desconocido [PDF]\n  • Oracion.docx — Desconocido [PDF]\n  • pim van lommel consciencia mas alla de la vida la ciencia de la experiencia cercana a la muerte — Desconocido [PDF]\n  • Plantas medicinales del nordeste argentino incupo — Desconocido [PDF]\n  • Shamans Priests and Witches A Cross Cultural Study of Magico Religious Practitioners — Desconocido [PDF]\n  • SIGNIFICADO DE LAS 22 LETRAS DEL ALFABETO HEBREO — Desconocido [PDF]\n  • telektonon — Desconocido [PDF]\n  • telektonon manual — Desconocido [PDF]\n  • tintes naturales maya mesoamerica etnobotanica codice artesania prehispanico colonial tzutujil — Desconocido [PDF]\n\n💡 Podés pedir:\n  `resumen de 'Angeles Arrien Las Cuatro Sendas del Chaman'`",
+    "durationMs": 6,
+    "timestamp": "2026-10-31T21:32:56.641Z",
+    "success": true,
+    "executionRoute": {
+      "intentClassified": null,
+      "intentConfidence": null,
+      "modelUsed": "none",
+      "provider": "none",
+      "toolsUsed": [
+        "library_author_books"
+      ],
+      "tokensUsed": null,
+      "sources": {
+        "ragContextUsed": false,
+        "chunksRetrievedCount": null,
+        "webSearchUsed": false,
+        "dialecticUsed": false
+      },
+      "recognizedMissingDataOrClarification": false
+    }
+  }
+}

@@ -26,6 +26,8 @@ import { JarvisIdentityService } from './config/jarvis-identity.service';
 import { CapabilitiesService } from './config/capabilities.service';
 import { SkillRegistryService } from './skills/skill-registry.service';
 import { ToolRegistryService } from './tools/registry/tool-registry.service';
+import { ToolResultValidatorService } from './tools/validation/tool-result-validator.service';
+import { PowerBalanceTool } from './tools/energy/power-balance.tool';
 import { BrowserToolService } from './tools/browser/browser-tool.service';
 import { IntentRouterService } from './tools/intent/intent-router.service';
 import { DomainRouterService } from './tools/intent/domain-router.service';
@@ -154,6 +156,8 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     CapabilitiesService,
     SkillRegistryService,
     ToolRegistryService,
+    ToolResultValidatorService,
+    PowerBalanceTool,
     OllamaProvider,
     LlamaCppProvider,
     InferenceSupervisorService,
