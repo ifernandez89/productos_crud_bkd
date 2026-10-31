@@ -297,8 +297,9 @@ export class LlamaCppProvider implements ILLMProvider {
       }
 
       const msg = err.message || String(err);
+      const detail = err.response?.data ? JSON.stringify(err.response.data) : '';
       this.logger.error(
-        `[llamacpp] Error en inferencia (${targetModel} @ ${this.baseURL}): ${msg}`,
+        `[llamacpp] Error en inferencia (${targetModel} @ ${this.baseURL}): ${msg} ${detail}`,
       );
       throw err;
     } finally {

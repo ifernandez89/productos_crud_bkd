@@ -90,14 +90,22 @@ export class InferenceSupervisorService
     this.host = process.env.LLAMACPP_HOST || '127.0.0.1';
     this.port = parseInt(process.env.LLAMACPP_PORT || '8080', 10);
     this.ngl = process.env.LLAMACPP_NGL || '99';
-    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '6144';
+    this.ctxSize = process.env.LLAMACPP_CTX_SIZE || '16384';
     this.parallel = process.env.LLAMACPP_PARALLEL || '1';
     this.autoStart = process.env.LLAMACPP_AUTO_START === 'true';
     this.routerMode = process.env.LLAMACPP_ROUTER_MODE !== 'false';
     this.modelsDir = process.env.LLAMACPP_MODELS_DIR || 'C:\\AI\\models';
+    const localPresets = path.resolve(__dirname, 'models_presets.ini');
+    const srcPresets = path.resolve(
+      process.cwd(),
+      'src',
+      'jarvis',
+      'llm',
+      'models_presets.ini',
+    );
     this.presetsPath =
       process.env.LLAMACPP_PRESETS_PATH ||
-      path.resolve(__dirname, 'models_presets.ini');
+      (fs.existsSync(localPresets) ? localPresets : srcPresets);
     this.modelsMax = process.env.LLAMACPP_MODELS_MAX || '1';
     this.ctk = process.env.LLAMACPP_CTK || 'q8_0';
     this.ctv = process.env.LLAMACPP_CTV || 'q8_0';

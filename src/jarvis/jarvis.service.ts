@@ -467,7 +467,7 @@ export class JarvisService {
           const rerankedChunks = this.rerankChunks(chunks, userMessage);
           retrievedChunksList = rerankedChunks;
 
-          const formattedParts = rerankedChunks.map((c) => {
+          const formattedParts = rerankedChunks.slice(0, 5).map((c) => {
             const docTitle = c.document?.title || 'Documento';
             const docInIndex = this.corpusSelector.getIndex().documentos.find(
               (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),

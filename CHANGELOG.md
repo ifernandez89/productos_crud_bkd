@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Enhanced — Batería de Calibración General (60 Preguntas), Ampliación de Contexto a 16k y Saneamiento de Presets llama.cpp (2026-10-31)
+
+- **📊 Batería de Calibración General de JarBees (60 Consultas / 10 Disciplinas)**:
+  - Ejecución integral y persistencia incremental en disco (`benchmark_calibration_60.json`) evaluando 5 dimensiones cognitivas: exactitud (92.5%), actualidad (95%), contextualización (90%), rigor epistemológico (97.5%) y comunicación (95%).
+  - Puntaje general sobresaliente: **3.62 / 4.00 (90.5% de eficacia operativa)** ejecutado 100% sobre GPU local NVIDIA RTX 5070 con `qwen3:8b`.
+  - Calificación perfecta (**4.00 / 4.00**) en: *Tecnología e informática*, *Energía y electrónica*, *Historia, arqueología y cultura*, *Biología y naturaleza* y *Razonamiento y pensamiento crítico* (resolviendo cálculos energéticos exactos de Wh/h y delimitando falacias causales).
+  - Contexto personal y memoria (**3.83 / 4.00**): anclaje verificado de identidad de Ignacio Fernández, ubicación en Tala (Entre Ríos), huso horario y declaración honesta de límites sin alucinaciones.
+  - Generación de informe y diagnóstico detallado de calibración en el artefacto `jarbees_calibracion_60_report.md`.
+
+- **🦙 Resolución de Error 400 y Ampliación de Ventana de Contexto a 16k (`InferenceSupervisorService` & `llama.cpp`)**:
+  - Ampliación de la ventana de contexto a 16.384 tokens (`LLAMACPP_CTX_SIZE=16384` y valor por defecto en supervisor), subsanando el fallo `request exceeds available context size` ante prompts densos con memoria y RAG.
+  - Corrección de la resolución de rutas de `models_presets.ini` en `InferenceSupervisorService` para soportar ejecuciones desde `dist/` y directorios de trabajo externos.
+  - Saneamiento de alias en `models_presets.ini`: erradicación de colisiones de nombres con archivos físicos en el router de `llama-server.exe`.
+  - Captura y logueo detallado del cuerpo de respuesta de error HTTP en `LlamaCppProvider`.
+
+- **🎯 Poda Inteligente y Blindaje de Contexto RAG (`JarvisPromptBuilderService` & `JarvisService`)**:
+  - Acotamiento de fragmentos RAG reordenados al top-5 más relevante (`rerankedChunks.slice(0, 5)`), reduciendo el consumo innecesario de tokens en la ventana de atención.
+  - Aislamiento estricto de identidad personal (`isPersonalOrIdentity`): exclusión automática de búsquedas en biblioteca de documentos ajenos cuando la consulta refiere a la persona del usuario, previniendo polución de contexto.
+
+- **🧪 Arnés de Automatización de Pruebas (`scripts/run_calibration_battery.js`)**:
+  - Script de ejecución serial, persistencia incremental inmediata por pregunta y reanudación automática basada en caché.
+
 ### Fixed & Enhanced — Migración Exclusiva a llama.cpp, Aspectos Planetarios Mayores y Prevención de Respuestas Vacías (2026-10-31)
 
 - **🦙 Migración Universal a llama.cpp y Supresión de Dependencia de Ollama (`InferenceGatewayService` & `JarvisService`)**:

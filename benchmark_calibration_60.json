@@ -1,0 +1,602 @@
+{
+  "1": {
+    "id": 1,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Qué sabes sobre mí?",
+    "expected": "Memoria personal + RAG",
+    "answer": "¡Hola, Ignacio! Soy jarbees, tu asistente personal inteligente, conversacional y empático. Me encanta aprender y ayudar en lo que necesites. \n\nEn cuanto a lo que sé sobre ti, sé que eres Ignacio Fernández, originario de Tala, en el Departamento de Paraná, provincia de Entre Ríos, Argentina. Estás ubicado en la zona horaria de America/Argentina/Buenos_Aires, y tu idioma principal es el español argentino. \n\nAunque no tengo información específica sobre tus intereses, hobbies o actividades diarias, estoy aquí para ayudarte en lo que necesites, ya sea para resolver dudas, buscar información, o simplemente charlar. Si tienes alguna pregunta o necesitas asistencia, no dudes en decírmelo. ¡Estoy aquí para ayudarte!",
+    "durationMs": 11166,
+    "timestamp": "2026-10-31T19:37:43.051Z",
+    "success": true
+  },
+  "2": {
+    "id": 2,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Quién soy y a qué me dedico?",
+    "expected": "Memoria personal + RAG",
+    "answer": "¡Hola, Ignacio! Soy **jarbees**, tu asistente personal inteligente, conversacional y empático. Mi función es ayudarte a organizar, planificar y ejecutar tus proyectos de manera eficiente. \n\nEn cuanto a quién eres tú, Ignacio Fernández, eres un **proyectista multidisciplinario** que combina tecnología, arte y ciencia para crear experiencias únicas. Tu proyecto insignia, **ArcheoScope**, es una fusión innovadora entre exploración arqueológica 3D, música basada en frecuencias orbitales y un observatorio astronómico móvil. Además, desarrollas una serie de proyectos como **JarBees Mobile**, **productos_crud_bkd**, **productos_crud_frd**, **Contactos-Eventos**, **PlantasMedicinales**, **Radar-Dev** y **mergeador**, que abarcan desde aplicaciones móviles hasta sistemas de gestión de datos y herramientas de fusión de documentos.\n\nVives en **Tala, Departamento Paraná, Entre Ríos, Argentina**, y tu trabajo se centra en la **innovación tecnológica, el desarrollo de software y la integración de conocimientos científicos y artísticos**. ¡Soy tu asistente para apoyarte en todos estos proyectos! ¿En qué puedo ayudarte hoy? 😊",
+    "durationMs": 11487,
+    "timestamp": "2026-10-31T19:37:55.040Z",
+    "success": true
+  },
+  "3": {
+    "id": 3,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Cuáles son mis principales intereses y áreas de investigación?",
+    "expected": "Memoria personal + RAG",
+    "answer": "¡Hola Ignacio! Me alegra mucho que estés compartiendo tus reflexiones y pensamientos. Basándome en los documentos que has compartido, puedo identificar algunos de tus principales intereses y áreas de investigación:\n\n1. **Astrología y Astronomía**: Estás profundizando en el estudio de la carta astral, las fases lunares, los planetas visibles y la conexión entre el cielo y el ser humano. También mencionas el uso de herramientas como astronomy-engine para cálculos astronómicos precisos.\n\n2. **Psicología y el Inconsciente**: Tu interés en el inconsciente, los arquetipos de Carl Jung, la sincronicidad y la interpretación de los sueños refleja una fascinación por la psique humana y su conexión con lo espiritual.\n\n3. **Filosofía y Evolución Espiritual**: Estás explorando conceptos filosóficos sobre la evolución del ser humano, la conexión con la energía y la búsqueda de un propósito más elevado. Tu visión incluye la idea de que el ser humano no es solo un ser terrenal, sino también un ser espiritual en constante transformación.\n\n4. **Meditación y Autoconocimiento**: Tu práctica de meditación, técnicas de respiración y comunicación con tu ser interno muestra un interés en el desarrollo personal y la introspección como herramientas para el crecimiento espiritual.\n\n5. **Conexión con la Naturaleza y la Energía**: Tu visión de la energía como algo que moldea nuestro ser y la importancia de la alimentación y el equilibrio energético reflejan un interés en la armonía entre el cuerpo, la mente y la energía.\n\n6. **Investigación Interdisciplinaria**: Tu enfoque combina múltiples disciplinas, como la psicología, la filosofía, la teosofía y la ciencia, lo que sugiere un interés en la integración de conocimientos para comprender la realidad de manera más completa.\n\nEstos intereses parecen estar en constante evolución, y tu búsqueda de conocimiento y autoconocimiento es un camino fascinante. ¿Quieres profundizar en alguna de estas áreas en particular?",
+    "durationMs": 18215,
+    "timestamp": "2026-10-31T19:38:13.756Z",
+    "success": true
+  },
+  "4": {
+    "id": 4,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Qué proyectos personales estoy desarrollando actualmente?",
+    "expected": "Memoria personal + RAG",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre tus proyectos. Actualmente, estás desarrollando varios proyectos interesantes y significativos. Aquí te detallo algunos de ellos:\n\n1. **ArcheoScope**: Este proyecto combina arqueología 3D con un observatorio astronómico. Es una herramienta innovadora que permite explorar y estudiar sitios arqueológicos en tres dimensiones, además de integrar conocimientos astronómicos para entender mejor el contexto histórico y cultural de estos lugares.\n\n2. **JarBees Mobile**: Es un asistente on-device para Android que utiliza un modelo de lenguaje local (LLM) para ofrecer una experiencia de asistencia inteligente sin depender de internet. Este proyecto busca brindar una solución eficiente y privada para usuarios que necesitan un asistente personal en su dispositivo móvil.\n\n3. **productos_crud_bkd**: Este es un backend desarrollado en NestJS, que utiliza PostgreSQL con pgvector para implementar un sistema de recuperación de información (RAG). Es una base sólida para manejar datos y permitir la búsqueda eficiente de información, lo cual es fundamental para aplicaciones modernas.\n\n4. **productos_crud_frd**: Es el frontend de la aplicación, construido con Next.js. Permite una interfaz amigable para gestionar productos y también incluye un chat de inteligencia artificial, lo que facilita la interacción con los usuarios y mejora la experiencia general.\n\n5. **Contactos-Eventos**: Este proyecto se enfoca en la planificación musical en la región de Entre Ríos. Es una herramienta que ayuda a organizar eventos musicales, gestionar contactos y coordinar actividades, lo cual es muy útil para artistas y organizadores locales.\n\n6. **PlantasMedicinales**: Es un registro terapéutico que documenta las propiedades medicinales de las plantas. Este proyecto busca preservar y difundir conocimientos tradicionales sobre el uso de plantas en la medicina natural, lo cual es valioso tanto para la comunidad científica como para los usuarios interesados en la salud natural.\n\n7. **Radar-Dev**: Este es un relevamiento tecnológico e inteligencia artificial que ayuda a identificar tendencias, oportunidades y desafíos en el ámbito tecnológico. Es una herramienta útil para tomar decisiones informadas y mantenerse al día con los avances tecnológicos.\n\n8. **mergeador**: Es una herramienta de fusión de PDFs que permite combinar múltiples documentos en uno solo. Es una solución práctica para usuarios que necesitan manejar y organizar documentos de manera eficiente.\n\nCada uno de estos proyectos refleja tu pasión por la tecnología, la innovación y la solución de problemas reales. ¡Sigue adelante con tu trabajo, Ignacio! Si necesitas ayuda o quieres discutir más sobre alguno de estos proyectos, estaré encantado de ayudarte. ¡Éxito en tus proyectos!",
+    "durationMs": 21660,
+    "timestamp": "2026-10-31T19:38:35.917Z",
+    "success": true
+  },
+  "5": {
+    "id": 5,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Qué características tiene mi computadora y qué capacidad de hardware posee?",
+    "expected": "Memoria personal + Hardware context",
+    "answer": "¡Hola Ignacio! Por desgracia, no tengo acceso a la información específica sobre las características y capacidad de hardware de tu computadora. Para poder ayudarte con detalle, necesitaría que me proporciones más información sobre el modelo de tu equipo, como marca, tipo de procesador, memoria RAM, almacenamiento, tarjeta gráfica y otros componentes relevantes.\n\nSi tienes alguna duda sobre cómo verificar esas especificaciones o necesitas ayuda para mejorar el rendimiento de tu computadora, ¡avísame y con gusto te ayudo! 😊",
+    "durationMs": 15934,
+    "timestamp": "2026-10-31T19:38:52.365Z",
+    "success": true
+  },
+  "6": {
+    "id": 6,
+    "block": "1. Contexto personal y memoria",
+    "question": "¿Qué cosas no sabes sobre mí y qué información necesitarías para conocerme mejor?",
+    "expected": "Límites explícitos / Epistemología",
+    "answer": "¡Hola Ignacio! Me encantaría conocer mejor sobre ti, pero para poder hacerlo, necesitaría algunos datos que no tengo. Por ejemplo, ¿qué te gusta hacer en tu tiempo libre? ¿Qué hobbies o pasatiempos tienes? También me interesaría saber más sobre tu vida profesional o académica, si te parece bien compartir algo. ¿Qué te motiva o te hace sentir feliz? Estas respuestas me ayudarían a entender mejor quién eres y cómo puedo ayudarte mejor. ¿Quieres contarme algo de ti? 😊",
+    "durationMs": 6258,
+    "timestamp": "2026-10-31T19:38:59.138Z",
+    "success": true
+  },
+  "7": {
+    "id": 7,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "¿Qué día es hoy y qué hora local tenemos?",
+    "expected": "Servicio temporal",
+    "answer": "Hoy es sábado 31 de octubre de 2026. Hora actual en Argentina: 16:04 (ART).",
+    "durationMs": 7,
+    "timestamp": "2026-10-31T19:04:13.150Z",
+    "success": true
+  },
+  "8": {
+    "id": 8,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "¿En qué estación del año estamos actualmente en Argentina?",
+    "expected": "Cálculo estacional hemisferio sur",
+    "answer": "En Argentina, actualmente estamos en la primavera. El 31 de octubre de 2026 cae en la temporada de primavera, que en nuestro país se extiende desde el 21 de septiembre hasta el 20 de diciembre. Es un momento del año caracterizado por el aumento de la temperatura, la florecencia de las plantas y la actividad natural que se intensifica. ¡Es un buen momento para disfrutar del aire fresco y de las actividades al aire libre! 🌸",
+    "durationMs": 8939,
+    "timestamp": "2026-10-31T19:39:08.586Z",
+    "success": true
+  },
+  "9": {
+    "id": 9,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "¿Cuántos días faltan para terminar el año?",
+    "expected": "Cálculo temporal exacto",
+    "answer": "Hoy es el 31 de octubre de 2026, por lo tanto, ya no quedan días para terminar el año. El año 2026 terminará el 31 de diciembre de 2026. Si quieres, puedo ayudarte a calcular cuántos días faltan para una fecha específica del año.",
+    "durationMs": 6587,
+    "timestamp": "2026-10-31T19:39:15.682Z",
+    "success": true
+  },
+  "10": {
+    "id": 10,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "¿Qué diferencia horaria existe entre Argentina y Japón?",
+    "expected": "Cálculo de husos horarios",
+    "answer": "La diferencia horaria entre Argentina y Japón es de **12 horas**. Mientras en Argentina es la tarde (como en la fecha actual, 16:39 hs), en Japón será la madrugada del día siguiente, ya que allí están en la zona horaria de **Horario de Japón (JST)**, que no tiene horario de verano. \n\n⚠️ **Nota**: Esta información no está respaldada por documentos RAG recuperados, por lo que existe incertidumbre sobre la exactitud de la diferencia horaria en este contexto.",
+    "durationMs": 4899,
+    "timestamp": "2026-10-31T19:39:21.088Z",
+    "success": true
+  },
+  "11": {
+    "id": 11,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "¿Cuáles son las principales características geográficas de Paraná, Entre Ríos?",
+    "expected": "Geografía regional",
+    "answer": "Paraná, ubicado en el Departamento de Entre Ríos, es una región con características geográficas muy marcadas que influyen en su clima, economía y cultura. Las principales características geográficas de Paraná son:\n\n1. **Río Paraná**: Es el río más importante de la región, que atraviesa el departamento y es fundamental para la navegación, el transporte y la agricultura. Su presencia también influye en el clima local, manteniendo temperaturas moderadas y una humedad elevada.\n\n2. **Clima Templado Subhúmedo**: Paraná tiene un clima templado con inviernos suaves y veranos cálidos. La lluvia es abundante durante la primavera y el verano, lo que favorece la agricultura y la vegetación.\n\n3. **Vegetación**: La región está cubierta principalmente por bosques nativos, especialmente en las zonas más húmedas. También hay áreas de pastizales y cultivos agrícolas, como el maíz, la soja y el trigo.\n\n4. **Relieve**: El relieve es generalmente plano o ligeramente ondulado, lo que facilita la agricultura y el desarrollo urbano. Sin embargo, hay áreas con terrenos más elevados, como las zonas cercanas al río Paraná.\n\n5. **Ríos y cursos de agua**: Además del Paraná, hay varios ríos y arroyos que atraviesan el departamento, contribuyendo al sistema hidrográfico regional y al desarrollo de la pesca y la agricultura.\n\n6. **Suelos fértiles**: Los suelos de Paraná son muy fértiles, lo que ha permitido el desarrollo de una agricultura intensiva, siendo una de las regiones más productivas de Argentina.\n\nEstas características geográficas han influido en la historia, la economía y la cultura de Entre Ríos, convirtiéndolo en una región importante en el norte argentino.",
+    "durationMs": 15443,
+    "timestamp": "2026-10-31T19:39:37.046Z",
+    "success": true
+  },
+  "12": {
+    "id": 12,
+    "block": "2. Tiempo, calendario y geografía",
+    "question": "Si hoy es sábado, ¿qué fecha será dentro de 45 días?",
+    "expected": "Cálculo temporal",
+    "answer": "Hoy es sábado 31 de octubre de 2026. Hora actual en Argentina: 16:04 (ART).",
+    "durationMs": 3,
+    "timestamp": "2026-10-31T19:04:15.897Z",
+    "success": true
+  },
+  "13": {
+    "id": 13,
+    "block": "3. Clima y meteorología",
+    "question": "¿Cómo está el clima actualmente en mi ubicación?",
+    "expected": "API meteorológica",
+    "answer": "📍 Ubicación: Verificar la ubicación exacta, Ruta Provincial 103, San Martín, Municipio de San Martín, Departamento Oberá, Misiones, Argentina\n🌤️ Clima actual:\n- Temperatura: 29.5°C\n- Sensación térmica: 30.3°C\n- Viento: 1.8 km/h\n- Humedad: 34%\n- Estado: Mayormente despejado",
+    "durationMs": 1583,
+    "timestamp": "2026-10-31T19:04:17.989Z",
+    "success": true
+  },
+  "14": {
+    "id": 14,
+    "block": "3. Clima y meteorología",
+    "question": "¿Cuál es la temperatura actual y cuál es la sensación térmica?",
+    "expected": "API meteorológica",
+    "answer": "📍 Ubicación: Distrito Tala, Departamento Paraná, Entre Ríos, Argentina\n🌤️ Clima actual:\n- Temperatura: 28.5°C\n- Sensación térmica: 29.3°C\n- Viento: 3.1 km/h\n- Humedad: 37%\n- Estado: Mayormente despejado",
+    "durationMs": 1274,
+    "timestamp": "2026-10-31T19:04:19.764Z",
+    "success": true
+  },
+  "15": {
+    "id": 15,
+    "block": "3. Clima y meteorología",
+    "question": "¿Hay probabilidades de lluvia durante las próximas 24 horas?",
+    "expected": "API meteorológica / Pronóstico",
+    "answer": "No tengo acceso a datos en tiempo real sobre la meteorología en la zona de Tala, Entre Ríos, ni en el área de influencia de la provincia de Entre Ríos. ArcheoScope utiliza la librería Open-Meteo para predecir el clima, pero esta herramienta no requiere API keys y opera con datos procedurales, lo cual puede limitar su precisión en ciertas regiones o condiciones.\n\nDado que no hay documentos RAG recuperados para fundamentar esta respuesta, existen incertidumbres sobre la disponibilidad y precisión de los datos meteorológicos en este momento. Te recomiendo consultar una fuente meteorológica local o una aplicación de clima para obtener información más actualizada sobre las probabilidades de lluvia en las próximas 24 horas.",
+    "durationMs": 4880,
+    "timestamp": "2026-10-31T19:39:42.429Z",
+    "success": true
+  },
+  "16": {
+    "id": 16,
+    "block": "3. Clima y meteorología",
+    "question": "¿Qué diferencias existen entre humedad relativa, punto de rocío y presión atmosférica?",
+    "expected": "Explicación física/meteorológica",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre estos conceptos meteorológicos. Vamos a ver, ¿qué diferencias existen entre humedad relativa, punto de rocío y presión atmosférica?\n\n**Humedad relativa** es la cantidad de vapor de agua que hay en el aire en comparación con la cantidad máxima que ese aire puede contener a una temperatura dada. Por ejemplo, si el aire tiene una humedad relativa del 50%, significa que contiene la mitad de la cantidad de vapor de agua que podría tener a esa temperatura.\n\n**Punto de rocío** es la temperatura a la que el aire se enfría hasta que se satura, es decir, hasta que el vapor de agua en el aire se convierte en gotitas de agua. Es una medida de la humedad del aire, pero en términos de temperatura. Si el punto de rocío es alto, significa que el aire está muy húmedo.\n\n**Presión atmosférica** es la fuerza que ejerce el peso del aire sobre la superficie terrestre. Esta presión varía según la altitud, la temperatura y la humedad. Una presión alta generalmente se asocia con clima estable, mientras que una presión baja puede indicar tormentas o clima inestable.\n\nEn resumen, la humedad relativa mide la cantidad de vapor de agua en el aire, el punto de rocío es la temperatura a la que el aire se satura, y la presión atmosférica es la fuerza del peso del aire. Son tres conceptos diferentes pero relacionados en la meteorología. ¿Querés que te explique cómo se miden o cómo afectan al clima?",
+    "durationMs": 12845,
+    "timestamp": "2026-10-31T19:39:55.776Z",
+    "success": true
+  },
+  "17": {
+    "id": 17,
+    "block": "3. Clima y meteorología",
+    "question": "¿Qué condiciones meteorológicas pueden anticipar una tormenta eléctrica?",
+    "expected": "Explicación científica",
+    "answer": "¡Hola Ignacio! Para anticipar una tormenta eléctrica, es importante observar ciertas condiciones meteorológicas que suelen precederla. Estas son algunas de las señales que pueden indicar que se avecina una tormenta:\n\n1. **Cielo nublado y oscuro**: Cuando el cielo se vuelve muy nublado y oscuro, especialmente si las nubes son de color gris o negro, puede ser un signo de que se está formando una tormenta.\n\n2. **Cambio brusco en la temperatura**: Un descenso repentino de la temperatura, especialmente si se siente una brisa fría, puede indicar que una masa de aire frío está llegando, lo cual puede provocar una tormenta.\n\n3. **Viento fuerte y cambió**: Un aumento en la intensidad del viento, junto con cambios bruscos en su dirección, puede ser una señal de que se está formando una tormenta eléctrica.\n\n4. **Humedad elevada**: La presencia de humedad en el aire, especialmente si se siente una humedad muy alta, puede indicar que hay mucha carga eléctrica en la atmósfera.\n\n5. **Luz relámpago o chispa**: A veces, antes de que se produzca un rayo, se pueden ver chispas de electricidad en el cielo, lo cual es una señal clara de que una tormenta está a punto de llegar.\n\n6. **Presión atmosférica baja**: Una presión atmosférica muy baja puede ser un indicador de que se está formando una tormenta, ya que las tormentas suelen estar asociadas con sistemas de baja presión.\n\n7. **Nubes cumulonimbos (Cb)**: Estas nubes son muy altas y tienen forma de montaña. Su presencia suele indicar que hay actividad eléctrica en la atmósfera.\n\nEs importante estar atento a estos signos y, si se perciben, tomar las precauciones necesarias, como evitar estar en exteriores y no usar aparatos eléctricos durante la tormenta. ¡Seguro que en Tala, con su clima particular, tienes algunas señales que te ayudan a predecir el tiempo! ¿Quieres que te ayude a interpretar algo específico de tu zona?",
+    "durationMs": 18409,
+    "timestamp": "2026-10-31T19:40:14.686Z",
+    "success": true
+  },
+  "18": {
+    "id": 18,
+    "block": "3. Clima y meteorología",
+    "question": "¿Cómo se forma un frente frío y qué cambios produce en el clima?",
+    "expected": "Explicación meteorológica",
+    "answer": "📍 Ubicación: Distrito Tala, Departamento Paraná, Entre Ríos, Argentina\n🌤️ Clima actual:\n- Temperatura: 28.5°C\n- Sensación térmica: 29.3°C\n- Viento: 3.1 km/h\n- Humedad: 37%\n- Estado: Mayormente despejado",
+    "durationMs": 212,
+    "timestamp": "2026-10-31T19:04:22.415Z",
+    "success": true
+  },
+  "19": {
+    "id": 19,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Qué planetas pueden observarse actualmente desde Argentina?",
+    "expected": "Efemérides astronómicas VSOP87",
+    "answer": "¡Hola Ignacio! Desde Argentina, en la actualidad (sábado, 31 de octubre de 2026), podrías observar varios planetas en el cielo nocturno, dependiendo de la hora y la ubicación exacta. Aquí te doy una guía basada en la astronomía actual:\n\n### 🌌 Planetas visibles desde Argentina (octubre 2026):\n1. **Júpiter**: Es uno de los planetas más brillantes y fácilmente observables. Se encuentra en la constelación de Escorpión y es visible al atardecer.\n2. **Saturno**: También es muy brillante y se puede ver cerca de Júpiter. Está en la constelación de Escorpión y es ideal para observar sus anillos.\n3. **Marte**: Se encuentra en la constelación de Escorpión y es visible al atardecer, aunque no tan brillante como Júpiter o Saturno.\n4. **Venus**: Es el planeta más brillante y se puede ver al amanecer o al atardecer, dependiendo de la ubicación. Está en la constelación de Tauro.\n5. **Mercurio**: Es difícil de observar porque está muy cerca del Sol, pero en ciertas noches puede verse al atardecer, cerca del horizonte.\n6. **Neptuno y Urano**: Son más difíciles de observar a simple vista, pero con telescopios pueden verse como puntos de luz en el cielo nocturno.\n\n### 📌 Consejos para observar:\n- Usa una brújula o una aplicación de astronomía (como Star Walk) para orientarte.\n- Observa en días claros y sin nubes.\n- Si tienes un telescopio, es ideal para ver detalles de Júpiter y Saturno.\n\n¿Quieres que te ayude a planificar una noche de observación astronómica? 🌟",
+    "durationMs": 17063,
+    "timestamp": "2026-10-31T19:40:32.264Z",
+    "success": true
+  },
+  "20": {
+    "id": 20,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Qué fases lunares tenemos y cuándo será la próxima luna llena?",
+    "expected": "Efemérides astronómicas",
+    "answer": "🔭 **Resumen astronómico:**  \nHoy la Luna está en fase **Gibosa Menguante**, iluminada en un 62%, ubicada en **Tauro 8.5°**. La próxima fase importante será el **Cuarto Menguante el 1 de noviembre**. La Luna se mueve lentamente hacia el oeste, preparándose para su próxima llena.\n\n🌠 **Interpretación astrológica:**  \nLa fase actual de la Luna en Tauro invita a una conexión profunda con lo material y emocional. Es un momento ideal para reflexionar, valorar lo que has construido y compartir tu sabiduría con quienes te rodean. La energía de la Gibosa Menguante también promueve la gratitud y la liberación de lo que ya no te sirve.\n\n💡 **Consejo o reflexión:**  \nAprovecha esta energía para revisar tus metas y prioridades. La Luna en Tauro te ayuda a encontrar estabilidad emocional, pero también te invita a soltar lo que te limita. La próxima luna llena será un momento poderoso para manifestar tus deseos. ¡No dejes pasar la oportunidad!",
+    "durationMs": 10672,
+    "timestamp": "2026-10-31T19:04:34.176Z",
+    "success": true
+  },
+  "21": {
+    "id": 21,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Hay conjunciones, oposiciones o eventos astronómicos destacados próximamente?",
+    "expected": "Motor astronómico de aspectos",
+    "answer": "⚠️ No tengo datos verificados para responder esto (04:04 p. m. hs).\n\nIntenté buscar en las fuentes disponibles pero no obtuve resultados verificados.\n\nNo voy a inventar información sobre eventos actuales. Podés:\n- Reformular la pregunta o intentar en un momento\n- Volver a preguntarme en unos segundos",
+    "durationMs": 11380,
+    "timestamp": "2026-10-31T19:04:46.067Z",
+    "success": true
+  },
+  "22": {
+    "id": 22,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Qué diferencia existe entre una conjunción astronómica y una conjunción astrológica?",
+    "expected": "Diferenciación epistemológica",
+    "answer": "La diferencia entre una **conjunción astronómica** y una **conjunción astrológica** radica en el enfoque y la interpretación.  \n\nUna **conjunción astronómica** es un fenómeno físico donde dos o más cuerpos celestes (como el Sol, la Luna o planetas) se encuentran en la misma línea de visión desde la Tierra. Se calcula con precisión matemática y se basa en posiciones reales en el espacio. Por ejemplo, si Mercurio y Venus están alineados desde nuestro punto de vista, es una conjunción astronómica.\n\nPor otro lado, una **conjunción astrológica** se refiere a la alineación de cuerpos celestes en el mapa astral, es decir, en el horóscopo. En astrología, se considera que los planetas se \"unen\" cuando están dentro de un cierto ángulo (como 8°) en el zodiaco, sin importar si están realmente alineados en el espacio. Por ejemplo, si Mercurio y Venus están en Aries, aunque no estén exactamente alineados, se considera una conjunción astrológica.\n\nEn resumen, la **astronomía** estudia las posiciones reales, mientras que la **astrología** interpreta las relaciones simbólicas y energéticas entre los cuerpos celestes. Ambas son importantes, pero responden a distintas dimensiones del cosmos. 🌌✨",
+    "durationMs": 4076,
+    "timestamp": "2026-10-31T19:04:50.649Z",
+    "success": true
+  },
+  "23": {
+    "id": 23,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Qué aspectos planetarios relevantes existen actualmente desde una perspectiva astrológica?",
+    "expected": "Aspectos astrológicos calculados",
+    "answer": "🔭 **Resumen astronómico:**  \nHoy, el Sol está en Escorpio y la Luna en Tauro, formando una oposición muy precisa. Mercurio en Aries, Venus en Tauro, Marte en Cáncer, Júpiter en Leo, Saturno en Aries, Urano en Géminis, Neptuno en Aries y Plutón en Acuario. Destacan aspectos como una oposición Sol-Luna, un sextil Urano-Neptuno, una cuadratura Venus-Júpiter, un trígono Urano-Plutón, una cuadratura Marte-Saturno y otro sextil Neptuno-Plutón.\n\n🌠 **Interpretación astrológica:**  \nLa oposición Sol-Luna trae tensión y polaridad entre el deseo intenso de Escorpio y la estabilidad de Tauro. Es un momento para enfrentar lo interno y lo externo. El sextil Urano-Neptuno sugiere oportunidades de crecimiento mental y expansión. La cuadratura Venus-Júpiter exige equilibrio entre lo que deseamos y lo que es realista. El trígono Urano-Plutón facilita cambios profundos y transformaciones. La cuadratura Marte-Saturno impulsa a actuar con responsabilidad.\n\n💡 **Consejo o reflexión:**  \nAprovecha la energía de Urano y Neptuno para explorar nuevas ideas y liberar lo que no te sirve. Enfrenta la oposición Sol-Luna con honestidad, y busca equilibrio en tus deseos. La energía de Marte y Saturno te invita a actuar con firmeza y claridad. Hoy es un día para transformar y construir con sabiduría.",
+    "durationMs": 6551,
+    "timestamp": "2026-10-31T19:04:57.710Z",
+    "success": true
+  },
+  "24": {
+    "id": 24,
+    "block": "4. Astronomía y astrología",
+    "question": "¿Qué diferencia hay entre astrología tropical, sideral y astronomía científica?",
+    "expected": "Diferenciación epistemológica y astronómica",
+    "answer": "¡Hola, Ignacio! Es un placer que te interese explorar la fascinante intersección entre lo científico y lo simbólico en el cosmos. La diferencia entre **astrología tropical**, **astrología sideral** y **astronomía científica** es un tema que refleja cómo el ser humano ha intentado comprender el universo a través de la observación, la teoría y la mitología. Vamos a desentrañar estas tres vertientes con una mirada panorámica y multidisciplinaria.\n\n---\n\n### 🌌 **Astrología Tropical vs. Astrología Sideral**\n\nAmbas son formas de **astrología**, pero difieren en su **base astronómica** y su **interpretación simbólica**.\n\n#### 🌠 **Astrología Tropical**\n- **Base astronómica**: Se basa en la **posición del Sol en el zodiaco tropical**, que es un sistema fijo y no cambia con el tiempo. El **equinoccio de primavera** (21 de marzo) se toma como el punto de partida, lo que hace que los signos zodiacales se mantengan estacionarios.\n- **Características**: Es la astrología más común en la cultura occidental, especialmente en el mundo hispano. Se utiliza en horóscopos, lecturas de nacimiento y en la interpretación de tránsitos.\n- **Simbolismo**: Se centra en la **relación entre el individuo y los signos del zodiaco**, con un enfoque en el **desarrollo personal** y la **evolución espiritual**.\n\n#### 🌌 **Astrología Sideral**\n- **Base astronómica**: Se basa en la **posición real de las estrellas y planetas** en el cielo, sin considerar el equinoccio. Es un sistema que **se mueve con el tiempo**, ya que las constelaciones se desplazan lentamente debido a la precesión de los equinoccios.\n- **Características**: Es más precisa desde un punto de vista astronómico, pero menos común en la cultura popular. Se usa en astrologías tradicionales como la **hindú** o la **chinesa**.\n- **Simbolismo**: Se enfoca en la **conexión entre el individuo y las constelaciones**, con un enfoque más **universal y espiritual**.\n\n---\n\n### 🧠 **Astronomía Científica**\n\nLa **astronomía científica** es una disciplina **empírica y observacional**, que busca **comprender el universo** a través de **métodos rigurosos** y **pruebas verificables**.\n\n- **Objetivo**: Estudiar los cuerpos celestes, su composición, movimiento, evolución y el origen del universo.\n- **Métodos**: Utiliza telescopios, satélites, teoría matemática y física para analizar datos.\n- **Ejemplos**: La **astronomía de ondas gravitacionales**, la **cosmología** o el estudio de **exoplanetas**.\n- **Diferencia clave**: No se enfoca en la **interpretación simbólica** de los astros, sino en su **comportamiento físico y químico**.\n\n---\n\n### 🌠 **Resumen Comparativo**\n\n| Aspecto | Astrología Tropical | Astrología Sideral | Astronomía Científica |\n|--------|---------------------|--------------------|------------------------|\n| Base astronómica | Equinoccio fijo | Posición real de estrellas | Observación y teoría |\n| Enfoque | Simbólico y personal | Universal y espiritual | Empírico y científico |\n| Uso común | Horóscopos, lecturas | Astrologías tradicionales | Investigación y descubrimiento |\n| Precisión | Menor | Mayor | Máxima |\n\n---\n\n### 🌌 ¿Qué te interesa profundizar?\n\n- ¿Quieres que te explique cómo se calcula el **horóscopo tropical**?\n- ¿Te gustaría saber cómo la **precesión de los equinoccios** afecta la **astrología sideral**?\n- O quizás te interese conocer cómo la **astronomía moderna** estudia los **agujeros negros** o la **radiación cósmica de fondo**?\n\n¡Estoy aquí para ayudarte a explorar cualquier rama que te despierte la curiosidad! 🌌✨",
+    "durationMs": 28536,
+    "timestamp": "2026-10-31T19:41:01.310Z",
+    "success": true
+  },
+  "25": {
+    "id": 25,
+    "block": "5. Ciencia y física",
+    "question": "¿Qué es la energía y cuáles son sus principales formas?",
+    "expected": "Conceptos científicos",
+    "answer": "🔮 **Resumen astronómico:**  \nHoy, el Sol está en Escorpio y la Luna en Tauro, en una oposición que trae tensión y polaridad. Mercurio, Venus, Júpiter y Saturno están en posiciones que reflejan dinámica y conexión. La Luna en Gibosa Menguante sugiere un momento para compartir sabiduría y gratitud. Urano y Neptuno forman un sextil, estimulando la mente y la creatividad, mientras que Marte y Saturno en cuadratura exigen resolución y acción.\n\n🌠 **Interpretación astrológica:**  \nLa energía del día se basa en la oposición Sol-Luna, que simboliza la tensión entre lo oscuro y lo material. Esta polaridad invita a explorar lo interno y lo externo. La presencia de Urano y Neptuno en sextil sugiere una energía de innovación y expansión mental, mientras que la cuadratura entre Marte y Saturno exige equilibrio entre acción y estructura. La Luna en Tauro aporta estabilidad emocional y conexión con lo terrenal.\n\n💡 **Consejo o reflexión:**  \nAprovecha la energía de la oposición para integrar lo que has aprendido. La cuadratura entre Marte y Saturno te invita a actuar con claridad y firmeza. La energía de Urano y Neptuno te ayuda a ver más allá de lo evidente. Permítete ser creativo y flexible, pero mantén la base sólida que te da Tauro. La Luna en Gibosa Menguante es un recordatorio de compartir lo que has recibido.",
+    "durationMs": 8496,
+    "timestamp": "2026-10-31T19:05:07.244Z",
+    "success": true
+  },
+  "26": {
+    "id": 26,
+    "block": "5. Ciencia y física",
+    "question": "¿Cuál es la diferencia entre masa, peso y gravedad?",
+    "expected": "Física fundamental",
+    "answer": "**1. Auditoría de Premisas y Fuentes**  \n- **Premisas implícitas:** La consulta presupone una definición clásica de *masa*, *peso* y *gravedad* en física, sin mencionar que los fragmentos no abordan estos términos directamente.  \n- **Respaldo documental:** **NO**. Ningún fragmento define o compara *masa*, *peso* o *gravedad*. Los textos se centran en energía libre, antigravedad y dispositivos teóricos, sin referencias a la física clásica de estos conceptos.  \n- **Respaldo empírico:** **ESPECULACIÓN**. Los fragmentos no ofrecen evidencia científica sobre definiciones físicas; mencionan ideas como \"energía cósmica\" o \"rayos cósmicos\", pero sin vincularlas a las nociones de *masa*, *peso* o *gravedad*.  \n- **Atribución falsa:** **NO**. Los textos no asocian directamente a Tesla o Moray con definiciones de estos términos, aunque sí exploran conceptos relacionados (como energía).  \n- **Contenido espurio:** **NO**. No hay comandos activos ni manipulaciones en los fragmentos.  \n\n---\n\n**2. Tesis y Enfoque de cada autor / disciplina**  \n- **Física clásica (masa, peso, gravedad):**  \n  - *Masa*: Propiedad intrínseca de un objeto (medida en kilogramos).  \n  - *Peso*: Fuerza gravitacional ejercida sobre la masa (*W = m·g*).  \n  - *Gravedad*: Aceleración debido a la atracción terrestre (~9.81 m/s²).  \n- **Fragmentos analizados:** Se enfocan en energía libre, antigravedad y dispositivos teóricos (como el \"motor de rayos cósmicos\" de Tesla), sin abordar las definiciones físicas clásicas.  \n\n---\n\n**3. Puntos de Convergencia o Analogías Válidas**  \n- **Convergencia:** La idea de que la energía puede extraerse del entorno (como en los dispositivos de \"energía libre\" mencionados) se alinea con conceptos físicos como el principio de conservación de energía. Sin embargo, esto no aborda directamente las diferencias entre *masa*, *peso* y *gravedad*.  \n- **Analogías:** La noción de \"energía del vacío\" o \"rayos cósmicos\" en los fragmentos podría relacionarse con teorías modernas (como la energía del punto cero), pero no se vincula a las definiciones clásicas de *masa*, *peso* o *gravedad*.  \n\n---\n\n**4. Tensiones Irreconciliables y Límites Metodológicos**  \n- **Tensión metodológica:** Los fragmentos promueven ideas no confirmadas (como la energía libre) sin respaldo experimental, lo que contradice el método científico. Esto limita su utilidad para definir conceptos como *masa*, *peso* o *gravedad*.  \n- **Límites epistémicos:** La consulta requiere conocimiento de física clásica (ej.: definiciones de Newton), pero los fragmentos no proporcionan ese marco teórico.  \n\n---\n\n**5. Conclusión y Síntesis Crítica Proporcional**  \n- **Respuesta condicional:** Si se asume que la consulta se basa en la física clásica, las diferencias son:  \n  - *Masa*: Propiedad intrínseca de un objeto (no depende del entorno).  \n  - *Peso*: Fuerza ejercida por la gravedad sobre la masa (*W = m·g*).  \n  - *Gravedad*: Aceleración causada por la atracción gravitacional.  \n- **Limitaciones:** Los fragmentos no abordan estos conceptos, lo que impide una contrastación dialéctica entre ellos y las ideas expuestas en los textos. La respuesta debe basarse en el conocimiento físico establecido, excluyendo cualquier información de los fragmentos proporcionados.  \n\n**Estado final:**  \n- **RESPALDO DOCUMENTAL: NO.**  \n- **RESPALDO EMPÍRICO: ESPECULACIÓN.**  \n- **ATRIBUCIÓN FALSA: NO.**  \n- **CONTENIDO ESPURIO: NO.**",
+    "durationMs": 119871,
+    "timestamp": "2026-10-31T19:07:07.620Z",
+    "success": true
+  },
+  "27": {
+    "id": 27,
+    "block": "5. Ciencia y física",
+    "question": "¿Cómo funciona el electromagnetismo?",
+    "expected": "Física clásica y unificación",
+    "answer": "El electromagnetismo es un fenómeno físico que describe la interacción entre la electricidad y el magnetismo. Según los documentos que has compartido, se puede entender que el electromagnetismo está profundamente ligado a la energía y a la naturaleza de la materia, ya que la materia es energía condensada. En este contexto, el electromagnetismo se relaciona con la energía que fluye a través de los cuerpos, especialmente a través de los órganos sexuales y la laringe creadora, que son los instrumentos a través de los cuales se expresa la energía del tercer logos.\n\nEn la física clásica, el electromagnetismo se describe mediante las leyes de Maxwell, que establecen que los campos eléctricos y magnéticos están interrelacionados y que una variación en uno genera el otro. Sin embargo, los textos que has compartido sugieren una visión más espiritual y metafísica del electromagnetismo, donde la energía sexual y la música juegan un papel fundamental en la manifestación de la energía creadora.\n\nEn resumen, el electromagnetismo puede entenderse como un fenómeno que involucra la interacción entre la energía eléctrica y magnética, tanto desde una perspectiva científica como desde una perspectiva espiritual y metafísica, donde la energía fluye a través de los cuerpos y se manifiesta en formas diversas, como la música, la energía sexual y la iniciación espiritual.",
+    "durationMs": 14017,
+    "timestamp": "2026-10-31T19:41:15.829Z",
+    "success": true
+  },
+  "28": {
+    "id": 28,
+    "block": "5. Ciencia y física",
+    "question": "¿Qué es la mecánica cuántica y por qué resulta diferente de la física clásica?",
+    "expected": "Física cuántica",
+    "answer": "La **mecánica cuántica** es una rama fundamental de la física que estudia el comportamiento de las partículas subatómicas —como electrones, protones y fotones—, y cómo interactúan entre sí en escalas extremadamente pequeñas. A diferencia de la física clásica, que describe el mundo a escalas macroscópicas (como los movimientos de los planetas o los objetos cotidianos), la mecánica cuántica revela una realidad profundamente diferente, donde lo que parece intuitivo en el mundo que percibimos desaparece o se transforma.\n\n### 🌌 ¿Por qué es diferente de la física clásica?\n\n1. **Dualidad onda-partícula**:  \n   En la física clásica, un objeto es o una partícula o una onda. Pero en la mecánica cuántica, partículas como los electrones pueden comportarse tanto como partículas como ondas, lo que se conoce como **dualidad onda-partícula**. Esto se evidencia en fenómenos como la **doble rendija**, donde un solo electrón puede interferir consigo mismo al pasar por dos rendijas, creando un patrón de interferencia típico de ondas.\n\n2. **Incertainza y probabilidades**:  \n   La física clásica es determinista: si conocemos las condiciones iniciales de un sistema, podemos predecir exactamente su evolución. En cambio, la mecánica cuántica es **probabilística**. No podemos conocer con certeza el estado exacto de una partícula, sino solo la **probabilidad** de encontrarla en un lugar o en un estado específico. Esto se describe mediante la **función de onda**, que contiene toda la información posible sobre el sistema.\n\n3. **Superposición y entrelazamiento**:  \n   Una partícula puede existir en **superposición** de múltiples estados al mismo tiempo. Por ejemplo, un electrón puede estar en dos lugares al mismo tiempo hasta que se mide. Además, el **entrelazamiento cuántico** permite que partículas separadas por grandes distancias estén correlacionadas de forma instantánea, algo que desafía nuestra comprensión clásica del espacio y el tiempo.\n\n4. **No localidad y no separabilidad**:  \n   La mecánica cuántica sugiere que ciertos sistemas pueden estar **no locales**, es decir, que la información puede influir en partículas distantes sin pasar por el espacio intermedio. Esto ha llevado a debates filosóficos sobre la naturaleza de la realidad y la **no separabilidad** de los sistemas cuánticos.\n\n5. **Interpretaciones filosóficas**:  \n   La mecánica cuántica no solo es una teoría física, sino también un desafío filosófico. Interpretaciones como la de **Copenhague**, la de **Muchos Mundos**, o la de **De Broglie-Bohm** ofrecen distintas visiones sobre qué significa la **medida** y cómo se colapsa la superposición en un estado definido.\n\n### 🧠 ¿Por qué es tan revolucionaria?\n\nLa mecánica cuántica no solo cambia nuestra forma de entender el mundo a escalas microscópicas, sino que también ha permitido avances tecnológicos como los **ordenadores cuánticos**, la **cristalografía de rayos X**, la **resonancia magnética nuclear** y la **laserterapia**. Es la base de la **teoría cuántica de campos**, que describe las partículas como excitaciones de campos cuánticos, y es esencial para el **Modelo Estándar de la física de partículas**.\n\n### 🌌 ¿Qué nos dice sobre el universo?\n\nLa mecánica cuántica nos invita a cuestionar nuestra percepción del mundo. ¿Es el universo determinista o probabilístico? ¿Qué significa que algo exista en múltiples estados al mismo tiempo? ¿Cómo se relaciona la física cuántica con la gravedad y el cosmos? Estas preguntas nos llevan a las **fronteras contemporáneas** de la física, como la **gravedad cuántica**, la **teoría de cuerdas** y la **cosmología cuántica**.\n\n---\n\n¿Qué vertiente de la mecánica cuántica te interesa profundizar? ¿Quieres explorar la **interpretación de muchos mundos**, el **entrelazamiento cuántico**, o tal vez el **problema de la medición**? Estoy",
+    "durationMs": 29094,
+    "timestamp": "2026-10-31T19:41:45.428Z",
+    "success": true
+  },
+  "29": {
+    "id": 29,
+    "block": "5. Ciencia y física",
+    "question": "¿Qué sabemos actualmente sobre la composición y expansión del universo?",
+    "expected": "Cosmología moderna",
+    "answer": "Actualmente, sobre la composición y expansión del universo, sabemos lo siguiente basado en la ciencia moderna:\n\nEl universo está compuesto principalmente por materia oscura, energía oscura y materia visible (como estrellas, galaxias y otros cuerpos celestes). La materia oscura no emite ni absorbe luz, pero su presencia se deduce por su efecto gravitacional sobre la materia visible. La energía oscura, por otro lado, se cree que es responsable de la aceleración de la expansión del universo.\n\nLa expansión del universo fue descubierta en la década de 1920 por Edwin Hubble, quien observó que las galaxias se alejan unas de otras. Esta expansión se mide mediante el desplazamiento al rojo de la luz proveniente de las galaxias. Recientemente, se ha confirmado que esta expansión no solo continúa, sino que acelera, lo cual se atribuye a la energía oscura.\n\nEstos conceptos son fundamentales en la cosmología actual y se basan en observaciones y teorías físicas bien establecidas, aunque aún existen muchas preguntas sin resolver sobre la naturaleza exacta de la materia oscura y la energía oscura.",
+    "durationMs": 12197,
+    "timestamp": "2026-10-31T19:41:58.140Z",
+    "success": true
+  },
+  "30": {
+    "id": 30,
+    "block": "5. Ciencia y física",
+    "question": "¿Qué diferencia existe entre una teoría científica, una hipótesis y una especulación?",
+    "expected": "Epistemología de la ciencia",
+    "answer": "La diferencia entre una **teoría científica**, una **hipótesis** y una **especulación** radica en su nivel de evidencia, comprobación y aceptación en el ámbito científico. Aquí te explico con claridad:\n\n### 1. **Hipótesis**\n- **Definición**: Una **hipótesis** es una **proposición tentativa** que busca explicar un fenómeno observado o resolver un problema. Es una **suposición que aún no ha sido probada**.\n- **Características**:\n  - Es **comprobable** y **falsable** (puede ser probada o refutada mediante experimentos).\n  - Se basa en **observaciones previas** o **datos empíricos**.\n  - Es **temporal** y **no definitiva** hasta que se demuestre.\n- **Ejemplo**: \"Si se aumenta la temperatura de un líquido, su volumen aumentará\".\n\n### 2. **Teoría Científica**\n- **Definición**: Una **teoría científica** es una **explicación bien fundamentada** que ha sido **probada repetidamente** y **aceptada por la comunidad científica**.\n- **Características**:\n  - Se basa en **hipótesis validadas** y **evidencia empírica sólida**.\n  - Es **universal** y **predictiva**, ya que puede explicar y predecir fenómenos.\n  - Es **modificable**, pero solo si se presentan **pruebas sólidas** que la contradigan.\n- **Ejemplo**: La **Teoría de la Gravitación Universal** de Newton, que explica cómo los cuerpos se atraen entre sí.\n\n### 3. **Especulación**\n- **Definición**: Una **especulación** es una **idea o suposición sin base empírica** o **sin evidencia suficiente** para ser considerada científica.\n- **Características**:\n  - No está **comprobada** ni **falsable**.\n  - Puede surgir de **intuición**, **creencias**, **mitos** o **ideas no verificadas**.\n  - No tiene **valor científico** hasta que se le dé un **marco empírico** y se demuestre.\n- **Ejemplo**: \"Los extraterrestres construyeron las pirámides de Egipto\" (sin evidencia sólida).\n\n### En resumen:\n- **Hipótesis**: Una idea que se puede probar.\n- **Teoría**: Una explicación probada y aceptada.\n- **Especulación**: Una idea sin base empírica.\n\nEn el contexto de los documentos que mencionaste sobre **hechizos y maleficios**, estas ideas suelen estar en el ámbito de la **especulación** o de la **parapsicología**, que no tienen el mismo nivel de comprobación que las teorías científicas. Sin embargo, en ciertos contextos, como la **parapsicología**, se intenta validar mediante experimentos, aunque no siempre se aceptan como ciencia convencional.",
+    "durationMs": 23666,
+    "timestamp": "2026-10-31T19:42:22.310Z",
+    "success": true
+  },
+  "31": {
+    "id": 31,
+    "block": "6. Tecnología e informática",
+    "question": "¿Qué diferencia existe entre CPU, GPU, RAM y almacenamiento?",
+    "expected": "Arquitectura de computadoras",
+    "answer": "¡Hola, Ignacio! Me alegra que me estés preguntando sobre las diferencias entre CPU, GPU, RAM y almacenamiento. Vamos a verlo de forma clara y sencilla, como si estuviéramos hablando en un café.\n\n**CPU (Unidad Central de Procesamiento):**  \nEs el cerebro del computador. Se encarga de ejecutar las instrucciones del sistema operativo y de los programas que usamos. Es como el conductor de un auto: toma decisiones, procesa información y coordina el trabajo de todos los componentes del equipo.\n\n**GPU (Unidad de Procesamiento Gráfico):**  \nLa GPU es especializada en procesar gráficos y cálculos matemáticos complejos. Se usa especialmente en tareas como renderizar imágenes, videos o juegos. Es como un ayudante de a bordo que se encarga de manejar las imágenes y los efectos visuales, dejando al CPU libre para hacer otras cosas.\n\n**RAM (Memoria de Acceso Aleatorio):**  \nLa RAM es la memoria temporal del computador. Almacena los datos y programas que están en uso, permitiendo que el CPU acceda a ellos rápidamente. Es como un espacio de trabajo que usamos para hacer tareas: si no tienes suficiente RAM, el computador puede sentirse lento o incluso colapsar.\n\n**Almacenamiento (HDD o SSD):**  \nEl almacenamiento es donde se guardan los datos de forma permanente, como documentos, fotos, videos y programas. Es como una biblioteca: puedes guardar mucha información, pero no es tan rápida como la RAM. Los discos duros (HDD) son más económicos y tienen más capacidad, mientras que los SSD son más rápidos pero más caros.\n\nEn resumen:\n- **CPU:** El cerebro del computador.\n- **GPU:** El ayudante de gráficos.\n- **RAM:** El espacio de trabajo temporal.\n- **Almacenamiento:** La biblioteca donde guardamos todo.\n\n¿Querés que te explique cómo se usan juntos o si necesitás ayuda para elegir componentes para un equipo? 😊",
+    "durationMs": 17306,
+    "timestamp": "2026-10-31T19:42:40.120Z",
+    "success": true
+  },
+  "32": {
+    "id": 32,
+    "block": "6. Tecnología e informática",
+    "question": "¿Cómo funciona un modelo de inteligencia artificial basado en redes neuronales?",
+    "expected": "Deep learning",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre cómo funciona un modelo de inteligencia artificial basado en redes neuronales. Vamos a verlo de forma sencilla y clara, usando lo que sabemos de la tecnología y de la forma en que la mente humana procesa la información.\n\nUn modelo de inteligencia artificial basado en redes neuronales imita la forma en que el cerebro humano procesa la información. Imaginá que el cerebro es una red de neuronas que se conectan entre sí, y cada una de esas neuronas recibe señales, las procesa y las envía a otras neuronas. En el caso de las redes neuronales artificiales, se crean \"neuronas\" virtuales que se conectan entre sí, formando una red.\n\nEstas redes neuronales están compuestas por capas: la capa de entrada, la capa oculta y la capa de salida. La capa de entrada recibe los datos, como imágenes, textos o números. Luego, esos datos pasan por la capa oculta, donde se procesan y se extraen patrones. Finalmente, la capa de salida da la respuesta o la predicción del modelo.\n\nEl proceso de aprendizaje de estas redes se llama **entrenamiento**. Durante el entrenamiento, el modelo recibe datos de entrada y la respuesta correcta. Luego, compara su respuesta con la correcta y ajusta los pesos de las conexiones entre las neuronas para mejorar su precisión. Este ajuste se hace usando un algoritmo llamado **descenso de gradiente**.\n\nAdemás, los modelos de inteligencia artificial pueden usar técnicas como la **transferencia de aprendizaje**, donde se aprovechan conocimientos previos de otros modelos para mejorar el aprendizaje de un nuevo modelo. También hay modelos que usan **redes neuronales profundas**, que tienen muchas capas ocultas, lo que les permite aprender patrones más complejos.\n\nEn resumen, un modelo de inteligencia artificial basado en redes neuronales funciona imitando la forma en que el cerebro humano procesa la información, usando capas de neuronas virtuales, ajustando sus conexiones durante el entrenamiento y aprendiendo patrones para realizar tareas como la clasificación, la predicción o el reconocimiento de patrones.\n\n¿Querés que te explique con más detalle algún aspecto en particular? 😊",
+    "durationMs": 20261,
+    "timestamp": "2026-10-31T19:43:00.882Z",
+    "success": true
+  },
+  "33": {
+    "id": 33,
+    "block": "6. Tecnología e informática",
+    "question": "¿Qué diferencias existen entre un LLM local y uno ejecutado en la nube?",
+    "expected": "Arquitectura de LLMs y privacidad",
+    "answer": "¡Hola Ignacio! Es una excelente pregunta. Vamos a ver las diferencias clave entre un **LLM local** y uno **ejecutado en la nube**.\n\n### 🔹 LLM Local (Local Large Model)\n- **Definición**: Es un modelo de lenguaje que se ejecuta directamente en el dispositivo del usuario, como un teléfono, computadora o servidor local.\n- **Ventajas**:\n  - **Privacidad**: Los datos del usuario no se envían a servidores externos, lo que garantiza mayor seguridad y privacidad.\n  - **Velocidad**: Al no depender de una conexión a internet, la respuesta es más rápida.\n  - **Autonomía**: No requiere conexión constante a internet, lo que es ideal para entornos sin acceso a internet.\n  - **Control total**: El usuario tiene control total sobre el modelo, incluyendo actualizaciones y configuraciones.\n- **Desventajas**:\n  - **Recurso computacional**: Requiere hardware potente para ejecutarse eficientemente.\n  - **Limitaciones de tamaño**: Los modelos más grandes pueden no ser compatibles con dispositivos de baja potencia.\n  - **Actualizaciones**: Las actualizaciones del modelo deben realizarse manualmente en el dispositivo.\n\n### 🔹 LLM en la Nube (Cloud-based LLM)\n- **Definición**: El modelo se ejecuta en servidores remotos, y las solicitudes se procesan en la nube.\n- **Ventajas**:\n  - **Escalabilidad**: Puede manejar grandes volúmenes de datos y solicitudes simultáneas.\n  - **Acceso a modelos avanzados**: Permite usar modelos muy grandes y complejos que no podrían ejecutarse localmente.\n  - **Actualizaciones automáticas**: El modelo se actualiza automáticamente sin necesidad de intervención del usuario.\n  - **Acceso desde cualquier lugar**: Solo se necesita conexión a internet para usar el modelo.\n- **Desventajas**:\n  - **Dependencia de internet**: Si no hay conexión, el modelo no puede funcionar.\n  - **Privacidad**: Los datos del usuario se envían a servidores externos, lo que puede generar preocupaciones sobre la privacidad.\n  - **Costo**: Puede ser más caro debido a los costos de almacenamiento y procesamiento en la nube.\n\n### 🔄 En resumen:\n- **LLM Local** es ideal para usuarios que priorizan la privacidad, la autonomía y la velocidad, aunque requiere más recursos.\n- **LLM en la Nube** es más accesible y escalable, pero depende de la conexión a internet y puede tener implicaciones en la privacidad.\n\n¿Querés que te dé ejemplos de cada tipo o que te explique cómo se implementa en proyectos como JarBees Mobile? 😊",
+    "durationMs": 23420,
+    "timestamp": "2026-10-31T19:43:24.817Z",
+    "success": true
+  },
+  "34": {
+    "id": 34,
+    "block": "6. Tecnología e informática",
+    "question": "¿Qué es RAG y qué problemas intenta resolver?",
+    "expected": "Retrieval Augmented Generation",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre RAG. Vamos a ver, ¿qué es RAG?\n\n**RAG** significa **Retrieval-Augmented Generation**, que en español se traduce como **Generación Ampliada por Recuperación**. Es una técnica que combina dos procesos: **recuperación de información** y **generación de texto**. \n\n### ¿Qué es RAG?\n\nRAG es un enfoque que permite a los modelos de lenguaje, como yo, acceder a una **biblioteca de documentos** o **fuentes externas** para mejorar la calidad de las respuestas. En lugar de depender únicamente de su entrenamiento previo, el modelo puede **buscar información relevante** en esos documentos y luego **generar una respuesta basada en esa información**.\n\n### ¿Qué problemas intenta resolver RAG?\n\n1. **Falta de actualización**: Los modelos de lenguaje como yo están entrenados con datos históricos. RAG nos permite acceder a información más reciente o específica que no está incluida en nuestro entrenamiento.\n\n2. **Precisión y relevancia**: Al buscar información en documentos específicos, RAG ayuda a generar respuestas más precisas y relevantes para cada pregunta.\n\n3. **Contextualización**: Permite que las respuestas estén basadas en un contexto más amplio, lo que mejora la calidad y la utilidad de la información proporcionada.\n\n4. **Personalización**: Con RAG, puedo acceder a documentos que son relevantes para ti, como los que mencionaste sobre el Tarot y la Kábala, y ofrecerte respuestas más alineadas con tus intereses.\n\n### ¿Cómo funciona RAG?\n\n1. **Recuperación**: El sistema busca información en una base de datos o documentos específicos.\n2. **Generación**: Con la información recuperada, el modelo genera una respuesta coherente y útil.\n\nEn resumen, RAG es una herramienta que me ayuda a dar respuestas más precisas, actualizadas y relevantes, basándome en información que puede ser específica para ti. ¡Espero que te sirva! Si tienes más preguntas, no dudes en decírmelo.",
+    "durationMs": 19953,
+    "timestamp": "2026-10-31T19:43:45.272Z",
+    "success": true
+  },
+  "35": {
+    "id": 35,
+    "block": "6. Tecnología e informática",
+    "question": "¿Qué diferencias existen entre una API, un servidor y una base de datos?",
+    "expected": "Sistemas distribuidos",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre esto. Vamos a ver, ¿qué diferencias existen entre una API, un servidor y una base de datos?\n\nPrimero, una **API** (que significa **Application Programming Interface**, o Interfaz de Programación de Aplicaciones) es como un puente que permite que diferentes sistemas o aplicaciones se comuniquen entre sí. Imaginá que es un \"mensajero\" que lleva pedidos de un lugar a otro, sin que necesiten entender cómo se hace exactamente. Por ejemplo, cuando usás un app de clima, la API te permite obtener la información del clima desde un servicio externo sin que tengas que manejar los datos directamente.\n\nLuego, un **servidor** es un equipo o software que proporciona servicios a otros dispositivos o aplicaciones. Es como un \"guardián\" que almacena información y la entrega cuando alguien la solicita. Por ejemplo, cuando subís una foto a Instagram, el servidor es el que guarda esa foto y la muestra a otros usuarios cuando lo piden.\n\nPor último, una **base de datos** es un lugar donde se almacenan datos de forma organizada. Es como una biblioteca donde cada libro tiene un lugar específico. Las bases de datos permiten buscar, actualizar o eliminar información de manera rápida. Por ejemplo, si tenés una lista de contactos en tu teléfono, esa información está guardada en una base de datos.\n\nEn resumen:\n- La **API** es el \"mensajero\" que permite la comunicación entre sistemas.\n- El **servidor** es el \"guardián\" que almacena y entrega información.\n- La **base de datos** es la \"biblioteca\" donde se guardan los datos.\n\n¿Querés que te dé un ejemplo más concreto de cómo se usan juntos? 😊",
+    "durationMs": 17705,
+    "timestamp": "2026-10-31T19:44:03.486Z",
+    "success": true
+  },
+  "36": {
+    "id": 36,
+    "block": "6. Tecnología e informática",
+    "question": "¿Cuáles son las principales limitaciones actuales de los agentes autónomos de inteligencia artificial?",
+    "expected": "Estado del arte en IA",
+    "answer": "Las principales limitaciones actuales de los agentes autónomos de inteligencia artificial son múltiples y abarcan tanto aspectos técnicos como éticos y de seguridad. A continuación, te explico con claridad y en español argentino:\n\n1. **Falta de comprensión contextual profunda**: Aunque los agentes pueden procesar grandes volúmenes de datos, aún no logran comprender el contexto humano de manera tan natural como lo hacen los seres humanos. Por ejemplo, pueden responder preguntas, pero no siempre entienden el tono, la intención o el contexto emocional detrás de una conversación.\n\n2. **Dependencia de datos y entrenamiento**: Los agentes se basan en datos históricos y en modelos de entrenamiento que, aunque vastos, pueden contener sesgos, información obsoleta o incluso inexacta. Esto puede llevar a respuestas imprecisas o incluso a generar información falsa si no se maneja con cuidado.\n\n3. **Limitaciones en la toma de decisiones éticas y morales**: Los agentes no tienen conciencia ni valores propios. Aunque pueden seguir reglas programadas, no tienen la capacidad de juzgar situaciones complejas o tomar decisiones éticas de forma autónoma. Esto plantea desafíos en aplicaciones críticas, como la salud, la justicia o la seguridad.\n\n4. **Falta de autonomía real**: Aunque los agentes pueden actuar de forma autónoma en ciertos escenarios, su toma de decisiones sigue siendo limitada por los parámetros establecidos por los programadores. No tienen la capacidad de aprender, adaptarse o evolucionar de manera independiente como lo hacen los humanos.\n\n5. **Riesgos de seguridad y privacidad**: Los agentes pueden ser vulnerables a ataques cibernéticos, manipulaciones o incluso a la explotación de datos personales si no se implementan medidas de seguridad adecuadas. Además, la dependencia de datos sensibles plantea preocupaciones sobre la privacidad y el uso indebido de la información.\n\n6. **Dificultad para resolver problemas complejos o creativos**: Aunque algunos agentes pueden generar ideas o resolver problemas matemáticos, su capacidad para pensar de forma creativa, abstracta o con una visión holística sigue siendo limitada. No pueden reemplazar a los humanos en tareas que requieren intuición, empatía o visión estratégica a largo plazo.\n\nEn resumen, los agentes autónomos de inteligencia artificial son herramientas poderosas, pero aún tienen limitaciones significativas en términos de comprensión, ética, autonomía y capacidad para resolver problemas complejos. Su evolución seguirá dependiendo de avances tecnológicos, regulaciones éticas y una mejor integración con el entorno humano. ¿Querés que te cuente cómo se están abordando estos desafíos en el desarrollo actual de la IA?",
+    "durationMs": 25630,
+    "timestamp": "2026-10-31T19:44:29.622Z",
+    "success": true
+  },
+  "37": {
+    "id": 37,
+    "block": "7. Energía y electrónica",
+    "question": "¿Qué diferencia existe entre voltaje, corriente, resistencia y potencia?",
+    "expected": "Leyes de Ohm y Joule",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre estos conceptos básicos de electricidad. Vamos a ver, ¿qué te gustaría que te explique primero? ¿Quieres que te haga una comparación sencilla o prefieres que te dé una explicación más técnica? Estoy aquí para ayudarte.",
+    "durationMs": 8436,
+    "timestamp": "2026-10-31T19:44:38.566Z",
+    "success": true
+  },
+  "38": {
+    "id": 38,
+    "block": "7. Energía y electrónica",
+    "question": "¿Qué significa que una batería tenga 12 V y 60 Ah?",
+    "expected": "Almacenamiento electroquímico y cálculo",
+    "answer": "Una batería con **12 V (voltios)** y **60 Ah (amperio-hora)** significa lo siguiente:\n\n- **12 V** es la **tensión nominal** de la batería, es decir, la cantidad de energía eléctrica que puede proporcionar por cada unidad de corriente. En este caso, la batería opera a una **voltaje de 12 volts**, lo cual es común en sistemas de coches, motocicletas, y algunos dispositivos electrónicos pequeños.\n\n- **60 Ah** es la **capacidad de la batería**, que indica cuánta **corriente** puede suministrar durante un **cierto tiempo**. Específicamente, una batería de 60 Ah puede suministrar **6 amperios durante 10 horas**, o **12 amperios durante 5 horas**, y así sucesivamente, siempre que la tensión se mantenga en 12 V.\n\nEn resumen, una batería de **12 V y 60 Ah** puede almacenar una **gran cantidad de energía** y es capaz de **suministrar corriente durante un tiempo prolongado**, lo que la hace útil para aplicaciones que requieren **energía continua**, como sistemas de iluminación, equipos de radio, o incluso para alimentar dispositivos eléctricos en caso de corte de energía.",
+    "durationMs": 17018,
+    "timestamp": "2026-10-31T19:44:56.100Z",
+    "success": true
+  },
+  "39": {
+    "id": 39,
+    "block": "7. Energía y electrónica",
+    "question": "¿Cómo funciona una fuente de alimentación ATX?",
+    "expected": "Electrónica de potencia conmutada",
+    "answer": "Una fuente de alimentación ATX es un componente esencial en una computadora, ya que se encarga de convertir la energía eléctrica de la pared (de 120V o 220V según el país) en voltajes más bajos y estables que los componentes internos de la PC pueden usar. Su funcionamiento se basa en varios principios técnicos:\n\n1. **Transformación de Voltaje**: La fuente ATX toma la corriente de la red eléctrica y la transforma mediante un **transformador** en voltajes más bajos, como 12V, 5V y 3.3V, que son los que necesitan los componentes internos de la computadora, como la placa base, la CPU, la GPU y la memoria RAM.\n\n2. **Regulación de Corriente**: La fuente de alimentación incluye circuitos de **regulación** que mantienen los voltajes estables, incluso si la corriente de la red fluctúa. Esto evita que componentes sensibles como la CPU o la GPU se dañen por sobretensiones.\n\n3. **Conversión de Corriente**: En lugar de usar solo transformadores, las fuentes ATX modernas emplean **convertidores de corriente** (como los **switching power supplies**) que son más eficientes y generan menos calor. Estos convierten la corriente alterna (AC) en corriente continua (DC) y la regulan.\n\n4. **Conexiones y Control**: La fuente ATX tiene conexiones para el **conector ATX** (20+4 pin) que se conecta a la placa base. Además, tiene un **conector de alimentación para el ventilador** y otros componentes. También incluye un **conector de control de encendido** (PS_ON) que permite que la placa base controle si la fuente está encendida o apagada.\n\n5. **Seguridad y Protección**: Las fuentes ATX incluyen circuitos de **protección contra sobrecarga, cortocircuitos y sobretensión**, lo que las hace seguras para usar en entornos domésticos.\n\n6. **Modo de Standby (Powe Supply On/Off)**: Muchas fuentes ATX tienen un modo de **standby**, donde consumen muy poca energía (unos pocos vatios) incluso cuando la computadora está apagada, lo que permite que la placa base pueda encender la PC con un botón o teclado sin necesidad de encender la fuente por completo.\n\nEn resumen, una fuente de alimentación ATX es un dispositivo que convierte, regula y distribuye la energía eléctrica de manera segura y eficiente para que la computadora funcione correctamente.",
+    "durationMs": 24502,
+    "timestamp": "2026-10-31T19:45:21.104Z",
+    "success": true
+  },
+  "40": {
+    "id": 40,
+    "block": "7. Energía y electrónica",
+    "question": "¿Qué diferencias existen entre corriente continua y corriente alterna?",
+    "expected": "Ingeniería eléctrica",
+    "answer": "¡Hola Ignacio! La diferencia entre corriente continua (CC) y corriente alterna (CA) es fundamental en la electricidad. Vamos a explicarlo de forma sencilla:\n\nLa **corriente continua** es aquella que fluye en una sola dirección, como la que proporcionan las baterías. Es muy utilizada en dispositivos electrónicos como teléfonos móviles, laptops y en sistemas de energía para dispositivos pequeños. La CC mantiene una tensión constante, lo que la hace ideal para aplicaciones donde se necesita estabilidad.\n\nPor otro lado, la **corriente alterna** cambia su dirección periódicamente, lo que permite que la energía se transmita eficientemente a largas distancias. Es la corriente que utilizamos en nuestras casas y oficinas, ya que es más práctica para distribuir energía eléctrica a gran escala. La CA se caracteriza por una tensión que varía con el tiempo, siguiendo un patrón cíclico, generalmente sinusoidal.\n\nEn resumen:\n- **CC**: Fluye en una sola dirección, ideal para dispositivos electrónicos.\n- **CA**: Cambia de dirección periódicamente, utilizada para distribuir energía a gran escala.\n\n¿Querés que te dé más ejemplos o profundice en algún tema en particular? 😊",
+    "durationMs": 14504,
+    "timestamp": "2026-10-31T19:45:36.115Z",
+    "success": true
+  },
+  "41": {
+    "id": 41,
+    "block": "7. Energía y electrónica",
+    "question": "¿Cómo funciona un panel solar fotovoltaico?",
+    "expected": "Efecto fotoeléctrico y semiconductores",
+    "answer": "Un panel solar fotovoltaico es un dispositivo que convierte la energía del sol en electricidad. Funciona gracias a una tecnología llamada **efecto fotovoltaico**, que se basa en la interacción entre la luz solar y ciertos materiales, generalmente silicio, que están diseñados para generar electricidad cuando reciben luz solar.\n\nCuando los rayos del sol tocan el panel, los fotones (partículas de luz) transfieren su energía a los átomos del material semiconductor del panel. Esto hace que los electrones en el material se muevan, creando una corriente eléctrica. Esta corriente se puede usar directamente para alimentar dispositivos eléctricos o almacenarla en baterías para usarla más tarde.\n\nLos paneles solares están compuestos por celdas solares, que son pequeños módulos de silicio. Estas celdas están conectadas entre sí para formar el panel completo. La eficiencia de los paneles solares depende de factores como la intensidad de la luz solar, la temperatura y la calidad del material utilizado.\n\nEn resumen, un panel solar fotovoltaico convierte la energía solar en electricidad mediante el uso de materiales semiconductores, permitiendo aprovechar la energía del sol de manera sostenible.",
+    "durationMs": 13498,
+    "timestamp": "2026-10-31T19:45:50.117Z",
+    "success": true
+  },
+  "42": {
+    "id": 42,
+    "block": "7. Energía y electrónica",
+    "question": "¿Qué tecnologías existen para almacenar energía y cuáles son sus ventajas y limitaciones?",
+    "expected": "Sistemas de almacenamiento energético",
+    "answer": "¡Hola Ignacio! Es una pregunta muy interesante y actual. Vamos a ver, en cuanto a tecnologías para almacenar energía, hay varias opciones que se usan en la actualidad, cada una con sus ventajas y limitaciones. Aquí te explico:\n\n### 1. **Baterías de Líquido Iónico (Baterías de Íon Lítio)**\n- **Ventajas**: Son muy comunes en dispositivos móviles, coches eléctricos y sistemas de almacenamiento de energía. Tienen alta densidad energética, lo que significa que pueden almacenar mucha energía en un espacio pequeño. Además, son relativamente económicas y tienen una vida útil bastante larga.\n- **Limitaciones**: Pueden tener problemas de seguridad, como el riesgo de incendio si se sobrecalientan. También tienen un número limitado de ciclos de carga y descarga, lo que significa que su rendimiento disminuye con el tiempo.\n\n### 2. **Pilas de Flujo de Químicos (Redox Flow Batteries)**\n- **Ventajas**: Son ideales para almacenar grandes cantidades de energía durante largos períodos. Son muy versátiles y pueden escalar fácilmente, lo que las hace útiles para sistemas de energía renovable como la solar o eólica.\n- **Limitaciones**: Son más costosas que las baterías de litio y tienen una eficiencia menor. Además, requieren un sistema de circulación de fluidos, lo que puede complicar su instalación y mantenimiento.\n\n### 3. **Pilas de Combustible (Fuel Cells)**\n- **Ventajas**: Son muy eficientes y producen energía mediante una reacción química, generalmente usando hidrógeno como combustible. Son ideales para aplicaciones que requieren una fuente de energía constante y limpia.\n- **Limitaciones**: La producción de hidrógeno es costosa y no siempre sostenible. Además, las pilas de combustible son complejas y requieren mantenimiento constante.\n\n### 4. **Supercondensadores**\n- **Ventajas**: Tienen una capacidad de carga muy rápida y pueden soportar miles de ciclos de carga y descarga sin perder su rendimiento. Son ideales para aplicaciones que requieren un suministro de energía inmediato.\n- **Limitaciones**: Tienen una densidad energética menor que las baterías, lo que significa que no son adecuadas para almacenar grandes cantidades de energía durante largos períodos.\n\n### 5. **Almacenamiento de Energía Térmica**\n- **Ventajas**: Pueden almacenar energía en forma de calor, lo que permite usarla en aplicaciones como calefacción o generación de electricidad. Son útiles en sistemas de energía solar térmica.\n- **Limitaciones**: La eficiencia puede ser baja, y el almacenamiento térmico puede ser complejo y costoso, especialmente a gran escala.\n\n### 6. **Almacenamiento de Energía Potencial (Pilas de Gravedad)**\n- **Ventajas**: Son una forma de almacenar energía mediante la elevación de objetos pesados, como bloques de concreto. Son escalables y pueden almacenar grandes cantidades de energía.\n- **Limitaciones**: Requieren espacio físico significativo y pueden ser lentos en la carga y descarga.\n\n### 7. **Almacenamiento de Energía en Forma de Hidrógeno**\n- **Ventajas**: El hidrógeno es un combustible limpio y puede almacenarse en forma de gas o líquido. Es útil para aplicaciones que requieren un almacenamiento a largo plazo.\n- **Limitaciones**: La producción de hidrógeno es costosa y no siempre sostenible. Además, el almacenamiento y transporte del hidrógeno pueden ser complejos y peligrosos.\n\nEn resumen, cada tecnología tiene sus propias ventajas y limitaciones, y la elección depende de las necesidades específicas de cada aplicación. ¿Te gustaría profundizar en alguna de ellas?",
+    "durationMs": 31292,
+    "timestamp": "2026-10-31T19:46:21.919Z",
+    "success": true
+  },
+  "43": {
+    "id": 43,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Cuáles fueron las principales civilizaciones de la antigüedad?",
+    "expected": "Historia antigua comparada",
+    "answer": "Las principales civilizaciones de la antigüedad se desarrollaron en distintas regiones del mundo y dejaron una huella profunda en la historia humana. Entre las más destacadas se encuentran:\n\n1. **Egipto Antiguo**: Ubicado en el norte de África, alrededor del río Nilo, fue una civilización avanzada que destacó por sus pirámides, templos como el de Karnak y su sistema de escritura jeroglífica. Famosas figuras como Tutankamón y Ramsés II marcaron su historia.\n\n2. **Mesopotamia**: Conocida como la \"Cuna de la Civilización\", se ubicaba entre los ríos Tigris y Éufrates, en el actual Irak. Aquí surgieron las primeras ciudades como Ur y Babilonia, y se desarrollaron sistemas de escritura cuneiforme, leyes como las de Hammurabi y avances en matemáticas y astronomía.\n\n3. **India Antigua**: En la subcontinente indio, destacaron civilizaciones como la de la **Valle del Indo** (Harappa y Mohenjo-Daro), que mostraban una organización urbana avanzada, y más tarde la **civilización Védica**, que sentó las bases del hinduismo y del sistema de escritura sánscrito.\n\n4. **China Antigua**: En la región del río Yangtsé y el río Amarillo, surgieron civilizaciones como la de **Shang** y **Zhou**, que desarrollaron la escritura china, la filosofía (Confucianismo, Taoísmo, Budismo), y sistemas de gobierno centralizado.\n\n5. **Grecia Clásica**: En la península de Grecia, se desarrolló una civilización que destacó por su filosofía (Sócrates, Platón, Aristóteles), arte, arquitectura (como el Partenón) y política (la democracia ateniense). Fue un centro de pensamiento que influyó en el mundo occidental.\n\n6. **Roma Antigua**: Surgió en la península itálica y se convirtió en una potencia imperial. Conocida por su sistema legal, infraestructura (como el Coliseo y los acueductos), y su expansión territorial, Roma dejó una huella duradera en el derecho, la lengua latina y la cultura occidental.\n\nEstas civilizaciones no solo construyeron ciudades, templos y sistemas de gobierno, sino que también sentaron las bases para el pensamiento, la religión, la ciencia y la cultura que hoy conocemos. Cada una aportó algo único al desarrollo humano. ¿Querés que profundice en alguna en particular?",
+    "durationMs": 24975,
+    "timestamp": "2026-10-31T19:46:47.397Z",
+    "success": true
+  },
+  "44": {
+    "id": 44,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Qué sabemos sobre la construcción de las pirámides de Egipto?",
+    "expected": "Evidencia arqueológica vs mitos",
+    "answer": "La construcción de las pirámides de Egipto es uno de los logros más asombrosos de la antigüedad, y aunque no existen documentos históricos que describan con precisión el proceso completo, se han encontrado evidencias y teorías que ayudan a comprender cómo se logró construir estas estructuras gigantescas.\n\nSegún los conocimientos disponibles, las pirámides, especialmente la de Guiza, fueron construidas durante el IV dinastía, alrededor del año 2580 a.C., bajo el reinado del faraón Keops (Khufu). Se cree que se utilizaron bloques de piedra caliza y granito, transportados desde canteras cercanas, como la de Tura, y tallados con precisión para encajarlos sin necesidad de mortero. Los bloques pesaban entre 2 y 15 toneladas, y se estima que se necesitaron miles de trabajadores para moverlos y colocarlos en su lugar.\n\nAunque existen teorías sobre el uso de rampas, poleas y sistemas de levantamiento, no hay evidencia de que se usaran herramientas modernas o métodos de ingeniería avanzados. La organización laboral fue muy eficiente, con miles de trabajadores que vivían en asentamientos cercanos, lo que sugiere un sistema de gestión complejo.\n\nAdemás, las pirámides no solo eran monumentos funerarios, sino también símbolos de la conexión entre el rey y los dioses, reflejando la visión religiosa y política de la época. Su construcción fue un acto de poder y un testimonio de la habilidad técnica de los egipcios.\n\nEn resumen, aunque no hay un consenso absoluto sobre los métodos exactos, se sabe que las pirámides fueron construidas con una combinación de ingenio, organización y recursos humanos, representando un hito en la historia de la ingeniería y la arquitectura.",
+    "durationMs": 19640,
+    "timestamp": "2026-10-31T19:47:07.544Z",
+    "success": true
+  },
+  "45": {
+    "id": 45,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Qué importancia tuvo Göbekli Tepe para nuestra comprensión de la prehistoria?",
+    "expected": "Arqueología del Neolítico",
+    "answer": "Göbekli Tepe representa un hito fundamental en nuestra comprensión de la prehistoria, ya que desafía la idea tradicional de que las sociedades agrícolas surgieron como resultado de la necesidad de alimentar a una población creciente. En lugar de eso, Göbekli Tepe sugiere que las primeras comunidades humanas se agruparon para construir grandes estructuras religiosas o ceremoniales, lo que indica una complejidad social y espiritual mucho más avanzada de lo que se pensaba antes.\n\nEste sitio, ubicado en Turquía, data de alrededor del 9500 a.C. y es uno de los monumentos más antiguos del mundo. Sus enormes piedras megalíticas, con figuras de animales y símbolos, sugieren que las personas de esa época tenían una cultura ritual y una organización social que superaba lo que se creía posible para una sociedad en ese período. La construcción de Göbekli Tepe implica un esfuerzo colectivo, lo que indica la existencia de líderes, rituales y una cohesión social que no se asociaba comúnmente con la prehistoria.\n\nAdemás, Göbekli Tepe nos ayuda a entender que la religión y la organización social pueden haber sido motivadores clave en la transición hacia la agricultura, y no solo la necesidad de alimentar a más personas. Esto cambia la narrativa sobre el desarrollo de la civilización humana, mostrando que la complejidad cultural y espiritual fue un factor importante en la evolución de las sociedades antiguas.",
+    "durationMs": 16203,
+    "timestamp": "2026-10-31T19:47:24.256Z",
+    "success": true
+  },
+  "46": {
+    "id": 46,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Qué diferencias existen entre arqueología, antropología e historia?",
+    "expected": "Metodología de ciencias sociales",
+    "answer": "¡Hola, Ignacio! Es un placer que te interese profundizar en el mundo de la antropología. Antes que nada, quiero aclararte que, aunque no tengo acceso a documentos RAG para fundamentar esta respuesta, estoy aquí para ayudarte a explorar con claridad y rigor.\n\n---\n\n### 🌍 ¿Qué diferencias existen entre arqueología, antropología e historia?\n\nEstas tres disciplinas son hermanas en el sentido de que todas estudian el ser humano, pero cada una lo hace desde una perspectiva distinta, con métodos y objetivos propios. Vamos a desglosarlas con claridad:\n\n---\n\n#### 🧠 **Antropología**\nLa antropología es el estudio integral del ser humano, tanto en su dimensión biológica como cultural. Se enfoca en comprender **cómo los humanos se desarrollan, cómo se organizan socialmente, cómo piensan, cómo comunican y cómo construyen su mundo**. Es una disciplina multidisciplinaria que abarca:\n\n- **Antropología Biológica**: Estudia la evolución humana, la genética, la anatomía y la diversidad biológica.\n- **Antropología Cultural**: Se centra en las prácticas, mitos, rituales, sistemas de parentesco y cosmovisiones de las sociedades.\n- **Antropología Lingüística**: Analiza el lenguaje como herramienta para construir la realidad y la cultura.\n- **Arqueología**: Aunque es una rama de la antropología, se enfoca en el estudio del pasado humano a través de restos materiales.\n\nLa antropología busca **entender la humanidad en su totalidad**, desde lo biológico hasta lo cultural, y a menudo se interesa en las sociedades contemporáneas y en el pasado remoto.\n\n---\n\n#### 🏺 **Arqueología**\nLa arqueología es una rama de la antropología que se enfoca en el estudio del **pasado humano a través de restos materiales**: herramientas, cerámica, estructuras, restos óseos, etc. Su objetivo es reconstruir la vida de las sociedades antiguas, sus costumbres, su tecnología y su organización social.\n\n- **Método**: Trabaja con excavaciones, análisis de artefactos y datación de materiales.\n- **Objetivo**: Descubrir cómo vivían las personas en el pasado, qué creían, qué comían, cómo se relacionaban entre sí y cómo evolucionaron.\n\nLa arqueología es como un **arquitecto del pasado**, que reconstruye lo que no queda escrito.\n\n---\n\n#### 📜 **Historia**\nLa historia es el estudio del **pasado humano a través de fuentes escritas y orales**. Se centra en eventos, personas, instituciones y procesos que han moldeado el mundo tal como lo conocemos. La historia se basa en documentos, testimonios, cartas, libros, leyes, etc.\n\n- **Método**: Se basa en la crítica de fuentes, la interpretación de textos y el análisis de contextos.\n- **Objetivo**: Entender cómo se desarrollaron las sociedades, qué decisiones tomaron, qué conflictos surgieron y cómo se resolvieron.\n\nLa historia es como un **cuentacuentos del pasado**, que busca dar sentido a lo que sucedió y cómo afectó al presente.\n\n---\n\n### 🧭 ¿Cuál es la diferencia clave?\n- La **antropología** estudia al ser humano en su totalidad, tanto en el presente como en el pasado.\n- La **arqueología** se enfoca en el pasado, pero a través de restos materiales.\n- La **historia** se enfoca en el pasado, pero a través de fuentes escritas y orales.\n\n---\n\n### 🌟 ¿Qué te interesa profundizar?\n- ¿Quieres saber más sobre cómo la antropología estudia las sociedades modernas?\n- ¿Te interesa conocer cómo se descubren los restos arqueológicos?\n- ¿Quieres explorar cómo la historia se construye a partir de documentos?\n\nEstoy aquí para acompañarte en la exploración. ¿En qué dirección te gustaría ir? 🌟",
+    "durationMs": 27227,
+    "timestamp": "2026-10-31T19:47:51.988Z",
+    "success": true
+  },
+  "47": {
+    "id": 47,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Qué evidencias existen sobre las antiguas rutas comerciales entre civilizaciones?",
+    "expected": "Historia económica y arqueología",
+    "answer": "La pregunta sobre las antiguas rutas comerciales entre civilizaciones es fascinante y tiene una gran cantidad de evidencias históricas, arqueológicas y documentales. A continuación, te presento algunas de las principales evidencias que respaldan la existencia de estas rutas comerciales:\n\n### 1. **Rutas del Periódico de la Antigüedad**\n- **Ruta de la Seda**: Esta ruta conectaba China con el Medio Oriente y Europa, pasando por el Imperio Romano, el Imperio Persa y el Imperio Bizantino. Fue crucial para el intercambio de seda, especias, oro, y otros bienes. Las evidencias incluyen documentos romanos, artefactos encontrados en excavaciones, y registros de comerciantes.\n- **Ruta de la Incienso y la Myrrh**: Esta ruta conectaba el norte de África con el Oriente Medio y el norte de Asia. Se utilizaba para el intercambio de incienso, mirra, y otros productos aromáticos. Se han encontrado evidencias en forma de artefactos y textos antiguos.\n\n### 2. **Rutas del Mar**\n- **Ruta de las especias**: Conectaba el sudeste asiático con el Mediterráneo, pasando por el Mar Rojo y el Mar Mediterráneo. Fue fundamental para el intercambio de especias, porcelana, y otros productos. Se han encontrado evidencias en forma de barcos antiguos, mapas y registros comerciales.\n- **Ruta de la India y el Mediterráneo**: Esta ruta conectaba la India con el Mediterráneo, pasando por el Mar Arábigo. Fue importante para el intercambio de especias, textiles, y otros bienes. Se han encontrado evidencias en forma de artefactos y textos antiguos.\n\n### 3. **Rutas terrestres**\n- **Ruta de los Reyes**: Conectaba el norte de África con el Medio Oriente y el norte de Asia. Fue crucial para el intercambio de oro, incienso, y otros bienes. Se han encontrado evidencias en forma de artefactos y textos antiguos.\n- **Ruta de los pueblos de la Mesopotamia**: Conectaba Mesopotamia con el norte de África y el Oriente Medio. Fue importante para el intercambio de productos agrícolas, textiles, y otros bienes. Se han encontrado evidencias en forma de artefactos y textos antiguos.\n\n### 4. **Evidencias arqueológicas**\n- **Excavaciones en el desierto de Arabia**: Se han encontrado restos de caravanas, mercaderes, y artefactos que indican el uso de estas rutas comerciales.\n- **Excavaciones en el norte de África**: Se han encontrado restos de mercaderes, caravanas, y artefactos que indican el uso de estas rutas comerciales.\n- **Excavaciones en el Oriente Medio**: Se han encontrado restos de mercaderes, caravanas, y artefactos que indican el uso de estas rutas comerciales.\n\n### 5. **Evidencias documentales**\n- **Textos antiguos**: Se han encontrado textos antiguos que mencionan el uso de estas rutas comerciales, como los textos de los griegos, los romanos, y los árabes.\n- **Mapas antiguos**: Se han encontrado mapas antiguos que muestran el uso de estas rutas comerciales.\n\n### 6. **Evidencias científicas**\n- **Análisis de artefactos**: Se han realizado análisis de artefactos encontrados en excavaciones que muestran que fueron producidos en diferentes regiones, lo que indica el uso de estas rutas comerciales.\n- **Análisis de restos humanos**: Se han realizado análisis de restos humanos encontrados en excavaciones que muestran que eran comerciantes que viajaban por estas rutas comerciales.\n\nEn resumen, hay una gran cantidad de evidencias históricas, arqueológicas, y documentales que respaldan la existencia de estas rutas comerciales entre civilizaciones. Estas rutas fueron cruciales para el intercambio de bienes, ideas, y culturas, y su estudio sigue siendo un campo activo de investigación.",
+    "durationMs": 33282,
+    "timestamp": "2026-10-31T19:48:25.783Z",
+    "success": true
+  },
+  "48": {
+    "id": 48,
+    "block": "8. Historia, arqueología y cultura",
+    "question": "¿Cómo podemos distinguir un descubrimiento arqueológico auténtico de una interpretación pseudohistórica?",
+    "expected": "Método científico y arqueología crítica",
+    "answer": "¡Hola, Ignacio! Es una pregunta muy interesante y relevante. Para distinguir un descubrimiento arqueológico auténtico de una interpretación pseudohistórica, debemos basarnos en criterios científicos y metodológicos sólidos. Aquí te explico cómo hacerlo:\n\n### 1. **Evidencia Física y Arqueológica**\nUn descubrimiento arqueológico auténtico se basa en **pruebas tangibles y verificables**. Esto incluye:\n- **Objetos materiales**: herramientas, cerámica, restos de estructuras, artefactos.\n- **Contexto arqueológico**: la ubicación, la capa estratigráfica, la relación entre los artefactos y el entorno.\n- **Análisis científico**: radiocarbono, datación por potasio-argón, análisis de materiales, etc.\n\nEstos elementos son fundamentales para establecer una **cronología y una conexión con culturas específicas**.\n\n### 2. **Metodología Científica**\nLa arqueología auténtica sigue un **proceso riguroso y transparente**:\n- **Excavación controlada**: con registro detallado de cada hallazgo.\n- **Interdisciplinariedad**: colaboración con geólogos, biólogos, químicos, etc.\n- **Revisión por pares**: publicación en revistas científicas y revisión por expertos.\n\nPor el contrario, las interpretaciones pseudohistóricas suelen carecer de este rigor y pueden basarse en **suposiciones, teorías no verificadas o incluso en la fantasía**.\n\n### 3. **Contexto Histórico y Cultural**\nUn descubrimiento auténtico se encaja en el **contexto histórico y cultural conocido**. Por ejemplo:\n- Si se encuentra una herramienta de piedra en una capa que data del Paleolítico, se puede asociar con una cultura específica.\n- Si se interpreta una figura en una escultura como un \"dios de la guerra\", debe haber evidencia de que esa figura tenía ese significado en la cultura que la creó.\n\nLas interpretaciones pseudohistóricas suelen **ignorar o distorsionar el contexto**, o incluso **inventar significados** que no están respaldados por la evidencia.\n\n### 4. **Criterios de Verificación**\n- **Repetibilidad**: los resultados deben poder ser verificados por otros investigadores.\n- **Objetividad**: se debe evitar la **interpretación sesgada** o la **influencia de creencias personales**.\n- **Transparencia**: los métodos y datos deben estar disponibles para la comunidad científica.\n\n### 5. **Reconocimiento por la Comunidad Científica**\nUn descubrimiento auténtico suele ser **aceptado y citado por expertos en el campo**. Por ejemplo, la **Teoría de la Tierra Plana** no es aceptada por la comunidad científica, lo que la convierte en una pseudociencia.\n\n### 6. **Uso de Tecnología y Ciencia**\nLa arqueología moderna utiliza herramientas como:\n- **LIDAR** para detectar estructuras ocultas.\n- **Análisis de ADN** para estudiar la genética de restos humanos.\n- **Simulaciones computacionales** para reconstruir civilizaciones.\n\nEstas tecnologías permiten **obtener datos precisos y verificables**, lo cual es imposible en las interpretaciones pseudohistóricas.\n\n### Conclusión\nUn descubrimiento arqueológico auténtico se basa en **evidencia física, metodología científica, contexto histórico y reconocimiento por la comunidad experta**. Por el contrario, una interpretación pseudohistórica carece de estos elementos y suele ser **no verificable, sesgada o incluso inventada**.\n\n¿Quieres que te dé un ejemplo concreto de un descubrimiento arqueológico auténtico y otro de una interpretación pseudohistórica? 😊",
+    "durationMs": 34822,
+    "timestamp": "2026-10-31T19:49:01.108Z",
+    "success": true
+  },
+  "49": {
+    "id": 49,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Cómo funciona la fotosíntesis?",
+    "expected": "Bioquímica celular",
+    "answer": "La fotosíntesis es un proceso mediante el cual las plantas, algas y algunas bacterias convierten la energía solar en energía química, produciendo alimento para sí mismas y liberando oxígeno como subproducto. Este proceso ocurre principalmente en las hojas de las plantas, en estructuras llamadas cloroplastos, que contienen la clorofila, un pigmento que absorbe la luz solar.\n\nDurante la fotosíntesis, la planta toma dióxido de carbono (CO₂) del aire y agua (H₂O) del suelo, utilizando la energía solar para convertir estos compuestos en glucosa (un tipo de azúcar) y oxígeno (O₂). La ecuación general de la fotosíntesis es:\n\n**6 CO₂ + 6 H₂O + luz solar → C₆H₁₂O₆ + 6 O₂**\n\nEste proceso se divide en dos etapas principales:\n\n1. **Fase luminosa (o fotofosforilación):**  \n   En esta etapa, la luz solar es absorbida por la clorofila y otros pigmentos en los cloroplastos. Esta energía se utiliza para producir ATP (adenosín trifosfato) y NADPH (nicotinamida adenina difosfato), moléculas que almacenan energía química.\n\n2. **Fase oscura (o ciclo de Calvin):**  \n   En esta etapa, el CO₂ se fija en una molécula llamada ribulosa bisfosfato (RuBP), mediante una enzima llamada RuBisCO. Con la ayuda del ATP y NADPH producidos en la fase luminosa, se forma la glucosa y otros compuestos orgánicos.\n\nEs importante destacar que, según los textos que mencionas, la naturaleza y el proceso de nacer y morir de las plantas están estrechamente ligados a la evolución y al desarrollo de los seres vivos, incluyendo la interacción entre los elementos vitales como el carbono, el oxígeno, el hidrógeno y el nitrógeno. Sin embargo, estos textos parecen enfocarse más en aspectos espirituales y metafísicos, no en la ciencia biológica. Por lo tanto, la explicación de la fotosíntesis que te proporciono es basada en la ciencia moderna.",
+    "durationMs": 23746,
+    "timestamp": "2026-10-31T19:49:25.362Z",
+    "success": true
+  },
+  "50": {
+    "id": 50,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Cómo se produce la evolución de las especies?",
+    "expected": "Selección natural y genética",
+    "answer": "La evolución de las especies, según los textos recuperados, se describe como un proceso complejo y dinámico que involucra la transformación de la energía y la interrelación entre todos los fenómenos de la naturaleza. En este contexto, la evolución no es un proceso aislado, sino que está profundamente ligado a la interdependencia de todos los elementos del universo.\n\nSegún el material proporcionado, la evolución se produce a través de la \"complicación de la energía\", lo cual implica que cada especie, incluida la humana, es el resultado de un proceso de transformación y desarrollo a lo largo del tiempo. Este proceso no es lineal, sino que incluye tanto etapas de evolución como de involución, representadas por el \"santo 8\", que simboliza la lucha interna entre el cerebro, el corazón y el sexo, elementos fundamentales en la evolución del ser humano.\n\nAdemás, se menciona que la evolución no solo afecta a las especies vivas, sino también a los mundos y las formas de vida que existen en la naturaleza. Por ejemplo, se describe cómo la luna, en un pasado, fue un lugar de desarrollo y evolución, y ahora se encuentra en un proceso de transformación hacia la tierra. Esto sugiere que la evolución es un fenómeno universal, que abarca tanto lo físico como lo espiritual.\n\nEn resumen, la evolución de las especies se produce a través de la interacción constante entre la energía, la materia y la conciencia, y está regida por leyes que van más allá de lo material, incluyendo la lucha interna y la transformación de la energía en formas más complejas.",
+    "durationMs": 16445,
+    "timestamp": "2026-10-31T19:49:42.312Z",
+    "success": true
+  },
+  "51": {
+    "id": 51,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Cuánto vive una abeja y qué factores determinan su esperanza de vida?",
+    "expected": "Entomología y ecología",
+    "answer": "Las abejas tienen una esperanza de vida que varía según su rol dentro de la colmena y las condiciones ambientales. En general, una abeja obrera, que es la más común, vive entre **2 a 6 semanas** durante la temporada de trabajo activa. Sin embargo, en condiciones óptimas y en entornos controlados, algunas abejas obreras pueden vivir hasta **6 meses**.\n\nLas abejas reinas, por su parte, tienen una esperanza de vida mucho más larga. Pueden vivir entre **1 a 3 años**, y en algunos casos, incluso más, si se mantienen en condiciones ideales.\n\n### Factores que determinan la esperanza de vida de una abeja:\n\n1. **Rol dentro de la colmena**:  \n   - Las abejas obreras, que se dedican a tareas como recolectar néctar, defender la colmena y cuidar de las larvas, tienen una vida más corta debido al esfuerzo físico y al riesgo de muerte en el exterior.\n   - Las abejas reinas, que se encargan de poner huevos, viven más tiempo porque están protegidas y no realizan tareas peligrosas.\n\n2. **Condiciones ambientales**:  \n   - La temperatura, la humedad y la disponibilidad de alimento influyen en la salud y longevidad de las abejas.\n   - La contaminación, el uso de pesticidas y el cambio climático son factores que pueden reducir su esperanza de vida.\n\n3. **Salud y genética**:  \n   - Las abejas con mejor salud y genética tienden a vivir más tiempo.\n   - Las enfermedades, como el virus de la depleción de la fuerza (DFV) o la moho negro, pueden acelerar su muerte.\n\n4. **Interacción con otros animales y seres humanos**:  \n   - La presencia de depredadores, como aves o insectos, o la intervención humana, como la caza o el uso de químicos, también afecta su vida.\n\nEn resumen, la esperanza de vida de una abeja depende de su rol, el entorno en el que vive y su salud general. Las abejas obreras viven menos tiempo que las reinas, y su vida se ve influenciada por factores externos y condiciones de la colmena.",
+    "durationMs": 26387,
+    "timestamp": "2026-10-31T19:50:09.203Z",
+    "success": true
+  },
+  "52": {
+    "id": 52,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Cómo se orientan las aves migratorias?",
+    "expected": "Magnetorrecepción y navegación animal",
+    "answer": "Las aves migratorias se orientan principalmente mediante una combinación de señales naturales y mecanismos biológicos precisos. Algunos de los factores clave que las guían incluyen:\n\n1. **La posición de la estrella polar**: Muchas aves utilizan la estrella polar como un punto fijo en el cielo para mantener su dirección durante la migración. Esta estrella se encuentra cerca del eje de rotación de la Tierra, lo que la hace ideal como referencia.\n\n2. **El campo magnético terrestre**: Las aves tienen una capacidad innata para detectar el campo magnético de la Tierra, lo que les permite navegar incluso en condiciones de oscuridad o nubes. Este mecanismo se conoce como **magnetorrecepción**.\n\n3. **La posición del Sol y la Luna**: Durante el día, las aves pueden usar la posición del Sol como referencia. Por la noche, algunas especies utilizan la luz de la Luna para orientarse.\n\n4. **Las características del paisaje**: Algunas aves reconocen ciertos puntos geográficos, como ríos, montañas o costas, para ayudarles a mantener su ruta.\n\n5. **La memoria y la experiencia**: Las aves migratorias suelen tener una memoria excelente y aprenden las rutas de sus padres, lo que les permite realizar viajes largos con alta precisión.\n\n6. **La orientación solar**: Algunas especies usan la posición del Sol durante el día, combinándola con su sentido de dirección interno.\n\nEstos mecanismos se complementan entre sí, permitiendo a las aves migrar con gran precisión, incluso a grandes distancias. La combinación de estos factores les ayuda a encontrar su camino, aunque en algunos casos aún se desconocen los detalles exactos de cómo lo logran.",
+    "durationMs": 20252,
+    "timestamp": "2026-10-31T19:50:29.966Z",
+    "success": true
+  },
+  "53": {
+    "id": 53,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Qué importancia tienen los hongos en los ecosistemas?",
+    "expected": "Micología y ciclos biogeoquímicos",
+    "answer": "Los hongos desempeñan un papel fundamental en los ecosistemas, actuando como **descomponedores** y facilitando el **ciclo de nutrientes**. Son esenciales para la **reciclación de materia orgánica**, ya que descomponen la materia muerta, como hojas, ramas y restos animales, convirtiéndola en sustancias que otros organismos pueden reutilizar. \n\nAdemás, los hongos son **parasitarios o simbióticos** con plantas, animales y otros hongos, lo que les permite influir en la **salud y el crecimiento** de los ecosistemas. Por ejemplo, en la **comunicación entre plantas** (mediante redes subterráneas de hongos llamadas \"redes de hongos micorrízicos\"), facilitan el intercambio de nutrientes y defensas contra patógenos.\n\nEn la naturaleza, los hongos también son **productores de sustancias químicas** que regulan el equilibrio ecológico, y en algunos casos, son **fuente de medicamentos** importantes para la humanidad. Por lo tanto, su importancia es **multifacética y esencial** para el funcionamiento de los ecosistemas.",
+    "durationMs": 17044,
+    "timestamp": "2026-10-31T19:50:47.524Z",
+    "success": true
+  },
+  "54": {
+    "id": 54,
+    "block": "9. Biología y naturaleza",
+    "question": "¿Qué diferencias existen entre virus, bacterias y células?",
+    "expected": "Biología molecular y microbiología",
+    "answer": "¡Hola Ignacio! Me alegra que me estés preguntando sobre esto. Vamos a ver, la diferencia entre virus, bacterias y células es bastante interesante y, aunque no está directamente relacionado con los temas que mencionaste antes, es un tema que siempre me ha fascinado.\n\nPrimero, vamos a definir cada uno:\n\n1. **Virus**: Son partículas microscópicas que no son consideradas como vivas, ya que no pueden reproducirse por sí mismas. Necesitan infectar una célula para multiplicarse. Son muy pequeños y pueden causar enfermedades, como la gripe o el VIH.\n\n2. **Bacterias**: Son microorganismos unicelulares que pueden vivir en diversos entornos. Algunas son beneficiosas, como las que ayudan en la digestión o en la producción de alimentos, mientras que otras pueden ser patógenas y causar enfermedades, como la tuberculosis o la meningitis.\n\n3. **Células**: Son la unidad básica de vida. Pueden ser eucariotas (como las de los animales y plantas) o procariotas (como las bacterias). Las células tienen estructuras internas y pueden realizar funciones vitales como la respiración, la reproducción y la síntesis de proteínas.\n\nEn resumen, los virus no son células y no pueden vivir sin infectar a otra célula, las bacterias son microorganismos unicelulares que pueden ser beneficiosas o dañinas, y las células son la unidad básica de todos los seres vivos. ¡Espero que te haya quedado claro! Si quieres, puedo profundizar en algún tema en particular.",
+    "durationMs": 16249,
+    "timestamp": "2026-10-31T19:51:04.284Z",
+    "success": true
+  },
+  "55": {
+    "id": 55,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "Si un dispositivo consume 100 W durante 5 horas, ¿cuánta energía utiliza?",
+    "expected": "Cálculo exacto (500 Wh / 0.5 kWh)",
+    "answer": "Para calcular la energía que consume un dispositivo, usamos la fórmula:\n\n$$\n\\text{Energía (Wh)} = \\text{Potencia (W)} \\times \\text{Tiempo (h)}\n$$\n\nEn este caso:\n\n$$\n\\text{Energía} = 100 \\, \\text{W} \\times 5 \\, \\text{h} = 500 \\, \\text{Wh}\n$$\n\nPor lo tanto, el dispositivo consume **500 Wh** (o 0,5 kWh) de energía. \n\n¿Querés que te explique cómo se convierte Wh a kWh o algo más? 😊",
+    "durationMs": 7395,
+    "timestamp": "2026-10-31T19:51:12.181Z",
+    "success": true
+  },
+  "56": {
+    "id": 56,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "Si una batería almacena 500 Wh y un dispositivo consume 100 W, ¿cuánto tiempo podría alimentarlo idealmente?",
+    "expected": "Cálculo exacto (5 horas)",
+    "answer": "Para calcular cuánto tiempo una batería de 500 Wh podría alimentar un dispositivo que consume 100 W, usamos la fórmula:\n\n$$\n\\text{Tiempo} = \\frac{\\text{Capacidad de la batería (Wh)}}{\\text{Potencia del dispositivo (W)}}\n$$\n\nSustituyendo los valores:\n\n$$\n\\text{Tiempo} = \\frac{500 \\, \\text{Wh}}{100 \\, \\text{W}} = 5 \\, \\text{horas}\n$$\n\nPor lo tanto, idealmente, la batería podría alimentar al dispositivo durante **5 horas**.",
+    "durationMs": 8408,
+    "timestamp": "2026-10-31T19:51:21.096Z",
+    "success": true
+  },
+  "57": {
+    "id": 57,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "Si dos fenómenos ocurren simultáneamente, ¿significa necesariamente que uno causó el otro?",
+    "expected": "Falacia cum hoc ergo propter hoc",
+    "answer": "No, si dos fenómenos ocurren simultáneamente, no significa necesariamente que uno causó al otro. La simultaneidad no implica causalidad. En la filosofía y la ciencia, la causalidad implica una relación de causa-efecto donde una acción o evento produce directa o indirectamente otro. Sin embargo, dos eventos pueden coexistir o ocurrir al mismo tiempo sin que uno sea la causa del otro.\n\nPor ejemplo, si un rayo ilumina el cielo y un reloj suena a la misma hora, no significa que el rayo haya causado que el reloj sonara. Ambos pueden ser eventos independientes que sucedieron al mismo tiempo.\n\nEn el contexto de la física, la simultaneidad puede ser relativa, dependiendo del marco de referencia del observador, como se describe en la teoría de la relatividad de Einstein. Esto también refuerza la idea de que la simultaneidad no implica causalidad.\n\nEn resumen, la simultaneidad es una coincidencia temporal, pero no necesariamente una relación causal.",
+    "durationMs": 13262,
+    "timestamp": "2026-10-31T19:51:34.871Z",
+    "success": true
+  },
+  "58": {
+    "id": 58,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "¿Cómo investigarías una afirmación científica que parece contradecir el conocimiento establecido?",
+    "expected": "Metodología de validación científica",
+    "answer": "Investigar una afirmación científica que parece contradecir el conocimiento establecido requiere un enfoque metódico, crítico y fundamentado. Aquí te explico cómo lo haría, basándome en principios científicos y en la necesidad de validar con evidencia:\n\n1. **Revisión de la Fuente**: Primero, verifico la autoridad y la credibilidad de la fuente que presenta la afirmación. ¿Es un científico reconocido en su campo? ¿Ha publicado en revistas científicas de prestigio? ¿Hay referencias a estudios previos o colaboraciones con instituciones de investigación?\n\n2. **Análisis de la Evidencia**: Reviso los datos, experimentos o modelos que respaldan la afirmación. ¿Son los métodos de investigación válidos y reproducibles? ¿Hay un control de variables, replicabilidad y transparencia en los resultados?\n\n3. **Comparación con el Conocimiento Activo**: Evalúo si la afirmación contradice teorías establecidas o si, en cambio, ofrece una nueva perspectiva que amplía el marco actual. Por ejemplo, en física, la teoría de la relatividad de Einstein no contradice la mecánica clásica, sino que la extiende a condiciones extremas.\n\n4. **Búsqueda de Contradicciones o Errores**: Busco si hay críticas, revisiones o estudios que cuestionen la afirmación. ¿Hay discrepancias en los resultados? ¿Se han realizado estudios independientes que refuten o respalden la hipótesis?\n\n5. **Consultar a Expertos**: Si la afirmación es relevante, consulto a especialistas en el área para obtener una opinión crítica y fundamentada. A veces, incluso en ciencias, existen debates activos sobre ciertos fenómenos.\n\n6. **Revisión de la Historia Científica**: Recuerdo que la ciencia evoluciona. Muchas veces, lo que hoy se considera establecido fue una hipótesis que, con nuevos descubrimientos, se expande o modifica. Por ejemplo, la teoría de la evolución de Darwin fue ampliada con la genética moderna.\n\n7. **Repetición y Validación**: Si la afirmación es prometedora, se debe repetir el experimento o análisis en condiciones diferentes para confirmar su consistencia. La ciencia se basa en la repetibilidad.\n\n8. **Considerar el Contexto Cultural o Filosófico**: A veces, lo que parece una contradicción puede surgir de una interpretación diferente de los datos, o de una visión filosófica o espiritual que no se alinea con el enfoque científico tradicional. Por ejemplo, algunos textos como los de Samael Aun Weor abordan la realidad desde una perspectiva esotérica, lo cual no necesariamente contradice la ciencia, sino que se enmarca en un marco diferente.\n\nEn resumen, no se debe rechazar una afirmación por contradecir el conocimiento establecido, sino investigarla con rigor, validar sus bases y evaluar si puede enriquecer o transformar nuestro entendimiento. La ciencia no es estática, sino un proceso dinámico de descubrimiento y revisión.",
+    "durationMs": 31941,
+    "timestamp": "2026-10-31T19:52:07.328Z",
+    "success": true
+  },
+  "59": {
+    "id": 59,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "Si dos fuentes confiables presentan información contradictoria, ¿cómo determinarías cuál es más precisa?",
+    "expected": "Crítica de fuentes y contraste",
+    "answer": "¡Hola, Ignacio! Es una excelente pregunta que refleja un pensamiento crítico y responsable. Cuando dos fuentes confiables presentan información contradictoria, lo más importante es **analizar la evidencia y el contexto** que cada una ofrece, y no solo depender de la autoridad de la fuente.\n\nAquí te explico cómo proceder:\n\n1. **Verifica la fuente**: ¿Son ambas fuentes reconocidas en su campo? ¿Tienen historial de precisión y transparencia? A veces, una fuente puede ser más especializada o tener más datos verificables que la otra.\n\n2. **Compara el método y la metodología**: ¿Cómo llegaron a sus conclusiones? Si una fuente utiliza datos empíricos, estudios científicos o pruebas observables, y la otra se basa en suposiciones, teorías no comprobadas o interpretaciones subjetivas, la primera suele ser más precisa.\n\n3. **Busca coincidencias en la evidencia**: Si ambas fuentes comparten información en puntos clave, es probable que estén en lo cierto. Si solo discrepan en detalles o en aspectos no verificables, es posible que una de ellas esté más cerca de la realidad.\n\n4. **Consulta fuentes externas**: Si es posible, busca otras fuentes independientes que puedan confirmar o refutar una de las dos. Esto puede incluir estudios académicos, informes oficiales, o incluso expertos en el tema.\n\n5. **Considera el contexto histórico y cultural**: A veces, la información puede variar según el contexto. Por ejemplo, en temas como la astronomía o la historia, ciertos hechos pueden ser interpretados de forma diferente según la perspectiva cultural o el período histórico.\n\n6. **Usa la lógica y la coherencia**: Si una de las fuentes presenta contradicciones internas o no se sostiene lógicamente, es probable que sea menos precisa.\n\nEn resumen, **la precisión no siempre depende de la autoridad de la fuente, sino de la calidad de la evidencia y la coherencia de la información**. Si tienes un ejemplo específico de fuentes contradictorias, ¡no dudes en compartírmelo y juntos lo analizamos! 😊",
+    "durationMs": 22453,
+    "timestamp": "2026-10-31T19:52:30.292Z",
+    "success": true
+  },
+  "60": {
+    "id": 60,
+    "block": "10. Razonamiento y pensamiento crítico",
+    "question": "Si no tienes suficiente información para responder una pregunta, ¿cómo deberías proceder?",
+    "expected": "Reconocimiento de límites / Honestidad epistémica",
+    "answer": "Si no tengo suficiente información para responder una pregunta, procederé de la siguiente manera:\n\n1. **Reconocer la limitación**: Le informaré honestamente que no tengo la información necesaria para responder con precisión, sin inventar ni suponer datos que no están verificados.\n\n2. **Ofrecer alternativas**: Si es posible, sugeriré otras fuentes de información confiables, como libros, artículos, o recursos en línea que puedan ayudarle a encontrar la respuesta por sí mismo.\n\n3. **Preguntar con claridad**: Le pediré que me proporcione más detalles o contexto sobre la pregunta, para poder entender mejor lo que busca y así brindarle una respuesta más precisa.\n\n4. **Mantener la transparencia**: Si la pregunta está relacionada con algún tema específico que no puedo abordar por limitaciones técnicas o de datos, le explicaré claramente por qué no puedo ayudar en ese momento.\n\nMi objetivo siempre es ser útil, honesto y respetuoso con el límite de lo que puedo ofrecer. ¿Hay algo en particular que quiera saber?",
+    "durationMs": 17616,
+    "timestamp": "2026-10-31T19:52:48.413Z",
+    "success": true
+  }
+}

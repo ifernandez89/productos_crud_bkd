@@ -207,11 +207,12 @@ export class JarvisPromptBuilderService {
       contextParts.push(`### SKILLS RELEVANTES\n${skillText}`);
     }
 
+    const isPersonalOrIdentity =
+      /(quien soy|quién soy|que sabes (sobre|de) mi|qué sabes (sobre|de) mi|sabes algo de mi|como me llamo|cómo me llamo|te acordas de mi|te acordás de mí|mi nombre|mis proyectos|mi perfil|sobre mi|acerca de mi)/i.test(
+        userMessage,
+      );
+
     if (useMemory) {
-      const isPersonalOrIdentity =
-        /(quien soy|quién soy|que sabes (sobre|de) mi|qué sabes (sobre|de) mi|sabes algo de mi|como me llamo|cómo me llamo|te acordas de mi|te acordás de mí|mi nombre|mis proyectos|mi perfil|sobre mi|acerca de mi)/i.test(
-          userMessage,
-        );
       const memoryLimit = isPersonalOrIdentity ? 6 : 3;
       let memories = await this.memoryRepo.search(userMessage, memoryLimit);
       if (isPersonalOrIdentity && memories.length < 2) {
@@ -242,7 +243,7 @@ export class JarvisPromptBuilderService {
         userMessage,
       );
 
-    if (useDocuments && !isDisciplinePanoramic && !isTemporalQuery) {
+    if (useDocuments && !isDisciplinePanoramic && !isTemporalQuery && !isPersonalOrIdentity) {
       const docSummary = await this.detectDocumentSummaryRequest(userMessage);
 
       if (docSummary.isRequest && docSummary.title) {
@@ -345,7 +346,7 @@ export class JarvisPromptBuilderService {
               // Aplicar reranker híbrido
               const rerankedChunks = this.rerankChunks(chunks, userMessage);
               
-              const formattedParts = rerankedChunks.map((c) => {
+              const formattedParts = rerankedChunks.slice(0, 5).map((c) => {
                 const docTitle = c.document?.title || 'Documento';
                 const docInIndex = this.corpusSelector.getIndex().documentos.find(
                   (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
