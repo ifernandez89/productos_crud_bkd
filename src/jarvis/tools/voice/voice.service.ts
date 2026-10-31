@@ -8,6 +8,8 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 const execFileAsync = promisify(execFile);
 
+export type AudioContainerFormat = 'wav' | 'ogg' | 'webm' | 'mp4' | 'mp3' | 'unknown';
+
 export interface VoiceTranscriptionResult {
   text: string;
   confidence: number;
@@ -18,6 +20,8 @@ export interface VoiceTranscriptionResult {
 export interface VoiceStatus {
   opusdecAvailable: boolean;
   opusdecPath: string;
+  ffmpegAvailable: boolean;
+  ffmpegPath: string | null;
   sapiAvailable: boolean;
   ttsAvailable: boolean;
   supportedInputFormats: string[];
@@ -27,12 +31,15 @@ export interface VoiceStatus {
 export class VoiceService {
   private readonly logger = new Logger(VoiceService.name);
   private readonly opusdecPath: string;
+  private readonly ffmpegPath: string | null;
   private readonly tempDir: string;
 
   constructor() {
     this.opusdecPath =
       process.env.OPUSDEC_PATH ||
       'I:\\Programas\\CrystalDiskInfo8_12_13\\CdiResource\\opus\\opusdec.exe';
+
+    this.ffmpegPath = this.resolveFfmpegPath();
 
     this.tempDir = path.join(os.tmpdir(), 'jarbees_voice');
     if (!fs.existsSync(this.tempDir)) {
@@ -43,10 +50,139 @@ export class VoiceService {
       }
     }
 
-    const available = fs.existsSync(this.opusdecPath);
+    const opusAvailable = fs.existsSync(this.opusdecPath);
     this.logger.log(
-      `[VoiceService] opusdec.exe ${available ? 'detectado ✅' : 'no encontrado ⚠️'} en: ${this.opusdecPath}`,
+      `[VoiceService] opusdec.exe ${opusAvailable ? 'detectado ✅' : 'no encontrado ⚠️'} en: ${this.opusdecPath}`,
     );
+    this.logger.log(
+      `[VoiceService] FFmpeg ${this.ffmpegPath ? 'detectado ✅ (' + this.ffmpegPath + ')' : 'no encontrado ⚠️'}`,
+    );
+  }
+
+  /**
+   * Intenta localizar el binario de FFmpeg en el sistema (WinGet, rutas estándar o PATH)
+   */
+  private resolveFfmpegPath(): string | null {
+    if (process.env.FFMPEG_PATH && fs.existsSync(process.env.FFMPEG_PATH)) {
+      return process.env.FFMPEG_PATH;
+    }
+
+    // 1. Escanear directorio de paquetes WinGet
+    const localAppData =
+      process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local');
+    const wingetPackages = path.join(localAppData, 'Microsoft', 'WinGet', 'Packages');
+    if (fs.existsSync(wingetPackages)) {
+      try {
+        const dirs = fs.readdirSync(wingetPackages);
+        for (const d of dirs) {
+          if (d.toLowerCase().includes('ffmpeg')) {
+            const fullD = path.join(wingetPackages, d);
+            const candidate1 = path.join(fullD, 'bin', 'ffmpeg.exe');
+            if (fs.existsSync(candidate1)) return candidate1;
+            const candidateDirect = path.join(fullD, 'ffmpeg.exe');
+            if (fs.existsSync(candidateDirect)) return candidateDirect;
+            const subdirs = fs.readdirSync(fullD);
+            for (const sub of subdirs) {
+              const candidate2 = path.join(fullD, sub, 'bin', 'ffmpeg.exe');
+              if (fs.existsSync(candidate2)) return candidate2;
+            }
+          }
+        }
+      } catch {
+        // Ignorar posibles accesos restringidos
+      }
+    }
+
+    // 2. Rutas estándar conocidas en Windows
+    const standardPaths = [
+      'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe',
+      'C:\\ffmpeg\\bin\\ffmpeg.exe',
+      'C:\\tools\\ffmpeg\\bin\\ffmpeg.exe',
+      'C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe',
+      'I:\\Programas\\ffmpeg\\bin\\ffmpeg.exe',
+    ];
+    for (const p of standardPaths) {
+      if (fs.existsSync(p)) return p;
+    }
+
+    // 3. Variables de entorno PATH del sistema
+    const pathEnv = process.env.PATH || '';
+    const pathDirs = pathEnv.split(path.delimiter);
+    for (const dir of pathDirs) {
+      if (!dir) continue;
+      const candidate = path.join(dir, 'ffmpeg.exe');
+      if (fs.existsSync(candidate)) return candidate;
+    }
+
+    return null;
+  }
+
+  /**
+   * Obtiene la ruta del ejecutable FFmpeg si está disponible
+   */
+  getFfmpegPath(): string | null {
+    if (this.ffmpegPath && fs.existsSync(this.ffmpegPath)) {
+      return this.ffmpegPath;
+    }
+    return this.resolveFfmpegPath();
+  }
+
+  /**
+   * Detecta el formato contenedor del audio inspeccionando sus números mágicos binarios
+   */
+  detectAudioContainer(buffer: Buffer): AudioContainerFormat {
+    if (!buffer || buffer.length < 4) {
+      return 'unknown';
+    }
+
+    // RIFF....WAVE (WAV PCM / IEEE Float)
+    if (
+      buffer.length >= 12 &&
+      buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+      buffer.subarray(8, 12).toString('ascii') === 'WAVE'
+    ) {
+      return 'wav';
+    }
+
+    // OggS (Contenedor Ogg, usado por Opus/Vorbis nativo)
+    if (buffer.subarray(0, 4).toString('ascii') === 'OggS') {
+      return 'ogg';
+    }
+
+    // EBML Header (0x1A 0x45 0xDF 0xA3), usado por WebM / Matroska
+    if (
+      buffer[0] === 0x1a &&
+      buffer[1] === 0x45 &&
+      buffer[2] === 0xdf &&
+      buffer[3] === 0xa3
+    ) {
+      return 'webm';
+    }
+
+    // MP4 / M4A (ftyp box en offset 4)
+    if (
+      buffer.length >= 8 &&
+      buffer.subarray(4, 8).toString('ascii') === 'ftyp'
+    ) {
+      return 'mp4';
+    }
+
+    // MP3 (ID3v2 o frame sync 0xFF 0xEx/0xFx)
+    if (
+      buffer.length >= 3 &&
+      buffer.subarray(0, 3).toString('ascii') === 'ID3'
+    ) {
+      return 'mp3';
+    }
+    if (
+      buffer.length >= 2 &&
+      buffer[0] === 0xff &&
+      (buffer[1] & 0xe0) === 0xe0
+    ) {
+      return 'mp3';
+    }
+
+    return 'unknown';
   }
 
   /**
@@ -54,6 +190,7 @@ export class VoiceService {
    */
   async getStatus(): Promise<VoiceStatus> {
     const opusAvailable = fs.existsSync(this.opusdecPath);
+    const currentFfmpeg = this.getFfmpegPath();
     let sapiAvailable = false;
     let ttsAvailable = false;
 
@@ -80,41 +217,94 @@ export class VoiceService {
     return {
       opusdecAvailable: opusAvailable,
       opusdecPath: this.opusdecPath,
+      ffmpegAvailable: !!currentFfmpeg,
+      ffmpegPath: currentFfmpeg,
       sapiAvailable,
       ttsAvailable,
-      supportedInputFormats: ['.opus', '.ogg', '.webm', '.wav'],
+      supportedInputFormats: ['.opus', '.ogg', '.webm', '.wav', '.mp4', '.m4a', '.mp3'],
     };
   }
 
   /**
-   * Decodifica un archivo Opus/OGG a un archivo WAV PCM a 16kHz
+   * Decodifica un archivo de audio (WebM, OGG, Opus, MP4, MP3, WAV) a PCM WAV a 16kHz mono
+   */
+  async decodeToWav(
+    inputPath: string,
+    outputPath: string,
+    containerType?: AudioContainerFormat,
+  ): Promise<string> {
+    const ffmpeg = this.getFfmpegPath();
+
+    if (ffmpeg) {
+      try {
+        await execFileAsync(ffmpeg, [
+          '-y',
+          '-i',
+          inputPath,
+          '-ar',
+          '16000',
+          '-ac',
+          '1',
+          '-c:a',
+          'pcm_s16le',
+          outputPath,
+        ]);
+
+        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 44) {
+          return outputPath;
+        }
+        throw new Error('FFmpeg finalizó pero no generó un archivo WAV de salida válido.');
+      } catch (err) {
+        this.logger.warn(
+          `[VoiceService] Falló decodificación con FFmpeg (${err.message}). Intentando fallback si aplica...`,
+        );
+      }
+    }
+
+    // Fallback con opusdec únicamente si el contenedor es Ogg/Opus (opusdec no soporta WebM ni MP4)
+    if (
+      containerType !== 'webm' &&
+      containerType !== 'mp4' &&
+      containerType !== 'mp3' &&
+      fs.existsSync(this.opusdecPath)
+    ) {
+      try {
+        await execFileAsync(this.opusdecPath, [
+          '--rate',
+          '16000',
+          '--force-wav',
+          '--quiet',
+          inputPath,
+          outputPath,
+        ]);
+
+        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 44) {
+          return outputPath;
+        }
+        throw new Error('opusdec no generó el archivo WAV de salida.');
+      } catch (err) {
+        this.logger.error(`Error en decodeOpusToWav: ${err.message}`);
+        throw err;
+      }
+    }
+
+    // Si ya es WAV y no tenemos FFmpeg disponible para remuestreo
+    if (containerType === 'wav' && fs.existsSync(inputPath)) {
+      await fs.promises.copyFile(inputPath, outputPath);
+      return outputPath;
+    }
+
+    throw new Error(
+      `No hay decodificador disponible para convertir el formato de audio detectado (${containerType || 'desconocido'}) a WAV. ` +
+        `Por favor asegurate de que FFmpeg esté disponible o configurá FFMPEG_PATH.`,
+    );
+  }
+
+  /**
+   * Decodifica un archivo Opus/OGG a un archivo WAV PCM a 16kHz (mantenido por retrocompatibilidad)
    */
   async decodeOpusToWav(inputPath: string, outputPath: string): Promise<string> {
-    if (!fs.existsSync(this.opusdecPath)) {
-      throw new Error(
-        `opusdec.exe no encontrado en ${this.opusdecPath}. Por favor verificá la ruta o configurá OPUSDEC_PATH.`,
-      );
-    }
-
-    try {
-      await execFileAsync(this.opusdecPath, [
-        '--rate',
-        '16000',
-        '--force-wav',
-        '--quiet',
-        inputPath,
-        outputPath,
-      ]);
-
-      if (!fs.existsSync(outputPath)) {
-        throw new Error('opusdec no generó el archivo WAV de salida.');
-      }
-
-      return outputPath;
-    } catch (err) {
-      this.logger.error(`Error en decodeOpusToWav: ${err.message}`);
-      throw err;
-    }
+    return this.decodeToWav(inputPath, outputPath, 'ogg');
   }
 
   /**
@@ -126,17 +316,23 @@ export class VoiceService {
 
     const psCommand = `
       Add-Type -AssemblyName System.Speech;
-      $culture = New-Object System.Globalization.CultureInfo('es-ES');
-      $engine = New-Object System.Speech.Recognition.SpeechRecognitionEngine($culture);
-      $engine.LoadGrammar((New-Object System.Speech.Recognition.DictationGrammar));
-      $engine.SetInputToWaveFile('${normalizedWav}');
-      $res = $engine.Recognize();
-      if ($res) {
-          @{ text = $res.Text; confidence = [math]::Round($res.Confidence, 3) } | ConvertTo-Json -Compress
+      $recs = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers();
+      $rec = $recs | Where-Object { $_.Culture.Name -like 'es*' } | Select-Object -First 1;
+      if (-not $rec -and $recs.Count -gt 0) { $rec = $recs[0]; }
+      if ($rec) {
+          $engine = New-Object System.Speech.Recognition.SpeechRecognitionEngine($rec.Culture);
+          $engine.LoadGrammar((New-Object System.Speech.Recognition.DictationGrammar));
+          $engine.SetInputToWaveFile('${normalizedWav}');
+          $res = $engine.Recognize();
+          if ($res) {
+              @{ text = $res.Text; confidence = [math]::Round($res.Confidence, 3); engine = $rec.Description } | ConvertTo-Json -Compress
+          } else {
+              '{"text":"","confidence":0,"engine":"' + $rec.Description + '"}'
+          }
+          $engine.Dispose();
       } else {
-          '{"text":"","confidence":0}'
+          '{"text":"","confidence":0,"engine":"none","error":"No recognizer installed"}'
       }
-      $engine.Dispose();
     `;
 
     try {
@@ -149,7 +345,7 @@ export class VoiceService {
         text: parsed.text || '',
         confidence: Number(parsed.confidence) || 0,
         durationMs: Date.now() - startTime,
-        engine: 'Windows SAPI 8.0 (es-ES)',
+        engine: parsed.engine || 'Windows SAPI',
       };
     } catch (err) {
       this.logger.error(`Error transcribiendo WAV: ${err.message}`);
@@ -163,13 +359,32 @@ export class VoiceService {
   }
 
   /**
-   * Procesa un buffer de audio subido por el cliente (Opus, OGG, WebM o WAV) y devuelve la transcripción
+   * Procesa un buffer de audio subido por el cliente (WebM, Opus, OGG, WAV, MP4, MP3) y devuelve la transcripción
    */
   async processAudioToText(
     buffer: Buffer,
     originalFilename = 'audio.opus',
   ): Promise<VoiceTranscriptionResult> {
-    const ext = path.extname(originalFilename).toLowerCase() || '.opus';
+    if (!buffer || buffer.length === 0) {
+      return {
+        text: '',
+        confidence: 0,
+        durationMs: 0,
+        engine: 'empty_input',
+      };
+    }
+
+    const container = this.detectAudioContainer(buffer);
+    let ext = path.extname(originalFilename).toLowerCase();
+
+    // Normalizar extensión según contenedor binario detectado para guiar a los decodificadores
+    if (container === 'webm') ext = '.webm';
+    else if (container === 'ogg') ext = ext === '.opus' ? '.opus' : '.ogg';
+    else if (container === 'wav') ext = '.wav';
+    else if (container === 'mp4') ext = '.mp4';
+    else if (container === 'mp3') ext = '.mp3';
+    else if (!ext) ext = '.bin';
+
     const tempBase = path.join(
       this.tempDir,
       `voice_${Date.now()}_${Math.random().toString(36).substring(7)}`,
@@ -180,10 +395,8 @@ export class VoiceService {
     try {
       await fs.promises.writeFile(tempInput, buffer);
 
-      let targetWav = tempInput;
-      if (ext !== '.wav') {
-        targetWav = await this.decodeOpusToWav(tempInput, tempWav);
-      }
+      // Decodificar a WAV PCM 16kHz mono (optimizado para el reconocedor SAPI/Whisper)
+      const targetWav = await this.decodeToWav(tempInput, tempWav, container);
 
       const result = await this.transcribeWav(targetWav);
       return result;

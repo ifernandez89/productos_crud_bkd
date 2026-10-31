@@ -15,6 +15,7 @@ import {
   Headers,
   Res,
   Optional,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
@@ -63,6 +64,8 @@ import {
 @ApiTags('jarbees')
 @Controller('jarbees')
 export class JarvisController {
+  private readonly logger = new Logger(JarvisController.name);
+
   constructor(
     private readonly jarvisService: JarvisService,
     private readonly collectionRepo: CollectionRepository,
@@ -1470,11 +1473,23 @@ export class JarvisController {
     if (!file) {
       throw new BadRequestException('Se requiere un archivo de audio en el campo "audio"');
     }
-    const result = await this.voiceService.processAudioToText(
-      file.buffer,
-      file.originalname || 'audio.opus',
-    );
-    return { success: true, ...result };
+    try {
+      const result = await this.voiceService.processAudioToText(
+        file.buffer,
+        file.originalname || 'audio.opus',
+      );
+      return { success: true, ...result };
+    } catch (error) {
+      this.logger.error(`Error transcribiendo voz: ${error.message}`);
+      return {
+        success: false,
+        text: '',
+        confidence: 0,
+        durationMs: 0,
+        engine: 'error',
+        error: error.message,
+      };
+    }
   }
 
   @Public()
@@ -1503,34 +1518,45 @@ export class JarvisController {
       throw new BadRequestException('Se requiere un archivo de audio en el campo "audio"');
     }
 
-    const transcription = await this.voiceService.processAudioToText(
-      file.buffer,
-      file.originalname || 'audio.opus',
-    );
+    try {
+      const transcription = await this.voiceService.processAudioToText(
+        file.buffer,
+        file.originalname || 'audio.opus',
+      );
 
-    if (!transcription.text || transcription.text.trim().length === 0) {
+      if (!transcription.text || transcription.text.trim().length === 0) {
+        return {
+          success: false,
+          transcription: '',
+          confidence: 0,
+          answer:
+            'No pude distinguir palabras en el audio grabado. ¿Podrías grabarlo de nuevo más cerca del micrófono o escribir tu consulta?',
+        };
+      }
+
+      const sessionId = sessionIdBody || sessionIdHeader || randomUUID();
+      const answer = await this.jarvisService.query(transcription.text, {
+        sessionId,
+      });
+
+      return {
+        success: true,
+        transcription: transcription.text,
+        confidence: transcription.confidence,
+        transcriptionDurationMs: transcription.durationMs,
+        answer,
+        sessionId,
+      };
+    } catch (error) {
+      this.logger.error(`Error en voiceChat: ${error.message}`);
       return {
         success: false,
         transcription: '',
         confidence: 0,
-        answer:
-          'No pude distinguir palabras en el audio grabado. ¿Podrías grabarlo de nuevo más cerca del micrófono o escribir tu consulta?',
+        answer: `Ocurrió un inconveniente al procesar la nota de voz: ${error.message}. Por favor intentá nuevamente o enviá el mensaje por texto.`,
+        error: error.message,
       };
     }
-
-    const sessionId = sessionIdBody || sessionIdHeader || randomUUID();
-    const answer = await this.jarvisService.query(transcription.text, {
-      sessionId,
-    });
-
-    return {
-      success: true,
-      transcription: transcription.text,
-      confidence: transcription.confidence,
-      transcriptionDurationMs: transcription.durationMs,
-      answer,
-      sessionId,
-    };
   }
 
   @Public()

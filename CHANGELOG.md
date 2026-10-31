@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — Soporte Universal de Audio (FFmpeg + WebM/Opus) y Detección Automática de Contenedor en Notas de Voz (2026-10-30)
+
+- **🎙️ Detección Automática de Formato Contenedor por Magic Bytes (`VoiceService.detectAudioContainer`)**:
+  - Inspección binaria de los encabezados de audio para identificar de forma unívoca el contenedor subido:
+    - `RIFF....WAVE` -> WAV (PCM o Float).
+    - `OggS` -> OGG nativo (Opus / Vorbis).
+    - `\x1a\x45\xdf\xa3` (EBML) -> WebM (formato nativo generado por `MediaRecorder` en navegadores Chromium/Firefox/Android).
+    - `ftyp` -> MP4/M4A (Safari/iOS).
+    - `ID3` o sync MPEG -> MP3.
+  - Corrige de raíz el problema donde el cliente envía un blob WebM/Opus con nombre de archivo `audio.opus`, el cual era derivado incorrectamente al decodificador CLI `opusdec.exe` (que sólo tolera contenedores Ogg, arrojando el error `opusdec no generó el archivo WAV de salida`).
+
+- **⚡ Transcodificación Multi-Formato Robusta con FFmpeg (`VoiceService.decodeToWav`)**:
+  - Incorporación de detección dinámica y resolución automática de FFmpeg en el sistema (`process.env.FFMPEG_PATH`, WinGet Packages directory, rutas estándar de Windows y variables de entorno `PATH`).
+  - Transcodificación directa y optimizada a WAV PCM 16kHz mono (`-ar 16000 -ac 1 -c:a pcm_s16le`) garantizando máxima precisión para el reconocedor de voz.
+  - Fallback defensivo a `opusdec` exclusivamente para contenedores OGG/Opus y retrocompatibilidad total con `decodeOpusToWav`.
+  - Extensión de `VoiceStatus` (`ffmpegAvailable`, `ffmpegPath`, formatos soportados ampliados a `.webm`, `.opus`, `.ogg`, `.wav`, `.mp4`, `.m4a`, `.mp3`).
+
+- **🛡️ Manejo Resiliente de Errores en Endpoints de Voz (`JarvisController.voiceChat` & `transcribeVoice`)**:
+  - Envoltura defensiva con bloque try/catch en `voiceChat` y `transcribeVoice` con logging detallado.
+  - En caso de audio ininteligible o fallo en el procesamiento, responde con un objeto JSON estructurado (`success: false`, `answer` explicativa y `error`) en lugar de arrojar una excepción no capturada de servidor (HTTP 500).
+
+- **🧪 Cobertura de Pruebas Unitarias (`src/jarvis/tools/voice/voice.service.spec.ts`)**:
+  - 10 tests unitarios verificando detección de magic bytes (WAV, OGG, WebM, MP4, MP3, unknown), reporte de estado de herramientas de voz, ensamblado (`stitch`) de buffers WAV y decodificación de WebM con FFmpeg.
+
 ### Fixed & Enhanced — Consultas Compuestas de Identidad, Pronóstico de Lluvia y Geocodificación Segura (2026-10-30)
 
 - **👤 Protección de Consultas de Identidad y Memoria Personal en `IntentRouterService`**:
