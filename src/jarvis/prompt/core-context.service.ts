@@ -10,6 +10,8 @@ export interface CoreContextProfileInput {
   country?: string | null;
   language?: string | null;
   timezone?: string | null;
+  preferences?: string | null;
+  location?: string | null;
 }
 
 export interface CoreContextResult {
@@ -64,6 +66,19 @@ export class CoreContextService {
     const userLang = profile.language || 'es-AR';
     const userTz = profile.timezone || 'America/Argentina/Buenos_Aires';
     const userCountry = profile.country || 'Argentina';
+
+    let userLocation = 'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina';
+    if (profile.preferences) {
+      try {
+        const parsed =
+          typeof profile.preferences === 'string'
+            ? JSON.parse(profile.preferences)
+            : profile.preferences;
+        if (parsed?.location) userLocation = parsed.location;
+      } catch {}
+    } else if (profile.location) {
+      userLocation = profile.location;
+    }
 
     const capSnapshot = this.capabilityRegistry?.getSnapshot();
     const availableCaps = capSnapshot?.summary.available ?? [
@@ -121,7 +136,7 @@ export class CoreContextService {
     const rawLines: string[] = [
       `# ${assistantName} CoreContext (Max 25 Lines)`,
       `- Identidad: ${assistantName} | Orquestador técnico multidisciplinario y especialista de ingeniería.`,
-      `- Usuario: ${userName} | País: ${userCountry} | Idioma: ${userLang} | Zona: ${userTz}`,
+      `- Usuario: ${userName} | Ubicación: ${userLocation} | Zona: ${userTz} | Idioma: ${userLang}`,
       `- Anclaje Temporal: ${nowFullDateStr}, ${nowTimeStr} hs (${userTz}) | Año Oficial: ${nowYear}`,
       `- Modo Activo: ${options?.mode || 'auto'}`,
       `## Reglas Permanentes e Invariantes`,

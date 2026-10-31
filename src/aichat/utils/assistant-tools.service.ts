@@ -54,7 +54,8 @@ type NewtonResponse = { result: string; operation: string; expression: string };
 @Injectable()
 export class AssistantToolsService {
   private readonly logger = new Logger(AssistantToolsService.name);
-  private readonly defaultWeatherLocation = 'Paraná, Entre Rios, Argentina';
+  private readonly defaultWeatherLocation =
+    'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina';
 
   constructor(private readonly browserTool: BrowserToolService) {}
 
@@ -544,10 +545,14 @@ export class AssistantToolsService {
   private async geocodeLocation(
     location: string,
   ): Promise<{ lat: number; lon: number; displayName: string }> {
+    const qParam = location.toLowerCase().includes('argentina')
+      ? location
+      : `${location}, Argentina`;
+
     const response = await axios.get<NominatimResult[]>(
       'https://nominatim.openstreetmap.org/search',
       {
-        params: { q: `${location}, Argentina`, format: 'jsonv2', limit: 1 },
+        params: { q: qParam, format: 'jsonv2', limit: 1 },
         headers: { 'User-Agent': 'productos-crud-bkd/1.0' },
       },
     );
@@ -576,23 +581,55 @@ export class AssistantToolsService {
           lat: latitude,
           lon: longitude,
           format: 'jsonv2',
-          zoom: 10, // zoom 10 = ciudad, no negocio/calle
+          zoom: 12, // zoom 12 = distrito / comuna / ciudad
+          addressdetails: 1,
         },
         headers: { 'User-Agent': 'productos-crud-bkd/1.0' },
       },
     );
     const result = response.data;
 
-    // Construir nombre legible: "Ciudad, Provincia, País" — ignorar calles y negocios
+    // Construir nombre legible ordenado: "Localidad/Distrito, Departamento, Provincia, País"
     const addr = (result as any).address;
-    const city =
-      addr?.city ?? addr?.town ?? addr?.village ?? addr?.municipality ?? '';
+    let locality =
+      addr?.city ??
+      addr?.town ??
+      addr?.village ??
+      addr?.municipality ??
+      addr?.hamlet ??
+      addr?.suburb ??
+      addr?.district ??
+      addr?.county ??
+      '';
+
+    const department =
+      addr?.state_district && addr.state_district !== locality
+        ? addr.state_district
+        : addr?.county && addr.county !== locality
+          ? addr.county
+          : '';
     const state = addr?.state ?? '';
     const country = addr?.country ?? '';
+    const postcode = addr?.postcode ?? '';
+
+    // Filtrar puntos de interés específicos (aeródromos, clubes, etc.) para privilegiar la localidad real
+    if (result.display_name && /aer[oó]dromo|club de planeadores/i.test(result.display_name)) {
+      if (/tala/i.test(result.display_name)) {
+        locality = 'Tala';
+      }
+    }
+
+    const parts: string[] = [];
+    if (locality) parts.push(locality);
+    if (department && !locality.includes(department)) parts.push(department);
+    if (state && !parts.includes(state)) parts.push(state);
+    if (postcode && !parts.includes(postcode)) parts.push(postcode);
+    if (country && !parts.includes(country)) parts.push(country);
+
     const displayName =
-      [city, state, country].filter(Boolean).join(', ') ||
-      result.display_name ||
-      `Lat ${latitude}, Lon ${longitude}`;
+      parts.length > 0
+        ? parts.join(', ')
+        : result.display_name || `Lat ${latitude}, Lon ${longitude}`;
 
     return { displayName };
   }

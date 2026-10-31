@@ -247,12 +247,12 @@ export class IntentRouterService {
 
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
-    // ⚠️ Excluir "clima astrológico/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología
+    // ⚠️ Excluir "clima astrológico/astral/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología
     if (
       /(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(
         n,
       ) &&
-      !/(astro|zodiac|lunar|horoscopo|signo|astrolog)/i.test(n)
+      !/(astr|zodiac|lunar|horoscopo|signo)/i.test(n)
     ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
     }
@@ -342,9 +342,9 @@ export class IntentRouterService {
       };
     }
 
-    // Energías y clima astrológico — alta confianza
+    // Energías y clima astrológico / astral / cósmico — alta confianza
     if (
-      /(energia (del dia|lunar|astral|cosmica|de hoy|de esta noche|de esta semana)|clima astral|clima zodiac|energia espiritual)/i.test(
+      /(energia (del dia|lunar|astral|cosmica|de hoy|de esta noche|de esta semana)|clima (astral|astrologico|zodiac|cosmico|celeste)|panorama (astral|astrologico|cosmico)|cielo (astral|astrologico|de hoy)|energia espiritual)/i.test(
         n,
       )
     ) {
@@ -886,6 +886,7 @@ Categoría:`;
     return input
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
+      .replace(/["'«»“”]/g, '')
       .toLowerCase();
   }
 }

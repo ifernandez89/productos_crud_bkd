@@ -322,13 +322,16 @@ export class JarvisService {
           3,
         );
         if (libraryMatches.length > 0 && libraryMatches[0].score >= 2.0) {
+          const isExplicitBookQuery =
+            /(libro|autor|obra|volumen|capitulo|segun el texto|biblioteca|documento|muldoon|carrington)/i.test(
+              userMessage,
+            );
           const shouldOverride =
-            intent.intent === 'ASTROLOGY' ||
+            (intent.intent === 'ASTROLOGY' && isExplicitBookQuery) ||
             intent.intent === 'WEB' ||
             (intent.intent === 'LOCAL' && intent.confidence !== 'high') ||
-            // Override siempre si hay match fuerte (score >= 5) — incluso LOCAL/high
-            // Ej: "Quien es Jacobo Grinberg?" clasifica LOCAL/high pero hay doc en biblioteca
-            libraryMatches[0].score >= 5.0;
+            // Override siempre si hay match fuerte (score >= 5) — incluso LOCAL/high, respetando ASTROLOGY calculado
+            (libraryMatches[0].score >= 5.0 && intent.intent !== 'ASTROLOGY');
 
           if (shouldOverride) {
             this.logger.log(
@@ -1432,6 +1435,7 @@ export class JarvisService {
       `5. Máximo 300 palabras. Tono cálido y cercano. Español argentino.`,
       `6. Si el usuario pregunta algo específico (ej: "¿Mercurio está retrógrado?"), `,
       `   respondé esa pregunta específicamente además de la estructura general.`,
+      `7. Si la consulta menciona 'clima astral' o 'astral', además de detallar la configuración astronómica del cielo (fase lunar, Sol, planetas y energías del día), podés contrastar brevemente con la acepción metafísica/esotérica del plano astral si aporta valor (como en la proyección astral o los campos sutiles).`,
     ].join('\n');
 
     const userPrompt = [

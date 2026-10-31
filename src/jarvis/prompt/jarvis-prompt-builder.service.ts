@@ -74,8 +74,20 @@ export class JarvisPromptBuilderService {
       .map(([key]) => key)
       .join(', ');
 
+    let userLocation = 'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina';
+    if (profile.preferences) {
+      try {
+        const parsed =
+          typeof profile.preferences === 'string'
+            ? JSON.parse(profile.preferences)
+            : profile.preferences;
+        if (parsed?.location) userLocation = parsed.location;
+      } catch {}
+    }
+
     const profileSummary = [
       profile.name ? `Usuario: ${profile.name}` : 'Usuario: desconocido',
+      userLocation ? `Ubicación: ${userLocation}` : undefined,
       profile.country ? `País del usuario: ${profile.country}` : undefined,
       profile.language ? `Idioma del usuario: ${profile.language}` : undefined,
       profile.timezone

@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — Ruteo y Cálculo de Clima Astral en Tiempo Real y Anclaje de Ubicación Específica (2026-10-31)
+
+- **🌌 Clasificación de "Clima Astral" / "Clima Astrológico" (`IntentRouterService` & `JarvisService`)**:
+  - Corrección de regex en `IntentRouterService`: exclusión de `astr` en la herramienta meteorológica tradicional para evitar secuestrar preguntas sobre "clima astral", "clima astrológico", "panorama astral" o "cielo astral".
+  - Limpieza de comillas estilísticas (`"`, `'`, `«»“”`) en `IntentRouterService.normalize`, permitiendo clasificar consultas formuladas con comillas como *¿Qué puedes decirme sobre el "clima" astral?*.
+  - Protección de `ASTROLOGY` frente a sobreecrituras RAG en `JarvisService`: evita que la mera mención de libros esotéricos (ej: *The Projection of the Astral Body*) anule el cálculo astronómico en tiempo real provisto por `AstrologyTool` (motor local VSOP87).
+  - Enriquecimiento de `respondWithAstrologyPrompt`: genera el clima astrológico/astronómico en tiempo real (Luna, fase, Sol, planetas visibles, energías) y permite contrastar armónicamente con la acepción metafísica/sutil del plano astral y su conexión con ArcheoScope.
+
+- **📍 Anclaje y Persistencia de Ubicación Específica (Tala, Dpto. Paraná, Entre Ríos, CP 3118)**:
+  - Actualización de `defaultWeatherLocation` en `AssistantToolsService` a: *'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina'*.
+  - Refactor de `reverseGeocodeLocation` en `AssistantToolsService`: extracción jerárquica de localidad, departamento (`state_district`/`county`), provincia y código postal (`3118`), filtrando nombres de puntos de interés genéricos o aeródromos para devolver una ubicación limpia y precisa.
+  - Persistencia de la ubicación en `UserProfileRepository` (`preferences.location`) y en la memoria persistente de largo plazo (`Memory`) de Ignacio Fernández (@ifernandez89).
+  - Inyección transversal en `CoreContextService` (`- Usuario: Ignacio Fernández (@ifernandez89) | Ubicación: Tala, Departamento Paraná, Entre Ríos, 3118, Argentina | ...`) y `JarvisPromptBuilderService` para que todos los modelos y herramientas operen con la localidad exacta del usuario.
+
+- **🧪 Pruebas Unitarias (`intent-router.service.spec.ts`)**:
+  - Validación de clasificación de intenciones de clima astral con comillas, panorama astral y consultas de identidad personal ejecutadas con `--runInBand`.
+
 ### Fixed & Enhanced — Soporte Universal de Audio (FFmpeg + WebM/Opus) y Detección Automática de Contenedor en Notas de Voz (2026-10-30)
 
 - **🎙️ Detección Automática de Formato Contenedor por Magic Bytes (`VoiceService.detectAudioContainer`)**:
