@@ -459,15 +459,17 @@ export class JarvisController {
     body: {
       message: string;
       sessionId?: string;
-      provider?: 'ollama' | 'openrouter';
+      provider?: 'gateway' | 'llamacpp' | 'ollama' | 'openrouter' | string;
       mode?: string;
       discipline?: string;
       specialist?: string;
     },
   ) {
+    const requestedProvider =
+      body.provider === 'ollama' ? 'gateway' : body.provider;
     const answer = await this.jarvisService.query(body.message, {
       sessionId: body.sessionId,
-      provider: body.provider,
+      provider: requestedProvider,
       mode: body.mode || body.discipline || body.specialist,
     });
     return { answer, sessionId: body.sessionId, mode: body.mode || body.discipline };

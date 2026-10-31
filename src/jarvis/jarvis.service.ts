@@ -52,7 +52,7 @@ export interface JarvisQueryOptions {
   useMemory?: boolean;
   useDocuments?: boolean;
   maxHistoryMessages?: number;
-  provider?: 'ollama' | 'openrouter';
+  provider?: 'gateway' | 'llamacpp' | 'ollama' | 'openrouter' | string;
   mode?: string;
   useDialectic?: boolean;
 }
@@ -112,7 +112,7 @@ export class JarvisService {
     this.providers = new Map([
       ['gateway', this.inferenceGateway],
       ['llamacpp', this.llamaCppProvider],
-      ['ollama', this.ollamaProvider],
+      ['ollama', this.llamaCppProvider],
       ['openrouter', this.openRouterProvider],
     ]);
   }
@@ -129,7 +129,10 @@ export class JarvisService {
     const useDocuments = options.useDocuments !== false;
     const maxHistoryMessages = options.maxHistoryMessages || 6;
     const defaultProvider = process.env.INFERENCE_DEFAULT_PROVIDER || 'gateway';
-    const providerName = options.provider || defaultProvider;
+    let providerName = options.provider || defaultProvider;
+    if (providerName === 'ollama') {
+      providerName = 'gateway';
+    }
     const provider = this.providers.get(providerName) || this.inferenceGateway;
 
     const startTime = Date.now();
@@ -1448,26 +1451,57 @@ export class JarvisService {
       userMessage,
     ].join('\n');
 
-    const response = await provider.generate({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    });
+    const effectiveProvider =
+      providerName === 'ollama' ? this.inferenceGateway : provider;
 
-    const responseContent = this.formatProviderResponse(
-      response.content,
-      provider,
-    );
-    await this.saveAndObserve(
-      sessionId,
-      userMessage,
-      responseContent,
-      toolsUsed,
-      response,
-      startTime,
-    );
-    return responseContent;
+    let responseContent = '';
+    try {
+      const response = await effectiveProvider.generate({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        model: 'qwen3-8b-q4_k_m',
+        maxTokens: 1024,
+      });
+
+      responseContent = this.formatProviderResponse(
+        response.content,
+        effectiveProvider,
+      );
+
+      if (!responseContent || responseContent.trim().length === 0) {
+        responseContent = astroData;
+      }
+
+      await this.saveAndObserve(
+        sessionId,
+        userMessage,
+        responseContent,
+        toolsUsed,
+        response,
+        startTime,
+      );
+      return responseContent;
+    } catch (err: any) {
+      this.logger.warn(
+        `[astrology] Error en inferencia LLM (${err.message}). Devolviendo informe astronómico directo.`,
+      );
+      responseContent = astroData;
+      await this.saveAndObserve(
+        sessionId,
+        userMessage,
+        responseContent,
+        toolsUsed,
+        {
+          content: astroData,
+          provider: 'astronomy_calculated',
+          latencyMs: Date.now() - startTime,
+        },
+        startTime,
+      );
+      return responseContent;
+    }
   }
 
   private formatProviderResponse(

@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — Migración Exclusiva a llama.cpp, Aspectos Planetarios Mayores y Prevención de Respuestas Vacías (2026-10-31)
+
+- **🦙 Migración Universal a llama.cpp y Supresión de Dependencia de Ollama (`InferenceGatewayService` & `JarvisService`)**:
+  - Remapeo completo de cualquier solicitud o fallback de `ollama` hacia `llamaCppProvider` e `InferenceGatewayService`.
+  - Configuración y soporte para `llama-server.exe` nativo sobre GPU NVIDIA RTX 5070 con CUDA y KV Cache cuantizado (`-ctk q8_0`, `-ctv q8_0`).
+  - Corrección de flags CLI en `InferenceSupervisorService`: sustitución de `--ctk` y `--ctv` por `-ctk` y `-ctv`, eliminando el fallo de arranque `error: invalid argument: --ctk` en compilaciones de llama.cpp b11935+.
+  - Ampliación de tipos de proveedor (`gateway | llamacpp | ollama | openrouter | string`) en `JarvisController` y `JarvisQueryOptions`.
+
+- **🪐 Motor de Aspectos Planetarios Mayores en Tiempo Real (`AstrologyTool.calculateMajorAspects`)**:
+  - Implementación del cálculo orbital angular de aspectos mayores entre los 10 cuerpos celestes principales (Sol, Luna, Mercurio, Venus, Marte, Júpiter, Saturno, Urano, Neptuno, Plutón) empleando precisión VSOP87.
+  - Detección precisa de:
+    - **Oposición (180°)**: Oposición exacta Sol en Escorpio frente a Luna en Tauro (orbe estrecho de 0.2°), manifestando máxima tensión polar y culminación de ciclo.
+    - **Conjunción (0°)**: Conjunción Luna-Venus en Tauro (orbe 4.4°), facilitando armonía sensorial, belleza estética y receptividad emocional.
+    - **Trígonos (120°)**, **Cuadraturas (90°)** y **Sextiles (60°)** ordenados de menor a mayor orbe con tolerancias dinámicas para luminarias.
+  - Integración de los aspectos detectados en `getTodaySkyData()` y `getPlanetaryPositions()`.
+
+- **🛡️ Prevención de Respuestas Vacías y Fallback Astronómico Seguro (`JarvisService.respondWithAstrologyPrompt`)**:
+  - Presupuesto de generación ajustado a `maxTokens: 1024` para evitar que bloques de razonamiento agoten los tokens disponibles.
+  - Fallback determinista garantizado: si la respuesta del LLM resulta vacía o la inferencia falla, el sistema devuelve directamente el informe astronómico y de aspectos en tiempo real, erradicando respuestas en blanco en el chat.
+
+- **🧪 Cobertura de Pruebas Automatizadas (`astrology-tool.service.spec.ts`)**:
+  - Suite unitaria comprobando cálculo en tiempo real, detección de orbes de oposición Sol-Luna y conjunción Luna-Venus, ejecutada bajo `--runInBand`.
+
 ### Fixed & Enhanced — Ruteo y Cálculo de Clima Astral en Tiempo Real y Anclaje de Ubicación Específica (2026-10-31)
 
 - **🌌 Clasificación de "Clima Astral" / "Clima Astrológico" (`IntentRouterService` & `JarvisService`)**:

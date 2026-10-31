@@ -188,6 +188,17 @@ export class AstrologyTool {
       // Fase lunar
       lines.push(`- ${phaseName}: ${this.getPhaseInterpretation(phaseName)}`);
 
+      // ── ASPECTOS PLANETARIOS DESTACADOS (Oposiciones, Conjunciones, etc.) ──
+      const aspects = this.calculateMajorAspects(date);
+      if (aspects.length > 0) {
+        lines.push('', '**Aspectos Planetarios Destacados:**');
+        for (const a of aspects.slice(0, 6)) {
+          lines.push(
+            `- ${a.symbol} **${a.type} ${a.body1} (${a.sign1} ${a.deg1}°) - ${a.body2} (${a.sign2} ${a.deg2}°)** — Orbe: ${a.orb}° (${a.description})`,
+          );
+        }
+      }
+
       const elapsed = Date.now() - startTime;
       this.logger.log(`[astrology] clima calculado en ${elapsed}ms`);
 
@@ -317,6 +328,17 @@ export class AstrologyTool {
         lines.push(`- ${p.emoji} **${p.name}**: ${p.sign} ${p.deg}°${r}`);
       }
 
+      // ── ASPECTOS PLANETARIOS DESTACADOS ──
+      const aspects = this.calculateMajorAspects(date);
+      if (aspects.length > 0) {
+        lines.push('', '**Aspectos Planetarios Destacados:**');
+        for (const a of aspects.slice(0, 6)) {
+          lines.push(
+            `- ${a.symbol} **${a.type} ${a.body1} (${a.sign1} ${a.deg1}°) - ${a.body2} (${a.sign2} ${a.deg2}°)** — Orbe: ${a.orb}° (${a.description})`,
+          );
+        }
+      }
+
       lines.push('', '**Balance de Elementos:**');
       for (const [elem, count] of Object.entries(elementCount)) {
         const pct = Math.round((count / positions.length) * 100);
@@ -352,6 +374,111 @@ export class AstrologyTool {
       Piscis: 'intuición elevada, empatía profunda',
     };
     return interpretations[sign] || 'energía particular del signo';
+  }
+
+  /**
+   * Calcula los aspectos mayores entre los cuerpos celestes (conjunción, oposición, trígono, cuadratura, sextil)
+   */
+  calculateMajorAspects(date: Date = new Date()): Array<{
+    type: string;
+    symbol: string;
+    body1: string;
+    body2: string;
+    sign1: string;
+    deg1: string;
+    sign2: string;
+    deg2: string;
+    orb: number;
+    description: string;
+  }> {
+    const t = Astronomy.MakeTime(date);
+    const sunLon = Astronomy.SunPosition(t).elon;
+    const moonLon = Astronomy.EclipticLongitude(Astronomy.Body.Moon, t);
+
+    const bodies = [
+      { name: 'Sol', emoji: '☀️', lon: sunLon, isLuminary: true },
+      { name: 'Luna', emoji: '🌙', lon: moonLon, isLuminary: true },
+      { name: 'Mercurio', emoji: '☿', lon: Astronomy.EclipticLongitude(Astronomy.Body.Mercury, t), isLuminary: false },
+      { name: 'Venus', emoji: '♀', lon: Astronomy.EclipticLongitude(Astronomy.Body.Venus, t), isLuminary: false },
+      { name: 'Marte', emoji: '♂', lon: Astronomy.EclipticLongitude(Astronomy.Body.Mars, t), isLuminary: false },
+      { name: 'Júpiter', emoji: '♃', lon: Astronomy.EclipticLongitude(Astronomy.Body.Jupiter, t), isLuminary: false },
+      { name: 'Saturno', emoji: '♄', lon: Astronomy.EclipticLongitude(Astronomy.Body.Saturn, t), isLuminary: false },
+      { name: 'Urano', emoji: '♅', lon: Astronomy.EclipticLongitude(Astronomy.Body.Uranus, t), isLuminary: false },
+      { name: 'Neptuno', emoji: '♆', lon: Astronomy.EclipticLongitude(Astronomy.Body.Neptune, t), isLuminary: false },
+      { name: 'Plutón', emoji: '♇', lon: Astronomy.EclipticLongitude(Astronomy.Body.Pluto, t), isLuminary: false },
+    ];
+
+    const aspectsDef = [
+      { name: 'Conjunción', symbol: '☌', angle: 0, maxOrb: 8 },
+      { name: 'Oposición', symbol: '☍', angle: 180, maxOrb: 8 },
+      { name: 'Trígono', symbol: '△', angle: 120, maxOrb: 7 },
+      { name: 'Cuadratura', symbol: '□', angle: 90, maxOrb: 7 },
+      { name: 'Sextil', symbol: '⚹', angle: 60, maxOrb: 5 },
+    ];
+
+    const detected: Array<{
+      type: string;
+      symbol: string;
+      body1: string;
+      body2: string;
+      sign1: string;
+      deg1: string;
+      sign2: string;
+      deg2: string;
+      orb: number;
+      description: string;
+    }> = [];
+
+    for (let i = 0; i < bodies.length; i++) {
+      for (let j = i + 1; j < bodies.length; j++) {
+        const b1 = bodies[i];
+        const b2 = bodies[j];
+
+        let diff = Math.abs(b1.lon - b2.lon);
+        if (diff > 180) diff = 360 - diff;
+
+        for (const asp of aspectsDef) {
+          const maxOrb = (b1.isLuminary || b2.isLuminary) ? asp.maxOrb + 2 : asp.maxOrb;
+          const orb = Math.abs(diff - asp.angle);
+
+          if (orb <= maxOrb) {
+            const sign1 = this.SIGNS[Math.floor(b1.lon / 30) % 12];
+            const deg1 = (b1.lon % 30).toFixed(1);
+            const sign2 = this.SIGNS[Math.floor(b2.lon / 30) % 12];
+            const deg2 = (b2.lon % 30).toFixed(1);
+
+            let desc = '';
+            if (asp.name === 'Oposición') {
+              desc = `tensión y polaridad arquetípica entre ${sign1} y ${sign2}`;
+            } else if (asp.name === 'Conjunción') {
+              desc = `fusión de impulsos y energías concentradas en ${sign1}`;
+            } else if (asp.name === 'Trígono') {
+              desc = `fluidez armónica y facilidad energética`;
+            } else if (asp.name === 'Cuadratura') {
+              desc = `fricción dinámica que exige resolución y acción`;
+            } else if (asp.name === 'Sextil') {
+              desc = `oportunidad constructiva y estímulo mental`;
+            }
+
+            detected.push({
+              type: asp.name,
+              symbol: asp.symbol,
+              body1: `${b1.emoji} ${b1.name}`,
+              body2: `${b2.emoji} ${b2.name}`,
+              sign1,
+              deg1,
+              sign2,
+              deg2,
+              orb: Math.round(orb * 10) / 10,
+              description: desc,
+            });
+          }
+        }
+      }
+    }
+
+    detected.sort((a, b) => a.orb - b.orb);
+    return detected;
   }
 
   private getPhaseInterpretation(phase: string): string {

@@ -85,12 +85,12 @@ export class InferenceGatewayService implements ILLMProvider {
     this.primaryProviderName =
       process.env.INFERENCE_PRIMARY_PROVIDER || 'llamacpp';
     this.fallbackProviderName =
-      process.env.INFERENCE_FALLBACK_PROVIDER || 'ollama';
+      process.env.INFERENCE_FALLBACK_PROVIDER || 'openrouter';
     this.autoFallback = process.env.INFERENCE_AUTO_FALLBACK !== 'false';
 
     this.providers = new Map<string, ILLMProvider>([
       ['llamacpp', this.llamaCppProvider],
-      ['ollama', this.ollamaProvider],
+      ['ollama', this.llamaCppProvider], // Mapeo transparente hacia llama.cpp
       ['openrouter', this.openRouterProvider],
     ]);
 
@@ -113,11 +113,15 @@ export class InferenceGatewayService implements ILLMProvider {
   }
 
   getFallbackProvider(): ILLMProvider {
-    return this.providers.get(this.fallbackProviderName) || this.ollamaProvider;
+    return this.providers.get(this.fallbackProviderName) || this.openRouterProvider;
   }
 
   getProvider(name: string): ILLMProvider | undefined {
-    return this.providers.get(name.toLowerCase());
+    const n = name.toLowerCase();
+    if (n === 'ollama') {
+      return this.llamaCppProvider;
+    }
+    return this.providers.get(n);
   }
 
   setPrimaryProvider(name: string): void {
