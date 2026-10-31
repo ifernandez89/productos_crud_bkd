@@ -9,6 +9,7 @@ import {
 } from 'jewish-date';
 import { create, all } from 'mathjs';
 import { BrowserToolService } from '../../jarvis/tools/browser/browser-tool.service';
+import { DateMathTool } from '../../jarvis/tools/date-math/date-math.tool';
 
 const math = create(all);
 
@@ -56,6 +57,7 @@ export class AssistantToolsService {
   private readonly logger = new Logger(AssistantToolsService.name);
   private readonly defaultWeatherLocation =
     'Tala, Departamento Paraná, Entre Ríos, 3118, Argentina';
+  private readonly dateMathTool = new DateMathTool();
 
   constructor(private readonly browserTool: BrowserToolService) {}
 
@@ -99,6 +101,13 @@ export class AssistantToolsService {
     if (this.isMixedQuery(query, normalized)) {
       this.logger.log(`[tool:mixed → ollama] "${query}"`);
       return null;
+    }
+
+    // Aritmética y proyección temporal determinista (DateMathTool)
+    const dateMathRes = this.dateMathTool.resolve(query);
+    if (dateMathRes.handled && dateMathRes.result) {
+      this.logger.log(`[tool:date-math] "${query}"`);
+      return dateMathRes.result;
     }
 
     if (this.isWeatherQuery(normalized)) {
@@ -177,7 +186,15 @@ export class AssistantToolsService {
 
   // ── Detectores de intención ─────────────────────────────────────────────────
 
+  private isExplanatoryQuery(n: string): boolean {
+    return /(como se forma|cómo se forma|por que se produce|por qué se produce|por que ocurre|por qué ocurre|que es (un |una |el |la |los |las )?|qué es (un |una |el |la |los |las )?|en que consiste|en qué consiste|como funciona|cómo funciona|que produce|qué produce|que causa|qué causa|explicame|explica |defini |definir |que diferencias? existen entre|cual es la diferencia entre|cuál es la diferencia entre)/i.test(
+      n,
+    );
+  }
+
   private isWeatherQuery(n: string): boolean {
+    // Excluir explicaciones o conceptos físicos/meteorológicos
+    if (this.isExplanatoryQuery(n)) return false;
     // Excluir "clima astrológico" / "clima zodiacal" / "clima lunar" → eso es astrología
     if (/(astro|zodiac|lunar|horoscopo|signo|tarot|astrolog)/i.test(n))
       return false;
@@ -199,6 +216,10 @@ export class AssistantToolsService {
   }
 
   private isTimeQuery(n: string): boolean {
+    // Excluir operaciones de aritmética de fechas o proyecciones temporales
+    if (/(dentro de|hace \d+|cuantos dias|cuanto falta|cuánto falta|que fecha sera|que dia cae)/i.test(n)) {
+      return false;
+    }
     return /(que hora|qué hora|hora actual|hora local|que hora tiene|qué hora tiene|que dia|qué día|dia es hoy|día es hoy|que fecha|qué fecha|fecha actual|fecha de hoy|dia actual|en que dia|en qué día|en que fecha|en qué fecha|cual es la fecha|cuál es la fecha|sabes que dia|sabes qué día|sabes que fecha|sabes qué fecha|no me dijiste la fecha|dime la fecha|decime la fecha|zona horaria|horario actual)/i.test(
       n,
     );
@@ -398,7 +419,9 @@ export class AssistantToolsService {
     'aqui', 'aquí', 'aca', 'acá', 'alla', 'allá', 'donde', 'dónde', 'cuando', 'cuándo',
     'quien', 'quién', 'como', 'cómo', 'que', 'qué', 'cual', 'cuál',
     'saber', 'sabes', 'saberlo', 'decir', 'dime', 'decime', 'contar', 'contame',
-    'ver', 'mirar', 'consultar'
+    'ver', 'mirar', 'consultar',
+    'durante', 'proximas', 'próximas', 'proximo', 'próximo', 'siguiente', 'siguientes',
+    'horas', 'hora', 'dias', 'días', 'probabilidad', 'probabilidades', 'zona', 'ubicacion', 'ubicación'
   ]);
 
   private extractLocation(query: string): string | null {
@@ -524,6 +547,13 @@ export class AssistantToolsService {
         `- Humedad: ${weather.humidity}%`,
         `- Estado: ${weather.label}`,
       ];
+
+      if (
+        weather.forecast24hSummary &&
+        (isAskingRainOrForecast || weather.maxProb24h >= 30)
+      ) {
+        lines.push(`🌧️ Pronóstico de lluvia (próximas 24 horas):\n- ${weather.forecast24hSummary}`);
+      }
 
       if (
         weather.tonightSummary &&
@@ -660,41 +690,78 @@ export class AssistantToolsService {
     const hourly = response.data.hourly;
     let tonightSummary = '';
     let tonightPrecipProb = 0;
+    let forecast24hSummary = '';
+    let maxProb24h = 0;
+    let peakHour24h = '';
+    let totalMm24h = 0;
 
     if (hourly?.time && hourly.precipitation_probability) {
       const now = DateTime.now().setZone('America/Argentina/Buenos_Aires');
       const todayIso = now.toISODate();
-      let maxProb = 0;
-      let maxMm = 0;
-      let dominantCode = 0;
-      let count = 0;
+      let maxProbTonight = 0;
+      let maxMmTonight = 0;
+      let dominantCodeTonight = 0;
+      let countTonight = 0;
 
+      // 1. Resumen específico para esta noche (20:00 - 23:59 ART)
       for (let i = 0; i < hourly.time.length; i++) {
         const t = hourly.time[i];
         if (t && t.startsWith(todayIso)) {
           const hour = parseInt(t.slice(11, 13), 10);
           if (hour >= 20 && hour <= 23) {
-            count++;
+            countTonight++;
             const p = hourly.precipitation_probability[i] ?? 0;
             const mm = hourly.precipitation?.[i] ?? 0;
-            if (p > maxProb) {
-              maxProb = p;
-              dominantCode = hourly.weather_code?.[i] ?? dominantCode;
+            if (p > maxProbTonight) {
+              maxProbTonight = p;
+              dominantCodeTonight = hourly.weather_code?.[i] ?? dominantCodeTonight;
             }
-            if (mm > maxMm) maxMm = mm;
+            if (mm > maxMmTonight) maxMmTonight = mm;
           }
         }
       }
 
-      if (count > 0) {
-        tonightPrecipProb = maxProb;
-        if (maxProb >= 60 || maxMm >= 1.0) {
-          tonightSummary = `Alta probabilidad de lluvia para esta noche (${maxProb}%, acumulado estimado ${maxMm} mm).`;
-        } else if (maxProb >= 30 || maxMm > 0.1) {
-          tonightSummary = `Baja a moderada probabilidad de lloviznas aisladas para esta noche (${maxProb}%, acumulado ~${maxMm} mm).`;
+      if (countTonight > 0) {
+        tonightPrecipProb = maxProbTonight;
+        if (maxProbTonight >= 60 || maxMmTonight >= 1.0) {
+          tonightSummary = `Alta probabilidad de lluvia para esta noche (${maxProbTonight}%, acumulado estimado ${maxMmTonight} mm).`;
+        } else if (maxProbTonight >= 30 || maxMmTonight > 0.1) {
+          tonightSummary = `Baja a moderada probabilidad de lloviznas aisladas para esta noche (${maxProbTonight}%, acumulado ~${maxMmTonight} mm).`;
         } else {
-          tonightSummary = `No se pronostican lluvias para esta noche (probabilidad de precipitación ${maxProb}%, cielo mayormente ${this.describeWeatherCode(dominantCode).toLowerCase()}).`;
+          tonightSummary = `No se pronostican lluvias para esta noche (probabilidad de precipitación ${maxProbTonight}%, cielo mayormente ${this.describeWeatherCode(dominantCodeTonight).toLowerCase()}).`;
         }
+      }
+
+      // 2. Resumen extendido para las próximas 24 horas
+      const currentIsoHour = now.toFormat("yyyy-MM-dd'T'HH:00");
+      let startIndex = hourly.time.findIndex((t) => t && t >= currentIsoHour);
+      if (startIndex < 0) startIndex = 0;
+      const endIndex = Math.min(hourly.time.length, startIndex + 24);
+
+      let peakCode24h = 0;
+      for (let i = startIndex; i < endIndex; i++) {
+        const p = hourly.precipitation_probability[i] ?? 0;
+        const mm = hourly.precipitation?.[i] ?? 0;
+        totalMm24h += mm;
+        if (p > maxProb24h) {
+          maxProb24h = p;
+          peakCode24h = hourly.weather_code?.[i] ?? 0;
+          const tStr = hourly.time[i];
+          if (tStr) {
+            const dt = DateTime.fromISO(tStr, { zone: 'America/Argentina/Buenos_Aires' });
+            peakHour24h = dt.isValid ? dt.toFormat('HH:mm') : tStr.slice(11, 16);
+          }
+        }
+      }
+
+      totalMm24h = Math.round(totalMm24h * 10) / 10;
+      const peakTimeDesc = peakHour24h ? ` (pico previsto a las ${peakHour24h} hs)` : '';
+      if (maxProb24h >= 60 || totalMm24h >= 2.0) {
+        forecast24hSummary = `Alta probabilidad de precipitaciones (${maxProb24h}%)${peakTimeDesc}, con un volumen acumulado estimado de ${totalMm24h} mm (${this.describeWeatherCode(peakCode24h).toLowerCase()}).`;
+      } else if (maxProb24h >= 25 || totalMm24h > 0.2) {
+        forecast24hSummary = `Baja a moderada probabilidad de precipitaciones (${maxProb24h}%)${peakTimeDesc}, con posible acumulación ligera de ${totalMm24h} mm.`;
+      } else {
+        forecast24hSummary = `Baja probabilidad de precipitaciones (${maxProb24h}% máximo a las ${peakHour24h || 'tarde/noche'} hs, acumulado < 0.1 mm). Condiciones mayormente secas y estables.`;
       }
     }
 
@@ -706,6 +773,9 @@ export class AssistantToolsService {
       label: this.describeWeatherCode(current.weather_code),
       tonightSummary,
       tonightPrecipProb,
+      forecast24hSummary,
+      maxProb24h,
+      totalMm24h,
     };
   }
 

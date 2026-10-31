@@ -83,10 +83,10 @@
     "id": 9,
     "block": "2. Tiempo, calendario y geografía",
     "question": "¿Cuántos días faltan para terminar el año?",
-    "expected": "Cálculo temporal exacto",
-    "answer": "Hoy es el 31 de octubre de 2026, por lo tanto, ya no quedan días para terminar el año. El año 2026 terminará el 31 de diciembre de 2026. Si quieres, puedo ayudarte a calcular cuántos días faltan para una fecha específica del año.",
-    "durationMs": 6587,
-    "timestamp": "2026-10-31T19:39:15.682Z",
+    "expected": "DateMathTool determinista",
+    "answer": "Hoy es 31 de octubre de 2026 (día 304 de 365 del año 2026). Faltan exactamente **61 días** para terminar el año 2026 (hasta el 31 de diciembre inclusive).",
+    "durationMs": 63,
+    "timestamp": "2026-10-31T20:47:01.738Z",
     "success": true
   },
   "10": {
@@ -113,10 +113,10 @@
     "id": 12,
     "block": "2. Tiempo, calendario y geografía",
     "question": "Si hoy es sábado, ¿qué fecha será dentro de 45 días?",
-    "expected": "Cálculo temporal",
-    "answer": "Hoy es sábado 31 de octubre de 2026. Hora actual en Argentina: 16:04 (ART).",
-    "durationMs": 3,
-    "timestamp": "2026-10-31T19:04:15.897Z",
+    "expected": "DateMathTool proyección determinista",
+    "answer": "Partiendo de hoy (sábado 31 de octubre de 2026), dentro de 45 días será el **martes 15 de diciembre de 2026**.",
+    "durationMs": 9,
+    "timestamp": "2026-10-31T20:47:02.360Z",
     "success": true
   },
   "13": {
@@ -143,10 +143,10 @@
     "id": 15,
     "block": "3. Clima y meteorología",
     "question": "¿Hay probabilidades de lluvia durante las próximas 24 horas?",
-    "expected": "API meteorológica / Pronóstico",
-    "answer": "No tengo acceso a datos en tiempo real sobre la meteorología en la zona de Tala, Entre Ríos, ni en el área de influencia de la provincia de Entre Ríos. ArcheoScope utiliza la librería Open-Meteo para predecir el clima, pero esta herramienta no requiere API keys y opera con datos procedurales, lo cual puede limitar su precisión en ciertas regiones o condiciones.\n\nDado que no hay documentos RAG recuperados para fundamentar esta respuesta, existen incertidumbres sobre la disponibilidad y precisión de los datos meteorológicos en este momento. Te recomiendo consultar una fuente meteorológica local o una aplicación de clima para obtener información más actualizada sobre las probabilidades de lluvia en las próximas 24 horas.",
-    "durationMs": 4880,
-    "timestamp": "2026-10-31T19:39:42.429Z",
+    "expected": "WeatherTool con precipitación horaria 24h",
+    "answer": "📍 Ubicación: Distrito Tala, Departamento Paraná, Entre Ríos, Argentina\n🌤️ Clima actual:\n- Temperatura: 27.6°C\n- Sensación térmica: 28.2°C\n- Viento: 3 km/h\n- Humedad: 41%\n- Estado: Mayormente despejado\n🌧️ Pronóstico de lluvia (próximas 24 horas):\n- Baja a moderada probabilidad de precipitaciones (43%) (pico previsto a las 12:00 hs), con posible acumulación ligera de 0.1 mm.\n🌧️ Pronóstico de lluvia para esta noche:\n- No se pronostican lluvias para esta noche (probabilidad de precipitación 0%, cielo mayormente despejado).",
+    "durationMs": 1436,
+    "timestamp": "2026-10-31T20:47:04.408Z",
     "success": true
   },
   "16": {
@@ -173,10 +173,10 @@
     "id": 18,
     "block": "3. Clima y meteorología",
     "question": "¿Cómo se forma un frente frío y qué cambios produce en el clima?",
-    "expected": "Explicación meteorológica",
-    "answer": "📍 Ubicación: Distrito Tala, Departamento Paraná, Entre Ríos, Argentina\n🌤️ Clima actual:\n- Temperatura: 28.5°C\n- Sensación térmica: 29.3°C\n- Viento: 3.1 km/h\n- Humedad: 37%\n- Estado: Mayormente despejado",
-    "durationMs": 212,
-    "timestamp": "2026-10-31T19:04:22.415Z",
+    "expected": "Explicación física/meteorológica LLM (LOCAL)",
+    "answer": "¡Hola Ignacio! ¿Cómo estás? Me alegra que me estés consultando sobre el clima y el frente frío. Vamos a ver, para responder tu pregunta de forma clara y precisa, primero debo explicarte qué es un **frente frío** y cómo se forma.\n\nUn **frente frío** es una zona de transición entre un aire frío y un aire cálido. Se forma cuando una masa de aire frío, que es más denso, se desplaza hacia una masa de aire cálido, que es menos denso. Al encontrarse, el aire frío empuja al aire cálido hacia arriba, lo que genera una zona de convergencia y ascenso del aire cálido. Este proceso es lo que da lugar a la formación de nubes y, en muchos casos, a la precipitación.\n\nAhora, en cuanto a los **cambios que produce en el clima**, un frente frío puede traer varias variaciones:\n\n1. **Temperatura**: La temperatura suele bajar bruscamente, especialmente si el frente frío es fuerte.\n2. **Presión atmosférica**: La presión aumenta, ya que el aire frío es más denso.\n3. **Viento**: Pueden aparecer vientos más fuertes, especialmente si el frente frío se mueve rápidamente.\n4. **Nubes y precipitación**: Como mencioné antes, el ascenso del aire cálido puede generar nubes y, en algunos casos, lluvia o nieve, dependiendo de la temperatura.\n5. **Humedad**: Puede haber un aumento en la humedad, lo que puede hacer que el clima se sienta más húmedo.\n\nEn tu ubicación, Tala, Entre Ríos, el clima actual es **mayormente despejado**, con una **temperatura de 27.6°C** y una **sensación térmica de 28.2°C**. Sin embargo, el pronóstico indica que hay una **baja a moderada probabilidad de precipitaciones (43%)** a partir de las **12:00 hs**, con **posible acumulación ligera de 0.1 mm**. Esto podría indicar que un frente frío está en camino, aunque aún no se ha manifestado de manera clara.\n\nSi quieres, puedo ayudarte a seguir el desarrollo del frente frío y cómo afecta al clima en tu zona. ¿Te gustaría que te avise si hay cambios importantes? 😊",
+    "durationMs": 14839,
+    "timestamp": "2026-10-31T20:47:19.855Z",
     "success": true
   },
   "19": {
@@ -203,10 +203,10 @@
     "id": 21,
     "block": "4. Astronomía y astrología",
     "question": "¿Hay conjunciones, oposiciones o eventos astronómicos destacados próximamente?",
-    "expected": "Motor astronómico de aspectos",
-    "answer": "⚠️ No tengo datos verificados para responder esto (04:04 p. m. hs).\n\nIntenté buscar en las fuentes disponibles pero no obtuve resultados verificados.\n\nNo voy a inventar información sobre eventos actuales. Podés:\n- Reformular la pregunta o intentar en un momento\n- Volver a preguntarme en unos segundos",
-    "durationMs": 11380,
-    "timestamp": "2026-10-31T19:04:46.067Z",
+    "expected": "AstrologyTool / VSOP87",
+    "answer": "🔭 **Resumen astronómico:**  \nHoy, el Sol está en Escorpio y la Luna en Tauro, formando una **oposición muy precisa** (0.1°), lo que crea una tensión arquetípica entre ambas signos. Además, Urano y Neptuno forman un **sextil** (0.2°), lo que trae una energía de estímulo mental y oportunidad constructiva. También hay una **cuadratura** entre Venus y Júpiter (0.9°), y entre Marte y Saturno (1.5°), que exigen resolución y acción. Urano y Plutón forman un **trígono** (1.3°), facilitando la fluidez energética.\n\n🌠 **Interpretación astrológica:**  \nLa oposición Sol-Luna refleja una polaridad interna que puede generar conflicto o claridad. La energía de Urano y Neptuno promueve la creatividad y la visión amplia, mientras que las cuadraturas de Venus-Júpiter y Marte-Saturno exigen equilibrio entre lo que deseamos y lo que es realista. La conexión entre Urano y Plutón sugiere un flujo de energía que puede transformar situaciones.\n\n💡 **Consejo o reflexión:**  \nAprovecha la energía de Urano y Neptuno para explorar ideas nuevas y liberar lo que ya no te sirve. Enfócate en resolver las tensiones con claridad y acción, sin caer en la procrastinación. La oposición Sol-Luna te invita a integrar lo oscuro y lo claro dentro de ti. 🌌",
+    "durationMs": 35446,
+    "timestamp": "2026-10-31T20:47:55.918Z",
     "success": true
   },
   "22": {
@@ -243,20 +243,20 @@
     "id": 25,
     "block": "5. Ciencia y física",
     "question": "¿Qué es la energía y cuáles son sus principales formas?",
-    "expected": "Conceptos científicos",
-    "answer": "🔮 **Resumen astronómico:**  \nHoy, el Sol está en Escorpio y la Luna en Tauro, en una oposición que trae tensión y polaridad. Mercurio, Venus, Júpiter y Saturno están en posiciones que reflejan dinámica y conexión. La Luna en Gibosa Menguante sugiere un momento para compartir sabiduría y gratitud. Urano y Neptuno forman un sextil, estimulando la mente y la creatividad, mientras que Marte y Saturno en cuadratura exigen resolución y acción.\n\n🌠 **Interpretación astrológica:**  \nLa energía del día se basa en la oposición Sol-Luna, que simboliza la tensión entre lo oscuro y lo material. Esta polaridad invita a explorar lo interno y lo externo. La presencia de Urano y Neptuno en sextil sugiere una energía de innovación y expansión mental, mientras que la cuadratura entre Marte y Saturno exige equilibrio entre acción y estructura. La Luna en Tauro aporta estabilidad emocional y conexión con lo terrenal.\n\n💡 **Consejo o reflexión:**  \nAprovecha la energía de la oposición para integrar lo que has aprendido. La cuadratura entre Marte y Saturno te invita a actuar con claridad y firmeza. La energía de Urano y Neptuno te ayuda a ver más allá de lo evidente. Permítete ser creativo y flexible, pero mantén la base sólida que te da Tauro. La Luna en Gibosa Menguante es un recordatorio de compartir lo que has recibido.",
-    "durationMs": 8496,
-    "timestamp": "2026-10-31T19:05:07.244Z",
+    "expected": "Concepto físico/científico LLM (LOCAL)",
+    "answer": "La energía es una propiedad fundamental de la materia y del campo, que permite realizar trabajo y causar cambios en los sistemas. En términos científicos, la energía se define como la capacidad de realizar trabajo, y puede manifestarse en diversas formas, las cuales pueden convertirse entre sí según las leyes de la física, especialmente la conservación de la energía.\n\n### Principales formas de energía:\n\n1. **Energía Cinética**: Es la energía que posee un objeto en movimiento. Depende de la masa del objeto y su velocidad. Cuanto más rápido se mueve un objeto, más energía cinética tiene.\n\n2. **Energía Potencial**: Es la energía almacenada en un objeto debido a su posición o estado. Puede ser:\n   - **Gravitacional**: Por ejemplo, una roca en la cima de una montaña tiene energía potencial gravitacional.\n   - **Elastica**: Por ejemplo, un resorte comprimido o estirado tiene energía potencial elástica.\n   - **Química**: Almacenada en los enlaces entre átomos, como en las moléculas de combustibles.\n\n3. **Energía Térmica**: Es la energía asociada al movimiento de las partículas de un material. Cuanto más rápido se mueven las partículas, más calor tiene el material.\n\n4. **Energía Nuclear**: Se encuentra en el núcleo de los átomos y se libera en reacciones nucleares, como en las centrales nucleares o en las estrellas.\n\n5. **Energía Eléctrica**: Es la energía asociada al movimiento de las cargas eléctricas. Se genera mediante la diferencia de potencial eléctrico, como en las baterías o en los generadores.\n\n6. **Energía Luminosa (Optica)**: Es la energía que transporta la luz. Se puede convertir en energía eléctrica mediante paneles solares, por ejemplo.\n\n7. **Energía Sonora**: Es la energía que transporta las ondas sonoras, como el sonido que escuchamos.\n\n8. **Energía Radiante**: Incluye la energía de las ondas electromagnéticas, como la luz visible, los rayos X, las ondas de radio, etc.\n\n9. **Energía Mecánica**: Combinación de energía cinética y potencial, como en un péndulo en movimiento.\n\n10. **Energía Química**: Como mencioné antes, está almacenada en los enlaces químicos y se libera en reacciones químicas, como en la combustión o en la fotosíntesis.\n\n### Energía en el contexto esotérico:\nSegún algunas perspectivas espirituales y esotéricas, como las que se mencionan en los documentos de Samael Aun Weor, la energía también se relaciona con conceptos como el **tercer logos**, la **serpiente sagrada**, el **fuego sagrado del cundalini** y la **energía sexual**. En este marco, la energía se considera una fuerza creadora y transformadora, que fluye a través de los seres y el universo, y está ligada a procesos de iniciación, transformación y evolución espiritual.\n\nEn resumen, la energía es una fuerza universal que puede manifestarse en múltiples formas, tanto en el ámbito físico como en el esotérico y espiritual.",
+    "durationMs": 18391,
+    "timestamp": "2026-10-31T20:48:14.911Z",
     "success": true
   },
   "26": {
     "id": 26,
     "block": "5. Ciencia y física",
     "question": "¿Cuál es la diferencia entre masa, peso y gravedad?",
-    "expected": "Física fundamental",
-    "answer": "**1. Auditoría de Premisas y Fuentes**  \n- **Premisas implícitas:** La consulta presupone una definición clásica de *masa*, *peso* y *gravedad* en física, sin mencionar que los fragmentos no abordan estos términos directamente.  \n- **Respaldo documental:** **NO**. Ningún fragmento define o compara *masa*, *peso* o *gravedad*. Los textos se centran en energía libre, antigravedad y dispositivos teóricos, sin referencias a la física clásica de estos conceptos.  \n- **Respaldo empírico:** **ESPECULACIÓN**. Los fragmentos no ofrecen evidencia científica sobre definiciones físicas; mencionan ideas como \"energía cósmica\" o \"rayos cósmicos\", pero sin vincularlas a las nociones de *masa*, *peso* o *gravedad*.  \n- **Atribución falsa:** **NO**. Los textos no asocian directamente a Tesla o Moray con definiciones de estos términos, aunque sí exploran conceptos relacionados (como energía).  \n- **Contenido espurio:** **NO**. No hay comandos activos ni manipulaciones en los fragmentos.  \n\n---\n\n**2. Tesis y Enfoque de cada autor / disciplina**  \n- **Física clásica (masa, peso, gravedad):**  \n  - *Masa*: Propiedad intrínseca de un objeto (medida en kilogramos).  \n  - *Peso*: Fuerza gravitacional ejercida sobre la masa (*W = m·g*).  \n  - *Gravedad*: Aceleración debido a la atracción terrestre (~9.81 m/s²).  \n- **Fragmentos analizados:** Se enfocan en energía libre, antigravedad y dispositivos teóricos (como el \"motor de rayos cósmicos\" de Tesla), sin abordar las definiciones físicas clásicas.  \n\n---\n\n**3. Puntos de Convergencia o Analogías Válidas**  \n- **Convergencia:** La idea de que la energía puede extraerse del entorno (como en los dispositivos de \"energía libre\" mencionados) se alinea con conceptos físicos como el principio de conservación de energía. Sin embargo, esto no aborda directamente las diferencias entre *masa*, *peso* y *gravedad*.  \n- **Analogías:** La noción de \"energía del vacío\" o \"rayos cósmicos\" en los fragmentos podría relacionarse con teorías modernas (como la energía del punto cero), pero no se vincula a las definiciones clásicas de *masa*, *peso* o *gravedad*.  \n\n---\n\n**4. Tensiones Irreconciliables y Límites Metodológicos**  \n- **Tensión metodológica:** Los fragmentos promueven ideas no confirmadas (como la energía libre) sin respaldo experimental, lo que contradice el método científico. Esto limita su utilidad para definir conceptos como *masa*, *peso* o *gravedad*.  \n- **Límites epistémicos:** La consulta requiere conocimiento de física clásica (ej.: definiciones de Newton), pero los fragmentos no proporcionan ese marco teórico.  \n\n---\n\n**5. Conclusión y Síntesis Crítica Proporcional**  \n- **Respuesta condicional:** Si se asume que la consulta se basa en la física clásica, las diferencias son:  \n  - *Masa*: Propiedad intrínseca de un objeto (no depende del entorno).  \n  - *Peso*: Fuerza ejercida por la gravedad sobre la masa (*W = m·g*).  \n  - *Gravedad*: Aceleración causada por la atracción gravitacional.  \n- **Limitaciones:** Los fragmentos no abordan estos conceptos, lo que impide una contrastación dialéctica entre ellos y las ideas expuestas en los textos. La respuesta debe basarse en el conocimiento físico establecido, excluyendo cualquier información de los fragmentos proporcionados.  \n\n**Estado final:**  \n- **RESPALDO DOCUMENTAL: NO.**  \n- **RESPALDO EMPÍRICO: ESPECULACIÓN.**  \n- **ATRIBUCIÓN FALSA: NO.**  \n- **CONTENIDO ESPURIO: NO.**",
-    "durationMs": 119871,
-    "timestamp": "2026-10-31T19:07:07.620Z",
+    "expected": "Física fundamental LLM (LOCAL sin dialéctica pesada)",
+    "answer": "¡Hola Ignacio! Es una pregunta muy interesante y fundamental en física. Vamos a ver, con claridad y sin complicaciones, la diferencia entre **masa**, **peso** y **gravedad**.\n\n### 1. **Masa**  \nLa **masa** es la cantidad de materia que tiene un objeto. Es una propiedad inherente del objeto y no cambia, independientemente del lugar donde estés.  \n- **Ejemplo**: Si tienes una manzana de 100 gramos, su masa será siempre 100 gramos, ya sea en la Tierra, en la Luna o en el espacio.  \n- **Unidad de medida**: Kilogramo (kg) en el Sistema Internacional.\n\n### 2. **Peso**  \nEl **peso** es la fuerza con la que un objeto es atraído hacia el centro de la Tierra (o de cualquier otro cuerpo celeste). Depende de la **gravedad** y de la **masa** del objeto.  \n- **Fórmula**: Peso = masa × gravedad  \n- **Ejemplo**: La manzana de 100 gramos pesará más en la Tierra que en la Luna, porque la gravedad terrestre es más fuerte.  \n- **Unidad de medida**: Newton (N).\n\n### 3. **Gravedad**  \nLa **gravedad** es la fuerza de atracción que ejerce un cuerpo celeste (como la Tierra) sobre los objetos que están cerca de él. Es una propiedad del **campo gravitatorio** que existe alrededor de cualquier masa.  \n- **Ejemplo**: La gravedad de la Tierra es lo que nos mantiene en el suelo y nos hace caer hacia el centro de la Tierra si soltamos algo.  \n- **Unidad de medida**: Metro por segundo al cuadrado (m/s²).\n\n### Resumen rápido:\n- **Masa** = cantidad de materia (no cambia).  \n- **Peso** = fuerza de atracción (depende de la gravedad y la masa).  \n- **Gravedad** = fuerza que atrae a los objetos hacia el centro de un cuerpo celeste.\n\n¿Querés que te dé un ejemplo práctico con números? 😊",
+    "durationMs": 16315,
+    "timestamp": "2026-10-31T20:48:31.832Z",
     "success": true
   },
   "27": {

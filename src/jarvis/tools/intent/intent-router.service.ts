@@ -90,11 +90,12 @@ export class IntentRouterService {
       return this.applyCapabilityGate(llmResult);
     } catch {
       this.logger.warn(`[intent] LLM no disponible, usando fast classify`);
-      // Si fast dice LOCAL con low confidence, escalar a WEB como fallback seguro
+      // Si fast dice LOCAL con low confidence, mantener LOCAL como base segura
       return this.applyCapabilityGate({
         ...fastResult,
-        intent: 'WEB',
-        reason: 'LLM unavailable → WEB fallback',
+        intent: 'LOCAL',
+        confidence: 'medium',
+        reason: 'LLM unavailable → LOCAL fallback',
       });
     }
   }
@@ -111,6 +112,12 @@ export class IntentRouterService {
   }
 
   // ── Clasificación rápida (reglas) ────────────────────────────────────────────
+
+  private isExplanatoryQuery(n: string): boolean {
+    return /(como se forma|cómo se forma|por que se produce|por qué se produce|por que ocurre|por qué ocurre|que es (un |una |el |la |los |las )?|qué es (un |una |el |la |los |las )?|en que consiste|en qué consiste|como funciona|cómo funciona|que produce|qué produce|que causa|qué causa|explicame|explica |defini |definir |que diferencias? existen entre|cual es la diferencia entre|cuál es la diferencia entre)/i.test(
+      n,
+    );
+  }
 
   private fastClassify(message: string): IntentResult {
     // Si el mensaje es muy largo (ej: el usuario pegó historial de conversación),
@@ -214,7 +221,7 @@ export class IntentRouterService {
 
     // SPORTS — alta confianza (verificar ANTES que TOOL para evitar conflictos con "hora")
     const sportsPattern =
-      /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla|posiciones|pr[oó]ximo partido|siguiente partido)/i;
+      /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla\s+de\s+posiciones|\bposiciones\b|pr[oó]ximo partido|siguiente partido)/i;
     const timePattern =
       /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido|proximo|siguiente|cuando juega|cuando es el)/i;
     if (
@@ -245,6 +252,27 @@ export class IntentRouterService {
       };
     }
 
+    // Consultas explicativas y conceptuales (Física, Ciencia, Meteorología Teórica, etc.)
+    // Deben resolverse con conocimiento del modelo (LOCAL) evitando secuestro por TOOL meteorológica o ASTROLOGY.
+    if (this.isExplanatoryQuery(n) && !/(mi |mis |sobre mi|acerca de mi)/i.test(n)) {
+      if (!/(busca(r)? en internet|busca(r)? en la web|googlea)/i.test(n)) {
+        return {
+          intent: 'LOCAL',
+          confidence: 'high',
+          reason: 'explanatory/conceptual query',
+        };
+      }
+    }
+
+    // Aritmética determinista de fechas (DateMathTool)
+    if (
+      /(cuantos dias faltan|dias para terminar el ano|dias para fin de ano|cuanto falta para fin de ano|dentro de \d+ (dias|semanas|meses)|hace \d+ (dias|semanas|meses)|que fecha (sera|va a ser|es) dentro de|que dia cae)/i.test(
+        n,
+      )
+    ) {
+      return { intent: 'TOOL', confidence: 'high', reason: 'date_math tool' };
+    }
+
     // TOOL directa — alta confianza (clima, math, economía, calendarios)
     // NOTA: esto va DESPUÉS de SPORTS para evitar que "hora del partido" se clasifique como TOOL
     // ⚠️ Excluir "clima astrológico/astral/zodiacal/lunar" → eso es ASTROLOGY calculado, no meteorología
@@ -252,7 +280,8 @@ export class IntentRouterService {
       /(clima|temperatura|tiempo en|pronostico|lluvia|hace calor|hace frio)/i.test(
         n,
       ) &&
-      !/(astr|zodiac|lunar|horoscopo|signo)/i.test(n)
+      !/(astr|zodiac|lunar|horoscopo|signo)/i.test(n) &&
+      !this.isExplanatoryQuery(n)
     ) {
       return { intent: 'TOOL', confidence: 'high', reason: 'weather tool' };
     }
@@ -326,6 +355,19 @@ export class IntentRouterService {
         intent: 'ASTROLOGY',
         confidence: 'high',
         reason: 'explicit astrology keyword',
+      };
+    }
+
+    // Aspectos astronómicos y eventos celestes calculables (conjunciones, oposiciones, etc.)
+    if (
+      /(conjuncion|conjunciones|oposicion|oposiciones|aspectos planetarios|eventos astronomicos|aspecto astronomico|efemerides)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'ASTROLOGY',
+        confidence: 'high',
+        reason: 'astronomical aspect query',
       };
     }
 

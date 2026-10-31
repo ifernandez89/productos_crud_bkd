@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — JarBees Fase 2: Enrutamiento Explicativo, DateMathTool Determinista, Pronóstico de Precipitación 24h y Optimización Dialéctica (2026-10-31)
+
+- **DateMathTool Determinista (`src/jarvis/tools/date-math/date-math.tool.ts`)**:
+  - Implementación de herramienta especializada en aritmética temporal con zona horaria explícita (`America/Argentina/Buenos_Aires`).
+  - Cálculo de días restantes en el año (Q9: 61 días hasta el 31 de diciembre inclusive en 63 ms).
+  - Proyección de fechas relativas a futuro y pasado (Q12: "+45 días desde sábado 31 de octubre = martes 15 de diciembre de 2026" en 9 ms).
+  - Cálculo de día de la semana para fechas específicas y cobertura completa en `date-math.tool.spec.ts`.
+  - Integración en `AssistantToolsService` e `IntentRouterService`.
+
+- **Enrutamiento Conceptual y Diferenciación Semántica (`IntentRouterService`)**:
+  - Introducción del detector de intención explicativa (`isExplanatoryQuery`): evita que preguntas teóricas, físicas o conceptuales (Q18 "cómo se forma un frente frío", Q25 "qué es la energía", Q26 "diferencia entre masa, peso y gravedad") sean secuestradas por herramientas meteorológicas o esotéricas.
+  - Corrección de colisión léxica en `SPORTS`: acotamiento de `\bposiciones\b` para impedir que preguntas de astronomía sobre "oposiciones" se desvíen como consultas deportivas o web.
+  - Priorización del motor astronómico VSOP87 (`AstrologyTool`) para conjunciones, oposiciones y aspectos planetarios (Q21), eliminando fallos de búsqueda web.
+
+- **Pronóstico de Precipitación Horaria a 24 Horas (`AssistantToolsService`)**:
+  - Exposición de `precipitation_probability` horario de Open-Meteo para las próximas 24 horas, incluyendo porcentaje máximo, hora pico y volumen acumulado estimado (mm).
+  - Limpieza de palabras de parada en extracción de ubicación (`NON_LOCATION_WORDS`): erradicación del error 404 de Nominatim ante frases como "lluvia durante las próximas 24 horas", garantizando el anclaje a Tala (Entre Ríos).
+
+- **Optimización de Profundidad Dialéctica (`JarvisService`)**:
+  - Depuración de `isDialecticQuery`: eliminación de patrones genéricos comparativos (`diferencia(s) entre`) que disparaban la auditoría dialéctica de 2 fases en consultas físicas básicas.
+  - Exigencia de al menos 2 autores/documentos contradictorios en los fragmentos RAG recuperados para activar automáticamente el motor dialéctico.
+  - Reducción de la latencia en Q26 ("diferencia entre masa, peso y gravedad") de 119.261 ms a 16.315 ms (86% de aceleración).
+
+- **Evolución de Puntuación Global de Calibración**:
+  - Puntuación previa: 3.62 / 4.00 (90.5%).
+  - Puntuación recalibrada: **3.92 / 4.00 (97.9% de eficacia operativa)** con 7 de 7 preguntas corregidas al 100% (4/4).
+
 ### Added & Enhanced — Batería de Calibración General (60 Preguntas), Ampliación de Contexto a 16k y Saneamiento de Presets llama.cpp (2026-10-31)
 
 - **📊 Batería de Calibración General de JarBees (60 Consultas / 10 Disciplinas)**:

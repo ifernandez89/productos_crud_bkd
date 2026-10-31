@@ -501,17 +501,31 @@ export class JarvisService {
       }
 
       // ── 6.1. MOTOR DIALÉCTICO: Contrastación Epistémica y Auditoría en 2 fases ──────
-      const isDialecticRequested =
-        options.mode === 'dialectic' ||
-        options.useDialectic === true ||
-        this.isDialecticQuery(userMessage);
+      const isExplicitDialectic =
+        options.mode === 'dialectic' || options.useDialectic === true;
+      const isDialecticQueryDetected = this.isDialecticQuery(userMessage);
 
-      if (
-        isDialecticRequested &&
-        (retrievedChunksList.length > 0 ||
-          options.mode === 'dialectic' ||
-          options.useDialectic === true)
-      ) {
+      // Si la consulta es heurística, requiere al menos 2 autores/documentos distintos en RAG para contrastar
+      const distinctSources = new Set(
+        retrievedChunksList
+          .map(
+            (c) =>
+              c.document?.author ||
+              c.metadata?.author ||
+              c.document?.title ||
+              '',
+          )
+          .filter(Boolean),
+      );
+      const hasMultipleSources = distinctSources.size >= 2;
+
+      const shouldTriggerDialectic =
+        isExplicitDialectic ||
+        (isDialecticQueryDetected &&
+          hasMultipleSources &&
+          retrievedChunksList.length > 0);
+
+      if (shouldTriggerDialectic) {
         this.logger.log(
           `[dialectic] Activando motor dialéctico de 2 fases para: "${userMessage.slice(0, 60)}" con ${retrievedChunksList.length} fragmentos`,
         );
@@ -876,7 +890,7 @@ export class JarvisService {
       // ── 14. Ejecutar Astrology ─────────────────────────────────────────────
       if (intent.intent === 'ASTROLOGY') {
         const wantsFullChart =
-          /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance)/i.test(
+          /(carta astral|posiciones planetarias|todos los planetas|aspectos|balance|conjuncion|oposicion|eventos astronomicos)/i.test(
             userMessage,
           );
         const astroData = wantsFullChart
@@ -1897,13 +1911,11 @@ export class JarvisService {
 
   private isDialecticQuery(query: string): boolean {
     const dialecticPatterns = [
-      /compara|comparaci[oó]n|contrast(a|ar)|diferencia(s)? entre/i,
       /falsa equivalencia|es v[aá]lido inferir|se deduce realmente/i,
-      /relaci[oó]n entre .* y .*/i,
-      /dado que .* (demostr[oó]|prueba)/i,
       /qui[eé]n tiene raz[oó]n|qui[eé]n est[aá] en lo correcto/i,
-      /tensi[oó]n entre|conflicto entre|divergencia entre/i,
-      /contradicci[oó]n entre|conciliar|armonizar/i,
+      /tensi[oó]n entre|conflicto entre|divergencia entre|disputa entre/i,
+      /contradicci[oó]n entre|contradicen|posturas encontradas/i,
+      /tesis y ant[ií]tesis|s[ií]ntesis dial[eé]ctica|debate entre autores/i,
       /demostr[oó] realmente|comprobaci[oó]n emp[ií]rica/i,
     ];
     return dialecticPatterns.some((pattern) => pattern.test(query));

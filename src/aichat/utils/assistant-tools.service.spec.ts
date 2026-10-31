@@ -169,5 +169,72 @@ describe('AssistantToolsService', () => {
       expect(result).toContain('Pronóstico de lluvia para esta noche');
       expect(result).toContain('probabilidad de lloviznas');
     });
+
+    it('resolves 24-hour rain probability query with Open-Meteo forecast without crashing on "durante próximas"', async () => {
+      mockedAxios.get.mockImplementation((url: string) => {
+        if (url.includes('nominatim')) {
+          return Promise.resolve({
+            data: [
+              {
+                lat: '-31.73',
+                lon: '-60.52',
+                display_name: 'Distrito Tala, Departamento Paraná, Entre Ríos, Argentina',
+              },
+            ],
+          }) as never;
+        }
+        if (url.includes('open-meteo')) {
+          const baseDate = new Date();
+          const futureHour = (h: number) => {
+            const d = new Date(baseDate.getTime() + h * 3600 * 1000);
+            return d.toISOString().slice(0, 13) + ':00';
+          };
+          return Promise.resolve({
+            data: {
+              current: {
+                temperature_2m: 22.0,
+                apparent_temperature: 23.0,
+                weather_code: 1,
+                wind_speed_10m: 4.0,
+                relative_humidity_2m: 60,
+              },
+              hourly: {
+                time: [
+                  futureHour(1),
+                  futureHour(3),
+                  futureHour(6),
+                  futureHour(9),
+                ],
+                precipitation_probability: [10, 45, 20, 5],
+                precipitation: [0.0, 0.4, 0.0, 0.0],
+                weather_code: [1, 51, 1, 0],
+              },
+            },
+          }) as never;
+        }
+        return Promise.reject(new Error('unhandled mock url')) as never;
+      });
+
+      const result = await service.resolve('¿Hay probabilidades de lluvia durante las próximas 24 horas?');
+      expect(result).not.toBeNull();
+      expect(result).toContain('Pronóstico de lluvia (próximas 24 horas)');
+      expect(result).toContain('45%');
+    });
+
+    it('returns null for explanatory physics/meteorological questions so LLM can explain them', async () => {
+      const result = await service.resolve('¿Cómo se forma un frente frío y qué cambios produce en el clima?');
+      expect(result).toBeNull();
+    });
+
+    it('resolves deterministic date arithmetic via DateMathTool', async () => {
+      const r1 = await service.resolve('¿Cuántos días faltan para terminar el año?');
+      expect(r1).not.toBeNull();
+      expect(r1).toContain('Faltan exactamente');
+      expect(r1).toContain('días');
+
+      const r2 = await service.resolve('Si hoy es sábado, ¿qué fecha será dentro de 45 días?');
+      expect(r2).not.toBeNull();
+      expect(r2).toContain('dentro de 45 días será el');
+    });
   });
 });
