@@ -91,6 +91,8 @@ export interface IsolatedRunResult {
   durationMs: number;
   sha256Verified: boolean;
   testSuiteHash: string;
+  runnerCoreHash?: string;
+  envConfigHash?: string;
 }
 
 /**

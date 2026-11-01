@@ -4,6 +4,43 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Enhanced — JarBees 3.3: Adaptive Memory Attention Engine 2.0 (MAE 2.0), Despliegue Gradual (Shadow/Canary/Default), Integración DIALECTIC_AUDIT -> HITL y Experimentos B, B2, D3, C y C2 (2026-11-01)
+
+- **Memory Attention Engine 2.0 (MAE 2.0) (`src/jarvis/cognitive/mae2/`)**:
+  - Implementación de la taxonomía de decisiones de primer orden: `NO_RETRIEVAL` (suficiencia operativa), `DEFERRED_RETRIEVAL` (búsqueda acotada ante ambigüedad), `SELECTIVE_RAG`, `SELECTIVE_GRAPH`, `SELECTIVE_SNAPSHOT` y `DIALECTIC_AUDIT`.
+  - **Motor Determinista Sub-Milisegundo** (`MemoryAttentionPolicyService`): Evaluación de 6 dimensiones epistémicas en ~0.19 ms sin invocar LLMs pesados para decidir qué recordar.
+  - **Neutralización Total de Interferencia ($I = -1.0\text{ pts}$)**: Eliminación de la penalización de 22 puntos en tareas de razonamiento lógico y algorítmico puro gracias a la decisión formal de inyectar 0 tokens de memoria externa.
+  - **Registro Inmutable y Telemetría** (`MemoryDecisionLoggerService`): Registro en memoria y append incremental en disco (`data/mae2_decision_log.json`).
+  - **Planificador Dinámico** (`RetrievalPlannerService`): Emisión de planes estructurados con presupuesto de tokens y directivas operativas precisas.
+  - **Evaluador de Utilidad Contrafactual** (`RetrievalUtilityEvaluatorService`): Cuantificación de $\Delta U = \text{Score}_{\text{con}} - \text{Score}_{\text{sin}}$ y cálculo de matrices de confusión con tasas de recuperación innecesaria y omisión de memoria.
+
+- **Arquitectura de Despliegue Gradual (Rollout) (`AdaptiveMemoryOrchestratorService`)**:
+  - **Tres Modos de Promoción Controlada**:
+    - **Shadow Mode**: MAE 1.0 ejecuta la respuesta real en producción mientras MAE 2.0 evalúa en paralelo y registra divergencias y ahorro de tokens.
+    - **Canary Mode**: Enrutamiento fraccional determinista por hash de sesión (10-20% a MAE 2.0, resto a control MAE 1.0).
+    - **Default Mode**: MAE 2.0 activo como motor principal con política de fallback idempotente ante excepciones.
+  - **Aislamiento y Reversibilidad**: Configurable vía variable de entorno `USE_MAE_V2_MODE` (`off | shadow | canary | default`) sin requerir migraciones de base de datos ni reinicios destructivos.
+  - **Regla Anti-Falso Negativo Silencioso**: Prohibición de que `DEFERRED_RETRIEVAL` se transforme silenciosamente en `NO_RETRIEVAL`. Desacoplamiento estricto entre fallos de decisión y fallos de inferencia lingüística.
+
+- **Integración Dialéctica No Destructiva con HITL (`DialecticHitlBridgeService`)**:
+  - Las contradicciones expresadas por el usuario se interpretan como **correcciones candidatas**, no como ataques al sistema.
+  - Generación de registros inmutables en estado `PENDING_APPROVAL` en las tablas `EvolutionSession`, `CandidateKnowledge` y `EvolutionAuditLog`.
+  - Preservación del estado: CERO mutación directa de entidades o relaciones consolidadas en PostgreSQL.
+  - Soporte para transiciones de estado formales: `COMMITTED`, `REJECTED`, `QUARANTINED` (para hipótesis en conflicto) y `NEEDS_MORE_EVIDENCE`.
+
+- **Experimentos B, B2, D3, C y C2 (Resultados y Validación Empírica)**:
+  - **Experimento B1 (60 runs en Sistemas Distribuidos)**: MAE 1.0 (33.33%) superó a RAG (25.00%) y a la inyección estática (26.67%), logrando **100% de consistencia en S2** (Consistencia Eventual / LWW).
+  - **Experimento B2 (Coder 7B)**: Triplicó la aprobación en S5 (Mini-Raft, 25.0% vs 8.3%), eliminando truncamientos y errores de sintaxis.
+  - **Piloto D3 (Coder 14B)**: **100% de tests aprobados (3/3 corridas)** en S3 (Concurrencia Distribuida con 50 workers) bajo un consumo seguro de VRAM de 9.8 GB en RTX 5070.
+  - **Experimento C (Benchmark Cuádruple)**: 100% de exactitud sobre 40 preguntas congeladas; $0.0\%$ de recuperación innecesaria y $0.0\%$ de omisión crítica de memoria.
+  - **Experimento C2 (Estrés Epistémico y Despliegue Gradual)**:
+    - 30 preguntas de estrés evaluadas en 6 escenarios (Memoria Nueva, Obsoleta, Contradictoria, Ambigua, Falsa Premisa y Casos Trampa).
+    - **100% de detección en preguntas trampa** (*«¿Por qué habíamos descartado esa estrategia de persistencia?»*), evitando categorizarlas erróneamente como `NO_RETRIEVAL`.
+    - 10 candidatos generados y transferidos exitosamente a la cola de aprobación humana HITL.
+
+- **Suite de Pruebas Unitarias Automatizadas (28/28 tests aprobados)**:
+  - Ejecución serial estricta (`--runInBand`) y aislamiento de memoria garantizado en todas las suites de `src/jarvis/cognitive/mae2/`.
+
 ### Added & Enhanced — JarBees 3.2: Cognitive Evolution Lab, Persistencia HITL con Rollback, Protocolo Doble Ciego y Depuración de Documentación Obsoleta (2026-11-01)
 
 - **Cognitive Evolution Lab & Compuerta Humana (HITL) (`prisma/schema.prisma`)**:

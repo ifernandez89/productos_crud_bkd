@@ -207,11 +207,18 @@ model Document {
   language         String? // código ISO del idioma detectado (ej: "es", "en", "ro")
   translatedFromId Int? // ID del documento original del que se tradujo
 
+  // ── Knowledge Revocation & Provenance ──────────────────────────────────────
+  revocationStatus RevocationStatus @default(ACTIVE)
+  revokedAt        DateTime?
+  revocationReason String?
+
   chunks          Chunk[]
   chapters        Chapter[]
   knowledgeSource KnowledgeSource?     @relation(fields: [sourceId], references: [id], onDelete: SetNull)
   collections     CollectionDocument[]
   insight         DocumentInsight?
+  entitySources   KnowledgeEntitySource[]
+  topicSnapshots  TopicSnapshot[]
 
   @@index([category])
   @@index([status])
@@ -219,25 +226,29 @@ model Document {
   @@index([timesUsed])
   @@index([lastUsed])
   @@index([hidden])
+  @@index([revocationStatus])
 }
 
 // ── 5) CHUNKS VECTORIALES ─────────────────────────────────────────────────────
 // Fragmentos embeddables para búsqueda semántica con pgvector
 
 model Chunk {
-  id          Int      @id @default(autoincrement())
-  documentId  Int
-  sectionId   Int? // Relación opcional para jerarquía y embeddings perezosos
-  content     String
-  embeddingId String? // legacy: referencia a vector store externo
+  id               Int              @id @default(autoincrement())
+  documentId       Int
+  sectionId        Int? // Relación opcional para jerarquía y embeddings perezosos
+  content          String
+  embeddingId      String? // legacy: referencia a vector store externo
   // embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
-  metadata    String? // JSON serializado: { page, section, language, etc }
-  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  section     Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  metadata         String? // JSON serializado: { page, section, language, etc }
+  revocationStatus RevocationStatus @default(ACTIVE)
+  revokedAt        DateTime?
+  document         Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  section          Section?         @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([sectionId])
   @@index([embeddingId])
+  @@index([revocationStatus])
 }
 
 model Chapter {
@@ -561,16 +572,24 @@ model Query {
 // El diferencial real de JarBees: cómo evoluciona el pensamiento del usuario
 
 model TopicSnapshot {
-  id         Int      @id @default(autoincrement())
-  topic      String // "Qwen", "NestJS", "arquitectura backend"
-  conclusion String // qué se aprendió / concluyó en ese momento
-  tags       String   @default("[]") // JSON serializado: ["llm", "rendimiento", "local"]
-  sessionId  String?
-  createdAt  DateTime @default(now())
+  id               Int              @id @default(autoincrement())
+  topic            String // "Qwen", "NestJS", "arquitectura backend"
+  conclusion       String // qué se aprendió / concluyó en ese momento
+  tags             String           @default("[]") // JSON serializado: ["llm", "rendimiento", "local"]
+  sessionId        String?
+  sourceDocId      Int?
+  revocationStatus RevocationStatus @default(ACTIVE)
+  revokedAt        DateTime?
+  revocationReason String?
+  createdAt        DateTime         @default(now())
+
+  document         Document?        @relation(fields: [sourceDocId], references: [id], onDelete: SetNull)
 
   @@index([topic])
   @@index([createdAt])
   @@index([sessionId])
+  @@index([sourceDocId])
+  @@index([revocationStatus])
 }
 
 // ── 14) BALANCE ENERGÉTICO (JarBees v2.1) ────────────────────────────────────
@@ -670,6 +689,12 @@ model MetacognitiveRun {
 // Grafo responde: "¿Cómo está conectado el mundo?"
 // ══════════════════════════════════════════════════════════════════════════════
 
+enum RevocationStatus {
+  ACTIVE
+  QUARANTINED
+  REVOKED
+}
+
 enum KnowledgeEntityType {
   PERSON // Jung, Campbell, Freud, Nietzsche
   CONCEPT // Arquetipo, Inconsciente colectivo, Héroe, Sombra
@@ -695,47 +720,78 @@ enum KnowledgeRelationType {
 // Personas, conceptos, obras, proyectos y tecnologías conocidos por JarBees.
 
 model KnowledgeEntity {
-  id          Int                 @id @default(autoincrement())
-  name        String
-  type        KnowledgeEntityType
-  description String? // descripción breve generada o manual
-  aliases     String              @default("[]") // JSON: ["Jung", "C.G. Jung"]
-  tags        String              @default("[]") // JSON: ["psicología", "inconsciente"]
-  confidence  Float               @default(1.0) // certeza de que la entidad es válida (0.0–1.0)
-  timesUsed   Int                 @default(0) // cuántas veces fue recuperada en queries
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id               Int                     @id @default(autoincrement())
+  name             String
+  type             KnowledgeEntityType
+  description      String? // descripción breve generada o manual
+  aliases          String                  @default("[]") // JSON: ["Jung", "C.G. Jung"]
+  tags             String                  @default("[]") // JSON: ["psicología", "inconsciente"]
+  confidence       Float                   @default(1.0) // certeza de que la entidad es válida (0.0–1.0)
+  timesUsed        Int                     @default(0) // cuántas veces fue recuperada en queries
+  revocationStatus RevocationStatus        @default(ACTIVE)
+  revokedAt        DateTime?
+  revocationReason String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
-  relationsFrom KnowledgeRelation[] @relation("RelationSource")
-  relationsTo   KnowledgeRelation[] @relation("RelationTarget")
-  pendingFrom   PendingRelation[]   @relation("PendingSource")
-  pendingTo     PendingRelation[]   @relation("PendingTarget")
+  relationsFrom    KnowledgeRelation[]     @relation("RelationSource")
+  relationsTo      KnowledgeRelation[]     @relation("RelationTarget")
+  pendingFrom      PendingRelation[]       @relation("PendingSource")
+  pendingTo        PendingRelation[]       @relation("PendingTarget")
+  sources          KnowledgeEntitySource[]
 
   @@unique([name, type])
   @@index([type])
   @@index([name])
   @@index([confidence])
   @@index([timesUsed])
+  @@index([revocationStatus])
+}
+
+// ── 18.1.1) PROCEDENCIA M:N DE ENTIDADES (Multi-Fuente) ─────────────────────
+// Permite que una entidad esté respaldada por múltiples documentos.
+// Revocar un documento solo revoca la entidad si no le quedan otras fuentes activas.
+
+model KnowledgeEntitySource {
+  id               Int              @id @default(autoincrement())
+  entityId         Int
+  documentId       Int
+  chunkId          Int?
+  confidence       Float            @default(1.0)
+  revocationStatus RevocationStatus @default(ACTIVE)
+  revokedAt        DateTime?
+  createdAt        DateTime         @default(now())
+
+  entity           KnowledgeEntity  @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  document         Document         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, documentId])
+  @@index([entityId])
+  @@index([documentId])
+  @@index([revocationStatus])
 }
 
 // ── 18.2) RELACIONES DEL GRAFO ────────────────────────────────────────────────
 // Relaciones aprobadas y con evidencia. Llegaron desde PendingRelation.
 
 model KnowledgeRelation {
-  id            Int                   @id @default(autoincrement())
-  sourceId      Int
-  targetId      Int
-  relationType  KnowledgeRelationType
-  label         String? // descripción legible: "desarrolló el concepto de"
-  confidence    Float                 @default(1.0) // certeza de que la relación es correcta
-  strength      Float                 @default(1.0) // intensidad de la conexión (se refuerza con co-ocurrencias)
-  bidirectional Boolean               @default(false)
+  id               Int                   @id @default(autoincrement())
+  sourceId         Int
+  targetId         Int
+  relationType     KnowledgeRelationType
+  label            String? // descripción legible: "desarrolló el concepto de"
+  confidence       Float                 @default(1.0) // certeza de que la relación es correcta
+  strength         Float                 @default(1.0) // intensidad de la conexión (se refuerza con co-ocurrencias)
+  bidirectional    Boolean               @default(false)
   // Evidencia: de dónde vino esta relación
-  sourceDocId   Int? // ID del Document que originó la relación
-  chunkId       Int? // ID del Chunk específico (para trazabilidad con EvidenceService)
-  quote         String? // fragmento textual de respaldo del documento
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  sourceDocId      Int? // ID del Document que originó la relación
+  chunkId          Int? // ID del Chunk específico (para trazabilidad con EvidenceService)
+  quote            String? // fragmento textual de respaldo del documento
+  revocationStatus RevocationStatus      @default(ACTIVE)
+  revokedAt        DateTime?
+  revocationReason String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
 
   source KnowledgeEntity @relation("RelationSource", fields: [sourceId], references: [id], onDelete: Cascade)
   target KnowledgeEntity @relation("RelationTarget", fields: [targetId], references: [id], onDelete: Cascade)
@@ -747,6 +803,7 @@ model KnowledgeRelation {
   @@index([confidence])
   @@index([strength])
   @@index([sourceDocId])
+  @@index([revocationStatus])
 }
 
 // ── 18.3) RELACIONES PENDIENTES (anti-alucinación) ───────────────────────────

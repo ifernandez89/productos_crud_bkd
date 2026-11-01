@@ -75,6 +75,8 @@ import { SpecialistCapabilityRouterService } from './llm/specialist-capability-r
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
 import { EntityGraphRepository } from './repositories/entity-graph.repository';
 import { EntityGraphService } from './knowledge/entity-graph.service';
+import { KnowledgeAccessService } from './knowledge/knowledge-access.service';
+import { MemoryAttentionEngineService } from './cognitive/memory-attention-engine.service';
 import { KnowledgeExtractionService } from './knowledge/knowledge-extraction.service';
 import { CognitiveModule } from './cognitive/cognitive.module';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
@@ -206,6 +208,8 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     // ── Knowledge Graph (KGRAPH v1) ──────────────────────────────────────────
     EntityGraphRepository,
     EntityGraphService,
+    KnowledgeAccessService,
+    MemoryAttentionEngineService,
     KnowledgeExtractionService,
     // ── Synthesis Pipeline (v3.2) ──────────────────────────────────────────
     DocumentSynthesisService,
@@ -258,6 +262,8 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     WorkingMemoryService,
     TripartiteMemoryService,
     MemoryConsolidationService,
+    KnowledgeAccessService,
+    MemoryAttentionEngineService,
   ],
   exports: [
     JarvisService,
@@ -315,6 +321,8 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     WorkingMemoryService,
     TripartiteMemoryService,
     MemoryConsolidationService,
+    KnowledgeAccessService,
+    MemoryAttentionEngineService,
   ],
 })
 export class JarvisModule {}

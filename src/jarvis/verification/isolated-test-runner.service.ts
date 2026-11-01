@@ -29,6 +29,15 @@ export class IsolatedTestRunnerService {
     const maxMemoryMb = options.maxMemoryMb ?? 256;
 
     const preRunHash = this.computeSha256(options.testSuiteSource);
+    const envConfigHash = this.computeSha256(
+      JSON.stringify({
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        maxMemoryMb,
+        timeoutMs,
+      }),
+    );
     if (
       options.expectedTestSha256 &&
       preRunHash !== options.expectedTestSha256
@@ -97,13 +106,32 @@ export class IsolatedTestRunnerService {
         'suite.ts',
       );
 
-      // 2. Construir el harness de proceso hijo con captura de errores asíncronos
+      // 2. Construir el harness de proceso hijo con captura de errores asíncronos y restricción de red
       const runnerScriptPath = path.join(sandboxDir, '__jarbees_runner__.cjs');
       const runnerSource = `'use strict';
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+
+// ── Bloqueo estricto de red saliente (Sandbox Anti-Exfiltración) ──
+const __disableNet = () => {
+  throw new Error('NETWORK_ACCESS_DENIED: Conexión de red bloqueada por arnés de ejecución aislado.');
+};
+try {
+  const net = require('net');
+  net.connect = __disableNet;
+  net.createConnection = __disableNet;
+  const http = require('http');
+  http.request = __disableNet;
+  http.get = __disableNet;
+  const https = require('https');
+  https.request = __disableNet;
+  https.get = __disableNet;
+  if (typeof global.fetch === 'function') {
+    global.fetch = __disableNet;
+  }
+} catch (_) {}
 
 const __asyncErrors = [];
 process.on('uncaughtException', (err) => {
@@ -167,6 +195,7 @@ ${transpiledTests}
 `;
 
       fs.writeFileSync(runnerScriptPath, runnerSource, 'utf8');
+      const runnerCoreHash = this.computeSha256(runnerSource);
 
       // 3. Ejecutar en subproceso Node con entorno sanitizado sin secretos
       const sanitizedEnv: NodeJS.ProcessEnv = {
@@ -208,6 +237,8 @@ ${transpiledTests}
           durationMs: Date.now() - startTime,
           sha256Verified,
           testSuiteHash: postRunHash,
+          runnerCoreHash,
+          envConfigHash,
         };
       }
 
@@ -229,6 +260,8 @@ ${transpiledTests}
           durationMs: Date.now() - startTime,
           sha256Verified,
           testSuiteHash: postRunHash,
+          runnerCoreHash,
+          envConfigHash,
         };
       }
 
@@ -260,6 +293,8 @@ ${transpiledTests}
         durationMs: Date.now() - startTime,
         sha256Verified,
         testSuiteHash: postRunHash,
+        runnerCoreHash,
+        envConfigHash,
       };
     } finally {
       try {
@@ -335,7 +370,17 @@ ${transpiledTests}
       const timer = setTimeout(() => {
         timedOut = true;
         try {
-          child.kill('SIGKILL');
+          if (process.platform === 'win32' && child.pid) {
+            spawn('taskkill', ['/F', '/T', '/PID', String(child.pid)], {
+              stdio: 'ignore',
+            });
+          } else if (child.pid) {
+            try {
+              process.kill(-child.pid, 'SIGKILL');
+            } catch {
+              child.kill('SIGKILL');
+            }
+          }
         } catch {
           // ignorar
         }
