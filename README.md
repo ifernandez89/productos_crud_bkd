@@ -1,361 +1,151 @@
-# 🚀 Productos CRUD Backend - NestJS
+# 🧠 JarBees 3.2 — Sistema Operativo Cognitivo y Asistente Personal Inteligente
 
-Backend API para gestión de productos con integración de IA (Ollama) y sistema de chat inteligente.
-
-**Ahora con funciones de "Bibliotecario": ingestión y búsqueda en libros/PDFs, pipeline de RAG (retrieval-augmented generation) y lecturas automatizadas (TTS) para contenidos almacenados.**
+Backend modular en **NestJS + TypeScript** con arquitectura de memoria multi-capa, **Gateway de Inferencia local sobre GPU (NVIDIA RTX 5070 12GB)**, **Laboratorio de Evolución Cognitiva con Aprobación Humana (HITL)**, **RAG vectorial nativo en PostgreSQL (pgvector bge-m3 1024D)**, **Grafo de Conocimiento Semántico** y **Pipeline de Audio Neuronal**.
 
 ---
 
-## 📋 Tabla de Contenidos
+## 🏛️ Visión General y Arquitectura
 
-- [Características](#-características)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Instalación](#-instalación)
-- [Configuración](#-configuración)
-- [Uso](#-uso)
-- [Conectar con Frontend en GitHub Pages](#-conectar-con-frontend-en-github-pages)
-- [API Endpoints](#-api-endpoints)
-- [Library / Bibliotecario (RAG & TTS)](#-library--bibliotecario-rag--tts)
-- [Scripts Disponibles](#-scripts-disponibles)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
+JarBees no es un simple chatbot ni un wrapper de modelos externos. Es un **sistema cognitivo autónomo y auditable** donde el LLM es un componente de razonamiento desacoplado e intercambiable, y la inteligencia persistente reside en sus capas de memoria, ontología y validación empírica:
 
----
-
-## ✨ Características
-
-- ✅ **CRUD Completo** de productos con TypeORM/Prisma
-- 🤖 **Integración con IA** (Ollama) para chat inteligente y agentes
-- 📚 **Funciones de bibliotecario**: ingestión de documentos (PDF), extracción de texto, generación de embeddings y búsqueda semántica (RAG) para responder consultas con contexto; endpoints para lectura por voz (TTS) y streaming de audio en respuestas.
-- 🌐 **Motor Traductor Universal (Libros & Subtítulos SRT)**: Pipeline de traducción local de alto rendimiento con Ollama (`RogerBen/hy-mt1.5-1.8b` / `Qwen3:4b`). Soporta libros (PDF) y archivos de subtítulos (`.srt`) garantizando tiempos de aparición 100% idénticos al original, codificación nativa **ANSI (Windows-1252)** para evitar la rotura de caracteres (`¿`, `¡`, `ñ`, acentos) en reproductores y TVs, y respaldo incremental en disco (`.json`).
-- 📊 **Validación robusta** con class-validator
-- 🔐 **CORS configurado** para desarrollo y producción
-- 📝 **Documentación automática** con Swagger/OpenAPI
-- 🪵 **Logging avanzado** con Winston (rotating files)
-- 📁 **Upload de archivos** con validación
-- 🗄️ **Base de datos PostgreSQL** (local y Neon)
-- 🧪 **Testing** configurado con Jest
-
----
-
-## 🛠️ Stack Tecnológico
-
-- **Framework:** NestJS 10.x
-- **Lenguaje:** TypeScript 5.x
-- **Base de Datos:** PostgreSQL + Prisma ORM
-- **IA:** Ollama (Llama3.2) + LangChain (workflows RAG)
-- **Embeddings / Vector Store:** pipeline configurable (vector DB o soluciones locales)
-- **TTS:** integración con motores TTS para lectura automatizada (configurable)
-- **Validación:** class-validator + class-transformer
-- **Documentación:** Swagger/OpenAPI
-- **Logging:** Winston + nest-winston
-- **Testing:** Jest + Supertest
-
----
-
-## 📦 Instalación
-
-```bash
-# Clonar el repositorio
-git clone <tu-repo>
-cd productos_crud_bkd
-
-# Instalar dependencias
-npm install
-
-# Configurar Prisma
-npx prisma generate
-npx prisma migrate dev
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        ENTRADA DE USUARIO                              │
+│              HTTP REST (/api/jarbees/query) | Audio WAV / MP3          │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                     CANAL DE VOZ DE ALTA FIDELIDAD                     │
+│    STT: faster-whisper (int8 + VAD) │ TTS: edge-tts (Tomas/Elena 24kHz)│
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        ORQUESTACIÓN COGNITIVA                          │
+│   IntentRouterService (clasificación semántica) │ QICA 2.0             │
+│   TaskReminderService │ AstrologyTool (VSOP87) │ InvestigationService   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        CAPA DE CONOCIMIENTO (RAG)                      │
+│   • pgvector (bge-m3 1024D HNSW) — 57.700+ fragmentos semánticos       │
+│   • Knowledge Graph (KGraph v1): KnowledgeEntity + KnowledgeRelation   │
+│   • DialecticReasoningService (Tesis / Antítesis / Síntesis)           │
+│   • EvidenceGatekeeperService (Verificación contra fuentes primarias)  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                 COGNITIVE EVOLUTION LAB & HITL GATEKEEPER              │
+│   EvolutionSession (Máquina de estados: CREATED → COMMITTED)           │
+│   CandidateKnowledge (Buffer aislado de RAG) │ Aprobación Humana Oblig.│
+│   Rollback Verificable │ Evaluación Doble Ciego (Grupos A / B / C)     │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      INFERENCE GATEWAY (RTX 5070)                      │
+│   Runtime local GPU: Qwen 3:8B (llama-server / CUDA 13 / Ollama)       │
+│   Circuit Breaker │ Timeouts adaptativos │ Auto-healing en crash       │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ⚙️ Configuración
+## ✨ Capacidades Principales
+
+### 1. Cognitive Evolution Lab & Compuerta Humana (HITL)
+- **Máquina de Estados Formal:** `CREATED → BASELINE → AUDITING → DELIBERATION → CANDIDATE_KNOWLEDGE → VALIDATION → PENDING_APPROVAL → COMMITTED`.
+- **Aislamiento Estricto:** Todo conocimiento propuesto reside en `CandidateKnowledge` y permanece completamente invisible para el RAG general hasta su aprobación formal.
+- **Firma Humana Obligatoria:** Ningún cambio puede alcanzar el estado `COMMITTED` sin la autorización explícita del operador humano.
+- **Rollback Transaccional Verificable:** Capacidad de revertir cualquier versión previa, purgando los documentos y vectores vinculados sin dejar inconsistencias.
+- **Protocolo de Control Independiente:** Evaluación científica ciega comparando tres grupos de control independientes:
+  - **Grupo A:** Base Vanilla (sin RAG ni memoria).
+  - **Grupo B:** RAG Semántico Puro (pgvector `bge-m3`).
+  - **Grupo C:** Ecosistema Completo (RAG + Subgrafo de Entidades + TopicSnapshot).
+
+### 2. Capa de Conocimiento y RAG Híbrido
+- **PostgreSQL 18 + pgvector:** Búsqueda semántica nativa de 1024 dimensiones generada por `bge-m3:latest`.
+- **Grafo de Conocimiento (KGraph v1):** Modelos `KnowledgeEntity` y `KnowledgeRelation` respaldados por `PendingRelation` (filtro de mitigación de alucinaciones).
+- **TopicSnapshot:** Historial longitudinal de cómo evoluciona la comprensión conceptual y las conclusiones a lo largo del tiempo.
+- **Biblioteca Estructurada:** Más de 225 documentos y 57.700 chunks estructurados por capítulos, secciones y jerarquía semántica.
+
+### 3. Pipeline de Audio de Alta Fidelidad
+- **Transcripción (STT):** Motor `faster-whisper` (1.2.1, cuantización `int8`, filtro VAD y detección automática de preguntas dobles/secuenciales).
+- **Síntesis (TTS):** Generación neuronal mediante `edge-tts` (`es-AR-TomasNeural` y `es-AR-ElenaNeural`), emitiendo audio WAV a 24 kHz mono PCM sin artefactos robóticos.
+
+### 4. Herramientas y Determinismo
+- **Astronomía y Tiempo:** `AstrologyTool` y `DateMathTool` basados en algoritmos matemáticos deterministas (VSOP87 de `astronomy-engine`).
+- **Traductor Universal:** Procesamiento por lotes de libros y subtítulos `.srt` con preservación de marcas temporales y salida en codificación ANSI (Windows-1252).
+- **Procedural 3D & Blender:** Automatización headless de Blender (v5.x/4.x) y renderizado procedural.
+
+---
+
+## 🛠️ Stack Tecnológico y Hardware
+
+- **Hardware de Producción:**
+  - **GPU:** NVIDIA GeForce RTX 5070 (12 GB VRAM dedicada, CUDA 13.1).
+  - **CPU:** Intel Core i7 12ª Gen (12700K).
+  - **RAM:** 32 GB DDR4.
+  - **Almacenamiento de Respaldo:** Unidad dedicada `G:\Backups\jarbees_data`.
+- **Backend Core:** NestJS 10.x, TypeScript 5.x, Node.js 20+.
+- **Base de Datos y Vectores:** PostgreSQL 18, `pgvector`, Prisma ORM 6.x.
+- **Modelos de Inferencia Local:**
+  - Razonamiento y Chat: `qwen3:8b` (GPU local vía `llama-server` / Ollama).
+  - Embeddings: `bge-m3:latest` (1024 dimensiones nativas).
+  - Traducción: `RogerBen/hy-mt1.5-1.8b` / `qwen3:4b`.
+
+---
+
+## 🚀 Puesta en Marcha
 
 ### 1. Variables de Entorno (`.env`)
-
 ```env
-# Base de datos local (PostgreSQL)
-DATABASE_URL="postgresql://postgres:password@localhost:5433/productos?schema=public"
+# Base de datos PostgreSQL con pgvector
+DATABASE_URL="postgresql://postgres:password@localhost:5432/jarbees_data?schema=public"
 
-# O base de datos en la nube (Neon)
-POSTGRES_PRISMA_URL="postgres://user:pass@host/db?pgbouncer=true"
-POSTGRES_URL_NON_POOLING="postgres://user:pass@host/db"
+# Gateway de Inferencia Local (RTX 5070)
+INFERENCE_GATEWAY_URL="http://127.0.0.1:8080"
+INFERENCE_DEFAULT_PROVIDER="gateway"
+OLLAMA_HOST="http://127.0.0.1:11434"
+OLLAMA_MODEL="qwen3:8b"
+OLLAMA_EMBEDDING_MODEL="bge-m3:latest"
 
-# Ollama / LLM
-OLLAMA_HOST="http://localhost:11434"
-OLLAMA_MODEL="llama3.2"
-
-# Vector store (opcional)
-VECTOR_STORE_URL="http://localhost:8200" # ejemplo
-
-# TTS engine config (opcional)
-TTS_PROVIDER="local|external"
-
-# Puerto del servidor (opcional, default: 4000)
+# Servidor HTTP
 PORT=4000
 ```
 
-### 2. Base de Datos
-
-**Opción A: PostgreSQL Local**
+### 2. Instalación y Migraciones
 ```bash
-# Con Docker
-docker run --name postgres-productos \
-  -e POSTGRES_PASSWORD=1464 \
-  -p 5433:5432 \
-  -d postgres:15
+# Instalar dependencias
+npm install
 
-# Ejecutar migraciones
-npx prisma migrate dev
-```
+# Sincronizar esquema Prisma y extensiones pgvector
+npx prisma generate
+npx prisma db push
 
-**Opción B: Neon (PostgreSQL en la nube)**
-- Creá una cuenta en [Neon.tech](https://neon.tech)
-- Copiá las connection strings al `.env`
-
-### 3. Ollama (IA)
-
-```bash
-# Instalar Ollama
-# Windows: https://ollama.com/download
-# Linux/Mac: curl -fsSL https://ollama.com/install.sh | sh
-
-# Descargar modelo
-ollama pull llama3.2
-```
-
----
-
-## 🚀 Uso
-
-### Desarrollo Local
-
-```bash
-# Modo desarrollo (hot-reload)
-npm run start:dev
-
-# Ver logs en tiempo real
-tail -f logs/combined.log
-```
-
-✅ API disponible en: `http://localhost:4000`  
-📚 Documentación Swagger: `http://localhost:4000/api/docs`
-
-### Producción
-
-```bash
-# Build
+# Compilar el proyecto
 npm run build
-
-# Ejecutar
-npm run start:prod
 ```
 
----
-
-## 🌐 Conectar con Frontend en GitHub Pages
-
-Si tu frontend está deployado en **GitHub Pages** y querés que se conecte a tu backend local:
-
-### Opción 1: ngrok (Recomendado)
-
+### 3. Ejecución de Pruebas con Seguridad de Recursos (Anti-OOM)
+Por directiva estricta de estabilidad del entorno, las suites de pruebas deben ejecutarse siempre en modo serial:
 ```bash
-# En una terminal: Iniciar backend
-npm run start:dev
-
-# En otra terminal: Exponer con ngrok
-npm run ngrok
-# O usar el script automático:
-npm run start:ngrok
-```
-
-**Copiá la URL de ngrok** (ej: `https://abc123.ngrok-free.app`) y agregala como secret en GitHub:
-
-1. Repo → **Settings** → **Secrets and variables** → **Actions**
-2. Crear/editar: `NEXT_PUBLIC_BACKEND_URL` con el valor de ngrok
-3. Hacer push o re-ejecutar el workflow
-
-### Opción 2: localtunnel
-
-```bash
-npm run tunnel
-```
-
-📖 **Guía completa:** Ver [docs/NGROK_SETUP.md](docs/NGROK_SETUP.md)
-
----
-
-## 📡 API Endpoints
-
-### Productos
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/products` | Listar todos los productos |
-| `GET` | `/api/products/:id` | Obtener producto por ID |
-| `POST` | `/api/products` | Crear nuevo producto |
-| `PATCH` | `/api/products/:id` | Actualizar producto |
-| `DELETE` | `/api/products/:id` | Eliminar producto |
-
-### Chat IA
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `POST` | `/api/aichat` | Enviar mensaje al chatbot |
-| `GET` | `/api/aichat/history` | Obtener historial de conversaciones |
-
-### Upload
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `POST` | `/api/upload` | Subir archivo |
-
----
-
-## 📚 Library / Bibliotecario (RAG & TTS)
-
-Este módulo provee capacidades para convertir colecciones de documentos (PDFs, libros, manuales) en fuentes consultables y en lecturas automatizadas:
-
-- Ingestión y extracción de texto desde PDFs y otros formatos.
-- Normalización y limpieza del texto (segmentación, metadatos).
-- Generación de embeddings y almacenamiento en un vector store para búsqueda semántica (RAG).
-- Endpoints para búsqueda semántica: `/api/library/search` — devuelve documentos y fragmentos relevantes con contextos para RAG.
-- Endpoints para lectura por voz: `/api/library/read` — convierte texto a audio (TTS) y entrega streaming o URL temporal para reproducción.
-- Integración con el chat IA para respuestas aumentadas (RAG): el agente puede recuperar fragmentos relevantes y generar respuestas con contexto referenciado.
-
-Ejemplo de flujo de ingestión (simplificado):
-
-1. `POST /api/library/ingest` con archivo PDF → extracción de texto (OCR si aplica) → chunking y embeddings → almacenar en vector store.
-2. `POST /api/aichat` con pregunta del usuario → búsqueda semántica en vector store → contexto devuelto al LLM (Ollama + LangChain) → respuesta enriquecida.
-3. `POST /api/library/read` con `documentId` y `fragmentId` → generar audio TTS y servir para reproducción.
-
-Consideraciones:
-- El pipeline es configurable: se puede usar un vector store externo o local; el proveedor de TTS es intercambiable.
-- Se recomienda limitar la ingesta automática (filtrado) para evitar contenido con derechos de autor no autorizado.
-
----
-
-## 📜 Scripts Disponibles
-
-```bash
-# Desarrollo
-npm run start:dev         # Iniciar en modo desarrollo
-npm run start:debug       # Iniciar con debugger
-
-# Build & Producción
-npm run build             # Compilar proyecto
-npm run start:prod        # Ejecutar compilado
-
-# Tunneling (conectar con GitHub Pages)
-npm run ngrok             # Solo ngrok (manual)
-npm run start:ngrok       # Backend + ngrok (automático)
-npm run tunnel            # Usar localtunnel
-
-# Testing
-npm run test              # Ejecutar tests
-npm run test:watch        # Tests en modo watch
-npm run test:cov          # Tests con coverage
-npm run test:e2e          # Tests end-to-end
-
-# Code Quality
-npm run lint              # Linter (ESLint)
-npm run format            # Formatear código (Prettier)
-
-# Base de Datos (Prisma)
-npx prisma generate       # Generar Prisma Client
-npx prisma migrate dev    # Ejecutar migraciones
-npx prisma studio         # Abrir UI de base de datos
+# Ejecución serial estricta
+npm test -- --runInBand
 ```
 
 ---
 
-## 📁 Estructura del Proyecto
+## 💾 Política de Respaldos (Backups)
 
-```
-productos_crud_bkd/
-├── src/
-│   ├── products/          # Módulo de productos
-│   │   ├── dto/          # Data Transfer Objects
-│   │   ├── entities/     # Entidades de base de datos
-│   │   ├── products.controller.ts
-│   │   ├── products.service.ts
-│   │   └── products.module.ts
-│   ├── aichat/           # Módulo de chat IA
-│   ├── library/          # Módulo de ingestión, embeddings, búsqueda y TTS
-│   ├── upload/           # Módulo de uploads
-│   ├── app.module.ts     # Módulo principal
-│   └── main.ts           # Entry point (CORS aquí)
-├── prisma/
-│   ├── schema.prisma     # Schema de base de datos
-│   └── migrations/       # Migraciones
-├── logs/                 # Logs de Winston
-├── docs/
-│   ├── NGROK_SETUP.md   # Guía de ngrok
-│   └── arquitectura-sistema.md
-├── test/                 # Tests E2E
-├── .env                  # Variables de entorno
-├── package.json
-└── README.md
-```
-
----
-
-## 🔐 CORS Configurado
-
-El backend acepta requests desde:
-
-- ✅ `http://localhost:3000` (frontend local)
-- ✅ `https://ifernandez89.github.io` (GitHub Pages)
-- ✅ URLs de ngrok (`*.ngrok.io`, `*.ngrok-free.app`)
-- ✅ URLs de localtunnel (`*.loca.lt`)
-
-Ver configuración en: `src/main.ts`
-
----
-
-## 🐛 Troubleshooting
-
-### CORS Error
-- Verificá que tu URL de frontend esté en la whitelist de `src/main.ts`
-- Asegurate que ngrok esté corriendo
-
-### Base de datos no conecta
-```bash
-# Verificar que PostgreSQL esté corriendo
-# Con Docker:
-docker ps
-
-# Probar conexión
-npx prisma studio
-```
-
-### Ollama no responde
-```bash
-# Verificar que Ollama esté corriendo
-ollama list
-
-# Iniciar servidor
-ollama serve
-```
-
----
-
-## 📝 Licencia
-
-UNLICENSED - Proyecto privado
-
----
-
-## 👨‍💻 Autor
-
-Ignacio Fernández - [@ifernandez89](https://github.com/ifernandez89)
-
----
-
-## 🔗 Links Útiles
-
-- [Documentación NestJS](https://docs.nestjs.com/)
-- [Prisma Docs](https://www.prisma.io/docs)
-- [Ollama](https://ollama.com/)
-- [ngrok](https://ngrok.com/)
-
+El sistema cuenta con un respaldo automatizado hacia la unidad `G:\`:
+- **Script:** [scripts/backup-db.ps1](file:///c:/Projects/productos_crud_bkd/scripts/backup-db.ps1)
+- **Frecuencia:** Día 1 de cada mes mediante el Programador de Tareas de Windows (`JarBees_Database_Monthly_Backup`).
+- **Política de Retención:** Conservación de los últimos 12 volcados binarios (`.dump`), con purga automática de copias antiguas.
+- **Ejecución manual bajo demanda:**
+  ```powershell
+  powershell.exe -ExecutionPolicy Bypass -File scripts\backup-db.ps1
+  ```

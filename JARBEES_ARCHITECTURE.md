@@ -1,7 +1,7 @@
-# JarBees — Arquitectura del Sistema
-**Última revisión:** 9 de Agosto 2026 (Actualizado: TranslatorModule — Traducción de PDFs al Español con Qwen3:4b + ReaderModule filtrado de documentos ocultos)  
-**Stack real del repo:** NestJS + Prisma + PostgreSQL + Ollama/OpenRouter + Playwright + TypeScript  
-**Ruta base real:** /api/jarbees/* (el prefijo global /api se define en src/main.ts)
+# JarBees 3.2 — Arquitectura del Sistema y Marco Cognitivo
+**Última revisión:** 1 de Noviembre 2026 (Actualizado: Cognitive Evolution Lab, Persistencia HITL con Rollback, Faster-Whisper + Edge-TTS, Inference Gateway RTX 5070 con Qwen 3:8B)  
+**Stack real del repo:** NestJS + Prisma 6.x + PostgreSQL 18 (pgvector bge-m3 1024D) + Inference Gateway (RTX 5070 GPU) + Python (faster-whisper, edge-tts) + TypeScript  
+**Ruta base real:** /api/jarbees/* (prefijo global /api)
 
 ---
 

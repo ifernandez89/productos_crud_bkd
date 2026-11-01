@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Enhanced — JarBees 3.2: Cognitive Evolution Lab, Persistencia HITL con Rollback, Protocolo Doble Ciego y Depuración de Documentación Obsoleta (2026-11-01)
+
+- **Cognitive Evolution Lab & Compuerta Humana (HITL) (`prisma/schema.prisma`)**:
+  - Incorporación de los modelos `EvolutionSession`, `CandidateKnowledge` y `EvolutionAuditLog` con enum de estados formal: `CREATED | BASELINE | AUDITING | DELIBERATION | CANDIDATE_KNOWLEDGE | VALIDATION | PENDING_APPROVAL | COMMITTED | REJECTED | ROLLED_BACK`.
+  - **Aislamiento Estricto de Candidatos**: Todo nuevo conocimiento propuesto se mantiene en un buffer en cuarentena dentro de `CandidateKnowledge`, quedando completamente inaccesible para los módulos de RAG y búsqueda documental hasta su aprobación formal.
+  - **Firma Humana Obligatoria**: Se bloquea la transición a `COMMITTED` a menos que exista una aprobación explícita registrada por el operador humano (`approvedBy`, `approvedAt`).
+  - **Rollback Transaccional Verificable**: Capacidad comprobada mediante pruebas automatizadas para revertir versiones previas, purgando el documento generado en PostgreSQL y restaurando el estado sin dejar artefactos huérfanos.
+
+- **Experimento A: Retención, Aislamiento y Grupos de Control Independientes (A / B / C)**:
+  - Ejecución de pruebas de generalización distante con 3 preguntas inéditas tras reiniciar por completo el contexto conversacional (`sessionId` aleatoria única generada con UUID en cada turno):
+    - **Grupo A (Base Vanilla — sin RAG ni memoria)**: 77.0 / 100.
+    - **Grupo B (RAG Semántico Puro — pgvector `bge-m3`)**: 78.0 / 100 (+1.0 pt, con pico de 81/100 en disociación de extinción vs reconsolidación).
+    - **Grupo C (RAG + Knowledge Graph + TopicSnapshot)**: 71.0 / 100 (-6.0 pts).
+  - **Descubrimiento del Efecto de Interferencia Ontológica**: Evidencia empírica de que la inyección masiva de subgrafos rígidos en el prompt de usuario introduce un sesgo de anclaje (*anchoring bias*) y diluye el clasificador de intención del LLM. Se estableció que el Knowledge Graph debe consumirse mediante herramientas dinámicas bajo demanda (*Tool Calling*).
+
+- **Protocolo de Evaluación Doble Ciego (*Double-Blind*)**:
+  - Anonimización de respuestas con etiquetas aleatorias (`ALPHA`, `BETA`, `GAMMA`) y orden permutado.
+  - Evaluación independiente con dos evaluadores automatizados (E1: Biofísica/Factual, E2: Mecanismos Causal-Sistémicos) sobre una rúbrica congelada de 5 dimensiones (0-100 pts) y adjudicación formal de discrepancias.
+
+- **Depuración Integral de Documentación Obsoleta**:
+  - Eliminación de 8 archivos heredados que describían arquitecturas antiguas o planes superados: `JARVIS_UPGRADE_SUMMARY.md`, `INFORME_CHATBOT.md`, `walkthrough.md`, `docs/Comandos_Pendientes.md`, `docs/PGVECTOR_ACTIVATION_PLAN.md`, `docs/INFORME_ARQUITECTURA_JARVIS.md`, `docs/arquitectura-sistema.md` y `CHECKLIST.md`.
+  - Reescritura completa y modernización de `README.md` y actualización del encabezado y mapa de `JARBEES_ARCHITECTURE.md` reflejando el estado real de JarBees 3.2.
+
 ### Fixed & Enhanced — JarBees Pipeline de Voz: STT con Faster-Whisper, TTS Neural Rioplatense (Edge-TTS) y Reconocimiento de Voces Infantiles (2026-11-01)
 
 - **Speech-to-Text de Alta Precisión con Faster-Whisper (`src/jarvis/tools/voice/whisper_transcribe.py`)**:

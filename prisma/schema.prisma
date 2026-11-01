@@ -97,12 +97,12 @@ model Memory {
 // Búsqueda semántica con pgvector
 
 model MemoryChunk {
-  id          Int                          @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   memoryId    Int
   content     String
   embeddingId String? // legacy: referencia a vector store externo
   // embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
-  memory      Memory                       @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  memory      Memory  @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@index([memoryId])
   @@index([embeddingId])
@@ -205,7 +205,7 @@ model Document {
   // ── Translator fields ─────────────────────────────────────────────────────
   hidden           Boolean @default(false) // ocultar del Reader sin borrar (ej: versión en idioma extranjero)
   language         String? // código ISO del idioma detectado (ej: "es", "en", "ro")
-  translatedFromId Int?    // ID del documento original del que se tradujo
+  translatedFromId Int? // ID del documento original del que se tradujo
 
   chunks          Chunk[]
   chapters        Chapter[]
@@ -225,15 +225,15 @@ model Document {
 // Fragmentos embeddables para búsqueda semántica con pgvector
 
 model Chunk {
-  id          Int                          @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   documentId  Int
   sectionId   Int? // Relación opcional para jerarquía y embeddings perezosos
   content     String
   embeddingId String? // legacy: referencia a vector store externo
   // embedding   Unsupported("vector(1024)")? // pgvector: búsqueda semántica nativa (bge-m3)
   metadata    String? // JSON serializado: { page, section, language, etc }
-  document    Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  section     Section?                     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  section     Section? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([sectionId])
@@ -241,26 +241,26 @@ model Chunk {
 }
 
 model Chapter {
-  id         Int                          @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   documentId Int
   title      String
   order      Int
   summary    String? // Resumen individual de este capítulo
   // embedding  Unsupported("vector(1024)")? // Embedding macro de la temática del capítulo
   sections   Section[]
-  document   Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
 }
 
 model Section {
-  id        Int                          @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   chapterId Int
   title     String
   summary   String?
   // embedding Unsupported("vector(1024)")?
   chunks    Chunk[]
-  chapter   Chapter                      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
 
   @@index([chapterId])
 }
@@ -362,25 +362,25 @@ model AgentRun {
 
   // ── OBSERVABILIDAD COGNITIVA (2026-10-12) ────────────────────────────────
   // Trazabilidad del proceso cognitivo real, no reconstrucción retrospectiva
-  intentClassified    String? // Intent detectado: "RAG", "WEB", "TOOL", etc.
-  intentConfidence    Float? // 0-1, confianza en la clasificación
-  chunksRetrievedIds  String? // JSON: IDs de chunks recuperados
+  intentClassified     String? // Intent detectado: "RAG", "WEB", "TOOL", etc.
+  intentConfidence     Float? // 0-1, confianza en la clasificación
+  chunksRetrievedIds   String? // JSON: IDs de chunks recuperados
   chunksRetrievedCount Int? // Cantidad de chunks recuperados
-  ragContextUsed      Boolean @default(false) // ¿Se usó contexto RAG?
-  webSearchUsed       Boolean @default(false) // ¿Se buscó en web?
-  dialecticUsed       Boolean @default(false) // ¿Se usó motor dialéctico?
-  
+  ragContextUsed       Boolean @default(false) // ¿Se usó contexto RAG?
+  webSearchUsed        Boolean @default(false) // ¿Se buscó en web?
+  dialecticUsed        Boolean @default(false) // ¿Se usó motor dialéctico?
+
   // Pipeline dialéctico (si se activó)
-  auditPhaseMs        Int? // Latencia fase auditoría
-  synthesisPhaseMs    Int? // Latencia fase síntesis
-  tensionsDetected    Boolean? // ¿Se detectaron contradicciones?
-  
+  auditPhaseMs     Int? // Latencia fase auditoría
+  synthesisPhaseMs Int? // Latencia fase síntesis
+  tensionsDetected Boolean? // ¿Se detectaron contradicciones?
+
   // Tracking de ejecución detallado
-  executionTrace      String? // JSON: registro paso a paso del proceso
+  executionTrace String? // JSON: registro paso a paso del proceso
 
   // Relaciones
-  cognitiveTrace      CognitiveExecutionTrace?
-  claimEvidences      ClaimEvidence[]
+  cognitiveTrace CognitiveExecutionTrace?
+  claimEvidences ClaimEvidence[]
 
   @@index([success])
   @@index([modelUsed])
@@ -395,33 +395,33 @@ model AgentRun {
 // Registro detallado y estructurado del proceso cognitivo
 
 model CognitiveExecutionTrace {
-  id             Int      @id @default(autoincrement())
-  agentRunId     Int      @unique
-  
+  id         Int @id @default(autoincrement())
+  agentRunId Int @unique
+
   // Fase 1: Análisis de consulta
   queryEntities  String? // JSON: entidades extraídas
   queryAmbiguous Boolean @default(false)
   contextNeeded  String? // JSON: qué contexto se necesitaba
-  
+
   // Fase 2: Recuperación
-  retrievalMethod    String? // "vector", "textual", "hybrid"
-  chunksRetrieved    String? // JSON detallado de chunks con scores
-  coverageScore      Float? // 0-1, qué % de entidades se cubrió
-  distractorsFound   Int? // Cantidad de chunks irrelevantes
-  
+  retrievalMethod  String? // "vector", "textual", "hybrid"
+  chunksRetrieved  String? // JSON detallado de chunks con scores
+  coverageScore    Float? // 0-1, qué % de entidades se cubrió
+  distractorsFound Int? // Cantidad de chunks irrelevantes
+
   // Fase 3: Auditoría (si aplica)
-  auditReport        String? // Ficha de auditoría textual
-  premisesChecked    String? // JSON: premisas evaluadas
-  attributionsValid  Boolean? // ¿Todas las atribuciones eran correctas?
-  
+  auditReport       String? // Ficha de auditoría textual
+  premisesChecked   String? // JSON: premisas evaluadas
+  attributionsValid Boolean? // ¿Todas las atribuciones eran correctas?
+
   // Fase 4: Síntesis
-  hypothesesCount    Int? // Cuántas hipótesis se consideraron
-  evidenceGaps       String? // JSON: qué evidencia faltó
-  uncertaintyLevel   Float? // 0-1, nivel de incertidumbre
-  
-  createdAt          DateTime @default(now())
-  agentRun           AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
-  
+  hypothesesCount  Int? // Cuántas hipótesis se consideraron
+  evidenceGaps     String? // JSON: qué evidencia faltó
+  uncertaintyLevel Float? // 0-1, nivel de incertidumbre
+
+  createdAt DateTime @default(now())
+  agentRun  AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+
   @@index([agentRunId])
   @@index([retrievalMethod])
   @@index([coverageScore])
@@ -431,24 +431,24 @@ model CognitiveExecutionTrace {
 // Cada afirmación de la respuesta vinculada a su evidencia
 
 model ClaimEvidence {
-  id              Int      @id @default(autoincrement())
-  agentRunId      Int
-  
-  claim           String // La afirmación concreta
-  status          String // "supported" | "contradicted" | "partially_supported" | "inference" | "speculative" | "unverified"
-  
+  id         Int @id @default(autoincrement())
+  agentRunId Int
+
+  claim  String // La afirmación concreta
+  status String // "supported" | "contradicted" | "partially_supported" | "inference" | "speculative" | "unverified"
+
   // Evidencia
-  supportingChunkIds     String? // JSON: IDs de chunks que respaldan
-  contradictingChunkIds  String? // JSON: IDs de chunks que contradicen
-  
+  supportingChunkIds    String? // JSON: IDs de chunks que respaldan
+  contradictingChunkIds String? // JSON: IDs de chunks que contradicen
+
   // Metadata
-  author          String? // Autor atribuido (si aplica)
-  document        String? // Documento fuente (si aplica)
-  limitations     String? // JSON: limitaciones de la evidencia
-  
-  createdAt       DateTime @default(now())
-  agentRun        AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
-  
+  author      String? // Autor atribuido (si aplica)
+  document    String? // Documento fuente (si aplica)
+  limitations String? // JSON: limitaciones de la evidencia
+
+  createdAt DateTime @default(now())
+  agentRun  AgentRun @relation(fields: [agentRunId], references: [id], onDelete: Cascade)
+
   @@index([agentRunId])
   @@index([status])
 }
@@ -615,7 +615,7 @@ model CognitiveState {
   id              Int      @id @default(autoincrement())
   userId          Int?
   sessionId       String
-  concept         String   // ej: "arquitectura", "agentes", "seguridad"
+  concept         String // ej: "arquitectura", "agentes", "seguridad"
   activation      Float    @default(0.5) // nivel 0.0 a 1.0
   decayRate       Float    @default(0.05) // tasa de decaimiento temporal
   contextTags     String   @default("[]") // JSON serializado: ["nest", "rag"]
@@ -632,8 +632,8 @@ model CognitiveState {
 
 model CognitiveEntanglement {
   id                  Int      @id @default(autoincrement())
-  conceptA            String   // ej: "conciencia"
-  conceptB            String   // ej: "arquitectura"
+  conceptA            String // ej: "conciencia"
+  conceptB            String // ej: "arquitectura"
   correlationStrength Float    @default(0.5) // fuerza de entrelazamiento (0.0 a 1.0)
   interactionCount    Int      @default(1)
   lastCoActivatedAt   DateTime @default(now())
@@ -648,14 +648,14 @@ model CognitiveEntanglement {
 // Registro de auto-evaluación metacognitiva y ponderación de expresión.
 
 model MetacognitiveRun {
-  id                 Int      @id @default(autoincrement())
-  sessionId          String
-  strategyUsed       String   // "ANALYTICAL_RIGOR", "CREATIVE_EXPLORATION", "PRAGMATIC_DIRECT"
-  predictedIntent    String
-  predictionError    Float    @default(0.0) // 0.0 a 1.0 (delta expectativa vs RAG)
-  expressionWeights  String   // JSON serializado: { analytical: 0.9, creative: 0.2 }
-  userFeedbackScore  Int?
-  createdAt          DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  sessionId         String
+  strategyUsed      String // "ANALYTICAL_RIGOR", "CREATIVE_EXPLORATION", "PRAGMATIC_DIRECT"
+  predictedIntent   String
+  predictionError   Float    @default(0.0) // 0.0 a 1.0 (delta expectativa vs RAG)
+  expressionWeights String // JSON serializado: { analytical: 0.9, creative: 0.2 }
+  userFeedbackScore Int?
+  createdAt         DateTime @default(now())
 
   @@index([sessionId])
   @@index([strategyUsed])
@@ -671,24 +671,24 @@ model MetacognitiveRun {
 // ══════════════════════════════════════════════════════════════════════════════
 
 enum KnowledgeEntityType {
-  PERSON       // Jung, Campbell, Freud, Nietzsche
-  CONCEPT      // Arquetipo, Inconsciente colectivo, Héroe, Sombra
-  WORK         // El hombre y sus símbolos, El héroe de las mil caras
-  PROJECT      // JarBees, ArcheoScope, Oxlahun Cauac
-  TECHNOLOGY   // NestJS, Ollama, Qwen3, pgvector, Prisma
-  PLACE        // Puma Punku, Tiwanaku, Giza
-  EVENT        // Migración Drizzle, Refactor RAG jul 2026
+  PERSON // Jung, Campbell, Freud, Nietzsche
+  CONCEPT // Arquetipo, Inconsciente colectivo, Héroe, Sombra
+  WORK // El hombre y sus símbolos, El héroe de las mil caras
+  PROJECT // JarBees, ArcheoScope, Oxlahun Cauac
+  TECHNOLOGY // NestJS, Ollama, Qwen3, pgvector, Prisma
+  PLACE // Puma Punku, Tiwanaku, Giza
+  EVENT // Migración Drizzle, Refactor RAG jul 2026
 }
 
 enum KnowledgeRelationType {
-  DEVELOPED     // Jung → DEVELOPED → Arquetipo
-  INFLUENCED    // Nietzsche → INFLUENCED → Jung
-  CREATED       // Jung → CREATED → "El hombre y sus símbolos"
-  USES          // JarBees → USES → Qwen3
-  RELATED_TO    // Arquetipo → RELATED_TO → Inconsciente colectivo
-  PART_OF       // RAG → PART_OF → JarBees
-  BELONGS_TO    // Arquetipo → BELONGS_TO → Psicología Analítica
-  OPPOSITE_OF   // Consciente → OPPOSITE_OF → Inconsciente
+  DEVELOPED // Jung → DEVELOPED → Arquetipo
+  INFLUENCED // Nietzsche → INFLUENCED → Jung
+  CREATED // Jung → CREATED → "El hombre y sus símbolos"
+  USES // JarBees → USES → Qwen3
+  RELATED_TO // Arquetipo → RELATED_TO → Inconsciente colectivo
+  PART_OF // RAG → PART_OF → JarBees
+  BELONGS_TO // Arquetipo → BELONGS_TO → Psicología Analítica
+  OPPOSITE_OF // Consciente → OPPOSITE_OF → Inconsciente
 }
 
 // ── 18.1) ENTIDADES DEL CONOCIMIENTO ─────────────────────────────────────────
@@ -698,11 +698,11 @@ model KnowledgeEntity {
   id          Int                 @id @default(autoincrement())
   name        String
   type        KnowledgeEntityType
-  description String?             // descripción breve generada o manual
+  description String? // descripción breve generada o manual
   aliases     String              @default("[]") // JSON: ["Jung", "C.G. Jung"]
   tags        String              @default("[]") // JSON: ["psicología", "inconsciente"]
-  confidence  Float               @default(1.0)  // certeza de que la entidad es válida (0.0–1.0)
-  timesUsed   Int                 @default(0)    // cuántas veces fue recuperada en queries
+  confidence  Float               @default(1.0) // certeza de que la entidad es válida (0.0–1.0)
+  timesUsed   Int                 @default(0) // cuántas veces fue recuperada en queries
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -722,20 +722,20 @@ model KnowledgeEntity {
 // Relaciones aprobadas y con evidencia. Llegaron desde PendingRelation.
 
 model KnowledgeRelation {
-  id           Int                   @id @default(autoincrement())
-  sourceId     Int
-  targetId     Int
-  relationType KnowledgeRelationType
-  label        String?               // descripción legible: "desarrolló el concepto de"
-  confidence   Float                 @default(1.0) // certeza de que la relación es correcta
-  strength     Float                 @default(1.0) // intensidad de la conexión (se refuerza con co-ocurrencias)
-  bidirectional Boolean              @default(false)
+  id            Int                   @id @default(autoincrement())
+  sourceId      Int
+  targetId      Int
+  relationType  KnowledgeRelationType
+  label         String? // descripción legible: "desarrolló el concepto de"
+  confidence    Float                 @default(1.0) // certeza de que la relación es correcta
+  strength      Float                 @default(1.0) // intensidad de la conexión (se refuerza con co-ocurrencias)
+  bidirectional Boolean               @default(false)
   // Evidencia: de dónde vino esta relación
-  sourceDocId  Int?                  // ID del Document que originó la relación
-  chunkId      Int?                  // ID del Chunk específico (para trazabilidad con EvidenceService)
-  quote        String?               // fragmento textual de respaldo del documento
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
+  sourceDocId   Int? // ID del Document que originó la relación
+  chunkId       Int? // ID del Chunk específico (para trazabilidad con EvidenceService)
+  quote         String? // fragmento textual de respaldo del documento
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
   source KnowledgeEntity @relation("RelationSource", fields: [sourceId], references: [id], onDelete: Cascade)
   target KnowledgeEntity @relation("RelationTarget", fields: [targetId], references: [id], onDelete: Cascade)
@@ -755,19 +755,19 @@ model KnowledgeRelation {
 // Esto previene que alucinaciones del LLM contaminen el grafo permanente.
 
 model PendingRelation {
-  id             Int      @id @default(autoincrement())
-  sourceName     String   // nombre textual (la entidad puede no existir aún en KnowledgeEntity)
+  id             Int       @id @default(autoincrement())
+  sourceName     String // nombre textual (la entidad puede no existir aún en KnowledgeEntity)
   targetName     String
-  relationType   String   // String aquí — aún no validado contra el enum
+  relationType   String // String aquí — aún no validado contra el enum
   label          String?
-  confidence     Float    @default(0.5)
-  status         String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  confidence     Float     @default(0.5)
+  status         String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
   rejectedReason String?
   // Evidencia de origen
   sourceDocId    Int?
   chunkId        Int?
-  quote          String?  // la cita exacta que generó esta relación candidata
-  extractedAt    DateTime @default(now())
+  quote          String? // la cita exacta que generó esta relación candidata
+  extractedAt    DateTime  @default(now())
   reviewedAt     DateTime?
 
   // Si se aprueba, se vincula a las entidades reales resueltas
@@ -794,28 +794,28 @@ model PendingRelation {
 // Ficha narrativa de un documento, generada offline por DocumentSynthesisService.
 
 model DocumentInsight {
-  id         Int      @id @default(autoincrement())
-  documentId Int      @unique // 1-to-1 con Document
-  title      String   // título del documento (desnormalizado para queries rápidas)
-  author     String   // autor (desnormalizado)
-  collection String?  // colección temática (ej. "plano_astral")
+  id         Int     @id @default(autoincrement())
+  documentId Int     @unique // 1-to-1 con Document
+  title      String // título del documento (desnormalizado para queries rápidas)
+  author     String // autor (desnormalizado)
+  collection String? // colección temática (ej. "plano_astral")
 
   // ── Resúmenes ───────────────────────────────────────────────────────────
-  executiveSummary String  // 2-3 párrafos — síntesis del libro completo
+  executiveSummary String // 2-3 párrafos — síntesis del libro completo
   centralThesis    String? // tesis o mensaje central del autor
 
   // ── Extractos narrativos (JSON serializado) ───────────────────────────
   // Cada campo es un JSON array de strings o {title, description} objects
-  highlightedStories String @default("[]") // Las 3-5 historias/episodios más destacados
-  keyCharacters      String @default("[]") // Personajes, entidades o figuras centrales
-  coreConcepts       String @default("[]") // Conceptos fundamentales del autor/libro
-  notableQuotes      String @default("[]") // Citas textuales destacadas (máx 5)
-  controversialIdeas String @default("[]") // Ideas polémicas o contraintuitivas
+  highlightedStories  String @default("[]") // Las 3-5 historias/episodios más destacados
+  keyCharacters       String @default("[]") // Personajes, entidades o figuras centrales
+  coreConcepts        String @default("[]") // Conceptos fundamentales del autor/libro
+  notableQuotes       String @default("[]") // Citas textuales destacadas (máx 5)
+  controversialIdeas  String @default("[]") // Ideas polémicas o contraintuitivas
   practicalTechniques String @default("[]") // Técnicas o métodos aplicables
-  contradictions     String @default("[]") // Contradicciones internas o con otros autores
+  contradictions      String @default("[]") // Contradicciones internas o con otros autores
 
   // ── Control ──────────────────────────────────────────────────────────────
-  synthesisVersion Int      @default(1)   // versión del pipeline que lo generó
+  synthesisVersion Int      @default(1) // versión del pipeline que lo generó
   generatedAt      DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -824,4 +824,85 @@ model DocumentInsight {
   @@index([author])
   @@index([collection])
   @@index([generatedAt])
+}
+
+// ==============================================================================
+// 20) COGNITIVE EVOLUTION LAB & HITL GATEKEEPER (JarBees v3.2)
+// Gestión de sesiones de aprendizaje asistido, deliberación dialéctica,
+// trazabilidad de fuentes, compuerta humana (HITL) y rollback verificable.
+// ==============================================================================
+
+enum EvolutionSessionStatus {
+  CREATED
+  BASELINE
+  AUDITING
+  DELIBERATION
+  CANDIDATE_KNOWLEDGE
+  VALIDATION
+  PENDING_APPROVAL
+  COMMITTED
+  REJECTED
+  ROLLED_BACK
+}
+
+model EvolutionSession {
+  id              Int                    @id @default(autoincrement())
+  sessionId       String                 @unique @default(uuid())
+  domain          String // ej: "neurociencia", "sistemas_distribuidos"
+  title           String
+  status          EvolutionSessionStatus @default(CREATED)
+  baselineScore   Float?
+  validationScore Float?
+  auditSummary    String?
+  approvedBy      String? // Identificador del operador humano que autorizó el commit
+  approvedAt      DateTime?
+  rejectedReason  String?
+  metadata        Json?
+  version         Int                    @default(1)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  candidates CandidateKnowledge[]
+  auditLogs  EvolutionAuditLog[]
+
+  @@index([status])
+  @@index([domain])
+  @@index([createdAt])
+}
+
+model CandidateKnowledge {
+  id                 Int                    @id @default(autoincrement())
+  sessionId          Int
+  title              String
+  category           String
+  content            String
+  claimsJson         Json? // Afirmaciones estructuradas con procedencia y evidencia
+  entitiesJson       Json? // Entidades candidatas para el grafo
+  relationsJson      Json? // Relaciones candidatas para el grafo
+  boundaryConditions String? // Condiciones de frontera, excepciones y controversias
+  status             EvolutionSessionStatus @default(CANDIDATE_KNOWLEDGE)
+  committedDocId     Int? // ID del Document una vez aprobado y commiteado a RAG
+  previousState      Json? // Snapshot de estado previo para rollback verificable
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+
+  session EvolutionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([status])
+}
+
+model EvolutionAuditLog {
+  id        Int      @id @default(autoincrement())
+  sessionId Int
+  phase     String // BASELINE, AUDITING, INTEGRATION, VALIDATION, APPROVAL
+  agent     String // "JarBees", "AuditorAI", "HumanOperator"
+  action    String // "CRITIQUE_SUBMITTED", "FALLACY_REJECTED", "APPROVAL_GRANTED", "ROLLBACK_TRIGGERED"
+  details   Json?
+  timestamp DateTime @default(now())
+
+  session EvolutionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([phase])
 }
