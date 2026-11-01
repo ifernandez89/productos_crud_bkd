@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Enhanced — JarBees Pipeline de Voz: STT con Faster-Whisper, TTS Neural Rioplatense (Edge-TTS) y Reconocimiento de Voces Infantiles (2026-11-01)
+
+- **Speech-to-Text de Alta Precisión con Faster-Whisper (`src/jarvis/tools/voice/whisper_transcribe.py`)**:
+  - Migración desde el reconocedor Windows SAPI 5.x hacia `faster-whisper` (`base` con cuantización `int8` en CPU) con filtrado de actividad de voz (VAD).
+  - Reconocimiento fiel de lenguaje conversacional en español argentino y voces infantiles (erradicando alucinaciones fonéticas como *"actora niña le el"* ante audios de niños).
+  - Segmentación temporal precisa (`segments` con timestamps `start`/`end`), permitiendo capturar y separar múltiples preguntas en un mismo audio (e.g. preguntas conjuntas de padre e hija).
+  - Fallback automático hacia Windows SAPI ante cualquier contingencia.
+
+- **Text-to-Speech Neural Rioplatense (`src/jarvis/tools/voice/edge_tts_synthesize.py`)**:
+  - Reemplazo de la voz robótica de escritorio (Microsoft Helena Desktop) por voces neurales naturales rioplatenses (`es-AR-TomasNeural` y `es-AR-ElenaNeural`).
+  - Pipeline de audio con conversión a PCM WAV a 24 kHz mono mediante FFmpeg para garantizar máxima nitidez, calidez humana e inteligibilidad por altavoces.
+  - Soporte de entrada `base64` para inmunidad total frente a problemas de escape de caracteres en Windows PowerShell.
+  - Fallback transparente hacia Windows SAPI / OneCore si el equipo no dispone de conexión para la síntesis en la nube.
+
+- **Soporte de Assets en Compilación NestJS (`nest-cli.json` & `voice.service.ts`)**:
+  - Configuración de `assets: ["**/*.py"]` en `nest-cli.json` para copiado automático de scripts Python auxiliares en `dist/`.
+  - Corrección de colisión de nombres de archivo temporal (`_in` y `_out.wav`) en decodificación de audio.
+
 ### Fixed & Enhanced — JarBees General Intelligence Calibration: Ronda 2, Validación en Bucle Cerrado y Calculadoras Deterministas (2026-10-31)
 
 - **Validación en Bucle Cerrado (`ToolResultValidatorService` en `src/jarvis/tools/validation/`)**:

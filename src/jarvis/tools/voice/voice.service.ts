@@ -10,11 +10,20 @@ const execFileAsync = promisify(execFile);
 
 export type AudioContainerFormat = 'wav' | 'ogg' | 'webm' | 'mp4' | 'mp3' | 'unknown';
 
+export interface VoiceTranscriptionSegment {
+  start: number;
+  end: number;
+  text: string;
+  confidence: number;
+}
+
 export interface VoiceTranscriptionResult {
   text: string;
   confidence: number;
   durationMs: number;
   engine: string;
+  language?: string;
+  segments?: VoiceTranscriptionSegment[];
 }
 
 export interface VoiceStatus {
@@ -24,6 +33,9 @@ export interface VoiceStatus {
   ffmpegPath: string | null;
   sapiAvailable: boolean;
   ttsAvailable: boolean;
+  whisperAvailable: boolean;
+  edgeTtsAvailable: boolean;
+  defaultTtsVoice: string;
   supportedInputFormats: string[];
 }
 
@@ -57,6 +69,17 @@ export class VoiceService {
     this.logger.log(
       `[VoiceService] FFmpeg ${this.ffmpegPath ? 'detectado ✅ (' + this.ffmpegPath + ')' : 'no encontrado ⚠️'}`,
     );
+  }
+
+  /**
+   * Resuelve la ruta absoluta de un script Python auxiliar de voz
+   */
+  resolveVoiceScript(scriptName: string): string | null {
+    const candidate1 = path.join(__dirname, scriptName);
+    if (fs.existsSync(candidate1)) return candidate1;
+    const candidate2 = path.join(process.cwd(), 'src', 'jarvis', 'tools', 'voice', scriptName);
+    if (fs.existsSync(candidate2)) return candidate2;
+    return null;
   }
 
   /**
@@ -214,13 +237,19 @@ export class VoiceService {
       this.logger.warn(`Error verificando SAPI: ${e.message}`);
     }
 
+    const whisperScript = this.resolveVoiceScript('whisper_transcribe.py');
+    const edgeTtsScript = this.resolveVoiceScript('edge_tts_synthesize.py');
+
     return {
       opusdecAvailable: opusAvailable,
       opusdecPath: this.opusdecPath,
       ffmpegAvailable: !!currentFfmpeg,
       ffmpegPath: currentFfmpeg,
       sapiAvailable,
-      ttsAvailable,
+      ttsAvailable: ttsAvailable || !!edgeTtsScript,
+      whisperAvailable: !!whisperScript,
+      edgeTtsAvailable: !!edgeTtsScript,
+      defaultTtsVoice: process.env.JARVIS_TTS_VOICE || 'es-AR-TomasNeural',
       supportedInputFormats: ['.opus', '.ogg', '.webm', '.wav', '.mp4', '.m4a', '.mp3'],
     };
   }
@@ -308,9 +337,59 @@ export class VoiceService {
   }
 
   /**
-   * Transcribe un archivo WAV utilizando el reconocedor SAPI en español de Windows
+   * Transcribe un archivo de audio con Faster-Whisper (precisión superior en niños, adultos y ruido)
    */
-  async transcribeWav(wavPath: string): Promise<VoiceTranscriptionResult> {
+  async transcribeWithWhisper(wavPath: string): Promise<VoiceTranscriptionResult | null> {
+    const scriptPath = this.resolveVoiceScript('whisper_transcribe.py');
+    if (!scriptPath) {
+      return null;
+    }
+
+    const startTime = Date.now();
+    try {
+      const { stdout } = await execFileAsync('python', [
+        scriptPath,
+        wavPath,
+        process.env.JARVIS_WHISPER_MODEL || 'base',
+        'es',
+      ], {
+        encoding: 'utf8',
+        timeout: 30000,
+        maxBuffer: 10 * 1024 * 1024,
+      });
+
+      const parsed = JSON.parse(stdout.trim());
+      if (parsed.error) {
+        this.logger.warn(`[VoiceService:Whisper] Falló Whisper: ${parsed.error}`);
+        return null;
+      }
+
+      if (!parsed.text || parsed.text.trim().length === 0) {
+        return null;
+      }
+
+      this.logger.log(
+        `[VoiceService:Whisper] Transcripción exitosa (${parsed.durationMs}ms, conf: ${parsed.confidence}): "${parsed.text.slice(0, 80)}"`,
+      );
+
+      return {
+        text: parsed.text.trim(),
+        confidence: Number(parsed.confidence) || 0.85,
+        durationMs: Date.now() - startTime,
+        engine: parsed.engine || 'faster-whisper-base',
+        language: parsed.language || 'es',
+        segments: parsed.segments || [],
+      };
+    } catch (err: any) {
+      this.logger.warn(`[VoiceService:Whisper] Excepción ejecutando Whisper (${err.message}). Derivando a fallback...`);
+      return null;
+    }
+  }
+
+  /**
+   * Fallback de transcripción usando Windows SAPI 5.x
+   */
+  async transcribeWithSapi(wavPath: string): Promise<VoiceTranscriptionResult> {
     const startTime = Date.now();
     const normalizedWav = wavPath.replace(/\\/g, '/');
 
@@ -348,7 +427,7 @@ export class VoiceService {
         engine: parsed.engine || 'Windows SAPI',
       };
     } catch (err) {
-      this.logger.error(`Error transcribiendo WAV: ${err.message}`);
+      this.logger.error(`Error transcribiendo con SAPI: ${err.message}`);
       return {
         text: '',
         confidence: 0,
@@ -356,6 +435,20 @@ export class VoiceService {
         engine: 'error',
       };
     }
+  }
+
+  /**
+   * Transcribe un archivo WAV utilizando Faster-Whisper con fallback transparente a SAPI
+   */
+  async transcribeWav(wavPath: string): Promise<VoiceTranscriptionResult> {
+    // 1. Intentar primero con Faster-Whisper (soporte de acento argentino, niños y adultos)
+    const whisperRes = await this.transcribeWithWhisper(wavPath);
+    if (whisperRes && whisperRes.text && whisperRes.text.length > 0) {
+      return whisperRes;
+    }
+
+    // 2. Fallback resiliente con Windows SAPI
+    return this.transcribeWithSapi(wavPath);
   }
 
   /**
@@ -389,8 +482,8 @@ export class VoiceService {
       this.tempDir,
       `voice_${Date.now()}_${Math.random().toString(36).substring(7)}`,
     );
-    const tempInput = `${tempBase}${ext}`;
-    const tempWav = `${tempBase}.wav`;
+    const tempInput = `${tempBase}_in${ext}`;
+    const tempWav = `${tempBase}_out.wav`;
 
     try {
       await fs.promises.writeFile(tempInput, buffer);
@@ -411,9 +504,76 @@ export class VoiceService {
   }
 
   /**
-   * Sintetiza texto a voz generando un archivo WAV con la voz en español de Windows (Helena)
+   * Sintetiza texto a voz neural hiper-realista en español rioplatense/latino (Edge-TTS)
    */
-  async synthesizeSpeech(text: string): Promise<Buffer> {
+  async synthesizeWithEdgeTTS(
+    text: string,
+    voice = process.env.JARVIS_TTS_VOICE || 'es-AR-TomasNeural',
+  ): Promise<Buffer | null> {
+    const scriptPath = this.resolveVoiceScript('edge_tts_synthesize.py');
+    const ffmpeg = this.getFfmpegPath();
+    if (!scriptPath || !ffmpeg) {
+      return null;
+    }
+
+    const tempBase = path.join(
+      this.tempDir,
+      `edge_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    );
+    const tempMp3 = `${tempBase}.mp3`;
+    const tempWav = `${tempBase}.wav`;
+    const b64Text = Buffer.from(text, 'utf8').toString('base64');
+
+    try {
+      await execFileAsync('python', [
+        scriptPath,
+        `base64:${b64Text}`,
+        tempMp3,
+        voice,
+      ], {
+        timeout: 30000,
+      });
+
+      if (!fs.existsSync(tempMp3) || fs.statSync(tempMp3).size === 0) {
+        throw new Error('edge-tts no generó el archivo MP3');
+      }
+
+      // Convertir a PCM WAV a 24000Hz mono con FFmpeg para máxima nitidez y compatibilidad
+      await execFileAsync(ffmpeg, [
+        '-y',
+        '-i',
+        tempMp3,
+        '-ar',
+        '24000',
+        '-ac',
+        '1',
+        '-c:a',
+        'pcm_s16le',
+        tempWav,
+      ]);
+
+      if (!fs.existsSync(tempWav) || fs.statSync(tempWav).size === 0) {
+        throw new Error('FFmpeg falló al convertir salida MP3 a WAV');
+      }
+
+      const buffer = await fs.promises.readFile(tempWav);
+      this.logger.log(`[VoiceService:EdgeTTS] Síntesis neural completada (${buffer.length} bytes, voz: ${voice})`);
+      return buffer;
+    } catch (err: any) {
+      this.logger.warn(`[VoiceService:EdgeTTS] Falló síntesis neural (${err.message}). Cayendo a SAPI...`);
+      return null;
+    } finally {
+      try {
+        if (fs.existsSync(tempMp3)) await fs.promises.unlink(tempMp3);
+        if (fs.existsSync(tempWav)) await fs.promises.unlink(tempWav);
+      } catch {}
+    }
+  }
+
+  /**
+   * Fallback de síntesis de voz con Windows SAPI (Microsoft Helena Desktop)
+   */
+  async synthesizeSpeechWithSapi(text: string): Promise<Buffer> {
     const tempWav = path.join(
       this.tempDir,
       `tts_${Date.now()}_${Math.random().toString(36).substring(7)}.wav`,
@@ -441,7 +601,7 @@ export class VoiceService {
       );
 
       if (!fs.existsSync(tempWav)) {
-        throw new Error('No se generó el archivo de audio sintetizado.');
+        throw new Error('No se generó el archivo de audio sintetizado con SAPI.');
       }
 
       const buffer = await fs.promises.readFile(tempWav);
@@ -453,6 +613,20 @@ export class VoiceService {
         this.logger.warn(`Error eliminando archivo TTS: ${cleanupErr.message}`);
       }
     }
+  }
+
+  /**
+   * Sintetiza texto a voz (Edge-TTS neural primario con fallback a SAPI)
+   */
+  async synthesizeSpeech(text: string): Promise<Buffer> {
+    // 1. Intentar primero con síntesis neural hiper-realista
+    const neuralBuffer = await this.synthesizeWithEdgeTTS(text);
+    if (neuralBuffer && neuralBuffer.length > 44) {
+      return neuralBuffer;
+    }
+
+    // 2. Fallback offline con Windows SAPI
+    return this.synthesizeSpeechWithSapi(text);
   }
 
   /**
