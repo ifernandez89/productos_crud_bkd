@@ -72,3 +72,5 @@ storage/assets/three/
 
 prisma/dev.db
 data/
+tools/
+*.zip

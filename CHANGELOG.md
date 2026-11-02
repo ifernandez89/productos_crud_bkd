@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Enhanced — JarBees 3.4: Mobile Sensory Node (Moto G22), Percepción Periférica de Visión 12.5 MP y Captura RF FM en Tiempo Real (2026-11-01)
+
+- **JarBees Mobile Node (Arquitectura Ciberfísica Multimodal)**:
+  - **Patrón Asimétrico "Edge Sensor Probe + Heavy Neural Core"**: Despliegue del smartphone Motorola Moto G22 (MediaTek Helio G37 MT6765, Android 12 SDK 31) como sonda sensorial periférica liviana, derivando la inferencia pesada (Whisper, Moondream, Qwen-Coder) a la estación de trabajo PC con GPU NVIDIA RTX 5070.
+  - **Integración con Interfaz de Audio Profesional Behringer USB (PCM2902)**: Configuración y resolución de la cadena de señal analógica/digital a 44.1 kHz 16-bit estéreo con piso de ruido limpio a $-84.6\text{ dBFS}$.
+  - **Enlace de Radiofrecuencia (RF) FM Comercial (88-108 MHz)**: Utilización del cable de audio analógico de 3.5 mm como antena dipolo de cuarto de onda ($\lambda/4 \approx 75\text{ cm}$), eludiendo las restricciones de captura interna (`AudioPlaybackCapturePolicy = FORBIDDEN`) de Android 12.
+  - **Ingeniería Inversa del Sintonizador Nativo de Radio (`com.ape.fmradio`)**:
+    - Identificación del paquete de sistema ODM y de las actividades `com.ape.fmradio/.FmMainActivity` y `FmTestMainActivity`.
+    - Mapeo completo de coordenadas táctiles para control autónomo vía ADB: lectura del dial en `station_value` (99.9 MHz), siguiente emisora en `(500, 1300)`, anterior en `(220, 1300)` y control de encendido en `(360, 1300)`.
+  - **Transcripción ASR en Tiempo Real con Whisper (`faster-whisper`)**:
+    - Demodulación y transcripción exitosa en español (94.2% de confianza) del audio en vivo transmitido por la emisora "La 100" (FM 99.9 MHz, Buenos Aires): *«...en el piano. Casi con de los dos mil suena cuando faltan tres semiros...»*.
+    - Niveles de emisión calibrados a $-11.65\text{ dBFS}$ pico y $-24.15\text{ dBFS}$ RMS con correlación estéreo de $+0.750$ a $+0.966$.
+
+- **Misión 001 — Visión Periférica (Cierre del Bucle Visual Autónomo)** (`scratch/jarbees_vision_mission.py`):
+  - **Ciclo Autónomo de Percepción Óptica sin Intervención Manual**:
+    1. Despertar de pantalla y lanzamiento remoto de la actividad de captura fotográfica (`STILL_IMAGE_CAPTURE`).
+    2. Disparo de obturador por evento de hardware (`KEYCODE_VOLUME_DOWN` y `KEYCODE_CAMERA`).
+    3. Almacenamiento en memoria flash del teléfono y retorno a pantalla de inicio.
+    4. Detección automática del nuevo archivo en `/sdcard/DCIM/Camera/` y extracción inmediata vía `adb pull` por USB.
+    5. Inferencia visual multimodal en la GPU local.
+  - **Fotografía de 12.5 Megapíxeles ($3072 \times 4080$ píxeles, 1.99 MB)**:
+    - Capturada con el sensor Quad-Binned de 50 MP del Moto G22.
+    - Detección precisa de la escena física real: presencia de mano humana con dedo índice extendido en primer plano macro, superficie de tela/tapizado marrón de soporte, elemento reflectante con cinta adhesiva y condiciones de iluminación tenue (brillo medio $37.6/255$, rango dinámico $0-217$).
+  - **Incorporación de Modelo de Visión Local (`moondream`)**:
+    - Descarga e integración en el servidor Ollama local (1.7 GB) para inferencia de visión perimetral offline en 11 segundos sobre la RTX 5070.
+
+- **Auditoría de Sensores Físicos del Dispositivo**:
+  - Inventario de hardware inercial en el Moto G22: Acelerómetro de 6 ejes TDK ICM-42607-P, Giroscopio TDK ICM-42607-P, Magnetómetro MTK (brújula electrónica), Sensor de luz ambiental MTK Light, sensor de proximidad y controladores de gestos nativos de Motorola (*Flip-twist* y *Chop-chop*).
+
+- **Documentación y Arquitectura**:
+  - Creación de **ADR-031** (`ADR_031_JARBEES_MOBILE_NODE_PERIPHERAL_VISION_AND_RF.md`) formalizando el diseño ciberfísico del sistema y la hoja de ruta hacia la Fase 2 (PWA / WebSockets) y Fase 3 (APK nativa en Kotlin).
+
 ### Added & Enhanced — JarBees 3.3: Adaptive Memory Attention Engine 2.0 (MAE 2.0), Despliegue Gradual (Shadow/Canary/Default), Integración DIALECTIC_AUDIT -> HITL y Experimentos B, B2, D3, C y C2 (2026-11-01)
 
 - **Memory Attention Engine 2.0 (MAE 2.0) (`src/jarvis/cognitive/mae2/`)**:
