@@ -380,3 +380,4 @@ function animate() {
 // Initialize
 initWebSocket();
 animate();
+

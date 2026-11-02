@@ -45,3 +45,4 @@ if __name__ == "__main__":
     print("Iniciando puente de hardware ADB Sensor Bridge...")
     data = get_latest_hardware_reading()
     print("Lectura actual del hardware:", json.dumps(data, indent=2))
+

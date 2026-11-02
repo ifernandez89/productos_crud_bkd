@@ -67,3 +67,4 @@ body { background: #090d13; color: #c9d1d9; overflow: hidden; height: 100vh; dis
 .stat-box { background: #0d1117; padding: 8px; border-radius: 6px; border: 1px solid #21262d; }
 .stat-label { color: #8b949e; font-size: 0.7rem; }
 .stat-val { font-weight: 700; color: #fff; font-family: monospace; margin-top: 2px; }
+

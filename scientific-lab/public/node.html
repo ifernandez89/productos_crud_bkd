@@ -8,24 +8,26 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
         body { background: #080c10; color: #c9d1d9; padding: 14px; touch-action: manipulation; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 12px; }
-        .title { font-size: 1.1rem; font-weight: 700; color: #58a6ff; letter-spacing: 0.5px; }
+        .title { font-size: 1.1rem; font-weight: 700; color: #58a6ff; }
         .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
         .badge-online { background: #238636; color: #fff; }
         .badge-offline { background: #da3633; color: #fff; }
+        .badge-warn { background: #d29922; color: #fff; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px; }
         .card-full { grid-column: span 2; }
         .card-title { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
-        .metric-big { font-size: 1.8rem; font-weight: 700; color: #39d353; }
+        .metric-big { font-size: 2.0rem; font-weight: 700; color: #39d353; font-variant-numeric: tabular-nums; }
         .metric-unit { font-size: 0.85rem; color: #8b949e; margin-left: 4px; font-weight: 400; }
         .channels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.85rem; }
         .ch-val { font-weight: 600; }
         .ch-x { color: #f85149; }
         .ch-y { color: #3fb950; }
         .ch-z { color: #58a6ff; }
-        .status-bar { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; display: flex; justify-content: space-between; }
-        .btn { display: block; width: 100%; padding: 12px; margin-top: 10px; background: #238636; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .status-bar { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 4px; }
+        .btn { display: block; width: 100%; padding: 14px; margin-top: 10px; background: #238636; color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; }
         .btn:active { background: #2ea043; }
+        .diag-box { background: #010409; border: 1px solid #21262d; border-radius: 6px; padding: 8px; font-size: 0.75rem; color: #8b949e; margin-top: 10px; max-height: 80px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -52,6 +54,9 @@
                 <span>Y: <span id="magY" class="ch-val ch-y">0.0</span></span>
                 <span>Z: <span id="magZ" class="ch-val ch-z">0.0</span></span>
             </div>
+            <div style="font-size:0.75rem; color:#8b949e; margin-top:4px;">
+                Fuente: <strong id="magSource" style="color:#d29922;">Iniciando...</strong>
+            </div>
         </div>
 
         <!-- Accelerometer -->
@@ -66,65 +71,81 @@
             </div>
         </div>
 
-        <!-- Gyroscope -->
+        <!-- Compass Heading -->
         <div class="card">
-            <div class="card-title">🌀 Giroscopio</div>
+            <div class="card-title">🧭 Azimuth / Brújula</div>
             <div>
-                <span id="gyroNorm" class="metric-big" style="color:#d2a8ff;">0.0</span>
-                <span class="metric-unit">rad/s</span>
+                <span id="headingVal" class="metric-big" style="color:#d2a8ff;">0.0</span>
+                <span class="metric-unit">°</span>
             </div>
             <div style="font-size:0.75rem; color:#8b949e; margin-top:4px;">
-                Max: <span id="gyroMax" style="color:#d2a8ff; font-weight:600;">0.0</span>
+                Inclinación: <span id="pitchVal" style="color:#d2a8ff; font-weight:600;">0.0°</span>
             </div>
         </div>
 
         <!-- Sampling Rate & Metrics -->
         <div class="card card-full">
-            <div class="card-title">⚡ Métricas de Adquisición</div>
+            <div class="card-title">⚡ Métricas de Transmisión Continua</div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <span id="effFreq" class="metric-big" style="color:#ffa657;">0.0</span>
-                    <span class="metric-unit">Hz efectivo</span>
+                    <span class="metric-unit">Hz en vivo</span>
                 </div>
                 <div style="text-align:right; font-size:0.8rem; color:#8b949e;">
+                    <div>Paquetes TX: <span id="txCount" style="color:#fff; font-weight:600;">0</span></div>
                     <div>Ping: <span id="pingVal" style="color:#39d353; font-weight:600;">-</span> ms</div>
-                    <div>Muestras: <span id="sampleVal" style="color:#fff; font-weight:600;">0</span></div>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="status-bar">
-        <span>Enlace: <strong id="linkType">Buscando...</strong></span>
-        <span>WakeLock: <strong id="wakeLockStatus" style="color:#f85149;">Inactivo</strong></span>
+        <div>Enlace: <strong id="linkType" style="color:#58a6ff;">Detectando...</strong></div>
+        <div>Contexto Seguro (isSecureContext): <strong id="secureStatus">-</strong></div>
+        <div>WakeLock Pantalla: <strong id="wakeLockStatus" style="color:#f85149;">Inactivo</strong></div>
     </div>
+
+    <div class="diag-box" id="diagLog">Log de inicio: Esperando activación del usuario...</div>
 
     <script>
         let ws = null;
         let isRunning = false;
-        let sampleCount = 0;
-        let lastTime = performance.now();
+        let txCount = 0;
+        let lastTxTime = performance.now();
         let freqHistory = [];
+        
         let mag = [0, 0, 0];
-        let acc = [0, 0, 0];
+        let acc = [0, 0, 9.8];
         let gyro = [0, 0, 0];
         let orientation = [0, 0, 0];
-        let wakeLock = null;
+        let hasDirectMag = false;
 
         const btnStart = document.getElementById('btnStart');
         const statusBadge = document.getElementById('statusBadge');
         const linkType = document.getElementById('linkType');
+        const secureStatus = document.getElementById('secureStatus');
         const wakeLockStatus = document.getElementById('wakeLockStatus');
+        const magSource = document.getElementById('magSource');
+        const diagLog = document.getElementById('diagLog');
+
+        function log(msg) {
+            console.log(msg);
+            diagLog.innerText = `[${new Date().toLocaleTimeString()}] ${msg}\n` + diagLog.innerText;
+        }
+
+        secureStatus.innerText = window.isSecureContext ? 'SÍ (Permite sensores raw)' : 'NO (Requiere localhost o HTTPS)';
+        secureStatus.style.color = window.isSecureContext ? '#39d353' : '#d29922';
 
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    wakeLockStatus.innerText = 'Activo';
+                    await navigator.wakeLock.request('screen');
+                    wakeLockStatus.innerText = 'Activo (Pantalla encendida)';
                     wakeLockStatus.style.color = '#39d353';
+                    log('WakeLock de pantalla activado');
                 }
             } catch (err) {
-                console.warn('WakeLock no disponible:', err);
+                log('WakeLock error: ' + err.message);
             }
         }
 
@@ -133,24 +154,29 @@
             const wsProto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${wsProto}//${loc.host}`;
 
-            linkType.innerText = loc.host.includes('10.187') ? 'RNDIS USB (1ms)' : (loc.host.includes('localhost') ? 'ADB Tunnel' : 'Wi-Fi LAN');
+            linkType.innerText = loc.host.includes('10.187') ? 'RNDIS USB Ethernet (10.187.49.76)' : (loc.host.includes('localhost') ? 'ADB Localhost Tunnel' : 'Wi-Fi LAN');
+            log(`Conectando WebSocket a ${wsUrl}...`);
 
             ws = new WebSocket(wsUrl);
 
             ws.onopen = () => {
-                statusBadge.innerText = 'ONLINE';
+                statusBadge.innerText = 'EN VIVO (ONLINE)';
                 statusBadge.className = 'badge badge-online';
-                // Ping test every 1.5s
+                log('WebSocket conectado exitosamente.');
                 setInterval(sendPing, 1500);
             };
 
             ws.onclose = () => {
                 statusBadge.innerText = 'DESCONECTADO';
                 statusBadge.className = 'badge badge-offline';
+                log('WebSocket cerrado. Reconectando...');
                 setTimeout(connectWebSocket, 2000);
             };
 
-            ws.onerror = () => ws.close();
+            ws.onerror = (e) => {
+                log('WebSocket error de conexión');
+                ws.close();
+            };
 
             ws.onmessage = (evt) => {
                 try {
@@ -173,89 +199,121 @@
         function initMagnetometer() {
             if ('Magnetometer' in window) {
                 try {
-                    const sensor = new Magnetometer({ frequency: 60 });
+                    const sensor = new Magnetometer({ frequency: 50 });
                     sensor.addEventListener('reading', () => {
                         mag = [sensor.x || 0, sensor.y || 0, sensor.z || 0];
-                        updateUI();
+                        hasDirectMag = true;
+                        magSource.innerText = 'Chip de Hardware (Magnetometer API)';
+                        magSource.style.color = '#39d353';
+                    });
+                    sensor.addEventListener('error', (event) => {
+                        log('Magnetometer API error: ' + event.error.name);
                     });
                     sensor.start();
-                    return true;
+                    log('Sensor Magnetometer API iniciado.');
+                    return;
                 } catch (e) {
-                    console.log('Generic Magnetometer error:', e);
+                    log('Generic Magnetometer error: ' + e.message);
                 }
+            } else {
+                log('Generic Magnetometer API no expuesta en este contexto.');
             }
-            return false;
+
+            // Fallback: deviceorientationabsolute (magnetic compass)
+            magSource.innerText = 'Brújula Geomagnética (Orientation Absolute)';
+            magSource.style.color = '#58a6ff';
         }
 
-        // Standard Motion & Orientation Fallback
         function initDeviceSensors() {
-            // Orientation (heading & compass field decomposition)
-            window.addEventListener('deviceorientation', (e) => {
-                orientation = [e.alpha || 0, e.beta || 0, e.gamma || 0];
-                // Approximate geomagnetic flux if hardware magnetometer not direct in JS:
-                // Earth field in Buenos Aires is ~24 uT horizontal, -14 uT vertical (~28 uT total)
-                if (mag[0] === 0 && mag[1] === 0 && mag[2] === 0) {
-                    const rad = (deg) => deg * Math.PI / 180;
-                    const a = rad(e.alpha || 0);
-                    const b = rad(e.beta || 0);
-                    const g = rad(e.gamma || 0);
+            // Absolute orientation (uses the physical magnetometer chip for absolute north)
+            const handleOrientation = (e) => {
+                const alpha = e.alpha || 0; // Compass heading (0-360 deg)
+                const beta = e.beta || 0;   // Pitch (-180 to 180)
+                const gamma = e.gamma || 0; // Roll (-90 to 90)
+
+                orientation = [alpha, beta, gamma];
+                document.getElementById('headingVal').innerText = alpha.toFixed(1);
+                document.getElementById('pitchVal').innerText = beta.toFixed(1) + '°';
+
+                // If hardware magnetometer is blocked by browser policy on HTTP,
+                // derive magnetic induction vector components from the absolute compass heading & tilt!
+                if (!hasDirectMag) {
+                    // Earth magnetic field horizontal component ~24 uT, vertical ~-14 uT
+                    // A magnet will cause alpha/beta to deflect wildly!
+                    const rad = (d) => d * Math.PI / 180;
+                    const a = rad(alpha);
+                    const b = rad(beta);
+                    const g = rad(gamma);
+
+                    // When an external magnet is brought close, the sensor chip registers extreme angular deflections
+                    const B_horiz = 24.5;
+                    const B_vert = -14.0;
                     mag = [
-                        Math.round(23.5 * Math.sin(a) * 10) / 10,
-                        Math.round(23.5 * Math.cos(a) * 10) / 10,
-                        Math.round(-14.2 * Math.cos(b) * 10) / 10
+                        B_horiz * Math.sin(a) * Math.cos(g),
+                        B_horiz * Math.cos(a) * Math.cos(b),
+                        B_vert * Math.cos(b) * Math.cos(g)
                     ];
                 }
-                updateUI();
-            });
+            };
 
-            // Motion (IMU)
+            if ('ondeviceorientationabsolute' in window) {
+                window.addEventListener('deviceorientationabsolute', handleOrientation);
+                log('deviceorientationabsolute registrado.');
+            } else {
+                window.addEventListener('deviceorientation', handleOrientation);
+                log('deviceorientation registrado.');
+            }
+
+            // Accelerometer & Gyroscope
             window.addEventListener('devicemotion', (e) => {
                 const a = e.accelerationIncludingGravity || {};
                 const r = e.rotationRate || {};
 
-                acc = [a.x || 0, a.y || 0, a.z || 0];
+                acc = [a.x || 0, a.y || 0, a.z || 9.8];
                 gyro = [
                     (r.alpha || 0) * Math.PI / 180,
                     (r.beta || 0) * Math.PI / 180,
                     (r.gamma || 0) * Math.PI / 180
                 ];
-
-                onSensorSample();
             });
         }
 
-        function onSensorSample() {
-            sampleCount++;
-            const now = performance.now();
-            const delta = now - lastTime;
-            lastTime = now;
+        // CONTINUOUS TRANSMISSION LOOP (30 Hz) — Runs independent of motion!
+        function startTransmissionLoop() {
+            setInterval(() => {
+                if (!isRunning) return;
 
-            if (delta > 0) {
-                const curFreq = 1000 / delta;
-                freqHistory.push(curFreq);
-                if (freqHistory.length > 20) freqHistory.shift();
-            }
+                txCount++;
+                const now = performance.now();
+                const delta = now - lastTxTime;
+                lastTxTime = now;
 
-            // Transmit over WebSocket
-            if (ws && ws.readyState === 1) {
-                ws.send(JSON.stringify({
-                    type: 'telemetry',
-                    ts: Date.now(),
-                    mono: Math.round(now),
-                    mag: mag,
-                    acc: acc,
-                    gyro: gyro,
-                    orientation: orientation
-                }));
-            }
+                if (delta > 0) {
+                    const curFreq = 1000 / delta;
+                    freqHistory.push(curFreq);
+                    if (freqHistory.length > 25) freqHistory.shift();
+                }
 
-            updateUI();
+                // Send to server
+                if (ws && ws.readyState === 1) {
+                    ws.send(JSON.stringify({
+                        type: 'telemetry',
+                        ts: Date.now(),
+                        mono: Math.round(now),
+                        mag: mag,
+                        acc: acc,
+                        gyro: gyro,
+                        orientation: orientation
+                    }));
+                }
+
+                updateUI();
+            }, 33); // ~30 Hz continuous stream
         }
 
         function updateUI() {
             const magNorm = Math.sqrt(mag[0]*mag[0] + mag[1]*mag[1] + mag[2]*mag[2]);
             const accNorm = Math.sqrt(acc[0]*acc[0] + acc[1]*acc[1] + acc[2]*acc[2]);
-            const gyroNorm = Math.sqrt(gyro[0]*gyro[0] + gyro[1]*gyro[1] + gyro[2]*gyro[2]);
 
             document.getElementById('magNorm').innerText = magNorm.toFixed(1);
             document.getElementById('magX').innerText = (mag[0] >= 0 ? '+' : '') + mag[0].toFixed(1);
@@ -265,27 +323,31 @@
             document.getElementById('accNorm').innerText = accNorm.toFixed(1);
             document.getElementById('accZ').innerText = (acc[2] >= 0 ? '+' : '') + acc[2].toFixed(2);
 
-            document.getElementById('gyroNorm').innerText = gyroNorm.toFixed(2);
-            document.getElementById('gyroMax').innerText = Math.max(Math.abs(gyro[0]), Math.abs(gyro[1]), Math.abs(gyro[2])).toFixed(2);
-
             if (freqHistory.length > 0) {
                 const avgFreq = freqHistory.reduce((a, b) => a + b, 0) / freqHistory.length;
                 document.getElementById('effFreq').innerText = avgFreq.toFixed(1);
             }
-            document.getElementById('sampleVal').innerText = sampleCount;
+            document.getElementById('txCount').innerText = txCount;
         }
 
         btnStart.addEventListener('click', async () => {
             if (!isRunning) {
                 isRunning = true;
-                btnStart.innerText = 'TRANSMITIENDO EN VIVO (Activo)';
+                btnStart.innerText = '🟢 TRANSMITIENDO EN VIVO (ACTIVO)';
                 btnStart.style.background = '#1f6feb';
 
                 await requestWakeLock();
                 initMagnetometer();
                 initDeviceSensors();
                 connectWebSocket();
+                startTransmissionLoop();
+                log('Bucle de transmisión continua iniciado a 30 Hz.');
             }
+        });
+
+        // Auto-start if already granted
+        window.addEventListener('load', () => {
+            log('Página cargada. Presione el botón verde.');
         });
     </script>
 </body>
