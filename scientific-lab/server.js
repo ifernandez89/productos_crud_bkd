@@ -32,13 +32,11 @@ const server = http.createServer((req, res) => {
 
   const filePath = path.join(PUBLIC_DIR, pathname);
 
-  // Security check: restrict to PUBLIC_DIR
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403);
     return res.end('Access Denied');
   }
 
-  // REST API: list experiments
   if (pathname === '/api/experiments') {
     const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.csv'));
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -72,6 +70,7 @@ let sampleCount = 0;
 let lastTimestamps = [];
 let effectiveFrequency = 0;
 let interSampleJitter = 0;
+let lastHardwareSourceTime = 0;
 
 wss.on('connection', (ws, req) => {
   const ip = req.socket.remoteAddress;
@@ -86,10 +85,21 @@ wss.on('connection', (ws, req) => {
         return ws.send(JSON.stringify({ type: 'pong', clientTime: data.clientTime, serverTime: Date.now() }));
       }
 
-      // Handle Telemetry from Mobile Node
+      // Handle Telemetry
       if (data.type === 'telemetry') {
-        sampleCount++;
+        const isHardware = (data.source === 'HARDWARE_ADB_HAL');
         const now = Date.now();
+
+        if (isHardware) {
+          lastHardwareSourceTime = now;
+        } else {
+          // If the true hardware bridge is active, discard synthetic browser telemetry to eliminate conflict
+          if (now - lastHardwareSourceTime < 3000) {
+            return;
+          }
+        }
+
+        sampleCount++;
         lastTimestamps.push(now);
         if (lastTimestamps.length > 30) lastTimestamps.shift();
 
@@ -101,19 +111,17 @@ wss.on('connection', (ws, req) => {
           const avgDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
           effectiveFrequency = avgDelta > 0 ? (1000 / avgDelta) : 0;
 
-          // Jitter (std deviation of delta)
           const variance = deltas.reduce((acc, d) => acc + Math.pow(d - avgDelta, 2), 0) / deltas.length;
           interSampleJitter = Math.sqrt(variance);
         }
 
-        // Add server-side verified metrics
         data.metrics = {
           sampleCount,
           effectiveFrequency: Math.round(effectiveFrequency * 10) / 10,
-          interSampleJitter: Math.round(interSampleJitter * 10) / 10
+          interSampleJitter: Math.round(interSampleJitter * 10) / 10,
+          source: isHardware ? 'HARDWARE_ADB_HAL' : 'WEB_BROWSER'
         };
 
-        // If recording is active, write to CSV
         if (activeRecording && recordingStream) {
           const row = [
             now,
@@ -132,7 +140,7 @@ wss.on('connection', (ws, req) => {
           recordingStream.write(row);
         }
 
-        // Broadcast to all other clients (dashboards)
+        // Broadcast to all dashboard clients
         const payloadStr = JSON.stringify(data);
         wss.clients.forEach((client) => {
           if (client !== ws && client.readyState === 1) {
@@ -141,7 +149,6 @@ wss.on('connection', (ws, req) => {
         });
       }
 
-      // Handle Control Commands from Dashboard
       if (data.type === 'start_experiment') {
         const title = (data.title || 'ensayo').replace(/[^a-zA-Z0-9_-]/g, '_');
         const filename = `exp_${title}_${Date.now()}.csv`;
@@ -197,7 +204,5 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('='.repeat(72));
   console.log(`📡 Panel de Control PC (Field Lab 3D): http://localhost:${PORT}`);
   console.log(`📱 Sensor Node Móvil (Moto G22):        http://10.187.49.76:${PORT}/node`);
-  console.log(`                                        (o http://localhost:${PORT}/node vía adb reverse)`);
   console.log('='.repeat(72));
 });
-

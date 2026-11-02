@@ -368,8 +368,23 @@ function renderScope() {
 function animate() {
     requestAnimationFrame(animate);
 
+    const width = canvas3d.clientWidth;
+    const height = canvas3d.clientHeight;
+    if (width > 0 && height > 0) {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const expectedW = Math.floor(width * dpr);
+        const expectedH = Math.floor(height * dpr);
+
+        if (canvas3d.width !== expectedW || canvas3d.height !== expectedH || isNaN(camera.aspect) || !isFinite(camera.aspect)) {
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setPixelRatio(dpr);
+            renderer.setSize(width, height, false);
+        }
+    }
+
     // Slowly orbit when not moving
-    if (!isDragging) {
+    if (!isDragging && ringMesh) {
         ringMesh.rotation.z += 0.001;
     }
 

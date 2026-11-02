@@ -28,21 +28,76 @@ def extract_sensor_events(sensor_header, dump):
             res.append((ev.group(1), ev.group(2), vals))
     return res
 
-def get_latest_hardware_reading():
-    raw = adb_cmd(["shell", "dumpsys", "sensorservice"])
-    acc = extract_sensor_events('ICM-42607-P  ACCELEROMETER: last 50 events', raw)
-    gyro = extract_sensor_events('ICM-42607-P  GYROSCOPE: last 10 events', raw)
-    mag = extract_sensor_events('MAGNETOMETER: last 10 events', raw)
+def run_bridge():
+    import urllib.request
+    try:
+        import websocket
+    except ImportError:
+        # Fallback to local python websockets or raw socket
+        pass
 
-    return {
-        "acc": acc[-1][2] if acc else [0, 0, 9.8],
-        "gyro": gyro[-1][2] if gyro else [0, 0, 0],
-        "mag": mag[-1][2] if mag else [0, 0, 0],
-        "wall": acc[-1][1] if acc else ""
-    }
+    print("=" * 65)
+    print("🛰️ JARBEES HARDWARE SENSOR BRIDGE (ADB HAL -> FIELD LAB)")
+    print("=" * 65)
+
+    # Check device
+    devices = adb_cmd(["devices"])
+    if "ZT322BX8BF" not in devices:
+        print("⚠️ Moto G22 no detectado en modo ADB.")
+        print("   Por favor, cambia en el celular el modo USB a 'Transferencia de archivos'.")
+        return
+
+    print("✅ Moto G22 detectado por ADB. Conectando al bus de sensores...")
+    # Keep sensors streaming
+    adb_cmd(["shell", "monkey", "-p", "com.teacapps.barcodescanner", "-c", "android.intent.category.LAUNCHER", "1"])
+    time.sleep(1.0)
+
+    # WebSocket connection to server
+    try:
+        import websocket
+        ws = websocket.WebSocket()
+        ws.connect("ws://127.0.0.1:3333")
+        print("✅ Conectado al servidor WebSocket en ws://127.0.0.1:3333")
+    except Exception as e:
+        print(f"⚠️ Error conectando WebSocket: {e}")
+        return
+
+    print("🟢 Transmitiendo datos crudos del magnetómetro de silicio...")
+    t0 = time.time()
+    count = 0
+
+    try:
+        while True:
+            raw = adb_cmd(["shell", "dumpsys", "sensorservice"])
+            mag_ev = extract_sensor_events('MAGNETOMETER: last 10 events', raw)
+            acc_ev = extract_sensor_events('ICM-42607-P  ACCELEROMETER: last 50 events', raw)
+            gyro_ev = extract_sensor_events('ICM-42607-P  GYROSCOPE: last 10 events', raw)
+
+            if mag_ev:
+                count += 1
+                bx, by, bz = mag_ev[-1][2][:3]
+                ax, ay, az = acc_ev[-1][2][:3] if acc_ev else [0, 0, 9.8]
+                gx, gy, gz = gyro_ev[-1][2][:3] if gyro_ev else [0, 0, 0]
+
+                payload = {
+                    "type": "telemetry",
+                    "ts": int(time.time() * 1000),
+                    "mag": [bx, by, bz],
+                    "acc": [ax, ay, az],
+                    "gyro": [gx, gy, gz],
+                    "source": "HARDWARE_ADB_HAL"
+                }
+
+                ws.send(json.dumps(payload))
+
+                norm = (bx**2 + by**2 + bz**2)**0.5
+                print(f"[# {count:04d}] B = {norm:6.1f} µT | Bx={bx:+6.1f}, By={by:+6.1f}, Bz={bz:+6.1f} µT", end="\r", flush=True)
+
+            time.sleep(0.04)
+    except KeyboardInterrupt:
+        print("\nPuente detenido.")
+    finally:
+        ws.close()
 
 if __name__ == "__main__":
-    print("Iniciando puente de hardware ADB Sensor Bridge...")
-    data = get_latest_hardware_reading()
-    print("Lectura actual del hardware:", json.dumps(data, indent=2))
-
+    run_bridge()
