@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Verified — JarBees Scientific Lab: Field Lab 3D & Mobile Sensor HAL Telemetry Milestone (2026-11-02)
+
+- **Validación Empírica del Primer Bucle Ciberfísico** (`ADR-034`):
+  - Integración nativa de la suite científica **Phyphox** (`de.rwth_aachen.phyphox`) sobre el chip magnetómetro MediaTek del Motorola Moto G22 a 50 Hz sin filtrado de software.
+  - Implementación del puente de telemetría de ultra-baja latencia vía túnel USB ADB `tcp:8080` (`scientific-lab/bridge_adb_sensors.js`) con timestamps a nivel de microsegundo.
+  - Resolución de las 4 anomalías metrológicas de partida: sandboxing de contexto seguro en Chromium, conflicto de doble canal web/ADB en el oscilograma, modo de suspensión del sensor en el HAL de Android y cálculo de proyección WebGL con `camera.aspect` dinámico en Three.js (`scientific-lab/public/app.js`).
+  - Pruebas físicas exitosas con dipolos magnéticos permanentes: registro dinámico continuo desde el fondo geomagnético basal (~23 µT) hasta picos de inducción directa de **87.5 µT**, con deflexión vectorial coherente, escalado cromático de la esfera de iso-flujo (verde -> rojo) y registro sin clipping en el oscilograma temporal de 4 canales ($B_x, B_y, B_z, |\mathbf{B}|$).
+  - Alineación metrológica y preparativos para el Protocolo H1 (*Nikola Tesla US Pat. 381.968 - Campo Magnético Rotatorio en Motores AC*).
+
 ### Added & Enhanced — JarBees 3.5: Calibración Metrológica Inercial TDK (Misión 002) y Propuestas de Instrumentación Científica Tesla (2026-11-02)
 
 - **Misión 002 — Percepción Física e Inercial Controlada** (`scratch/run_mission_002_controlled.py`):
