@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JarBees Scientific Lab — Field Lab 3D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top Nav Header -->
+    <header class="top-header">
+        <div class="brand">
+            <span class="logo-icon">🔬</span>
+            <div>
+                <span class="brand-name">JARBEES SCIENTIFIC LAB</span>
+                <span class="brand-tag">FIELD LAB — MAGNETOMETRÍA VECTORIAL 3D (US PAT. 381.968)</span>
+            </div>
+        </div>
+        <div class="header-badges">
+            <div id="badgeNode" class="badge badge-node-off">
+                <span style="font-size:8px;">●</span> MOTO G22: ESPERANDO NODO
+            </div>
+            <div id="badgeRate" class="badge badge-rate">
+                <span id="rateVal">0.0</span> Hz (Jitter: <span id="jitterVal">0.0</span> ms)
+            </div>
+            <div id="badgeRec" class="badge badge-rec" style="display:none;">
+                <span>🔴</span> GRABANDO ENSAYO
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+        <!-- Left: Three.js 3D Viewport -->
+        <div class="view-3d-container">
+            <canvas id="canvas3d"></canvas>
+
+            <!-- Floating 3D HUD -->
+            <div class="hud-overlay">
+                <div class="hud-panel">
+                    <div class="hud-title">Vector de Inducción Magnética (B)</div>
+                    <div>
+                        <span id="magTotal" class="hud-mag-val">0.0</span>
+                        <span class="hud-mag-unit">µT</span>
+                    </div>
+                    <div class="hud-axes">
+                        <span><span class="axis-tag axis-x">Bx:</span><span id="valBx">+0.0</span></span>
+                        <span><span class="axis-tag axis-y">By:</span><span id="valBy">+0.0</span></span>
+                        <span><span class="axis-tag axis-z">Bz:</span><span id="valBz">+0.0</span></span>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button id="btnTare" class="hud-btn">🎯 Fijar Cero Terrestre</button>
+                        <button id="btnNetMode" class="hud-btn">Modo: Campo Total</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Telemetry & Experimentation Sidebar -->
+        <aside class="panel-sidebar">
+            <!-- 1. Live Oscilloscope -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>Oscilograma Temporal B(t)</span>
+                    <span style="font-size:0.75rem; color:#8b949e;">Ventana 5s</span>
+                </div>
+                <div class="scope-container">
+                    <canvas id="scopeCanvas"></canvas>
+                </div>
+                <div class="scope-legend">
+                    <span style="color:#f85149;">■ Bx</span>
+                    <span style="color:#3fb950;">■ By</span>
+                    <span style="color:#58a6ff;">■ Bz</span>
+                    <span style="color:#39d353;">■ |B| Total</span>
+                </div>
+            </div>
+
+            <!-- 2. Experiment & Hypothesis Manager -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>Gestor de Ensayos Científicos</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Hipótesis / Protocolo Activo:</label>
+                    <select id="selHypothesis" class="form-select">
+                        <option value="H1_MOTOR_AC">H1: Campo Magnético Rotatorio en Motor AC (Tesla 1888)</option>
+                        <option value="H2_TRANSFORMADOR">H2: Detección de Fuga y Asimetría en Transformador</option>
+                        <option value="H3_DIPOLO_DISTANCIA">H3: Ley de Atenuación de Dipolo B(r) ~ 1/r³</option>
+                        <option value="H4_APANTALLAMIENTO">H4: Eficiencia de Blindaje Magnético Ferromagnético</option>
+                        <option value="H_CUSTOM">Hipótesis Personalizada...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Identificador del Ensayo:</label>
+                    <input id="txtExpId" type="text" class="form-input" value="ensayo_campo_rotatorio_01">
+                </div>
+
+                <button id="btnRecord" class="btn-action btn-record">
+                    <span>🔴</span> INICIAR REGISTRO EXPERIMENTAL
+                </button>
+                <button id="btnStop" class="btn-action btn-stop" style="display:none; margin-top:8px;">
+                    <span>⏹</span> DETENER Y GUARDAR CSV
+                </button>
+
+                <!-- Statistics Box -->
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Campo Medio |B|</div>
+                        <div id="statMean" class="stat-val">0.0 µT</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Varianza / Ruido σ</div>
+                        <div id="statStd" class="stat-val">0.00 µT</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Pico Máximo |B|max</div>
+                        <div id="statMax" class="stat-val">0.0 µT</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Muestras Registradas</div>
+                        <div id="statSamples" class="stat-val">0</div>
+                    </div>
+                </div>
+
+                <button id="btnJarBeesAnalyze" class="btn-action btn-analyze">
+                    <span>🧠</span> EVALUAR CON JARBEES RESEARCH ENGINE
+                </button>
+            </div>
+
+            <!-- 3. Mobile Node Instructions -->
+            <div class="section-card" style="font-size:0.8rem; line-height:1.5;">
+                <div class="section-title">Enlace con Moto G22</div>
+                <p style="color:#8b949e; margin-bottom:8px;">
+                    Para conectar el celular al laboratorio, abrí el navegador en el teléfono e ingresá a:
+                </p>
+                <code style="background:#080c10; border:1px solid #30363d; padding:4px 8px; border-radius:4px; display:block; color:#58a6ff; font-weight:700; text-align:center;">
+                    http://10.187.49.76:3333/node
+                </code>
+                <p style="color:#8b949e; margin-top:8px; font-size:0.75rem;">
+                    (Conexión directa por RNDIS USB de 1ms de latencia o vía Wi-Fi).
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

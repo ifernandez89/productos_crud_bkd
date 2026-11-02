@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Enhanced — JarBees 3.5: Calibración Metrológica Inercial TDK (Misión 002) y Propuestas de Instrumentación Científica Tesla (2026-11-02)
+
+- **Misión 002 — Percepción Física e Inercial Controlada** (`scratch/run_mission_002_controlled.py`):
+  - **Caracterización Metrológica del Sensor TDK ICM-42607-P (6 Ejes)**:
+    - Adquisición en tiempo real de 102 muestras temporizadas vía socket ADB (~6.8 Hz continuo) persistidas en dataset CSV (`scratch/mision_002_sensors.csv`).
+    - Norma media del vector de gravedad medida: $|\mathbf{g}| = 9.777\text{ m/s}^2$ (error absoluto de $-0.30\%$ frente al valor estándar $9.807\text{ m/s}^2$).
+    - Piso de ruido estático del acelerómetro: $\sigma_g = 0.0127\text{ m/s}^2$ ($0.13\%$ de desviación estándar).
+    - Deriva angular del giroscopio: $|\boldsymbol{\omega}| = 0.0003\text{ rad/s}$ ($0.017^\circ/\text{s}$) con piso de ruido $\sigma_\omega = 0.0016\text{ rad/s}$ ($0.09^\circ/\text{s}$).
+    - Inclinación estática del dispositivo resuelta trigonométricamente: Pitch $+21.5^\circ$, Roll $+6.3^\circ$.
+    - Fotometría ambiental calibrada: $12.0\text{ Lux}$ en penumbra.
+  - **Sistema de Señalización Háptica Sincronizada** (`cmd vibrator_manager synced`):
+    - Implementación de patrones de vibración física en el celular para guiar al operador humano a través de las 3 fases experimentales sin necesidad de mirar la pantalla de la PC (pulsos cortos, dobles, triples y largos).
+
+- **ADR-032 — Laboratorio de Instrumentación Científica Distribuida (Cruce Sensorial Moto G22 con Patentes USPTO de Nikola Tesla)**:
+  - Formulación y modelado epistémico de 4 líneas de investigación experimental cruzando los instrumentos del móvil con el catálogo de patentes oficiales (Doc #86):
+    1. **Línea A: Mapeador 3D de Campos Magnéticos Rotatorios (Patente US 381.968)** — Gaussímetro espacial triaxial ($B_x, B_y, B_z$) y renderizado vectorial en Three.js.
+    2. **Línea B: Vibrometría Modal FFT para la Turbina de Discos Lisos (Patentes US 1.061.206 y US 514.168)** — Detección de resonancias armónicas, desbalance y desprendimiento de vórtices mediante densidad espectral $S_{aa}(f)$ y estroboscopio óptico.
+    3. **Línea C: Monitor Espectral VLF/ELF de Ondas Terrestres (Patentes US 645.576 y US 1.119.732 - Wardenclyffe)** — Captura de radiofrecuencia natural (*Sferics* y descargas atmosféricas) mediante antena dipolo 3.5mm y ADC Behringer de 24 bits.
+    4. **Línea D: El Teleautómata Autónomo y Percepción Multimodal (Patente US 613.809)** — Integración de visión Moondream, oído Whisper, equilibrio inercial y cognición LLM en bucle cerrado.
+  - Actualización del registro formal de capacidades en `data/device_capabilities.json`.
+
 ### Added & Enhanced — JarBees 3.4: Mobile Sensory Node (Moto G22), Percepción Periférica de Visión 12.5 MP y Captura RF FM en Tiempo Real (2026-11-01)
 
 - **JarBees Mobile Node (Arquitectura Ciberfísica Multimodal)**:
