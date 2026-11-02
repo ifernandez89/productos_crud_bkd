@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Formalized — JarBees Scientific Lab: Invention & Replication Program (IRP) — Salto a la Invención Energética Original (2026-11-02)
+
+- **Manifiesto Estratégico y Programa de Invención Energética** (`ADR-035`):
+  - Cambio de paradigma fundamental: abandono del enfoque centrado en "sensores aislados" y del "museo de réplicas históricas pasivas". Los pioneros (Tesla, Faraday, Maxwell, Hertz, Peltier, etc.) son tratados como maestros de principios físicos, orientando el laboratorio a la **resolución de problemas energéticos no resueltos**.
+  - Metodología de tres niveles: **Descubrir** (detección de pérdidas y fenómenos inadvertidos), **Inventar** (mecanismos o arquitecturas originales) y **Validar** (construcción de prototipos físicos tangibles medibles).
+  - Definición de 5 líneas de frontera: 1. Recuperación ambiental (micro-harvesting vibratorio y magnético), 2. Conversión de micro-diferencias térmicas, 3. Sistemas bioenergéticos de ultra-baja potencia, 4. Administración inteligente adaptativa gestionada por JarBees, y 5. Nuevas arquitecturas electromagnéticas no convencionales.
+  - Formulación del Reto Fundacional: Diseño y construcción pausada de un dispositivo físico autónomo multi-fuente sin baterías químicas convencionales para alimentar sensado continuo.
+  - Delimitación operativa: El Moto G22 como estación de sensado portátil no invasivo; JarBees como co-investigador y co-inventor ciberfísico.
+
 ### Added & Verified — JarBees Scientific Lab: Field Lab 3D & Mobile Sensor HAL Telemetry Milestone (2026-11-02)
 
 - **Validación Empírica del Primer Bucle Ciberfísico** (`ADR-034`):
