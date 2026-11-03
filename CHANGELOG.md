@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Formalized — JarBees Scientific Lab: Historical Media Restoration & Color Engineering Skill (2026-11-03)
+
+- **Capacidad Oficial de Restauración Audiovisual Histórica** (`ADR-036` & `historical-media-restoration`):
+  - Creación del Skill oficial `.agents/skills/historical-media-restoration/SKILL.md` y documentación permanente en `docs/JARBEES_HISTORICAL_MEDIA_RESTORATION_PIPELINE.md`.
+  - **Filtro Acústico Forense DSP (FFmpeg)**: Supresión de zumbido analógico de red eléctrica de 50 Hz y 100 Hz con muesca ultra-estrecha (`bandreject`), supresor adaptativo de soplido FFT (`afftdn`), realce de formantes vocales (+3.5 dB a 2.8 kHz y +4.0 dB a 5.5 kHz) y normalización EBU R128 (`loudnorm`), procesando a 28x tiempo real.
+  - **Colorización Neuronal Calibrada (CIELAB)**: Algoritmo de mapeo por momentos estadísticos que ajusta la predicción cromática a los targets estéticos validados (mu_a = 132.5, sigma_a = 5.7, mu_b = 133.3, sigma_b = 8.4), erradicando sobre-saturaciones rojizas/anaranjadas de modelos convencionales.
+  - **Anclaje de Blancos Puros (White Specular Anchor)**: Preservación de neutros absolutos en altas luces (L > 195) para impedir que el cabello canoso o cuellos de camisa se tiñan de color.
+  - **Preset "Cinema Punch & Acutance"**: Corrección del punto negro con curva tonal L^1.30 (ratio de contraste expandido de 5.7:1 a más de 110:1 / 195:1), microcontraste local adaptativo CLAHE (`clipLimit=2.2`), acutancia de alta frecuencia (Unsharp Mask 1.4x) y filtro bilateral de croma anti-parpadeo analógico.
+  - **Subtitulado Sincronizado ANSI**: Exportación de subtítulos `.srt` en codificación ANSI Windows-1252 con limpieza de tipografía Unicode e incrustación de subtítulos con sombra de alto contraste en el máster final.
+  - **Ingesta Vectorial Bilingüe en PostgreSQL (Prisma + BGE-M3)**: Documentos #256 (Inglés original) y #257 (Español traducido) vinculados con `translatedFromId` y 23 chunks vectorizados cada uno (1024D).
+  - **Restauración del Film Completo de C.G. Jung (BBC 1959)**: Descarga íntegra de los 39 minutos (71.036 fotogramas a 30 FPS) y procesamiento en segundo plano con checkpointing y balance tonal cinematográfico.
+
 ### Added & Formalized — JarBees Scientific Lab: Invention & Replication Program (IRP) — Salto a la Invención Energética Original (2026-11-02)
 
 - **Manifiesto Estratégico y Programa de Invención Energética** (`ADR-035`):
