@@ -93,3 +93,46 @@ $$b_{\text{final}} = \hat{b} \cdot (1 - 0.85 \cdot w(L)) + 128 \cdot (0.85 \cdot
 2. **Subtítulos ANSI Windows-1252:** Garantiza compatibilidad universal con reproductores de video sin corromper caracteres españoles (ñ, acentos, apertura de signos `¿` y `¡`).
 3. **Indexación Vectorial:** Los bloques de diálogo se fragmentan e ingestan en PostgreSQL (`Document` y `Chunk`) mediante embeddings vectoriales de 1024 dimensiones (`bge-m3:latest`), vinculando la versión en español con su original en inglés (`translatedFromId`).
 
+
+---
+
+## 6. Implementación Acelerada por Hardware (NVIDIA GeForce RTX 5070) & Benchmarks
+
+Para producciones de metraje largo (como entrevistas completas de más de 30 minutos), el procesamiento ingenuo cuadro a cuadro en CPU resulta inviable por tiempos de cómputo excesivos y degradación por "color boiling". JarBees implementa una arquitectura híbrida de alto rendimiento:
+
+### 6.1 Tubería Directa Stdin a NVENC (Zero Disk I/O)
+En lugar de escribir archivos temporales intermedios sin comprimir en disco, los cuadros procesados en memoria RAM se transmiten como un flujo binario directo (`rawvideo bgr24`) hacia el codificador por hardware dedicado de la GPU:
+
+```python
+cmd_nvenc = [
+    'ffmpeg', '-y',
+    '-f', 'rawvideo',
+    '-vcodec', 'rawvideo',
+    '-s', f'{out_w}x{out_h}',
+    '-pix_fmt', 'bgr24',
+    '-r', str(fps),
+    '-i', '-',
+    '-c:v', 'h264_nvenc',
+    '-preset', 'p6',
+    '-b:v', '3200k',
+    '-pix_fmt', 'yuv420p',
+    output_path
+]
+pipe = subprocess.Popen(cmd_nvenc, stdin=subprocess.PIPE)
+# En cada fotograma:
+pipe.stdin.write(final_frame.tobytes())
+```
+
+### 6.2 Keyframing Temporal de Croma (Anti-Boiling)
+* La red neuronal infiere los canales a*, b* únicamente en cuadros clave (cada 24 fotogramas, ~0.8 s) y en cortes de escena.
+* La luminancia L, el escalado Lanczos-4, el microcontraste CLAHE, la curva S (L^1.30), la acutancia de alta frecuencia y los subtítulos se calculan a 30 FPS completos.
+* **Ventaja doble:** Multiplica la velocidad por más de 3x y erradica totalmente el parpadeo de color analógico.
+
+### 6.3 Comparativa de Tiempos de Render (Película de 39 min 28 s / 71.036 fotogramas)
+
+| Métrica | Modo CPU Clásico | Modo JarBees RTX 5070 NVENC | Ganancia |
+| :--- | :---: | :---: | :---: |
+| **Evaluaciones de Red Neuronal** | 71.036 | 2.960 | **24x menos cómputo** |
+| **Encoder de Video** | `libx264` (CPU) | `h264_nvenc` (GPU ASIC) | **15x más rápido (400+ FPS)** |
+| **Throughput Efectivo** | 6.0 – 6.2 FPS | 18.4 – 20.0 FPS | **3x a 3.5x aceleración** |
+| **Tiempo Total de Render** | ~195 minutos (~3.25 horas) | **~55 a 65 minutos** | **Ahorro de más de 2 horas** |
