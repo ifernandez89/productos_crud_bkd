@@ -32,6 +32,11 @@ Use the following guidelines for model selection and configurations:
 - **PROHIBIDO EL VOLCADO MASIVO DE LOGS A STDOUT EN PRUEBAS:** Las suites de prueba que iteren múltiples ítems o benchmarks deben emitir únicamente métricas consolidadas o resúmenes breves. Saturar la terminal del IDE con miles de líneas infla el árbol DOM del visor web y detona el límite de memoria del IDE.
 - **TEARDOWN LIMPIO OBLIGATORIO:** Cualquier servicio o prueba que inicialice `setInterval`, `setTimeout`, servidores HTTP o clientes Prisma debe liberar y desuscribir todos los recursos en `afterAll` / `afterEach` (`.unref()` o `.destroy()`) para impedir fugas de memoria y procesos zombi.
 
+## GPU Acceleration & Compute Policy (RTX 5070 Mandatory)
+
+- **USO OBLIGATORIO Y POR DEFECTO DE LA GPU NVIDIA GEFORCE RTX 5070:** Queda TERMINANTEMENTE PROHIBIDO ejecutar tareas pesadas de visión artificial, colorización de video, procesamiento neuronal de imagen/audio, inferencia de modelos profundos o renderizado masivo en la CPU si la GPU está disponible. Todo pipeline de procesamiento audiovisual DEBE ejecutarse por defecto con aceleración CUDA/TensorRT en PyTorch / ONNX Runtime GPU / NVENC por hardware (`device='cuda'`, `fp16`/`bf16`), aprovechando los 12 GB de VRAM de la NVIDIA GeForce RTX 5070 para garantizar máxima velocidad (10x-20x frente a CPU) y no malgastar el tiempo del usuario.
+
+
 
 
 
