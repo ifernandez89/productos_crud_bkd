@@ -464,6 +464,20 @@ export class JarvisPromptBuilderService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
+
+    // 🛡️ REGLA FUNDAMENTAL DE AISLAMIENTO (JCA Fase 2):
+    // Mandatos operativos, misiones, registros, directivas de sistema y textos extensos
+    // NUNCA pueden ser interceptados ni reclasificados como pedidos de resumen de libros.
+    if (
+      /^(?:mision|registro|auditoria|preflight|implementa|ejecuta|standby|refactor|bugfix|proyecto)\b/i.test(
+        normalized.replace(/^[¿?¡!"'\s]+/, ''),
+      ) ||
+      trimmed.split('\n').filter((l) => l.trim().length > 0).length > 2 ||
+      trimmed.length > 250
+    ) {
+      return null;
+    }
+
     const numMatch = normalized.match(
       /\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/,
     );
@@ -489,10 +503,10 @@ export class JarvisPromptBuilderService {
     const actionMatch = title.match(ACTION_PREFIXES);
     if (!actionMatch) {
       // 🌟 Si el mensaje no contiene prefijo de acción (ej: el usuario escribió "Energetica Psiquica y Esencia Del Sueño"),
-      // pero coincide directamente con una obra/documento disponible en la biblioteca:
-      // PERO si el mensaje es una pregunta conversacional ("conoces...", "qué opinas...", "¿...?")
-      // o contiene más de una cláusula, NUNCA debe ser tratado como un pedido de resumen de libro.
+      // solo se acepta si el texto completo del usuario es exactamente el título de una obra (<= 90 caracteres y 1 sola línea).
       if (
+        title.length > 90 ||
+        title.includes('\n') ||
         /[\?¿]/.test(trimmed) ||
         /^(?:conoces|conoc[eé]s|sabes|sab[eé]s|que\s+sabes|hablemos|contame|cuentame|que\s+podes|podes\s+recomendar|recomendas|recomiendame|recomienda|tenes|ten[eé]s)/i.test(
           normalized,
@@ -502,7 +516,7 @@ export class JarvisPromptBuilderService {
       }
 
       if (title.length >= 4) {
-        const matchedDocTitle = await this.findMatchingDocumentTitle(title);
+        const matchedDocTitle = await this.findMatchingDocumentTitle(title, true);
         if (matchedDocTitle) {
           return { title: matchedDocTitle, maxItems };
         }
@@ -533,7 +547,10 @@ export class JarvisPromptBuilderService {
     return null;
   }
 
-  private async findMatchingDocumentTitle(title: string): Promise<string | null> {
+  private async findMatchingDocumentTitle(
+    title: string,
+    exactOnly = false,
+  ): Promise<string | null> {
     const normSearch = title
       .toLowerCase()
       .normalize('NFD')
@@ -551,6 +568,9 @@ export class JarvisPromptBuilderService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
+        if (exactOnly) {
+          return normDocTitle === normSearch;
+        }
         return (
           normDocTitle === normSearch ||
           (normSearch.length >= 10 && normDocTitle.includes(normSearch))
@@ -571,7 +591,14 @@ export class JarvisPromptBuilderService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
-        return normDocTitle === normSearch || normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+        if (exactOnly) {
+          return normDocTitle === normSearch;
+        }
+        // 🛡️ ELIMINACIÓN DEFINITIVA DEL BUG DE L574:
+        // Prohibido 'normSearch.includes(normDocTitle)'. Solo 'normDocTitle.includes(normSearch)'.
+        return (
+          normDocTitle === normSearch || normDocTitle.includes(normSearch)
+        );
       });
       if (match) return match.title;
     } catch {

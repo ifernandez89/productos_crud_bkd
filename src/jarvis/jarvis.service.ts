@@ -341,12 +341,24 @@ export class JarvisService {
             /(libro|autor|obra|volumen|capitulo|segun el texto|biblioteca|documento|muldoon|carrington)/i.test(
               userMessage,
             );
+          const isOperationalDirective =
+            /^(?:mision|registro|auditoria|preflight|implementa|ejecuta|standby|refactor|bugfix|proyecto)\b/i.test(
+              userMessage.trim().replace(/^[¿?¡!"'\s]+/, ''),
+            );
+
+          // 🛡️ REGLA FUNDAMENTAL DE AISLAMIENTO (JCA Fase 2 - TaskEnvelope):
+          // Una coincidencia bibliográfica NUNCA tiene autoridad para sobreescribir mandatos operativos,
+          // tareas o consultas de sistema. Solo se permite override a RAG si hay consulta explícita de libro.
           const shouldOverride =
-            (intent.intent === 'ASTROLOGY' && isExplicitBookQuery) ||
-            intent.intent === 'WEB' ||
-            (intent.intent === 'LOCAL' && intent.confidence !== 'high') ||
-            // Override siempre si hay match fuerte (score >= 5) — incluso LOCAL/high, respetando ASTROLOGY calculado
-            (libraryMatches[0].score >= 5.0 && intent.intent !== 'ASTROLOGY');
+            !isOperationalDirective &&
+            intent.intent !== 'TASKS' &&
+            intent.intent !== 'CALENDAR' &&
+            ((intent.intent === 'ASTROLOGY' && isExplicitBookQuery) ||
+              (intent.intent === 'WEB' && isExplicitBookQuery) ||
+              (intent.intent === 'LOCAL' && intent.confidence !== 'high' && isExplicitBookQuery) ||
+              (libraryMatches[0].score >= 5.0 &&
+                intent.intent !== 'ASTROLOGY' &&
+                isExplicitBookQuery));
 
           if (shouldOverride) {
             this.logger.log(

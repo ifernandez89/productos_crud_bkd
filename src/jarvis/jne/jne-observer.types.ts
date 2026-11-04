@@ -63,3 +63,4 @@ export interface JneCognitiveMetrics {
   readonly averageLatencyMs: number;
   readonly lastObservedTimestamp?: Date;
 }
+

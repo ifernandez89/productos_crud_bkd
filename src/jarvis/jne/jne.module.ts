@@ -7,3 +7,4 @@ import { JneObserverService } from './jne-observer.service';
   exports: [JneObserverService],
 })
 export class JneModule {}
+

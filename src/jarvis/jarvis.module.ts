@@ -123,9 +123,18 @@ import { WorkingMemoryService } from './memory/working-memory.service';
 import { TripartiteMemoryService } from './memory/tripartite-memory.service';
 import { MemoryConsolidationService } from './memory/memory-consolidation.service';
 import { JneModule } from './jne/jne.module';
+import { DialogueModule } from './dialogue/dialogue.module';
+import { TaskEnvelopeModule } from './tools/task-envelope/task-envelope.module';
 
 @Module({
-  imports: [PrismaModule, GoogleModule, CognitiveModule, JneModule],
+  imports: [
+    PrismaModule,
+    GoogleModule,
+    CognitiveModule,
+    JneModule,
+    DialogueModule,
+    TaskEnvelopeModule,
+  ],
   controllers: [
     JarvisController,
     PosterController,
