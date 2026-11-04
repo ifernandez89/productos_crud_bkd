@@ -122,9 +122,10 @@ import { CoreContextService } from './prompt/core-context.service';
 import { WorkingMemoryService } from './memory/working-memory.service';
 import { TripartiteMemoryService } from './memory/tripartite-memory.service';
 import { MemoryConsolidationService } from './memory/memory-consolidation.service';
+import { JneModule } from './jne/jne.module';
 
 @Module({
-  imports: [PrismaModule, GoogleModule, CognitiveModule],
+  imports: [PrismaModule, GoogleModule, CognitiveModule, JneModule],
   controllers: [
     JarvisController,
     PosterController,
