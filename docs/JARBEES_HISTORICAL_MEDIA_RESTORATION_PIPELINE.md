@@ -36,7 +36,7 @@ flowchart LR
         I --> J["Anclaje de Blancos Puros (L > 195)"]
         J --> K["CLAHE + S-Curve Dynamic Punch"]
         K --> L["Unsharp Mask Acutance"]
-        L --> M["Subtítulos Incrustados con Sombra"]
+        L --> M["Visual Limpio HD (Subtítulos condicionales: NUNCA duplicar si ya existen)"]
     end
 
     subgraph Muxing ["Entrega Final"]
@@ -136,3 +136,14 @@ pipe.stdin.write(final_frame.tobytes())
 | **Encoder de Video** | `libx264` (CPU) | `h264_nvenc` (GPU ASIC) | **15x más rápido (400+ FPS)** |
 | **Throughput Efectivo** | 6.0 – 6.2 FPS | 18.4 – 20.0 FPS | **3x a 3.5x aceleración** |
 | **Tiempo Total de Render** | ~195 minutos (~3.25 horas) | **~55 a 65 minutos** | **Ahorro de más de 2 horas** |
+
+---
+
+### 6.4 Detección Previa de Subtítulos y Prohibición de Duplicidad
+
+> [!CAUTION]
+> **REGLA DE ORO DE EXPERIENCIA DE USUARIO:**
+> Queda terminantemente prohibido quemar una pista de subtítulos sin antes haber extraído e inspeccionado visualmente fotogramas del tercio inferior del video original.
+> Si la fuente analógica o digital ya dispone de subtítulos fijos (*hardcoded*), la sobreimpresión de nuevos subtítulos superpuestos degrada de inmediato la calidad estética y desperdicia tiempo crítico de cómputo del usuario.
+> En estos casos, el renderizador debe operar en modo visual puro, preservando la nitidez del material original sin añadir capas gráficas innecesarias.
+

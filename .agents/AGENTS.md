@@ -36,6 +36,11 @@ Use the following guidelines for model selection and configurations:
 
 - **USO OBLIGATORIO Y POR DEFECTO DE LA GPU NVIDIA GEFORCE RTX 5070:** Queda TERMINANTEMENTE PROHIBIDO ejecutar tareas pesadas de visión artificial, colorización de video, procesamiento neuronal de imagen/audio, inferencia de modelos profundos o renderizado masivo en la CPU si la GPU está disponible. Todo pipeline de procesamiento audiovisual DEBE ejecutarse por defecto con aceleración CUDA/TensorRT en PyTorch / ONNX Runtime GPU / NVENC por hardware (`device='cuda'`, `fp16`/`bf16`), aprovechando los 12 GB de VRAM de la NVIDIA GeForce RTX 5070 para garantizar máxima velocidad (10x-20x frente a CPU) y no malgastar el tiempo del usuario.
 
+## Video Restoration & Subtitle Policy
+
+- **DETECCIÓN PREVIA Y PROHIBICIÓN TOTAL DE SUPERPOSICIÓN DE SUBTÍTULOS REDUNDANTES:** Queda TERMINANTEMENTE PROHIBIDO sobreimprimir subtítulos en un video sin haber inspeccionado previamente el metraje original. Antes de cualquier procesamiento, es OBLIGATORIO inspeccionar visualmente los fotogramas (especialmente el tercio inferior). Si el metraje fuente YA TIENE subtítulos incrustados (*hardcoded*), el pipeline debe ejecutarse en modo visual limpio (restauración y colorización pura), NUNCA duplicando ni agregando texto redundante. Superponer subtítulos sobre texto existente arruina el producto final y malgasta minutos u horas de tiempo valioso del usuario.
+
+
 
 
 

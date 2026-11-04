@@ -92,3 +92,25 @@ Siguiendo las reglas de persistencia incremental:
    * Ingesta vinculada del audio original (`language: 'en'`) y la traducción restaurada (`language: 'es'`, `translatedFromId`).
    * Vectorización de chunks con `bge-m3:latest` (1024D) desde Ollama local.
 
+---
+
+## 6. Regla de Oro: Inspección Previa y Prohibición de Duplicar Subtítulos
+
+> [!CAUTION]
+> **NUNCA quemar subtítulos sin inspección visual previa del metraje fuente.**
+> Si un video original ya contiene subtítulos incrustados (*hardcoded*) en el tercio inferior:
+> 1. **Queda terminantemente prohibido generar una segunda capa de texto superpuesto.**
+> 2. El pipeline debe saltar de inmediato la fase de sobreimpresión gráfica (`draw_subtitles` / `cv2.putText`).
+> 3. El renderizado debe concentrarse exclusivamente en el enriquecimiento visual (restauración, colorización y acutancia) y en el audio remasterizado.
+> 4. Ignorar esta inspección arruina la entrega y malgasta tiempo crítico de cómputo del usuario.
+
+---
+
+## 7. Aceleración Obligatoria por GPU (NVIDIA GeForce RTX 5070)
+
+Para evitar cuellos de botella y tiempos de procesamiento inaceptables:
+* **NVENC por Hardware (`h264_nvenc`):** El codificador dedicado de la RTX 5070 procesa a más de 300 FPS sin sobrecargar la CPU.
+* **Tubería sin I/O a disco (`stdin pipe`):** Los fotogramas se envían en crudo (`bgr24`) directamente al proceso FFmpeg.
+* **Lookup Tables (LUT) Vectorizadas:** Toda transformación no lineal ($L^{1.30}$, máscaras de blancos) debe precalcularse en tablas de 256 elementos aplicadas con `cv2.LUT` para garantizar tasas sostenidas de más de 60-100 FPS.
+
+
