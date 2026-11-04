@@ -82,3 +82,4 @@ describe('ModelSelectionEngineService — Validación JCA Fase 4 (Orquestación 
     expect(decision.reason).toContain('Exceso de presupuesto VRAM');
   });
 });
+

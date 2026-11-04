@@ -51,3 +51,4 @@ export interface ModelSelectionDecision {
   readonly estimatedLatencyMs: number;
   readonly fitsInGpu: boolean;
 }
+

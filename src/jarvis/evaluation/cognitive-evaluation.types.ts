@@ -48,3 +48,4 @@ export interface CognitiveAlert {
     | 'UNUSED_TOOL_CALL';
   readonly message: string;
 }
+

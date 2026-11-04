@@ -193,3 +193,4 @@ export class CognitiveEvaluationService {
       .filter((w) => w.length > 2 && !this.stopWords.has(w));
   }
 }
+

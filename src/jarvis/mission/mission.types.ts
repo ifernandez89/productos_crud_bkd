@@ -57,3 +57,4 @@ export interface MissionEventNotification {
   readonly message: string;
   readonly timestamp: Date;
 }
+

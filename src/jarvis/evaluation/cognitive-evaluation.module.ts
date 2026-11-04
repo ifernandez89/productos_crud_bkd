@@ -6,3 +6,4 @@ import { CognitiveEvaluationService } from './cognitive-evaluation.service';
   exports: [CognitiveEvaluationService],
 })
 export class CognitiveEvaluationModule {}
+
