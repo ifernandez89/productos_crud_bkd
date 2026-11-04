@@ -115,3 +115,4 @@ export class TaskEnvelopeService {
     return allowed.includes(normalized);
   }
 }
+

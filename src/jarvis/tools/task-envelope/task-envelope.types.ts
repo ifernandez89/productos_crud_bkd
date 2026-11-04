@@ -43,3 +43,4 @@ export interface TaskEnvelope {
   /** Si la ejecución requiere confirmación humana explícita */
   readonly requiresApproval: boolean;
 }
+

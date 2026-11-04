@@ -10,6 +10,8 @@ export type ConversationTurnState =
   | 'OPERATIONAL_DIRECTIVE'// Mandato operativo para herramientas o misiones (JCA TaskEnvelope)
   | 'REFLECTIVE_CHAT';     // Diálogo conceptual, reflexivo o filosófico (sin herramientas)
 
+export type DialogueTurnType = ConversationTurnState;
+
 export interface AnaphoraResolution {
   readonly hasAnaphora: boolean;
   readonly originalMessage: string;
@@ -28,3 +30,4 @@ export interface DialogueEvaluation {
   readonly confidenceScore: number;
   readonly detectedTopics: string[];
 }
+
