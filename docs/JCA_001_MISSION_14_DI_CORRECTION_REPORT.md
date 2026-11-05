@@ -4,7 +4,8 @@
 **Fecha:** 2026-11-05  
 **Estado:** `APROBADO PARA PREPARAR STAGING`  
 **Rama Unificada:** `staging/jca-unified`  
-**SHA de Rama Unificada:** `66f092bfc9167d4d5dd1946d47e73ab13661bc8d`  
+**SHA de Fusión de Código:** `66f092bfc9167d4d5dd1946d47e73ab13661bc8d`  
+**SHA de Documentación (HEAD):** `87161df29afe2aa7c1caee44ad5ebad2e785ae64`  
 **Autor:** Antigravity AI — Advanced Cognitive Architecture Lab  
 
 ---
@@ -17,8 +18,9 @@
 | **Rama JCA-001 Original** | `feature/jca-001-context-selection-engine` (`0717bb3`) | Congelada tras superar Misión 13. |
 | **Commit DI en JCA-001** | `527d1de` | Corrección de Observación B aplicada y verificada. |
 | **Rama JCA Full Cognitive** | `feat/jca-full-cognitive-architecture` (`ba3c245`) | Fases 0–5 (JNE, Dialogue, TaskEnvelope, Mission, Orchestration, Evaluation). |
-| **Rama Staging Unificada** | `staging/jca-unified` (`66f092b`) | Fusión limpia de ambas arquitecturas con 100% de tests aprobados. |
-| **Producción (PORT 4000)** | PID `16052` / `jarbees_data` / túnel ngrok | **Intacto e inalterado.** Totalmente aislado. |
+| **Rama Staging Unificada (Merge Código)** | `staging/jca-unified` (`66f092b`) | Fusión limpia de ambas arquitecturas con 100% de tests aprobados. |
+| **Rama Staging Unificada (Doc HEAD)** | `staging/jca-unified` (`87161df`) | Commit que persistió este reporte formal en la rama. Cero cambios en `src/**`. |
+| **Producción (PORT 4000)** | PID `15956` / `jarbees_data` / túnel ngrok | **Intacto e inalterado.** Totalmente aislado. |
 | **Staging (PORT 4001)** | Inactivo (sin procesos vinculados) | **No desplegado.** Pendiente de autorización formal de staging. |
 
 ---
@@ -159,3 +161,4 @@ De los 50+ archivos involucrados entre ambas ramas, únicamente **3 archivos** p
 > 3. La rama `staging/jca-unified` consolida armoniosamente el 100% de JCA-001 y las 5 fases de JCA Cognitive Architecture.
 > 4. Los 225 tests (182 de JCA-001 + 43 de JCA Cognitivo) pasan en su totalidad (100% PASS) bajo ejecución serial estricta (`--runInBand` / `tsx`).
 > 5. La rama `main` permanece intacta en `e5e84ff` y ningún entorno productivo ni de staging ha sido alterado.
+
