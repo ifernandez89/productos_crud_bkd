@@ -5,7 +5,7 @@ import type {
   ContextSources,
   SourceState,
   ToolName,
-} from './context-selector.interface.ts';
+} from './context-selector.interface';
 
 export class ContextSelectorService {
   private readonly logger = {

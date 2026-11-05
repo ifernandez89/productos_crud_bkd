@@ -17,8 +17,8 @@ import type {
   CapabilitySafetyLevel,
   MathResultData,
   MathOperationType,
-} from './capability.interface.ts';
-import type { ContextPlan } from '../context/context-selector.interface.ts';
+} from './capability.interface';
+import type { ContextPlan } from '../context/context-selector.interface';
 
 // ── Tipos del AST Matemático ──────────────────────────────────────────────────
 

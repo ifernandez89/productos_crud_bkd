@@ -6,7 +6,7 @@
  * y asegura que el registro de una capacidad sea puramente declarativo (sin ejecuciones).
  */
 
-import type { ICapability } from './capability.interface.ts';
+import type { ICapability } from './capability.interface';
 
 export class CapabilityRegistry {
   private readonly capabilities = new Map<string, ICapability<any>>();

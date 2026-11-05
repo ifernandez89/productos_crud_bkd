@@ -17,9 +17,9 @@ import type {
   CapabilityResult,
   CapabilityExecutionStatus,
   ICapability,
-} from './capability.interface.ts';
-import { CapabilityRegistry } from './capability-registry.service.ts';
-import type { ContextPlan } from '../context/context-selector.interface.ts';
+} from './capability.interface';
+import { CapabilityRegistry } from './capability-registry.service';
+import type { ContextPlan } from '../context/context-selector.interface';
 
 export interface CapabilityExecutorOptions {
   /** Sobrescribe el timeout por defecto de la capacidad (en milisegundos) */

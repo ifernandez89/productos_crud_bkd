@@ -5,7 +5,7 @@
  * de capacidades operativas (Math, Web Search) desacopladas del cerebro central.
  */
 
-import type { ContextPlan } from '../context/context-selector.interface.ts';
+import type { ContextPlan } from '../context/context-selector.interface';
 
 /**
  * Nivel de riesgo y política de autorización de la capacidad:
@@ -92,6 +92,7 @@ export interface MathResultData {
    */
   readonly verified: boolean;
   readonly explanationSnippet?: string;
+  readonly formattedResult?: string;
 }
 
 // ── Tipos Específicos para WebSearchCapability ─────────────────────────────────

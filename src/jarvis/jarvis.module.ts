@@ -68,6 +68,8 @@ import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 import { ContextSelectorService } from './context/context-selector.service';
+import { CapabilityRegistry } from './capabilities/capability-registry.service';
+import { CapabilityExecutor } from './capabilities/capability-executor.service';
 import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
 import { ActionGatekeeperService } from './security/action-gatekeeper.service';
@@ -201,6 +203,12 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     JarvisWebSearchService,
     JarvisPromptBuilderService,
     ContextSelectorService,
+    CapabilityRegistry,
+    {
+      provide: CapabilityExecutor,
+      useFactory: (registry: CapabilityRegistry) => new CapabilityExecutor(registry),
+      inject: [CapabilityRegistry],
+    },
     AuditService,
     ActionExecutionGateService,
     ActionGatekeeperService,
@@ -279,6 +287,8 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     JarvisWebSearchService,
     JarvisPromptBuilderService,
     ContextSelectorService,
+    CapabilityRegistry,
+    CapabilityExecutor,
     MusicCatalogService,
     GamesCatalogService,
     DisciplinesCatalogService,
