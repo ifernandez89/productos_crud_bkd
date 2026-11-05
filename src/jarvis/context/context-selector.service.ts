@@ -306,17 +306,18 @@ export class ContextSelectorService {
   private detectExclusions(n: string): ContextExclusionDirectives {
     const matched: string[] = [];
 
-    // Exclusión de documentos / biblioteca / corpus / archivos / RAG
+    // Exclusión de documentos / biblioteca / corpus / archivos / libros / textos / RAG
     // Captura variantes imperativas y preposicionales negativas:
-    // - no uses mis documentos
-    // - sin consultar la biblioteca
-    // - sin usar documentos
+    // - no uses mis documentos / libros / textos
+    // - sin consultar la biblioteca / archivos / textos
+    // - sin usar documentos / mis textos
     // - no accedas al corpus
     // - no revises archivos
+    // - desactiva el rag / sin rag
     // - bajo ningun concepto uses la biblioteca
     // Evita falsos positivos como: "cómo usar documentos en TypeScript", "¿qué documentos necesito?"
     const docExclusionPattern =
-      /(?:no\s+(?:uses?|consultes?|leas?|revises?|accedas?(?:\s+a|\s+al)?|busques?\s+(?:en|el))\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|sin\s+(?:consultar|usar|leer|revisar|mirar|acceder(?:\s+a|\s+al)?)?\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|ni\s+(?:usar\s+|consultar\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|bajo\s+ningun\s+concepto\s+uses\s+(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|sin\s+rag|solo\s+con\s+tu\s+conocimiento)/i;
+      /(?:no\s+(?:uses?|consultes?|leas?|revises?|accedas?(?:\s+a|\s+al)?|busques?\s+(?:en|el))\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?|libros?|textos?)|sin\s+(?:consultar|usar|leer|revisar|mirar|acceder(?:\s+a|\s+al)?)?\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?|libros?|textos?)|ni\s+(?:usar\s+|consultar\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?|libros?|textos?)|bajo\s+ningun\s+concepto\s+uses\s+(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?|libros?|textos?)|sin\s+rag|(?:desactiva(?:r)?|apaga(?:r)?|no\s+uses?)\s+(?:el\s+)?rag|solo\s+con\s+tu\s+conocimiento)/i;
     const matchDoc = n.match(docExclusionPattern);
     if (matchDoc) matched.push(matchDoc[0]);
 
@@ -359,9 +360,48 @@ export class ContextSelectorService {
     };
   }
 
-  private isExplicitDocumentRequest(n: string): boolean {
-    return /(?:busca(?:r)?\s+(?:en|el)\s+(?:mis\s+|mi\s+|los\s+|la\s+|el\s+)?(?:documentos|biblioteca|archivos|pdfs|notas|libro)|segun\s+(?:mis\s+|mi\s+|los\s+|el\s+)?(?:documentos|archivos|textos|apuntes|libro)|que\s+dice\s+(?:el\s+libro|el\s+documento|el\s+texto|muldoon|carrington|monroe|ziewe)|busca\s+(?:el\s+documento|el\s+libro|el\s+archivo)\s+sobre|si\s+busca\s+en\s+mis\s+documentos)/i.test(
-      n,
+    private isExplicitDocumentRequest(n: string): boolean {
+    // 1. Verbos directos de recuperación hacia el repositorio personal (busca, consulta, revisa, mira, fijate)
+    const hasRetrievalAction =
+      /(?:(?:busca(?:r)?|consulta(?:r)?|revisa(?:r)?|fijate|mira(?:r)?)\s+(?:en|el|los|las|mis|mi)\s+(?:mis\s+|mi\s+|los\s+|la\s+|el\s+)?(?:documentos?|biblioteca|archivos?|pdfs?|notas?|libros?|textos?|apuntes|coleccion))/i.test(
+        n,
+      );
+
+    // 2. Cláusulas atributivas de fuentes guardadas (según mis libros, de acuerdo a mis textos guardados)
+    const hasSourceAttribution =
+      /(?:segun\s+(?:mis\s+|mi\s+|los\s+|el\s+)?(?:documentos?|archivos?|textos?|apuntes|libros?|obras?)(?:\s+(?:que\s+tengo\s+)?guardados?)?|de\s+acuerdo\s+(?:a|con)\s+(?:mis\s+|los\s+)?(?:documentos?|textos?|libros?|archivos?)(?:\s+guardados?)?)/i.test(
+        n,
+      );
+
+    // 3. Preguntas sobre contenidos de libros/autores o textos personales ("¿qué dice el libro?", "¿qué explican mis textos?")
+    const hasContentInquiry =
+      /(?:que\s+(?:dicen?|explican?|sostienen?|afirman?|mencionan?|figuran?\s+en)\s+(?:el\s+libro|el\s+documento|el\s+texto|el\s+kybalion|muldoon|carrington|monroe|ziewe|mis\s+(?:libros?|documentos?|textos?|archivos?)))/i.test(
+        n,
+      );
+
+    // 4. Locución posesiva explícita de ubicación en el corpus ("en mi biblioteca", "en mis documentos", "en mis libros", "en mi colección de libros")
+    const hasPossessiveCorpusLocation =
+      /(?:en\s+(?:mi\s+biblioteca|mis\s+documentos?|mis\s+libros?|mis\s+archivos?|mis\s+textos?|mis\s+pdfs?|mi\s+coleccion\s+de\s+libros?))/i.test(
+        n,
+      );
+
+    // 5. Búsqueda de capítulos o secciones específicas
+    const hasChapterSearch =
+      /(?:(?:busca|consulta|revisa)\s+(?:el\s+capitulo|la\s+seccion|el\s+documento|el\s+libro|el\s+archivo)\s+sobre|si\s+busca\s+en\s+mis\s+documentos?)/i.test(
+        n,
+      );
+
+    // 6. Consultas de conocimiento almacenado ("¿qué sabes sobre X en mis documentos?")
+    const hasStoredKnowledgeQuery =
+      /(?:que\s+sabes\s+(?:sobre|de)\s+.*\s+en\s+mis\s+documentos?)/i.test(n);
+
+    return (
+      hasRetrievalAction ||
+      hasSourceAttribution ||
+      hasContentInquiry ||
+      hasPossessiveCorpusLocation ||
+      hasChapterSearch ||
+      hasStoredKnowledgeQuery
     );
   }
 
@@ -442,7 +482,7 @@ export class ContextSelectorService {
       /(?:que\s+es\s+(?:un\s+|una\s+|el\s+|la\s+|los\s+|las\s+)?|en\s+que\s+consiste|explicame\s+(?:que\s+es|como\s+funciona|el\s+significado|la\s+diferencia)|que\s+significa\s+complejidad|diferencia\s+entre\s+\w+\s+y\s+\w+|como\s+funciona\s+(?:el\s+|la\s+)?|por\s+que\s+(?:se\s+produce|ocurre)|definicion\s+de)/i.test(
         n,
       ) &&
-      !/(?:busca\s+en\s+mis\s+documentos|segun\s+el\s+libro|en\s+mi\s+biblioteca)/i.test(n)
+      !this.isExplicitDocumentRequest(n)
     );
   }
 
