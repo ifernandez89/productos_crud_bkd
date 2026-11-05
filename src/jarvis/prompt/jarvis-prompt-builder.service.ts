@@ -17,6 +17,13 @@ import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from '../knowledge/disciplines-catalog.service';
 import { CoreContextService } from './core-context.service';
 
+export type RagRetrievalStatus =
+  | 'NOT_AUTHORIZED'
+  | 'AUTHORIZED_PENDING'
+  | 'EXECUTED_WITH_RESULTS'
+  | 'EXECUTED_EMPTY'
+  | 'FAILED';
+
 @Injectable()
 export class JarvisPromptBuilderService {
   private readonly logger = new Logger(JarvisPromptBuilderService.name);
@@ -53,6 +60,7 @@ export class JarvisPromptBuilderService {
     hasWebContext?: boolean,
     prefetchedRagContext?: string,
     mode?: string,
+    ragStatus?: RagRetrievalStatus,
   ): Promise<{
     systemPrompt: string;
     userPrompt: string;
@@ -327,62 +335,14 @@ export class JarvisPromptBuilderService {
           }
 
           if (!categorySummary.isRequest) {
-            let chunks = [] as any[];
-            try {
-              const queryEmbedding =
-                await this.embeddingsService.generateEmbedding(userMessage);
-              chunks = await this.documentRepo.searchChunksSemantic(
-                queryEmbedding,
-                15,
-              );
-            } catch (err: any) {
-              this.logger.warn(
-                `[rag:semantic] Fallback a búsqueda textual: ${err.message}`,
-              );
-              chunks = await this.documentRepo.searchChunks(userMessage, 15);
-            }
-            if (chunks.length > 0) {
-              usedDocs = true;
-              // Aplicar reranker híbrido
-              const rerankedChunks = this.rerankChunks(chunks, userMessage);
-              
-              const formattedParts = rerankedChunks.slice(0, 5).map((c) => {
-                const docTitle = c.document?.title || 'Documento';
-                const docInIndex = this.corpusSelector.getIndex().documentos.find(
-                  (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
-                );
-                
-                const author = docInIndex?.autor || this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
-                const language = docInIndex?.idioma || 'es';
-                const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
-                const category = docInIndex?.categorias?.join(', ') || 'General';
-                const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
-
-                return [
-                  `---`,
-                  `DOCUMENTO: "${docTitle}"`,
-                  `AUTOR: ${author}`,
-                  `ESCUELA DE PENSAMIENTO: ${school}`,
-                  `IDIOMA: ${language}`,
-                  `CATEGORÍAS: ${category}`,
-                  `CONCEPTOS PRINCIPALES: ${concepts}`,
-                  `CONTENIDO:`,
-                  c.content,
-                ].join('\n');
-              });
-
-              contextParts.push(
-                `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
-                  `⚠️ PROTOCOLO DE AUDITORÍA DE PREMISAS, ATRIBUCIÓN E IDIOMA:\n` +
-                  `1. IDIOMA Y TRADUCCIÓN: Respondé siempre 100% en español fluido, independientemente del idioma de los documentos. Si hay términos técnicos en inglés u otro idioma, conservalos pero traducilos o explicálos en su primera aparición.\n` +
-                  `2. RESPALDO DOCUMENTAL vs. RESPALDO EMPÍRICO: Que una afirmación aparezca en una obra o testimonio significa únicamente que la fuente lo afirma (respaldo documental), NO que la ciencia experimental independiente lo haya demostrado. Diferenciá con rigor hechos verificados, modelos teóricos, hipótesis y tradiciones.\n` +
-                  `3. RESISTENCIA A LA SUGESTIÓN (ANTI-SYCOPHANCY): Si la consulta del usuario presupone o afirma algo ('dado que X demostró Y...', 'explicá el mecanismo por el cual...', '¿por qué sabemos que...?'), NO lo aceptes como verdadero a menos que los documentos recuperados lo confirmen textualmente. Si los documentos no lo sustentan o la afirmación es errónea, decláralo y corregí la premisa antes de responder.\n` +
-                  `4. NO FABRICAR TRAZABILIDAD: Jamás atribuyas a un autor o fragmento afirmaciones que solo aparecen en la pregunta del usuario o en tu conocimiento general.\n` +
-                  `5. FUENTES CONTRADICTORIAS: Si diferentes autores o textos difieren o entran en tensión, exponé cada perspectiva por separado sin forzar una síntesis artificial.\n` +
-                  `6. RESPUESTA CONDICIONAL: Si una hipótesis no está establecida empíricamente, analizá qué se seguiría de ella en modo condicional sin presentarla como un hecho.\n\n` +
-                  formattedParts.join('\n\n'),
-              );
-            }
+            // 🛡️ JCA-001 CAPA 2: ELIMINACIÓN DEFINITIVA DE LA SEGUNDA RECUPERACIÓN OCULTA
+            // La recuperación documental está gobernada aguas arriba por ContextSelectorService.
+            // Si prefetchedRagContext no está presente (por estar EXCLUDED, UNNEEDED o EXECUTED_EMPTY),
+            // NUNCA se ejecuta una búsqueda vectorial no autorizada ni repetida en PromptBuilder.
+            usedDocs = false;
+            this.logger.log(
+              '[rag:prompt-builder] Omitiendo búsqueda vectorial interna: gobernada aguas arriba (status=' + (ragStatus || 'GOVERNED') + ').',
+            );
           }
         }
     }
@@ -464,6 +424,20 @@ export class JarvisPromptBuilderService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase();
+
+    // 🛡️ REGLA FUNDAMENTAL DE AISLAMIENTO (JCA Fase 2):
+    // Mandatos operativos, misiones, registros, directivas de sistema y textos extensos
+    // NUNCA pueden ser interceptados ni reclasificados como pedidos de resumen de libros.
+    if (
+      /^(?:mision|registro|auditoria|preflight|implementa|ejecuta|standby|refactor|bugfix|proyecto)\b/i.test(
+        normalized.replace(/^[¿?¡!"'\s]+/, ''),
+      ) ||
+      trimmed.split('\n').filter((l) => l.trim().length > 0).length > 2 ||
+      trimmed.length > 250
+    ) {
+      return null;
+    }
+
     const numMatch = normalized.match(
       /\b(\d+)\s*(puntos?|items?|temas?|cosas?|ideas?)\b/,
     );
@@ -489,10 +463,10 @@ export class JarvisPromptBuilderService {
     const actionMatch = title.match(ACTION_PREFIXES);
     if (!actionMatch) {
       // 🌟 Si el mensaje no contiene prefijo de acción (ej: el usuario escribió "Energetica Psiquica y Esencia Del Sueño"),
-      // pero coincide directamente con una obra/documento disponible en la biblioteca:
-      // PERO si el mensaje es una pregunta conversacional ("conoces...", "qué opinas...", "¿...?")
-      // o contiene más de una cláusula, NUNCA debe ser tratado como un pedido de resumen de libro.
+      // solo se acepta si el texto completo del usuario es exactamente el título de una obra (<= 90 caracteres y 1 sola línea).
       if (
+        title.length > 90 ||
+        title.includes('\n') ||
         /[\?¿]/.test(trimmed) ||
         /^(?:conoces|conoc[eé]s|sabes|sab[eé]s|que\s+sabes|hablemos|contame|cuentame|que\s+podes|podes\s+recomendar|recomendas|recomiendame|recomienda|tenes|ten[eé]s)/i.test(
           normalized,
@@ -502,7 +476,7 @@ export class JarvisPromptBuilderService {
       }
 
       if (title.length >= 4) {
-        const matchedDocTitle = await this.findMatchingDocumentTitle(title);
+        const matchedDocTitle = await this.findMatchingDocumentTitle(title, true);
         if (matchedDocTitle) {
           return { title: matchedDocTitle, maxItems };
         }
@@ -533,7 +507,10 @@ export class JarvisPromptBuilderService {
     return null;
   }
 
-  private async findMatchingDocumentTitle(title: string): Promise<string | null> {
+  private async findMatchingDocumentTitle(
+    title: string,
+    exactOnly = false,
+  ): Promise<string | null> {
     const normSearch = title
       .toLowerCase()
       .normalize('NFD')
@@ -551,6 +528,9 @@ export class JarvisPromptBuilderService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
+        if (exactOnly) {
+          return normDocTitle === normSearch;
+        }
         return (
           normDocTitle === normSearch ||
           (normSearch.length >= 10 && normDocTitle.includes(normSearch))
@@ -571,7 +551,14 @@ export class JarvisPromptBuilderService {
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
-        return normDocTitle === normSearch || normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle);
+        if (exactOnly) {
+          return normDocTitle === normSearch;
+        }
+        // 🛡️ ELIMINACIÓN DEFINITIVA DEL BUG DE L574:
+        // Prohibido 'normSearch.includes(normDocTitle)'. Solo 'normDocTitle.includes(normSearch)'.
+        return (
+          normDocTitle === normSearch || normDocTitle.includes(normSearch)
+        );
       });
       if (match) return match.title;
     } catch {

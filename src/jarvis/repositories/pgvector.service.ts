@@ -1,6 +1,25 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
+export interface VectorSearchResultRow {
+  id: number;
+  documentId: number;
+  content: string;
+  metadata?: string | null;
+  embeddingId?: string | null;
+  sourceId?: number | null;
+  title: string;
+  contentDoc?: string | null;
+  category?: string | null;
+  source?: string | null;
+  status: string;
+  timesUsed: number;
+  lastUsed?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  similarity: number;
+}
+
 @Injectable()
 export class PgvectorService {
   private readonly logger = new Logger(PgvectorService.name);
@@ -99,12 +118,17 @@ export class PgvectorService {
     });
   }
 
-  async searchChunksSemantic(embedding: number[], limit = 10) {
+  async searchChunksSemantic(
+    embedding: number[],
+    limit = 10,
+    minSimilarity?: number,
+  ): Promise<VectorSearchResultRow[]> {
     this.validateEmbedding(embedding);
+    const minSim = typeof minSimilarity === 'number' ? minSimilarity : 0.0;
     if (await this.isNativeVectorAvailable()) {
       try {
         const vectorString = this.vectorToString(embedding);
-        const rows = await this.prisma.$queryRaw`
+        const rows = await this.prisma.$queryRaw<VectorSearchResultRow[]>`
           SELECT
             c.id,
             c."documentId",
@@ -126,6 +150,7 @@ export class PgvectorService {
           JOIN "Document" d ON d.id = c."documentId"
           WHERE c.embedding IS NOT NULL
             AND d.status = 'ready'
+            AND (1 - (c.embedding <=> ${vectorString}::vector)) >= ${minSim}
           ORDER BY c.embedding <=> ${vectorString}::vector
           LIMIT ${limit};
         `;
@@ -144,31 +169,33 @@ export class PgvectorService {
       orderBy: { id: 'desc' },
     });
 
-    const scored: any[] = [];
+    const scored: VectorSearchResultRow[] = [];
     for (const c of chunks) {
       if (!c.metadata) continue;
       try {
         const meta = JSON.parse(c.metadata);
         if (meta.vector && Array.isArray(meta.vector)) {
           const sim = this.cosineSimilarity(embedding, meta.vector);
-          scored.push({
-            id: c.id,
-            documentId: c.documentId,
-            content: c.content,
-            metadata: c.metadata,
-            embeddingId: c.embeddingId,
-            sourceId: c.document.sourceId,
-            title: c.document.title,
-            contentDoc: c.document.content,
-            category: c.document.category,
-            source: c.document.source,
-            status: c.document.status,
-            timesUsed: c.document.timesUsed,
-            lastUsed: c.document.lastUsed,
-            createdAt: c.document.createdAt,
-            updatedAt: c.document.updatedAt,
-            similarity: sim,
-          });
+          if (sim >= minSim) {
+            scored.push({
+              id: c.id,
+              documentId: c.documentId,
+              content: c.content,
+              metadata: c.metadata,
+              embeddingId: c.embeddingId,
+              sourceId: c.document.sourceId,
+              title: c.document.title,
+              contentDoc: c.document.content,
+              category: c.document.category,
+              source: c.document.source,
+              status: c.document.status,
+              timesUsed: c.document.timesUsed,
+              lastUsed: c.document.lastUsed,
+              createdAt: c.document.createdAt,
+              updatedAt: c.document.updatedAt,
+              similarity: sim,
+            });
+          }
         }
       } catch {}
     }
@@ -180,13 +207,15 @@ export class PgvectorService {
     embedding: number[],
     documentIds: number[],
     limit = 10,
-  ) {
+    minSimilarity?: number,
+  ): Promise<VectorSearchResultRow[]> {
     if (documentIds.length === 0) return [];
     this.validateEmbedding(embedding);
+    const minSim = typeof minSimilarity === 'number' ? minSimilarity : 0.0;
     if (await this.isNativeVectorAvailable()) {
       try {
         const vectorString = this.vectorToString(embedding);
-        const rows = await this.prisma.$queryRaw`
+        const rows = await this.prisma.$queryRaw<VectorSearchResultRow[]>`
           SELECT
             c.id,
             c."documentId",
@@ -209,6 +238,7 @@ export class PgvectorService {
           WHERE c.embedding IS NOT NULL
             AND d.status = 'ready'
             AND c."documentId" = ANY(${documentIds})
+            AND (1 - (c.embedding <=> ${vectorString}::vector)) >= ${minSim}
           ORDER BY c.embedding <=> ${vectorString}::vector
           LIMIT ${limit};
         `;
@@ -226,31 +256,33 @@ export class PgvectorService {
       include: { document: true },
     });
 
-    const scored: any[] = [];
+    const scored: VectorSearchResultRow[] = [];
     for (const c of chunks) {
       if (!c.metadata) continue;
       try {
         const meta = JSON.parse(c.metadata);
         if (meta.vector && Array.isArray(meta.vector)) {
           const sim = this.cosineSimilarity(embedding, meta.vector);
-          scored.push({
-            id: c.id,
-            documentId: c.documentId,
-            content: c.content,
-            metadata: c.metadata,
-            embeddingId: c.embeddingId,
-            sourceId: c.document.sourceId,
-            title: c.document.title,
-            contentDoc: c.document.content,
-            category: c.document.category,
-            source: c.document.source,
-            status: c.document.status,
-            timesUsed: c.document.timesUsed,
-            lastUsed: c.document.lastUsed,
-            createdAt: c.document.createdAt,
-            updatedAt: c.document.updatedAt,
-            similarity: sim,
-          });
+          if (sim >= minSim) {
+            scored.push({
+              id: c.id,
+              documentId: c.documentId,
+              content: c.content,
+              metadata: c.metadata,
+              embeddingId: c.embeddingId,
+              sourceId: c.document.sourceId,
+              title: c.document.title,
+              contentDoc: c.document.content,
+              category: c.document.category,
+              source: c.document.source,
+              status: c.document.status,
+              timesUsed: c.document.timesUsed,
+              lastUsed: c.document.lastUsed,
+              createdAt: c.document.createdAt,
+              updatedAt: c.document.updatedAt,
+              similarity: sim,
+            });
+          }
         }
       } catch {}
     }
@@ -352,13 +384,15 @@ export class PgvectorService {
     embedding: number[],
     chapterIds: number[],
     limit = 10,
-  ) {
+    minSimilarity?: number,
+  ): Promise<VectorSearchResultRow[]> {
     if (chapterIds.length === 0) return [];
     this.validateEmbedding(embedding);
+    const minSim = typeof minSimilarity === 'number' ? minSimilarity : 0.0;
     if (!(await this.isNativeVectorAvailable())) return [];
     try {
       const vectorString = this.vectorToString(embedding);
-      const rows = await this.prisma.$queryRaw`
+      const rows = await this.prisma.$queryRaw<VectorSearchResultRow[]>`
         SELECT
           c.id,
           c."documentId",
@@ -382,6 +416,7 @@ export class PgvectorService {
         WHERE c.embedding IS NOT NULL
           AND d.status = 'ready'
           AND s."chapterId" = ANY(${chapterIds})
+          AND (1 - (c.embedding <=> ${vectorString}::vector)) >= ${minSim}
         ORDER BY c.embedding <=> ${vectorString}::vector
         LIMIT ${limit};
       `;

@@ -46,12 +46,21 @@ import {
 } from './cognitive/dialectic-reasoning.service';
 import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
 import { ToolResultValidatorService } from './tools/validation/tool-result-validator.service';
+import { ContextSelectorService } from './context/context-selector.service';
+import { ContextPlan } from './context/context-selector.interface';
+import { RagRetrievalStatus } from './prompt/jarvis-prompt-builder.service';
+import { CapabilityRegistry } from './capabilities/capability-registry.service';
+import { CapabilityExecutor } from './capabilities/capability-executor.service';
+import { MathCapability } from './capabilities/math.capability';
+import { WebSearchCapability } from './capabilities/web-search.capability';
+import type { MathResultData, WebSearchResultData } from './capabilities/capability.interface';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
   sessionId?: string;
   useMemory?: boolean;
   useDocuments?: boolean;
+  minSimilarity?: number;
   maxHistoryMessages?: number;
   provider?: 'gateway' | 'llamacpp' | 'ollama' | 'openrouter' | string;
   mode?: string;
@@ -62,6 +71,9 @@ export interface JarvisQueryOptions {
 export class JarvisService {
   private readonly logger = new Logger(JarvisService.name);
   private readonly providers: Map<string, ILLMProvider>;
+  private readonly selector: ContextSelectorService;
+  private readonly capabilityRegistry: CapabilityRegistry;
+  private readonly capabilityExecutor: CapabilityExecutor;
 
   constructor(
     private readonly memoryRepo: MemoryRepository,
@@ -110,6 +122,12 @@ export class JarvisService {
     private readonly toolValidator: ToolResultValidatorService,
     @Optional()
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
+    @Optional()
+    private readonly contextSelector?: ContextSelectorService,
+    @Optional()
+    private readonly injectedCapabilityRegistry?: CapabilityRegistry,
+    @Optional()
+    private readonly injectedCapabilityExecutor?: CapabilityExecutor,
   ) {
     this.providers = new Map([
       ['gateway', this.inferenceGateway],
@@ -117,6 +135,31 @@ export class JarvisService {
       ['ollama', this.llamaCppProvider],
       ['openrouter', this.openRouterProvider],
     ]);
+    this.selector = this.contextSelector ?? new ContextSelectorService();
+
+    this.capabilityRegistry =
+      this.injectedCapabilityRegistry ?? new CapabilityRegistry();
+    if (!this.capabilityRegistry.has('math')) {
+      this.capabilityRegistry.register(new MathCapability());
+    }
+    if (!this.capabilityRegistry.has('web_search')) {
+      this.capabilityRegistry.register(
+        new WebSearchCapability(async (q, cat, sig) => {
+          return await this.jarvisWebSearch.autoWebSearch(q, cat);
+        }),
+      );
+    }
+    this.capabilityExecutor =
+      this.injectedCapabilityExecutor ??
+      new CapabilityExecutor(this.capabilityRegistry);
+  }
+
+  getCapabilityRegistry(): CapabilityRegistry {
+    return this.capabilityRegistry;
+  }
+
+  getCapabilityExecutor(): CapabilityExecutor {
+    return this.capabilityExecutor;
   }
 
   // ── Query principal ─────────────────────────────────────────────────────────
@@ -208,6 +251,55 @@ export class JarvisService {
         `[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`,
       );
 
+      // ── 4.0. Evaluación de Política de Contexto JCA-001 (Capa 1 & Capa 2) ──────
+      let hasActiveSessionHistory = false;
+      if (sessionId) {
+        try {
+          const lastMsg = await this.conversationRepo.getLastAssistantMessage(sessionId);
+          hasActiveSessionHistory = !!lastMsg;
+        } catch {
+          hasActiveSessionHistory = false;
+        }
+      }
+
+      const contextPlan = this.selector.evaluate({
+        userMessage,
+        classifiedIntent: intent.intent,
+        intentConfidence: intent.confidence as any,
+        hasActiveSessionHistory,
+      });
+
+      this.logger.log(
+        `[context-plan] RAG:${contextPlan.sources.rag} Memory:${contextPlan.sources.memory} Web:${contextPlan.sources.web} History:${contextPlan.sources.conversationHistory} Tools:${contextPlan.sources.tools} (confidence: ${contextPlan.ambiguity.contextConfidence}) — ${contextPlan.policyReason}`,
+      );
+
+      const minSimilarity =
+        typeof options.minSimilarity === 'number'
+          ? options.minSimilarity
+          : process.env.RAG_MIN_SIMILARITY
+            ? parseFloat(process.env.RAG_MIN_SIMILARITY)
+            : 0.68;
+
+      const ragAuthorized =
+        useDocuments &&
+        (contextPlan.sources.rag === 'REQUESTED' ||
+          contextPlan.sources.rag === 'SELECTED');
+
+      const memoryAuthorized =
+        useMemory &&
+        (contextPlan.sources.memory === 'REQUESTED' ||
+          contextPlan.sources.memory === 'SELECTED');
+
+      const historyAuthorized =
+        contextPlan.sources.conversationHistory !== 'EXCLUDED';
+      const effectiveMaxHistory = historyAuthorized
+        ? (options.maxHistoryMessages || 16)
+        : 0;
+
+      let ragRetrievalStatus: RagRetrievalStatus = ragAuthorized
+        ? 'AUTHORIZED_PENDING'
+        : 'NOT_AUTHORIZED';
+
       // ── 4.1 Comprobar tareas y recordatorios SOLO si intent === 'TASKS' o comando explícito ──
       const isExplicitTask =
         intent.intent === 'TASKS' ||
@@ -283,123 +375,45 @@ export class JarvisService {
         `[intent] ${intent.intent} (${intent.confidence}) — ${intent.reason}`,
       );
 
-      // ── 6. RAG pre-search ────────────────────────────────────────────────
+      // ── 6. RAG pre-search gobernado por ContextSelector (JCA-001 Capa 2) ─────
       let prefetchedRagContext: string | undefined = undefined;
       let hasRagHits = false;
       let retrievedChunksList: any[] = [];
       let libraryMatches: any[] = [];
 
-      // ⚠️ GUARD ANTI-INGESTA / ANTI-SECUESTRO: si el intent es LOCAL con alta confianza Y el mensaje
-      // es corto/conversacional, O si es una consulta panorámica de disciplina (ciencia, física, etc.),
-      // NUNCA ejecutar el pipeline RAG ni disparar lazy-load.
-      const isJokeOrHumor =
-        intent.reason === 'joke request' ||
-        /\b(chiste|chistes|broma|bromas|gracioso|adivinanza|reir|reirme)\b/i.test(
-          userMessage,
-        );
-
-      const isShortConversational =
-        (userMessage.trim().length < 50 &&
-          /^(hola|buenas|hey|como|qué|que tal|bien|gracias|ok|dale|listo|chau|de nada|sí|no|claro|perfecto|genial|entendido|contame|cuentame|decime)/i.test(
-            userMessage.trim(),
-          )) ||
-        isJokeOrHumor;
-
-      const isDisciplinePanoramic =
-        this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
-
-      const isTemporalQuery =
-        /(fecha|hora|dia de hoy|día de hoy|que dia|qué día|que hora|qué hora|en que dia|en qué día|en que año|en qué año|año actual|que mes|qué mes|no me dijiste la fecha)/i.test(
-          userMessage,
-        );
-
-      const isLocalHighConfidence =
-        (intent.intent === 'LOCAL' &&
-          intent.confidence === 'high' &&
-          isShortConversational) ||
-        isDisciplinePanoramic ||
-        isTemporalQuery;
-
-      if (isDisciplinePanoramic) {
-        this.logger.log(
-          `[rag:skip] Consulta panorámica de disciplina detectada ("${userMessage.slice(0, 60)}"). Omitiendo pre-search RAG.`,
-        );
-      }
-      if (isTemporalQuery) {
-        this.logger.log(
-          `[rag:skip] Consulta temporal detectada ("${userMessage.slice(0, 60)}"). Omitiendo pre-search RAG para evitar contaminación de fechas históricas.`,
-        );
-      }
-
-      if (!isLocalHighConfidence) {
-        libraryMatches = this.corpusSelector.findRelevantDocuments(
-          userMessage,
-          3,
-        );
-        if (libraryMatches.length > 0 && libraryMatches[0].score >= 2.0) {
-          const isExplicitBookQuery =
-            /(libro|autor|obra|volumen|capitulo|segun el texto|biblioteca|documento|muldoon|carrington)/i.test(
-              userMessage,
-            );
-          const shouldOverride =
-            (intent.intent === 'ASTROLOGY' && isExplicitBookQuery) ||
-            intent.intent === 'WEB' ||
-            (intent.intent === 'LOCAL' && intent.confidence !== 'high') ||
-            // Override siempre si hay match fuerte (score >= 5) — incluso LOCAL/high, respetando ASTROLOGY calculado
-            (libraryMatches[0].score >= 5.0 && intent.intent !== 'ASTROLOGY');
-
-          if (shouldOverride) {
-            this.logger.log(
-              `[intent-override] Coincidencia en biblioteca detectada (${libraryMatches[0].document.titulo}, score: ${libraryMatches[0].score}). Forzando RAG desde ${intent.intent}/${intent.confidence}`,
-            );
-            intent.intent = 'RAG';
-            intent.confidence = 'high';
-            intent.reason = `library match: ${libraryMatches[0].document.titulo} (score: ${libraryMatches[0].score})`;
-          }
-        }
-      } else {
-        this.logger.log(
-          `[rag:skip] Intent LOCAL/high + mensaje conversacional o humor — omitiendo RAG. Mensaje: "${userMessage.slice(0, 60)}"`,
-        );
-      }
-
-      if (useDocuments && !isLocalHighConfidence) {
+      if (ragAuthorized) {
         let chunks = [] as any[];
         try {
-          // 1. Consultar el índice de la biblioteca para encontrar documentos relevantes
-          const matches = libraryMatches;
+          libraryMatches = this.corpusSelector.findRelevantDocuments(
+            userMessage,
+            3,
+          );
           const targetDocIds: number[] = [];
 
-          if (matches.length > 0) {
+          if (libraryMatches.length > 0) {
             this.logger.log(
-              `[rag] Corpus Selector detectó ${matches.length} documentos relevantes. Top match: "${matches[0].document.titulo}" (score: ${matches[0].score})`,
+              `[rag] Corpus Selector detectó ${libraryMatches.length} documentos relevantes. Top match: "${libraryMatches[0].document.titulo}" (score: ${libraryMatches[0].score})`,
             );
 
-            // 🎯 METADATA FILTERING RIGUROSO:
-            // Si hay un documento dominante (score >= 5.0 o score > 1.5 * segundo match),
-            // restringir la búsqueda EXCLUSIVAMENTE a ese document_id para evitar contaminación
-            // de fragmentos de otros libros de la biblioteca.
             const dominantMatch =
-              matches.length === 1 ||
-              matches[0].score >= 5.0 ||
-              (matches[1] && matches[0].score >= matches[1].score * 1.5);
+              libraryMatches.length === 1 ||
+              libraryMatches[0].score >= 5.0 ||
+              (libraryMatches[1] &&
+                libraryMatches[0].score >= libraryMatches[1].score * 1.5);
 
-            const selectedMatches = dominantMatch ? [matches[0]] : matches;
+            const selectedMatches = dominantMatch ? [libraryMatches[0]] : libraryMatches;
 
             if (dominantMatch) {
               this.logger.log(
-                `[rag:isolation] Documento dominante identificado: "${matches[0].document.titulo}". Aislando búsqueda semántica a document_id único.`,
+                `[rag:isolation] Documento dominante identificado: "${libraryMatches[0].document.titulo}". Aislando búsqueda semántica a document_id único.`,
               );
             }
 
             for (const match of selectedMatches) {
               const doc = match.document;
               try {
-                // Verificar existencia real en base de datos
                 const existing =
-                  await this.documentRepo.findDocumentByExactTitle(
-                    doc.titulo,
-                  );
+                  await this.documentRepo.findDocumentByExactTitle(doc.titulo);
                 if (existing) {
                   targetDocIds.push(existing.id);
                 } else {
@@ -415,27 +429,28 @@ export class JarvisService {
             }
           }
 
-          // 2. Ejecutar la búsqueda semántica
+          // 2. Ejecutar la búsqueda semántica con minSimilarity configurable
           const queryEmbedding =
             await this.embeddingsService.generateEmbedding(userMessage);
 
           if (targetDocIds.length > 0) {
             this.logger.log(
-              `[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')}`,
+              `[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')} (minSimilarity: ${minSimilarity})`,
             );
             chunks = await this.documentRepo.searchChunksSemanticInDocuments(
               queryEmbedding,
               targetDocIds,
               15,
+              minSimilarity,
             );
           } else {
-            // Fallback: búsqueda global si no hay coincidencia en el índice estructural
             this.logger.log(
-              `[rag] Sin coincidencias en el índice. Ejecutando búsqueda global.`,
+              `[rag] Sin coincidencias en el índice. Ejecutando búsqueda global (minSimilarity: ${minSimilarity}).`,
             );
             chunks = await this.documentRepo.searchChunksSemantic(
               queryEmbedding,
               15,
+              minSimilarity,
             );
           }
         } catch (err: any) {
@@ -443,7 +458,6 @@ export class JarvisService {
             `[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`,
           );
           try {
-            // Re-obtener los IDs de destino si existieron
             const matches = this.corpusSelector.findRelevantDocuments(
               userMessage,
               3,
@@ -466,6 +480,7 @@ export class JarvisService {
               chunks = await this.documentRepo.searchChunks(userMessage, 15);
             }
           } catch (fallbackErr: any) {
+            ragRetrievalStatus = 'FAILED';
             this.logger.error(
               `[rag:fallback] Error en búsqueda textual fallback: ${fallbackErr.message}`,
             );
@@ -473,9 +488,10 @@ export class JarvisService {
         }
 
         if (chunks.length > 0) {
+          ragRetrievalStatus = 'EXECUTED_WITH_RESULTS';
           hasRagHits = true;
 
-          // Aplicar reranker híbrido
+          // Aplicar reranker híbrido con similitud real
           const rerankedChunks = this.rerankChunks(chunks, userMessage);
           retrievedChunksList = rerankedChunks;
 
@@ -513,7 +529,18 @@ export class JarvisService {
             `⚠️ IDIOMA OBLIGATORIO: Respondé 100% EN ESPAÑOL. Traducí cualquier fragmento o término que esté en inglés.\n` +
             `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
             formattedParts.join('\n\n');
+        } else {
+          if (ragRetrievalStatus !== 'FAILED') {
+            ragRetrievalStatus = 'EXECUTED_EMPTY';
+          }
+          this.logger.log(
+            `[rag] Pre-search finalizado sin fragmentos relevantes (minSimilarity: ${minSimilarity}). ragRetrievalStatus: ${ragRetrievalStatus}`,
+          );
         }
+      } else {
+        this.logger.log(
+          `[rag:skip] RAG no autorizado por ContextSelector (estado: ${contextPlan.sources.rag}, useDocuments: ${useDocuments}). ragRetrievalStatus: ${ragRetrievalStatus}`,
+        );
       }
 
       // ── 6.1. MOTOR DIALÉCTICO: Contrastación Epistémica y Auditoría en 2 fases ──────
@@ -634,10 +661,132 @@ export class JarvisService {
         toolsUsed.push('rag_general_knowledge_fallback');
       }
 
+      // ── 6.2. CAPACIDADES DESACOPLADAS JCA-001 (Capa 3: CapabilityExecutor) ────────
+      let capabilityContextSnippet: string | undefined = undefined;
+      let capabilityFallbackDirective: string | undefined = undefined;
+      let mathHandled = false;
+      let webHandled = false;
+
+      // Evaluación y ejecución de MathCapability
+      const isMathActive =
+        (contextPlan.activeTools?.includes('math') ||
+          contextPlan.suggestedAction === 'TOOL' || contextPlan.policyReason === 'ARITHMETIC_EXPLANATION' || MathCapability.isMathExpression(userMessage)) &&
+        contextPlan.sources?.tools !== 'EXCLUDED' &&
+        contextPlan.toolStates?.math !== 'EXCLUDED';
+
+      if (isMathActive) {
+        const mathResult = await this.capabilityExecutor.execute<MathResultData>(
+          'math',
+          userMessage,
+          contextPlan,
+          sessionId,
+        );
+
+        if (mathResult.status === 'SUCCESS' && mathResult.data) {
+          toolsUsed.push('math_capability');
+          mathHandled = true;
+
+          const requiresExplanation = /(explica|por que|desarrolla|paso a paso|como se calcula)/i.test(userMessage);
+          const isCombinedQuery = ragAuthorized || contextPlan.suggestedAction === 'HYBRID_SEARCH';
+
+          if (!requiresExplanation && !isCombinedQuery) {
+            // Retorno directo determinista sin incurrir en inferencia LLM innecesaria
+            const directAnswer =
+              mathResult.data.result ||
+              mathResult.data.formattedResult ||
+              (mathResult.data.numericValue !== undefined
+                ? String(mathResult.data.numericValue)
+                : '0');
+            await this.conversationRepo.create({
+              sessionId,
+              role: 'assistant',
+              content: directAnswer,
+              metadata: { source: 'math_capability', verified: mathResult.data.verified },
+            });
+            await this.agentRunRepo.create({
+              sessionId,
+              question: userMessage,
+              answer: directAnswer,
+              toolsUsed,
+              modelUsed: 'none',
+              provider: 'capability:math',
+              durationMs: Date.now() - startTime,
+              success: true,
+            });
+            return directAnswer;
+          } else {
+            // Incorporar snippet verificado al contexto estructurado del LLM
+            capabilityContextSnippet = mathResult.promptContextSnippet;
+          }
+        } else if (mathResult.status === 'UNAUTHORIZED') {
+          mathHandled = true; // No delegar a herramientas legadas si fue desautorizada
+        } else if (mathResult.status === 'RECOVERABLE_ERROR') {
+          mathHandled = true;
+          if (mathResult.fallbackDirective) {
+            capabilityFallbackDirective = mathResult.fallbackDirective;
+          }
+        }
+      }
+
+      // Evaluación y ejecución de WebSearchCapability
+      const isWebActive =
+        (contextPlan.sources?.web === 'REQUESTED' ||
+          contextPlan.sources?.web === 'SELECTED' ||
+          contextPlan.suggestedAction === 'WEB_SEARCH' ||
+          contextPlan.suggestedAction === 'HYBRID_SEARCH' ||
+          contextPlan.activeTools?.includes('sports') ||
+          intent.intent === 'SPORTS') &&
+        contextPlan.sources?.web !== 'EXCLUDED' &&
+        !contextPlan.exclusions?.excludeWeb;
+
+      if (isWebActive) {
+        const isSports = contextPlan.activeTools?.includes('sports') || intent.intent === 'SPORTS';
+        const webResult = await this.capabilityExecutor.execute<WebSearchResultData>(
+          'web_search',
+          userMessage,
+          contextPlan,
+          sessionId,
+        );
+
+        webHandled = true;
+
+        if (webResult.status === 'SUCCESS' && webResult.data) {
+          toolsUsed.push('web_search_capability');
+          if (isSports) toolsUsed.push('sports_category');
+          const snippet = webResult.promptContextSnippet;
+          capabilityContextSnippet = capabilityContextSnippet
+            ? `${capabilityContextSnippet}\n\n${snippet}`
+            : snippet;
+        } else if (webResult.status === 'NO_RESULTS') {
+          toolsUsed.push('web_search_no_results');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'TIMEOUT') {
+          toolsUsed.push('web_search_timeout');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'RECOVERABLE_ERROR') {
+          toolsUsed.push('web_search_recoverable_error');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'UNAUTHORIZED') {
+          toolsUsed.push('web_search_unauthorized');
+        }
+      }
+
       // ── 7. Decidir si buscar en la web en primera instancia ───────────────
       let triggerWebSearch = false;
 
-      if (mode !== 'OFFLINE') {
+      if (!webHandled && mode !== 'OFFLINE' && contextPlan.sources?.web !== 'EXCLUDED' && !contextPlan.exclusions?.excludeWeb) {
         if (intent.intent === 'WEB' || intent.intent === 'SPORTS') {
           if (mode === 'WEB_FIRST') {
             triggerWebSearch = true;
@@ -663,6 +812,28 @@ export class JarvisService {
 
       // ── 8. Ejecutar intent TOOL (directa: clima, math, etc.) ──────────────
       if (intent.intent === 'TOOL') {
+        if (mathHandled || contextPlan.sources?.tools === 'EXCLUDED' || contextPlan.toolStates?.math === 'EXCLUDED') {
+          if (MathCapability.isMathExpression(userMessage)) {
+            return await this.respondWithLLM(
+              userMessage,
+              sessionId,
+              providerName,
+              provider,
+              toolsUsed,
+              startTime,
+              capabilityContextSnippet || capabilityFallbackDirective,
+              prefetchedRagContext,
+              mode,
+              retrievedChunksList,
+              options.mode,
+              intent,
+              ragRetrievalStatus,
+              memoryAuthorized,
+              ragAuthorized,
+              effectiveMaxHistory,
+            );
+          }
+        }
         const hasConversationalOrIdentity =
           /(quien soy|quién soy|que sabes|qué sabes|como me llamo|cómo me llamo|te acordas|te acordás|sobre mi|acerca de mi)/i.test(
             userMessage,
@@ -682,8 +853,12 @@ export class JarvisService {
             mode,
             retrievedChunksList,
             options.mode,
-            intent,
-          );
+        intent,
+        ragRetrievalStatus,
+        memoryAuthorized,
+        ragAuthorized,
+        effectiveMaxHistory,
+      );
         }
 
         const toolAnswer = await this.assistantTools.resolve(userMessage);
@@ -1057,6 +1232,22 @@ export class JarvisService {
 
       // ── 17. SPORTS ─────────────────────────────────────────────────────────
       if (intent.intent === 'SPORTS') {
+        if (webHandled) {
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            capabilityContextSnippet || capabilityFallbackDirective,
+            prefetchedRagContext,
+            mode,
+            retrievedChunksList,
+            undefined,
+            intent,
+          );
+        }
         if (mode !== 'OFFLINE' && triggerWebSearch) {
           const sportsResult = await this.jarvisWebSearch.autoWebSearch(
             intent.sportsQuery ?? userMessage,
@@ -1103,6 +1294,22 @@ export class JarvisService {
 
       // ── 18. WEB search ─────────────────────────────────────────────────────
       if (intent.intent === 'WEB') {
+        if (webHandled) {
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            capabilityContextSnippet || capabilityFallbackDirective,
+            prefetchedRagContext,
+            mode,
+            retrievedChunksList,
+            undefined,
+            intent,
+          );
+        }
         if (triggerWebSearch) {
           const domain =
             this.jarvisWebSearch.domainRouter.classify(userMessage);
@@ -1178,7 +1385,7 @@ export class JarvisService {
       }
 
       // ── 19. Fallback web query ─────────────────────────────────────────────
-      if (this.jarvisWebSearch.needsWebSearch(userMessage)) {
+      if (!webHandled && contextPlan.sources?.web !== 'EXCLUDED' && !contextPlan.exclusions?.excludeWeb && this.jarvisWebSearch.needsWebSearch(userMessage)) {
         const category = this.jarvisWebSearch.detectCategory(userMessage);
         const webCtx = await this.jarvisWebSearch.autoWebSearch(
           userMessage,
@@ -1199,8 +1406,12 @@ export class JarvisService {
             mode,
             retrievedChunksList,
             options.mode,
-            intent,
-          );
+        intent,
+        ragRetrievalStatus,
+        memoryAuthorized,
+        ragAuthorized,
+        effectiveMaxHistory,
+      );
         }
       }
 
@@ -1225,6 +1436,14 @@ export class JarvisService {
         }
       }
 
+      const externalContextParts = [
+        capabilityContextSnippet,
+        capabilityFallbackDirective,
+        localToolContext,
+      ].filter(Boolean);
+      const effectiveRealtimeContext =
+        externalContextParts.length > 0 ? externalContextParts.join('\n\n') : undefined;
+
       return await this.respondWithLLM(
         userMessage,
         sessionId,
@@ -1232,12 +1451,16 @@ export class JarvisService {
         provider,
         toolsUsed,
         startTime,
-        localToolContext,
+        effectiveRealtimeContext,
         prefetchedRagContext,
         mode,
         retrievedChunksList,
         options.mode,
         intent,
+        ragRetrievalStatus,
+        memoryAuthorized,
+        ragAuthorized,
+        effectiveMaxHistory,
       );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
@@ -1283,6 +1506,10 @@ export class JarvisService {
     retrievedChunks: any[] = [],
     disciplineMode?: string,
     intent?: any,
+    ragRetrievalStatus: RagRetrievalStatus = 'NOT_AUTHORIZED',
+    useMemory: boolean = true,
+    useDocuments: boolean = true,
+    maxHistoryMessages: number = 16,
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
@@ -1429,6 +1656,9 @@ export class JarvisService {
             0,
             webCtx,
             true,
+            undefined,
+            undefined,
+            'NOT_AUTHORIZED',
           );
         const sp2Final = sp2
           .replace(
@@ -1640,7 +1870,7 @@ export class JarvisService {
   }
 
   private rerankChunks(chunks: any[], query: string): any[] {
-    if (chunks.length <= 1) return chunks;
+    if (!chunks || chunks.length === 0) return [];
 
     const queryTerms = query
       .toLowerCase()
@@ -1649,31 +1879,39 @@ export class JarvisService {
       .split(/[^a-z0-9áéíóúüñ]+/)
       .filter((t) => t.length >= 3);
 
-    if (queryTerms.length === 0) return chunks;
-
-    const scored = chunks.map((chunk, index) => {
-      const contentLower = chunk.content
+    const scored = chunks.map((chunk) => {
+      const contentLower = (chunk.content || '')
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
 
       let matches = 0;
-      for (const term of queryTerms) {
-        if (contentLower.includes(term)) {
-          matches++;
+      if (queryTerms.length > 0) {
+        for (const term of queryTerms) {
+          if (contentLower.includes(term)) {
+            matches++;
+          }
         }
       }
 
       // Score léxico normalizado
-      const lexicalScore = matches / queryTerms.length;
+      const lexicalScore = queryTerms.length > 0 ? matches / queryTerms.length : 0.0;
 
-      // Score semántico basado en la posición original
-      const semanticScore = 1.0 - index / chunks.length;
+      // Score semántico real preservado desde pgvector / ScoredChunk
+      const semanticScore =
+        typeof chunk.similarity === 'number'
+          ? chunk.similarity
+          : Number(chunk.similarity ?? 0.0);
 
-      // Peso: 40% léxico, 60% semántico
-      const score = 0.4 * lexicalScore + 0.6 * semanticScore;
+      // Peso híbrido: 40% léxico, 60% semántico real
+      const hybridScore = 0.4 * lexicalScore + 0.6 * semanticScore;
 
-      return { chunk, score };
+      // Adjuntar scores al chunk para auditoría y trazabilidad
+      (chunk as any).lexicalScore = lexicalScore;
+      (chunk as any).semanticScore = semanticScore;
+      (chunk as any).hybridScore = hybridScore;
+
+      return { chunk, score: hybridScore };
     });
 
     return scored.sort((a, b) => b.score - a.score).map((item) => item.chunk);
