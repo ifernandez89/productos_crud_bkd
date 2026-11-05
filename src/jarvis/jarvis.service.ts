@@ -691,7 +691,12 @@ export class JarvisService {
 
           if (!requiresExplanation && !isCombinedQuery) {
             // Retorno directo determinista sin incurrir en inferencia LLM innecesaria
-            const directAnswer = mathResult.data.formattedResult;
+            const directAnswer =
+              mathResult.data.result ||
+              mathResult.data.formattedResult ||
+              (mathResult.data.numericValue !== undefined
+                ? String(mathResult.data.numericValue)
+                : '0');
             await this.conversationRepo.create({
               sessionId,
               role: 'assistant',
