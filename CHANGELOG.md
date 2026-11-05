@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Verified — JarBees Cognitive Architecture (JCA) Full Implementation & E2E Web Validation (2026-11-04)
+
+- **Arquitectura Cognitiva Completa (JCA Fases 0 a 5)** (`ADR-037`, `ADR-038`, `ADR-039` & `docs/JARBEES_COGNITIVE_ARCHITECTURE_IMPLEMENTATION_AND_E2E_REPORT.md`):
+  - **Fase 0 & 0.1 (Auditoría Forense & Erradicación Bug L574)**:
+    - Identificación y aislamiento del secuestro léxico en `src/jarvis/prompt/jarvis-prompt-builder.service.ts` ocasionado por `normSearch.includes(normDocTitle)`.
+    - Eliminación de la coincidencia difusa y bloqueo estricto contra inyección de plantillas de resúmenes de biblioteca ante directivas operativas.
+  - **Fase 0.2 (JNE Observer en Shadow Mode)**:
+    - Implementación de `JneObserverService` con tap pasivo en `InferenceGatewayService` (0 ms de overhead en reposo).
+    - Captura criptográfica de prompts/respuestas con ofuscación obligatoria de credenciales y claves API (`apiKey`, `Bearer`).
+    - Suite de prueba E1–E9 y E4-B superada (10/10 PASS).
+  - **Fase 1 (Dialogue Engine)**:
+    - Clasificación de turnos conversacionales (`OPERATIONAL_DIRECTIVE`, `CORRECTION`, `CLARIFICATION`, `REFLECTIVE_CHAT`, `NEW_TOPIC`).
+    - Resolución formal de deixis y anáforas vinculando determinísticamente demostrativos ("esto", "aquello", "eso") con el antecedente previo.
+    - Bypass de herramientas para diálogos reflexivos y conceptuales sin invocar RAG innecesario (8/8 PASS).
+  - **Fase 2 (Tool Isolation & TaskEnvelope)**:
+    - Implementación de `TaskEnvelopeService` con contratos de aislamiento para herramientas, `contextScope` cerrado y whitelist explícita.
+    - Prohibición estricta de sobreescritura de intenciones desde el selector RAG (`prohibitIntentOverride`) (7/7 PASS).
+  - **Fase 3 (Mission Engine - Agéntica Asíncrona)**:
+    - Máquina de estados determinista (`PENDING` -> `EXECUTING` -> `CHECKPOINTED` -> `COMPLETED`) en `MissionEngineService`.
+    - Regla de oro de verificación: rechazo de conclusiones o cierre de pasos sin evidencia formal verificada (`evidence.verified !== true`).
+    - Checkpoints atómicos con hash SHA-256 para reanudación de misiones interrumpidas (`resumeFromCheckpoint`) (6/6 PASS).
+  - **Fase 4 (Adaptive Model Orchestration para RTX 5070 12GB)**:
+    - Orquestación en `ModelSelectionEngineService` calibrada para la NVIDIA GeForce RTX 5070 (12,227 MB VRAM).
+    - Modelo Llama 3.2 3B residente por defecto (Tier 0, latencia < 350 ms).
+    - Carga bajo demanda de Qwen 2.5 7B (Tier 1) y Qwen 2.5 Coder 14B (Tier 2) con cálculo de descarga automática (*offload*).
+    - Salvaguarda anti-OOM con redirección transparente a Cloud Gateway ante contextos de KV-cache masivos (> 25k tokens) (5/5 PASS).
+  - **Fase 5 (Cognitive Evaluation Subsystem)**:
+    - Métricas formales en `CognitiveEvaluationService`: Fidelidad a la Intención ($I_{\text{FID}}$), Ratio de Ruido Contextual ($R_{\text{NOISE}}$), Precisión de Herramientas ($P_{\text{TOOL}}$), Tasa de Verificación ($T_{\text{VERIF}}$) y Deriva Cognitiva ($D_{\text{COG}}$).
+    - Quality Gate cognitivo con alertas automáticas ante desviaciones de intención o falta de evidencia (7/7 PASS).
+  - **Validación E2E sobre Interfaz Web en Vivo ([JarBees Frontend](https://ifernandez89.github.io/productos_crud_frd/preguntas/new))**:
+    - Ejecución automatizada con Playwright / Microsoft Edge Headless sobre el DOM real.
+    - 3 preguntas ejecutadas con éxito (Identidad, Cinemática Lógica y Biología Celular), HTTP 201 Created a través del túnel ngrok y persistencia atómica en PostgreSQL (`sessionId: a14941d2-eccb-47a4-aa7a-0d6f177798df`, mensajes #767 a #772).
+    - 3 capturas de pantalla registradas (`pregunta_turn_1.png`, `pregunta_turn_2.png`, `pregunta_turn_3.png`).
+
 ### Added & Formalized — JarBees Scientific Lab: Historical Media Restoration & Color Engineering Skill (2026-11-03)
 
 - **Capacidad Oficial de Restauración Audiovisual Histórica** (`ADR-036` & `historical-media-restoration`):

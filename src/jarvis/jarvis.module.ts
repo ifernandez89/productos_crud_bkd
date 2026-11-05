@@ -125,9 +125,25 @@ import { CoreContextService } from './prompt/core-context.service';
 import { WorkingMemoryService } from './memory/working-memory.service';
 import { TripartiteMemoryService } from './memory/tripartite-memory.service';
 import { MemoryConsolidationService } from './memory/memory-consolidation.service';
+import { JneModule } from './jne/jne.module';
+import { DialogueModule } from './dialogue/dialogue.module';
+import { TaskEnvelopeModule } from './tools/task-envelope/task-envelope.module';
+import { MissionModule } from './mission/mission.module';
+import { ModelOrchestrationModule } from './orchestration/model-orchestration.module';
+import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.module';
 
 @Module({
-  imports: [PrismaModule, GoogleModule, CognitiveModule],
+  imports: [
+    PrismaModule,
+    GoogleModule,
+    CognitiveModule,
+    JneModule,
+    DialogueModule,
+    TaskEnvelopeModule,
+    MissionModule,
+    ModelOrchestrationModule,
+    CognitiveEvaluationModule,
+  ],
   controllers: [
     JarvisController,
     PosterController,

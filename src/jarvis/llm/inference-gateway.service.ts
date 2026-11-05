@@ -12,6 +12,7 @@ import {
   InferenceSupervisorService,
   SupervisorState,
 } from './inference-supervisor.service';
+import { JneObserverService } from '../jne/jne-observer.service';
 
 export interface ProviderHealthReport {
   available: boolean;
@@ -81,6 +82,8 @@ export class InferenceGatewayService implements ILLMProvider {
     private readonly openRouterProvider: OpenRouterProvider,
     @Optional()
     private readonly supervisor?: InferenceSupervisorService,
+    @Optional()
+    private readonly jneObserver?: JneObserverService,
   ) {
     this.primaryProviderName =
       process.env.INFERENCE_PRIMARY_PROVIDER || 'llamacpp';
@@ -255,6 +258,8 @@ export class InferenceGatewayService implements ILLMProvider {
         if (explicitProvider) {
           // Data Privacy Gate: validar si se permite inferencia cloud
           if (!this.isRemoteProviderAllowed(prefix, options)) {
+            const reason = `[Data Privacy Gate] Inferencia remota con '${prefix}' bloqueada por contener datos sensibles.`;
+            this.jneObserver?.recordPrivacyBlocked(options, prefix, reason);
             throw new ForbiddenException(
               `[Data Privacy Gate] Inferencia remota con '${prefix}' bloqueada: la consulta contiene datos privados/sensibles (sensitivity=${options.sensitivity || 'private'}) y no puede enviarse a un proveedor cloud.`,
             );
@@ -266,6 +271,7 @@ export class InferenceGatewayService implements ILLMProvider {
             model: cleanModel,
           });
           this.recordSuccess(res, requestedModel, isModelSwitch);
+          this.jneObserver?.recordInferenceSuccess(options, res, prefix);
           return res;
         }
       }
@@ -296,10 +302,12 @@ export class InferenceGatewayService implements ILLMProvider {
       try {
         const res = await primary.generate(primaryOptions);
         this.recordSuccess(res, requestedModel, isModelSwitch);
+        this.jneObserver?.recordInferenceSuccess(options, res, primaryName);
         return res;
       } catch (primaryErr: any) {
         const errMsg = primaryErr?.message || String(primaryErr);
         this.recordFailure(primaryName, errMsg);
+        this.jneObserver?.recordInferenceFailure(options, primaryErr, primaryName);
 
         // Si el proveedor primario falló DESPUÉS de haber emitido tokens parciales al stream,
         // está PROHIBIDO re-ejecutar en el proveedor de fallback (duplicaría texto parcial).
@@ -346,6 +354,8 @@ export class InferenceGatewayService implements ILLMProvider {
 
         // Data Privacy Gate para fallback
         if (!this.isRemoteProviderAllowed(fallbackName, options)) {
+          const reason = `[Data Privacy Gate] Inferencia cloud en fallback '${fallbackName}' bloqueada por contener datos confidenciales.`;
+          this.jneObserver?.recordPrivacyBlocked(options, fallbackName, reason);
           this.logger.error(
             `❌ [gateway] Conmutación a fallback '${fallbackName}' bloqueada por Data Privacy Gate: la solicitud contiene datos privados (sensitivity=${options.sensitivity || 'private'}). Prevaleciendo confinamiento local.`,
           );
@@ -357,16 +367,19 @@ export class InferenceGatewayService implements ILLMProvider {
         this.logger.warn(
           `⚠️ [gateway] Proveedor primario '${primaryName}' falló (${errMsg}). Conmutando automáticamente a fallback '${fallbackName}'...`,
         );
+        this.jneObserver?.recordFallback(primaryName, fallbackName, requestedModel, errMsg);
 
         try {
           const fallbackRes = await fallback.generate(options);
           this.failoverCount++;
           this.recordSuccess(fallbackRes, requestedModel, false);
+          this.jneObserver?.recordInferenceSuccess(options, fallbackRes, fallbackName);
           this.logger.log(
             `✅ [gateway] Fallback a '${fallbackName}' completado exitosamente en ${fallbackRes.latencyMs}ms`,
           );
           return fallbackRes;
         } catch (fallbackErr: any) {
+          this.jneObserver?.recordInferenceFailure(options, fallbackErr, fallbackName);
           this.logger.error(
             `❌ [gateway] Ambos proveedores ('${primaryName}' y '${fallbackName}') fallaron. Error fallback: ${fallbackErr.message}`,
           );
