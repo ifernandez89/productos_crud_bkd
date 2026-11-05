@@ -67,6 +67,7 @@ import { EvidenceService } from './knowledge/evidence.service';
 import { JarvisCommandService } from './commands/jarvis-command.service';
 import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
+import { ContextSelectorService } from './context/context-selector.service';
 import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
 import { ActionGatekeeperService } from './security/action-gatekeeper.service';
@@ -199,6 +200,7 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
+    ContextSelectorService,
     AuditService,
     ActionExecutionGateService,
     ActionGatekeeperService,
@@ -276,6 +278,7 @@ import { MemoryConsolidationService } from './memory/memory-consolidation.servic
     JarvisCommandService,
     JarvisWebSearchService,
     JarvisPromptBuilderService,
+    ContextSelectorService,
     MusicCatalogService,
     GamesCatalogService,
     DisciplinesCatalogService,

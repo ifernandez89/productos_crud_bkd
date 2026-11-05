@@ -21,6 +21,11 @@ export interface CreateChunkData {
   metadata?: Record<string, any>;
 }
 
+export interface ScoredChunk extends Chunk {
+  document: Document;
+  similarity: number;
+}
+
 @Injectable()
 export class DocumentRepository {
   constructor(
@@ -277,7 +282,8 @@ export class DocumentRepository {
   async searchChunksSemantic(
     embedding: number[],
     limit = 10,
-  ): Promise<(Chunk & { document: Document })[]> {
+    minSimilarity?: number,
+  ): Promise<ScoredChunk[]> {
     // 1. Capa Macro: Buscar capítulos coincidentes
     const matchedChapters = (await this.pgvector.searchChaptersSemantic(
       embedding,
@@ -315,6 +321,7 @@ export class DocumentRepository {
         embedding,
         chapterIds,
         limit,
+        minSimilarity,
       )) as any[];
       if (rows.length > 0) {
         return this.mapRowsToChunks(rows);
@@ -325,6 +332,7 @@ export class DocumentRepository {
     const rows = (await this.pgvector.searchChunksSemantic(
       embedding,
       limit,
+      minSimilarity,
     )) as any[];
     return this.mapRowsToChunks(rows);
   }
@@ -336,7 +344,8 @@ export class DocumentRepository {
     embedding: number[],
     documentIds: number[],
     limit = 10,
-  ): Promise<(Chunk & { document: Document })[]> {
+    minSimilarity?: number,
+  ): Promise<ScoredChunk[]> {
     if (documentIds.length === 0) return [];
 
     // 1. Capa Macro: Buscar capítulos en documentos específicos
@@ -377,6 +386,7 @@ export class DocumentRepository {
         embedding,
         chapterIds,
         limit,
+        minSimilarity,
       )) as any[];
       if (rows.length > 0) {
         return this.mapRowsToChunks(rows);
@@ -387,17 +397,19 @@ export class DocumentRepository {
       embedding,
       documentIds,
       limit,
+      minSimilarity,
     )) as any[];
     return this.mapRowsToChunks(rows);
   }
 
-  private mapRowsToChunks(rows: any[]): (Chunk & { document: Document })[] {
+  private mapRowsToChunks(rows: any[]): ScoredChunk[] {
     return rows.map((row) => ({
       id: row.id,
       documentId: row.documentId,
       content: row.content,
       metadata: row.metadata,
       embeddingId: row.embeddingId,
+      similarity: typeof row.similarity === 'number' ? row.similarity : Number(row.similarity ?? 0),
       document: {
         id: row.documentId,
         sourceId: row.sourceId,

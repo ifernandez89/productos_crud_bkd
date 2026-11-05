@@ -17,6 +17,13 @@ import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from '../knowledge/disciplines-catalog.service';
 import { CoreContextService } from './core-context.service';
 
+export type RagRetrievalStatus =
+  | 'NOT_AUTHORIZED'
+  | 'AUTHORIZED_PENDING'
+  | 'EXECUTED_WITH_RESULTS'
+  | 'EXECUTED_EMPTY'
+  | 'FAILED';
+
 @Injectable()
 export class JarvisPromptBuilderService {
   private readonly logger = new Logger(JarvisPromptBuilderService.name);
@@ -53,6 +60,7 @@ export class JarvisPromptBuilderService {
     hasWebContext?: boolean,
     prefetchedRagContext?: string,
     mode?: string,
+    ragStatus?: RagRetrievalStatus,
   ): Promise<{
     systemPrompt: string;
     userPrompt: string;
@@ -327,62 +335,14 @@ export class JarvisPromptBuilderService {
           }
 
           if (!categorySummary.isRequest) {
-            let chunks = [] as any[];
-            try {
-              const queryEmbedding =
-                await this.embeddingsService.generateEmbedding(userMessage);
-              chunks = await this.documentRepo.searchChunksSemantic(
-                queryEmbedding,
-                15,
-              );
-            } catch (err: any) {
-              this.logger.warn(
-                `[rag:semantic] Fallback a búsqueda textual: ${err.message}`,
-              );
-              chunks = await this.documentRepo.searchChunks(userMessage, 15);
-            }
-            if (chunks.length > 0) {
-              usedDocs = true;
-              // Aplicar reranker híbrido
-              const rerankedChunks = this.rerankChunks(chunks, userMessage);
-              
-              const formattedParts = rerankedChunks.slice(0, 5).map((c) => {
-                const docTitle = c.document?.title || 'Documento';
-                const docInIndex = this.corpusSelector.getIndex().documentos.find(
-                  (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
-                );
-                
-                const author = docInIndex?.autor || this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
-                const language = docInIndex?.idioma || 'es';
-                const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
-                const category = docInIndex?.categorias?.join(', ') || 'General';
-                const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
-
-                return [
-                  `---`,
-                  `DOCUMENTO: "${docTitle}"`,
-                  `AUTOR: ${author}`,
-                  `ESCUELA DE PENSAMIENTO: ${school}`,
-                  `IDIOMA: ${language}`,
-                  `CATEGORÍAS: ${category}`,
-                  `CONCEPTOS PRINCIPALES: ${concepts}`,
-                  `CONTENIDO:`,
-                  c.content,
-                ].join('\n');
-              });
-
-              contextParts.push(
-                `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
-                  `⚠️ PROTOCOLO DE AUDITORÍA DE PREMISAS, ATRIBUCIÓN E IDIOMA:\n` +
-                  `1. IDIOMA Y TRADUCCIÓN: Respondé siempre 100% en español fluido, independientemente del idioma de los documentos. Si hay términos técnicos en inglés u otro idioma, conservalos pero traducilos o explicálos en su primera aparición.\n` +
-                  `2. RESPALDO DOCUMENTAL vs. RESPALDO EMPÍRICO: Que una afirmación aparezca en una obra o testimonio significa únicamente que la fuente lo afirma (respaldo documental), NO que la ciencia experimental independiente lo haya demostrado. Diferenciá con rigor hechos verificados, modelos teóricos, hipótesis y tradiciones.\n` +
-                  `3. RESISTENCIA A LA SUGESTIÓN (ANTI-SYCOPHANCY): Si la consulta del usuario presupone o afirma algo ('dado que X demostró Y...', 'explicá el mecanismo por el cual...', '¿por qué sabemos que...?'), NO lo aceptes como verdadero a menos que los documentos recuperados lo confirmen textualmente. Si los documentos no lo sustentan o la afirmación es errónea, decláralo y corregí la premisa antes de responder.\n` +
-                  `4. NO FABRICAR TRAZABILIDAD: Jamás atribuyas a un autor o fragmento afirmaciones que solo aparecen en la pregunta del usuario o en tu conocimiento general.\n` +
-                  `5. FUENTES CONTRADICTORIAS: Si diferentes autores o textos difieren o entran en tensión, exponé cada perspectiva por separado sin forzar una síntesis artificial.\n` +
-                  `6. RESPUESTA CONDICIONAL: Si una hipótesis no está establecida empíricamente, analizá qué se seguiría de ella en modo condicional sin presentarla como un hecho.\n\n` +
-                  formattedParts.join('\n\n'),
-              );
-            }
+            // 🛡️ JCA-001 CAPA 2: ELIMINACIÓN DEFINITIVA DE LA SEGUNDA RECUPERACIÓN OCULTA
+            // La recuperación documental está gobernada aguas arriba por ContextSelectorService.
+            // Si prefetchedRagContext no está presente (por estar EXCLUDED, UNNEEDED o EXECUTED_EMPTY),
+            // NUNCA se ejecuta una búsqueda vectorial no autorizada ni repetida en PromptBuilder.
+            usedDocs = false;
+            this.logger.log(
+              '[rag:prompt-builder] Omitiendo búsqueda vectorial interna: gobernada aguas arriba (status=' + (ragStatus || 'GOVERNED') + ').',
+            );
           }
         }
     }
