@@ -28,10 +28,17 @@ export class UncertaintyEngineService {
 
     let confidenceScore = evidenceReport ? evidenceReport.confidenceScore : 75;
 
+    const isMathOrDeterministic =
+      /(\d+\s*[\+\-\*\/\^]\s*\d|calcula |exactamente|operacion|algebra)/i.test(userQuery);
+
     if (retrievedChunks.length === 0) {
-      confidenceScore = Math.min(confidenceScore, 40);
-      unknowns.push('No hay documentos RAG recuperados para fundamentar esta respuesta.');
-      riskFactors.push('Posible dependencia exclusiva del conocimiento preentrenado del LLM.');
+      if (isMathOrDeterministic) {
+        confidenceScore = 95; // Operaciones deterministas/algebraicas no dependen de RAG
+      } else {
+        confidenceScore = Math.min(confidenceScore, 40);
+        unknowns.push('No hay documentos RAG recuperados para fundamentar esta respuesta.');
+        riskFactors.push('Posible dependencia exclusiva del conocimiento preentrenado del LLM.');
+      }
     } else if (retrievedChunks.length < 3) {
       confidenceScore = Math.min(confidenceScore, 65);
       unknowns.push('Cobertura limitada de contexto (menos de 3 fragmentos recuperados).');

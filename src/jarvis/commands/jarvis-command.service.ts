@@ -1591,6 +1591,7 @@ export class JarvisCommandService {
     if (connMatch) {
       title = title.substring(connMatch[0].length).trim();
     }
+    const isExplicitlyQuoted = /^['"“‘«](.*)['"”’»]$/.test(title);
     title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
 
     if (title.length >= 2) {
@@ -1608,14 +1609,14 @@ export class JarvisCommandService {
         }
       }
 
-      const titleLower = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
-      if (GENERIC_STARTERS.test(titleLower)) {
-        const hasDoc = await this.dbOrIndexHasDocument(title);
-        if (hasDoc) return { title, maxItems };
-      } else {
+      // Si el usuario entrecomilló explícitamente el título, respetamos la búsqueda directa
+      if (isExplicitlyQuoted) {
+        return { title, maxItems };
+      }
+
+      // Para frases en lenguaje natural no entrecomilladas, solo capturar si realmente existe el documento
+      const hasDoc = await this.dbOrIndexHasDocument(title);
+      if (hasDoc) {
         return { title, maxItems };
       }
     }

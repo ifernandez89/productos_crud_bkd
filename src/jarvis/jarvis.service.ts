@@ -278,7 +278,7 @@ export class JarvisService {
           ? options.minSimilarity
           : process.env.RAG_MIN_SIMILARITY
             ? parseFloat(process.env.RAG_MIN_SIMILARITY)
-            : 0.68;
+            : 0.58;
 
       const ragAuthorized =
         useDocuments &&
@@ -1763,6 +1763,9 @@ export class JarvisService {
       `6. Si el usuario pregunta algo específico (ej: "¿Mercurio está retrógrado?"), `,
       `   respondé esa pregunta específicamente además de la estructura general.`,
       `7. Si la consulta menciona 'clima astral' o 'astral', además de detallar la configuración astronómica del cielo (fase lunar, Sol, planetas y energías del día), podés contrastar brevemente con la acepción metafísica/esotérica del plano astral si aporta valor (como en la proyección astral o los campos sutiles).`,
+      `8. GUARDRAIL EPISTEMOLÓGICO Y HONESTIDAD CIENTÍFICA:`,
+      `   - La astrología es una disciplina simbólica, tradicional y cultural, NO una ciencia empírica ni un método demostrado de predicción causal de acontecimientos futuros.`,
+      `   - Si el usuario formula una premisa no demostrada o pide "demostrar" que las influencias astrales o los sueños predicen acontecimientos futuros, explicá la perspectiva simbólica o tradicional aclarando explícitamente que carece de evidencia científica causal demostrada, preservando el escepticismo metodológico sin caer en validación complaciente (anti-sycophancy).`,
     ].join('\n');
 
     const userPrompt = [

@@ -129,6 +129,7 @@ export class JarvisPromptBuilderService {
         '1. Responde con código limpio, bien tipado y estructurado.',
         '2. Proporciona explicaciones técnicas precisas y enfocadas a producción.',
         '3. Mantén el contexto técnico de la conversación anterior.',
+        '4. Privacidad: no expongas datos personales del perfil salvo petición expresa.',
       ].join('\n');
     } else if (isTranslatorMode) {
       systemPrompt = [
@@ -161,6 +162,10 @@ export class JarvisPromptBuilderService {
         '2. Mantené siempre el hilo y contexto de la conversación anterior. Si el usuario hace preguntas de seguimiento, pide explicaciones de algo que dijiste o dice "no entendí", explicálo con sencillez tomando como referencia el mensaje anterior.',
         '3. Para chistes, humor, consejos, reflexiones o charlas cotidianas, respondé con creatividad sin bloqueos artificiales.',
         '4. Si no tenés un dato verificado o de actualidad, decílo con sinceridad sin inventar.',
+        '5. PRIVACIDAD Y MINIMIZACIÓN DE DATOS (ESTRICTO):',
+        '   - Los datos del perfil del usuario (nombre, ubicación, identificador, etc.) son EXCLUSIVAMENTE para calibración interna de tono, idioma y zona horaria.',
+        '   - Queda ESTRICTAMENTE PROHIBIDO listar, divulgar o utilizar datos personales reales como ejemplos de hechos o hipótesis, salvo que el usuario pregunte explícitamente quién es o qué datos personales se conocen sobre él.',
+        '   - Para ejemplos metodológicos, conceptuales o ilustrativos de hechos, hipótesis e interpretaciones, utilizá SIEMPRE temas generales, científicos, técnicos o ficticios, NUNCA la información personal del usuario.',
       ].join('\n');
     }
 

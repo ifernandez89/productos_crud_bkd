@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Fixed & Calibrated — JarBees Rapid Cognitive Sweep Remediation & Epistemic Hardening (2026-11-05)
+
+- **Corrección del Parser Documental (`src/jarvis/commands/jarvis-command.service.ts`)**:
+  - Eliminada la asunción incondicional de títulos de biblioteca en la rama `else` de `extractDocumentSummaryRequest`.
+  - Ahora se exige coincidencia verificada en base de datos (`await this.dbOrIndexHasDocument(title)`) o entrecomillado explícito (`isExplicitlyQuoted`) antes de capturar una consulta como comando de resumen de libro.
+  - Consultas en lenguaje natural que inician con verbos explicativos (ej: *"Explica detalladamente cómo hacen los sueños para predecir el futuro"*) ya no son secuestradas en 25 ms por el parser de biblioteca y son procesadas conceptualmente por el LLM.
+- **Calibración del Umbral RAG (`src/jarvis/jarvis.service.ts`, `.env`, `.env.staging`)**:
+  - Calibrado `minSimilarity` por defecto de `0.68` a `0.58` para alinearse con la distribución de similitudes coseno de BGE-M3 (1024-d) en pasajes extensos y consultas translingües.
+  - Demostrado empíricamente en staging el 100% de recall en *The Projection of the Astral Body* (Muldoon, 0.6358), *William Judge - El mesmerismo* (Judge, 0.6495) y *Stefan Zweig Franz Anton Mesmer* (Zweig, 0.6693).
+- **Guardrails Epistémicos y Anti-Sycophancy (`src/jarvis/jarvis.service.ts`, `src/jarvis/tools/intent/intent-router.service.ts`)**:
+  - Incorporada la Regla 8 en `respondWithAstrologyPrompt`: la astrología y el plano astral se definen como marcos simbólicos/tradicionales, prohibiendo que la herramienta imponga verdad fáctica o valide complacientemente premisas causales no demostradas empíricamente.
+  - Refinado `isExplanatoryQuery` en `IntentRouterService` para capturar patrones inductivos (`demuestra que...`, `cual fue el resultado de...`) dirigiéndolos a `LOCAL` conceptual y previniendo desvíos espurios a herramientas especializadas.
+  - Refinado `sportsPattern` para exigir contexto deportivo explícito ante la palabra *"resultado"*, eliminando falsos positivos en consultas científicas.
+- **Privacidad Contextual y Matemática Determinista (`src/jarvis/prompt/jarvis-prompt-builder.service.ts`, `src/jarvis/cognitive/uncertainty-engine.service.ts`)**:
+  - Incorporada directiva de privacidad estricta y minimización de datos en el system prompt: prohibición absoluta de listar datos personales del perfil (nombre, ubicación, ID) como ejemplos factuales salvo petición expresa.
+  - Eximidas las operaciones matemáticas deterministas y algebraicas de la penalización de incertidumbre por falta de RAG en `UncertaintyEngineService`, eliminando advertencias espurias en cálculos exactos.
+
 ### Added & Verified — JarBees Cognitive Architecture (JCA) Full Implementation & E2E Web Validation (2026-11-04)
 
 - **Arquitectura Cognitiva Completa (JCA Fases 0 a 5)** (`ADR-037`, `ADR-038`, `ADR-039` & `docs/JARBEES_COGNITIVE_ARCHITECTURE_IMPLEMENTATION_AND_E2E_REPORT.md`):

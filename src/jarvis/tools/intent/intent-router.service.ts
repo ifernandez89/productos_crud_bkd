@@ -114,7 +114,7 @@ export class IntentRouterService {
   // ── Clasificación rápida (reglas) ────────────────────────────────────────────
 
   private isExplanatoryQuery(n: string): boolean {
-    return /(?:como se forma|por que se produce|por que ocurre|que es (?:un |una |el |la |los |las )?|en que consiste|como funciona|que produce|que causa|explicame|explica |defini |definir |que diferencias? (?:existe|existen) entre|cual(?:es)? (?:es|son) la(?:s)? diferencias? entre|por que (?:un |una |el |la |los |las |dos |algunos? |suele |se |puede |no )|por que vemos|como puede la energia|como se puede demostrar|como investigarias)/i.test(
+    return /(?:como se forma|por que se produce|por que ocurre|que es (?:un |una |el |la |los |las )?|en que consiste|como funciona|que produce|que causa|explicame|explica |defini |definir |que diferencias? (?:existe|existen) entre|cual(?:es)? (?:es|son) la(?:s)? diferencias? entre|por que (?:un |una |el |la |los |las |dos |algunos? |suele |se |puede |no )|por que vemos|como puede la energia|como se puede demostrar|como investigarias|demuestra (?:que )?|demostra (?:que )?|es posible que|se puede afirmar que|cual(?: fue| es)? el resultado de|de que se trato|de que se hablo en)/i.test(
       n,
     );
   }
@@ -221,7 +221,7 @@ export class IntentRouterService {
 
     // SPORTS — alta confianza (verificar ANTES que TOOL para evitar conflictos con "hora")
     const sportsPattern =
-      /(partido|goles?|resultado|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla\s+de\s+posiciones|\bposiciones\b|pr[oó]ximo partido|siguiente partido)/i;
+      /(partido|goles?|resultado\s+(?:del?|de|final)\s+(?:partido|juego|partidazo|clasico|derbi|encuentro|torneo|campeonato|mundial|copa|final|serie|fecha|liga|match)|score|marcador|gan[oó]|perdi[oó]|empat[oó]|clasific[oó]|eliminad|jugaron|jug[oó]|copa|mundial|champions|liga|fixture|tabla\s+de\s+posiciones|\bposiciones\b|pr[oó]ximo partido|siguiente partido)/i;
     const timePattern =
       /(hoy|ayer|esta semana|anoche|reciente|ultimo partido|ultimo juego|en el partido|proximo|siguiente|cuando juega|cuando es el)/i;
     if (
