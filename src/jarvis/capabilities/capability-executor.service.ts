@@ -24,6 +24,7 @@ import type { ContextPlan } from '../context/context-selector.interface.ts';
 export interface CapabilityExecutorOptions {
   /** Sobrescribe el timeout por defecto de la capacidad (en milisegundos) */
   overrideTimeoutMs?: number;
+  timeoutMs?: number;
 }
 
 export interface TelemetryLogEntry {
@@ -35,7 +36,9 @@ export interface TelemetryLogEntry {
   safetyLevel: string;
   hasData: boolean;
   errorCode?: string;
+  abortSignalSent?: boolean;
   underlyingOperationCancelled?: boolean;
+  underlyingOperationSettled?: boolean;
 }
 
 export class CapabilityExecutor {
@@ -196,16 +199,27 @@ export class CapabilityExecutor {
     const timeoutMs =
       typeof options.overrideTimeoutMs === 'number' && options.overrideTimeoutMs > 0
         ? options.overrideTimeoutMs
-        : capability.defaultTimeoutMs;
+        : typeof options.timeoutMs === 'number' && options.timeoutMs > 0
+          ? options.timeoutMs
+          : capability.defaultTimeoutMs;
 
     const abortController = new AbortController();
     let timeoutTimer: NodeJS.Timeout | null = null;
     let didTimeout = false;
+    let underlyingOperationCancelled = false;
+    let underlyingOperationSettled = false;
+
+    let capabilityExecutionPromise: Promise<CapabilityResult<T> | null>;
 
     const timeoutPromise = new Promise<CapabilityResult<T>>((resolve) => {
-      timeoutTimer = setTimeout(() => {
+      timeoutTimer = setTimeout(async () => {
         didTimeout = true;
         abortController.abort();
+        // Breve ventana de gracia (15ms) para que proveedores cooperativos confirmen cancelación
+        await Promise.race([
+          capabilityExecutionPromise,
+          new Promise((r) => setTimeout(r, 15)),
+        ]);
         const durationMs = Date.now() - startTime;
         resolve({
           capabilityId: capability.id,
@@ -217,7 +231,9 @@ export class CapabilityExecutor {
             message: `La capacidad '${capability.id}' superó el presupuesto temporal de ${timeoutMs}ms.`,
             recoverable: true,
           },
-          underlyingOperationCancelled: true,
+          abortSignalSent: true,
+          underlyingOperationCancelled, // true solo si el proveedor cooperativo confirmó cancelación
+          underlyingOperationSettled,
           fallbackDirective: this.buildTimeoutDirective(capability.id),
         });
       }, timeoutMs);
@@ -231,8 +247,50 @@ export class CapabilityExecutor {
     };
 
     try {
-      const capabilityPromise = Promise.resolve().then(() => capability.execute(executionContext));
-      const outcome = await Promise.race([capabilityPromise, timeoutPromise]);
+      capabilityExecutionPromise = Promise.resolve()
+        .then(async () => {
+          const res = await capability.execute(executionContext);
+          underlyingOperationSettled = true;
+          if (
+            res?.underlyingOperationCancelled ||
+            (abortController.signal.aborted && res?.status === 'TIMEOUT')
+          ) {
+            underlyingOperationCancelled = true;
+          }
+          return res;
+        })
+        .catch((err: unknown) => {
+          underlyingOperationSettled = true;
+          if (
+            (err instanceof Error &&
+              (err.name === 'AbortError' ||
+                err.message.toLowerCase().includes('abort'))) ||
+            abortController.signal.aborted
+          ) {
+            underlyingOperationCancelled = true;
+          }
+          // Si el timeout ya disparó, absorber o devolver status TIMEOUT coherente
+          if (didTimeout || abortController.signal.aborted) {
+            return {
+              capabilityId: capability.id,
+              status: 'TIMEOUT' as const,
+              safetyLevel: capability.safetyLevel,
+              durationMs: Date.now() - startTime,
+              error: {
+                code: 'CAPABILITY_EXECUTION_TIMEOUT',
+                message: `La capacidad '${capability.id}' superó el presupuesto temporal de ${timeoutMs}ms.`,
+                recoverable: true,
+              },
+              abortSignalSent: true,
+              underlyingOperationCancelled: true,
+              underlyingOperationSettled: true,
+              fallbackDirective: this.buildTimeoutDirective(capability.id),
+            } as CapabilityResult<T>;
+          }
+          throw err;
+        });
+
+      const outcome = await Promise.race([capabilityExecutionPromise, timeoutPromise]);
 
       if (timeoutTimer) clearTimeout(timeoutTimer);
 
@@ -381,7 +439,9 @@ export class CapabilityExecutor {
       safetyLevel: result.safetyLevel,
       hasData: Boolean(result.data),
       errorCode: result.error?.code,
+      abortSignalSent: result.abortSignalSent,
       underlyingOperationCancelled: result.underlyingOperationCancelled,
+      underlyingOperationSettled: result.underlyingOperationSettled,
     };
     this.telemetryLogs.push(entry);
     if (this.onTelemetry) {

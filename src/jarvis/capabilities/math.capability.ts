@@ -67,6 +67,33 @@ export class MathCapability implements ICapability<MathResultData> {
   private readonly defaultTimezone = 'America/Argentina/Buenos_Aires';
 
   /**
+   * isMathExpression: Detección estática de intención matemática o de cálculo temporal.
+   */
+  static isMathExpression(userMessage: string): boolean {
+    if (!userMessage || typeof userMessage !== 'string') return false;
+    const n = userMessage
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+
+    // Temporal / DateMath
+    const hasTimeContext =
+      /(?:a\s+que\s+hora|que\s+hora\s+sera|cuanto\s+tiempo|duracion|comienza\s+a\s+las|terminara)/i.test(n) &&
+      /\d{1,2}:\d{2}/.test(n);
+    if (hasTimeContext) return true;
+
+    // Aritmética
+    const hasMathSymbols = /\d+\s*[\+\-\*\/\^%]\s*\d+/.test(n);
+    const hasMathVerbs =
+      /(?:cuanto\s+es|calcula(?:r|me)?|raiz\s+cuadrada|logaritmo|seno|coseno|tangente|eleva(?:do)?\s+a)/i.test(
+        n,
+      );
+
+    return hasMathSymbols || hasMathVerbs;
+  }
+
+  /**
    * canHandle: Evaluación pura y sin efectos secundarios.
    */
   canHandle(userMessage: string, contextPlan: ContextPlan): boolean {
@@ -77,25 +104,7 @@ export class MathCapability implements ICapability<MathResultData> {
       return false;
     }
 
-    const n = userMessage
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
-
-    // 1. Detección de operaciones de fecha / tiempo deterministas
-    if (this.isDateMathQuery(n)) {
-      return true;
-    }
-
-    // 2. Detección de operaciones aritméticas estándar
-    const hasMathSymbols = /\d+\s*[\+\-\*\/\^%]\s*\d+/.test(n);
-    const hasMathVerbs =
-      /(?:cuanto\s+es|calcula(?:r|me)?|raiz\s+cuadrada|logaritmo|seno|coseno|tangente|eleva(?:do)?\s+a)/i.test(
-        n,
-      );
-
-    return hasMathSymbols || hasMathVerbs;
+    return MathCapability.isMathExpression(userMessage);
   }
 
   /**

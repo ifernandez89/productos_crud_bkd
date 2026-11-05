@@ -164,6 +164,28 @@ export class WebSearchCapability implements ICapability<WebSearchResultData> {
     } catch (err: unknown) {
       const durationMs = Date.now() - startTime;
       const errMsg = err instanceof Error ? err.message : String(err);
+      const isAbort =
+        abortSignal?.aborted ||
+        (err instanceof Error &&
+          (err.name === 'AbortError' || errMsg.toLowerCase().includes('abort')));
+
+      if (isAbort) {
+        return {
+          capabilityId: this.id,
+          status: 'TIMEOUT',
+          safetyLevel: this.safetyLevel,
+          durationMs,
+          error: {
+            code: 'OPERATION_ABORTED',
+            message: 'Operación cancelada por timeout.',
+            recoverable: true,
+          },
+          abortSignalSent: true,
+          underlyingOperationCancelled: true,
+          fallbackDirective:
+            '[INSTRUCCIÓN DE SEGURIDAD]: La búsqueda web agotó el tiempo de espera. Responde con tu conocimiento base sin inventar hechos.',
+        };
+      }
 
       return {
         capabilityId: this.id,

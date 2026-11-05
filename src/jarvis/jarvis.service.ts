@@ -49,6 +49,11 @@ import { ToolResultValidatorService } from './tools/validation/tool-result-valid
 import { ContextSelectorService } from './context/context-selector.service';
 import { ContextPlan } from './context/context-selector.interface';
 import { RagRetrievalStatus } from './prompt/jarvis-prompt-builder.service';
+import { CapabilityRegistry } from './capabilities/capability-registry.service';
+import { CapabilityExecutor } from './capabilities/capability-executor.service';
+import { MathCapability } from './capabilities/math.capability';
+import { WebSearchCapability } from './capabilities/web-search.capability';
+import type { MathResultData, WebSearchResultData } from './capabilities/capability.interface';
 import { randomUUID } from 'crypto';
 
 export interface JarvisQueryOptions {
@@ -67,6 +72,8 @@ export class JarvisService {
   private readonly logger = new Logger(JarvisService.name);
   private readonly providers: Map<string, ILLMProvider>;
   private readonly selector: ContextSelectorService;
+  private readonly capabilityRegistry: CapabilityRegistry;
+  private readonly capabilityExecutor: CapabilityExecutor;
 
   constructor(
     private readonly memoryRepo: MemoryRepository,
@@ -117,6 +124,10 @@ export class JarvisService {
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
     @Optional()
     private readonly contextSelector?: ContextSelectorService,
+    @Optional()
+    private readonly injectedCapabilityRegistry?: CapabilityRegistry,
+    @Optional()
+    private readonly injectedCapabilityExecutor?: CapabilityExecutor,
   ) {
     this.providers = new Map([
       ['gateway', this.inferenceGateway],
@@ -125,6 +136,30 @@ export class JarvisService {
       ['openrouter', this.openRouterProvider],
     ]);
     this.selector = this.contextSelector ?? new ContextSelectorService();
+
+    this.capabilityRegistry =
+      this.injectedCapabilityRegistry ?? new CapabilityRegistry();
+    if (!this.capabilityRegistry.has('math')) {
+      this.capabilityRegistry.register(new MathCapability());
+    }
+    if (!this.capabilityRegistry.has('web_search')) {
+      this.capabilityRegistry.register(
+        new WebSearchCapability(async (q, cat, sig) => {
+          return await this.jarvisWebSearch.autoWebSearch(q, cat);
+        }),
+      );
+    }
+    this.capabilityExecutor =
+      this.injectedCapabilityExecutor ??
+      new CapabilityExecutor(this.capabilityRegistry);
+  }
+
+  getCapabilityRegistry(): CapabilityRegistry {
+    return this.capabilityRegistry;
+  }
+
+  getCapabilityExecutor(): CapabilityExecutor {
+    return this.capabilityExecutor;
   }
 
   // ── Query principal ─────────────────────────────────────────────────────────
@@ -626,10 +661,127 @@ export class JarvisService {
         toolsUsed.push('rag_general_knowledge_fallback');
       }
 
+      // ── 6.2. CAPACIDADES DESACOPLADAS JCA-001 (Capa 3: CapabilityExecutor) ────────
+      let capabilityContextSnippet: string | undefined = undefined;
+      let capabilityFallbackDirective: string | undefined = undefined;
+      let mathHandled = false;
+      let webHandled = false;
+
+      // Evaluación y ejecución de MathCapability
+      const isMathActive =
+        (contextPlan.activeTools?.includes('math') ||
+          contextPlan.suggestedAction === 'TOOL' || contextPlan.policyReason === 'ARITHMETIC_EXPLANATION' || MathCapability.isMathExpression(userMessage)) &&
+        contextPlan.sources?.tools !== 'EXCLUDED' &&
+        contextPlan.toolStates?.math !== 'EXCLUDED';
+
+      if (isMathActive) {
+        const mathResult = await this.capabilityExecutor.execute<MathResultData>(
+          'math',
+          userMessage,
+          contextPlan,
+          sessionId,
+        );
+
+        if (mathResult.status === 'SUCCESS' && mathResult.data) {
+          toolsUsed.push('math_capability');
+          mathHandled = true;
+
+          const requiresExplanation = /(explica|por que|desarrolla|paso a paso|como se calcula)/i.test(userMessage);
+          const isCombinedQuery = ragAuthorized || contextPlan.suggestedAction === 'HYBRID_SEARCH';
+
+          if (!requiresExplanation && !isCombinedQuery) {
+            // Retorno directo determinista sin incurrir en inferencia LLM innecesaria
+            const directAnswer = mathResult.data.formattedResult;
+            await this.conversationRepo.create({
+              sessionId,
+              role: 'assistant',
+              content: directAnswer,
+              metadata: { source: 'math_capability', verified: mathResult.data.verified },
+            });
+            await this.agentRunRepo.create({
+              sessionId,
+              question: userMessage,
+              answer: directAnswer,
+              toolsUsed,
+              modelUsed: 'none',
+              provider: 'capability:math',
+              durationMs: Date.now() - startTime,
+              success: true,
+            });
+            return directAnswer;
+          } else {
+            // Incorporar snippet verificado al contexto estructurado del LLM
+            capabilityContextSnippet = mathResult.promptContextSnippet;
+          }
+        } else if (mathResult.status === 'UNAUTHORIZED') {
+          mathHandled = true; // No delegar a herramientas legadas si fue desautorizada
+        } else if (mathResult.status === 'RECOVERABLE_ERROR') {
+          mathHandled = true;
+          if (mathResult.fallbackDirective) {
+            capabilityFallbackDirective = mathResult.fallbackDirective;
+          }
+        }
+      }
+
+      // Evaluación y ejecución de WebSearchCapability
+      const isWebActive =
+        (contextPlan.sources?.web === 'REQUESTED' ||
+          contextPlan.sources?.web === 'SELECTED' ||
+          contextPlan.suggestedAction === 'WEB_SEARCH' ||
+          contextPlan.suggestedAction === 'HYBRID_SEARCH' ||
+          contextPlan.activeTools?.includes('sports') ||
+          intent.intent === 'SPORTS') &&
+        contextPlan.sources?.web !== 'EXCLUDED' &&
+        !contextPlan.exclusions?.excludeWeb;
+
+      if (isWebActive) {
+        const isSports = contextPlan.activeTools?.includes('sports') || intent.intent === 'SPORTS';
+        const webResult = await this.capabilityExecutor.execute<WebSearchResultData>(
+          'web_search',
+          userMessage,
+          contextPlan,
+          sessionId,
+        );
+
+        webHandled = true;
+
+        if (webResult.status === 'SUCCESS' && webResult.data) {
+          toolsUsed.push('web_search_capability');
+          if (isSports) toolsUsed.push('sports_category');
+          const snippet = webResult.promptContextSnippet;
+          capabilityContextSnippet = capabilityContextSnippet
+            ? `${capabilityContextSnippet}\n\n${snippet}`
+            : snippet;
+        } else if (webResult.status === 'NO_RESULTS') {
+          toolsUsed.push('web_search_no_results');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'TIMEOUT') {
+          toolsUsed.push('web_search_timeout');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'RECOVERABLE_ERROR') {
+          toolsUsed.push('web_search_recoverable_error');
+          if (webResult.fallbackDirective) {
+            capabilityFallbackDirective = capabilityFallbackDirective
+              ? `${capabilityFallbackDirective}\n\n${webResult.fallbackDirective}`
+              : webResult.fallbackDirective;
+          }
+        } else if (webResult.status === 'UNAUTHORIZED') {
+          toolsUsed.push('web_search_unauthorized');
+        }
+      }
+
       // ── 7. Decidir si buscar en la web en primera instancia ───────────────
       let triggerWebSearch = false;
 
-      if (mode !== 'OFFLINE') {
+      if (!webHandled && mode !== 'OFFLINE' && contextPlan.sources?.web !== 'EXCLUDED' && !contextPlan.exclusions?.excludeWeb) {
         if (intent.intent === 'WEB' || intent.intent === 'SPORTS') {
           if (mode === 'WEB_FIRST') {
             triggerWebSearch = true;
@@ -655,6 +807,28 @@ export class JarvisService {
 
       // ── 8. Ejecutar intent TOOL (directa: clima, math, etc.) ──────────────
       if (intent.intent === 'TOOL') {
+        if (mathHandled || contextPlan.sources?.tools === 'EXCLUDED' || contextPlan.toolStates?.math === 'EXCLUDED') {
+          if (MathCapability.isMathExpression(userMessage)) {
+            return await this.respondWithLLM(
+              userMessage,
+              sessionId,
+              providerName,
+              provider,
+              toolsUsed,
+              startTime,
+              capabilityContextSnippet || capabilityFallbackDirective,
+              prefetchedRagContext,
+              mode,
+              retrievedChunksList,
+              options.mode,
+              intent,
+              ragRetrievalStatus,
+              memoryAuthorized,
+              ragAuthorized,
+              effectiveMaxHistory,
+            );
+          }
+        }
         const hasConversationalOrIdentity =
           /(quien soy|quién soy|que sabes|qué sabes|como me llamo|cómo me llamo|te acordas|te acordás|sobre mi|acerca de mi)/i.test(
             userMessage,
@@ -1053,6 +1227,22 @@ export class JarvisService {
 
       // ── 17. SPORTS ─────────────────────────────────────────────────────────
       if (intent.intent === 'SPORTS') {
+        if (webHandled) {
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            capabilityContextSnippet || capabilityFallbackDirective,
+            prefetchedRagContext,
+            mode,
+            retrievedChunksList,
+            undefined,
+            intent,
+          );
+        }
         if (mode !== 'OFFLINE' && triggerWebSearch) {
           const sportsResult = await this.jarvisWebSearch.autoWebSearch(
             intent.sportsQuery ?? userMessage,
@@ -1099,6 +1289,22 @@ export class JarvisService {
 
       // ── 18. WEB search ─────────────────────────────────────────────────────
       if (intent.intent === 'WEB') {
+        if (webHandled) {
+          return await this.respondWithLLM(
+            userMessage,
+            sessionId,
+            providerName,
+            provider,
+            toolsUsed,
+            startTime,
+            capabilityContextSnippet || capabilityFallbackDirective,
+            prefetchedRagContext,
+            mode,
+            retrievedChunksList,
+            undefined,
+            intent,
+          );
+        }
         if (triggerWebSearch) {
           const domain =
             this.jarvisWebSearch.domainRouter.classify(userMessage);
@@ -1174,7 +1380,7 @@ export class JarvisService {
       }
 
       // ── 19. Fallback web query ─────────────────────────────────────────────
-      if (this.jarvisWebSearch.needsWebSearch(userMessage)) {
+      if (!webHandled && contextPlan.sources?.web !== 'EXCLUDED' && !contextPlan.exclusions?.excludeWeb && this.jarvisWebSearch.needsWebSearch(userMessage)) {
         const category = this.jarvisWebSearch.detectCategory(userMessage);
         const webCtx = await this.jarvisWebSearch.autoWebSearch(
           userMessage,
@@ -1225,6 +1431,14 @@ export class JarvisService {
         }
       }
 
+      const externalContextParts = [
+        capabilityContextSnippet,
+        capabilityFallbackDirective,
+        localToolContext,
+      ].filter(Boolean);
+      const effectiveRealtimeContext =
+        externalContextParts.length > 0 ? externalContextParts.join('\n\n') : undefined;
+
       return await this.respondWithLLM(
         userMessage,
         sessionId,
@@ -1232,7 +1446,7 @@ export class JarvisService {
         provider,
         toolsUsed,
         startTime,
-        localToolContext,
+        effectiveRealtimeContext,
         prefetchedRagContext,
         mode,
         retrievedChunksList,

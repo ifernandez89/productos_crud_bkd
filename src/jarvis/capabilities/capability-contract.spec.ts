@@ -274,13 +274,15 @@ describe('JCA-001 Misión 11: Capability Architecture Contract Suite', () => {
       assert.ok(result.fallbackDirective?.includes('conocimiento base del LLM'));
     });
 
-    it('TC-08: Timeout con dependencia que ignora AbortSignal se resuelve estrictamente en el límite', async () => {
-      // Proveedor rebelde que ignora el signal y tarda 2000ms
+    it('TC-08a: Proveedor que ignora AbortSignal (abortSignalSent: true, underlyingOperationCancelled: false)', async () => {
+      // Proveedor rebelde que ignora AbortSignal y sigue ejecutando en segundo plano
+      let didFinishLater = false;
       const stubbornProvider: WebSearchProviderFn = async (_q, _cat, signal) => {
         return new Promise((resolve) => {
           setTimeout(() => {
-            resolve('resultado tardío');
-          }, 500);
+            didFinishLater = true;
+            resolve('resultado tardío ignorando abort');
+          }, 300);
         });
       };
       const stubbornWebCap = new WebSearchCapability(stubbornProvider);
@@ -292,16 +294,106 @@ describe('JCA-001 Misión 11: Capability Architecture Contract Suite', () => {
       const startTime = Date.now();
       const result = await customExecutor.execute<any>(
         'web_search',
-        'Consulta con latencia extrema',
+        'Consulta con proveedor rebelde',
         plan,
-        'sess-1',
-        { overrideTimeoutMs: 50 }, // Presupuesto de 50ms
+        'sess-stubborn',
+        { overrideTimeoutMs: 50 },
       );
       const elapsed = Date.now() - startTime;
 
       assert.strictEqual(result.status, 'TIMEOUT');
-      assert.strictEqual(result.underlyingOperationCancelled, true);
+      assert.strictEqual(result.abortSignalSent, true);
+      // CORRECCIÓN MANDATORIA: underlyingOperationCancelled NO debe ser true si la dependencia ignoró la señal
+      assert.strictEqual(result.underlyingOperationCancelled, false);
       assert.ok(elapsed < 200, `El timeout debe cumplirse de inmediato (tardó ${elapsed}ms)`);
+      assert.ok(result.fallbackDirective?.includes('TIMEOUT'));
+    });
+
+    it('TC-08b: Proveedor cooperante que respeta AbortSignal (abortSignalSent: true, underlyingOperationCancelled: true)', async () => {
+      const cooperativeProvider: WebSearchProviderFn = async (_q, _cat, signal) => {
+        return new Promise((resolve, reject) => {
+          const timer = setTimeout(() => resolve('no abortado'), 500);
+          signal?.addEventListener('abort', () => {
+            clearTimeout(timer);
+            const err = new Error('Operación cancelada por señal de aborto');
+            err.name = 'AbortError';
+            reject(err);
+          });
+        });
+      };
+      const coopCap = new WebSearchCapability(cooperativeProvider);
+      const customRegistry = new CapabilityRegistry();
+      customRegistry.register(coopCap);
+      const customExecutor = new CapabilityExecutor(customRegistry);
+
+      const plan = createMockPlan({ sources: { web: 'REQUESTED' } });
+      const result = await customExecutor.execute<any>(
+        'web_search',
+        'Consulta con proveedor cooperante',
+        plan,
+        'sess-coop',
+        { overrideTimeoutMs: 40 },
+      );
+
+      assert.strictEqual(result.status, 'TIMEOUT');
+      assert.strictEqual(result.abortSignalSent, true);
+      assert.strictEqual(result.underlyingOperationCancelled, true);
+    });
+
+    it('TC-08c: Proveedor que rechaza después de que el ejecutor devolvió TIMEOUT no produce unhandled rejection', async () => {
+      const lateRejectProvider: WebSearchProviderFn = async () => {
+        return new Promise((_resolve, reject) => {
+          setTimeout(() => {
+            reject(new Error('Fallo tardío de red'));
+          }, 100);
+        });
+      };
+      const lateCap = new WebSearchCapability(lateRejectProvider);
+      const customRegistry = new CapabilityRegistry();
+      customRegistry.register(lateCap);
+      const customExecutor = new CapabilityExecutor(customRegistry);
+
+      const plan = createMockPlan({ sources: { web: 'REQUESTED' } });
+      const result = await customExecutor.execute<any>(
+        'web_search',
+        'Consulta con fallo tardío',
+        plan,
+        'sess-late-fail',
+        { overrideTimeoutMs: 30 },
+      );
+
+      assert.strictEqual(result.status, 'TIMEOUT');
+      assert.strictEqual(result.abortSignalSent, true);
+      // Esperar 150ms para asegurar que el rechazo tardío ocurre y es absorbido sin unhandledRejection
+      await new Promise((r) => setTimeout(r, 150));
+    });
+
+    it('TC-08d: Verificación de que una operación que excedió el timeout no se presenta como completada', async () => {
+      let lateResolved = false;
+      const delayedProvider: WebSearchProviderFn = async () => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            lateResolved = true;
+            resolve('resultado tardío');
+          }, 80);
+        });
+      };
+      const delayedCap = new WebSearchCapability(delayedProvider);
+      const customRegistry = new CapabilityRegistry();
+      customRegistry.register(delayedCap);
+      const customExecutor = new CapabilityExecutor(customRegistry);
+
+      const plan = createMockPlan({ sources: { web: 'REQUESTED' } });
+      const result = await customExecutor.execute<any>(
+        'web_search',
+        'Consulta tardía',
+        plan,
+        'sess-late-complete',
+        { overrideTimeoutMs: 30 },
+      );
+
+      assert.strictEqual(result.status, 'TIMEOUT');
+      assert.strictEqual(result.data, undefined);
       assert.ok(result.fallbackDirective?.includes('TIMEOUT'));
     });
   });

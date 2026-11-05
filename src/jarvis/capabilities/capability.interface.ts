@@ -54,9 +54,18 @@ export interface CapabilityResult<T = unknown> {
    */
   readonly fallbackDirective?: string;
   /**
-   * Indica si la operación subyacente fue cancelada efectivamente tras un timeout.
+   * Indica si el ejecutor emitió formalmente la señal de aborto al sobrepasar el timeout.
+   */
+  readonly abortSignalSent?: boolean;
+  /**
+   * Solo true cuando se confirma efectivamente que la operación subyacente se canceló.
+   * Si la operación ignoró la señal y continuó ejecutando, este campo permanece false.
    */
   readonly underlyingOperationCancelled?: boolean;
+  /**
+   * Indica si la operación subyacente finalizó posteriormente (resuelta o rechazada).
+   */
+  readonly underlyingOperationSettled?: boolean;
 }
 
 // ── Tipos Específicos para MathCapability ─────────────────────────────────────

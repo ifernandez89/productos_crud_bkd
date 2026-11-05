@@ -406,7 +406,7 @@ export class ContextSelectorService {
   }
 
   private isExplicitWebRequest(n: string): boolean {
-    return /(?:busca(?:r)?\s+en\s+(?:internet|la\s+web|google)|googlea(?:r)?|noticias\s+(?:de\s+hoy|recientes|actuales)|cotizacion\s+(?:del\s+)?(?:dolar|euro)|precio\s+actual\s+de)/i.test(
+    return /(?:busca(?:r)?\s+(?:.*?\s+)?en\s+(?:internet|la\s+web|google)|googlea(?:r)?|que\s+(?:ocurrio|paso)\s+hoy|noticias\s+(?:de\s+hoy|recientes|actuales)|cotizacion\s+(?:del\s+)?(?:dolar|euro)|precio\s+actual\s+de)/i.test(
       n,
     );
   }
@@ -424,8 +424,14 @@ export class ContextSelectorService {
   }
 
   private isExplicitMathRequest(n: string): boolean {
-    return /(?:cuanto\s+es\s+\d+|calcula(?:r|me)?\s+|raiz\s+cuadrada|logaritmo\s+en\s+base|\d+\s*[\+\-\*\/]\s*\d+)/i.test(
-      n,
+    const hasTimeContext =
+      /(?:a\s+que\s+hora|que\s+hora\s+sera|cuanto\s+tiempo|duracion|comienza\s+a\s+las|terminara)/i.test(n) &&
+      /\d{1,2}:\d{2}/.test(n);
+    return (
+      hasTimeContext ||
+      /(?:cuanto\s+es\s+\d+|calcula(?:r|me)?\s+|raiz\s+cuadrada|logaritmo\s+en\s+base|\d+\s*[\+\-\*\/]\s*\d+)/i.test(
+        n,
+      )
     );
   }
 
