@@ -23,6 +23,8 @@ export type ContextSourceType =
   | 'web'
   | 'tools';
 
+export type ToolName = 'math' | 'sports' | 'gmail';
+
 export interface ContextSources {
   /** Memoria persistente a largo plazo (preferencias, recuerdos de usuario) */
   memory: SourceState;
@@ -50,8 +52,12 @@ export interface ContextExclusionDirectives {
 export interface ContextAmbiguity {
   /** Indica si la consulta presenta contradicciones o ambigüedad severa */
   isAmbiguous: boolean;
-  /** Nivel de certidumbre en la resolución del contexto */
+  /** @deprecated Usar contextConfidence. Conservado por retrocompatibilidad con Capa 1 */
   confidence: 'high' | 'medium' | 'low';
+  /** Nivel de certidumbre propio de la selección de contexto, desacoplado del enrutador de intenciones */
+  contextConfidence: 'high' | 'medium' | 'low';
+  /** Lista de contradicciones o conflictos directos detectados entre directivas */
+  conflicts: string[];
   /** Detalle explicable de la ambigüedad detectada */
   reason?: string;
 }
@@ -59,8 +65,10 @@ export interface ContextAmbiguity {
 export interface ContextPlan {
   /** Estados asignados a cada una de las 5 fuentes independientes */
   sources: ContextSources;
-  /** Nombres de herramientas activas si tools === 'SELECTED' o 'REQUESTED' */
-  activeTools: string[];
+  /** Estados granulares individuales para cada herramienta operativa */
+  toolStates: Partial<Record<ToolName, SourceState>>;
+  /** Nombres de herramientas activas (derivadas estrictamente de toolStates) */
+  activeTools: ToolName[];
   /** Directivas de exclusión identificadas y aplicadas */
   exclusions: ContextExclusionDirectives;
   /** Evaluación de ambigüedad y contradicciones */

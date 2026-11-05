@@ -4,6 +4,7 @@ import type {
   ContextPlan,
   ContextSources,
   SourceState,
+  ToolName,
 } from './context-selector.interface.ts';
 
 export class ContextSelectorService {
@@ -35,6 +36,11 @@ export class ContextSelectorService {
           web: 'UNNEEDED',
           tools: 'UNNEEDED',
         },
+        toolStates: {
+          math: 'UNNEEDED',
+          sports: 'UNNEEDED',
+          gmail: 'UNNEEDED',
+        },
         activeTools: [],
         exclusions: {
           excludeDocuments: false,
@@ -45,6 +51,8 @@ export class ContextSelectorService {
         ambiguity: {
           isAmbiguous: true,
           confidence: 'high',
+          contextConfidence: 'high',
+          conflicts: [],
           reason: 'EMPTY_MESSAGE',
         },
         policyReason: 'EMPTY_INPUT_NO_CONTEXT_NEEDED',
@@ -54,6 +62,7 @@ export class ContextSelectorService {
 
     // ── 1. Detección de Exclusiones Explícitas del Usuario (Prioridad 0) ──────
     const exclusions = this.detectExclusions(normalized);
+    const toolExclusions = this.detectToolExclusions(normalized);
 
     // ── 2. Detección de Señales de Solicitud Explícita ─────────────────────────
     const explicitRagRequested = this.isExplicitDocumentRequest(normalized);
@@ -68,35 +77,65 @@ export class ContextSelectorService {
     // ── 3. Detección de Consultas Conceptuales / Teóricas ─────────────────────
     const isConceptualOrGeneral = this.isConceptualOrTheoretical(normalized);
 
-    // ── 4. Resolución de Ambigüedad y Contradicciones ────────────────────────
-    let isAmbiguous = false;
-    let ambiguityReason: string | undefined = undefined;
+    // ── 4. Resolución de Ambigüedad, Contradicciones y Confianza Contextual ────
+    const conflicts: string[] = [];
 
     // Contradicción: pedir documentos y a la vez excluirlos
     if (explicitRagRequested && exclusions.excludeDocuments) {
-      isAmbiguous = true;
-      ambiguityReason = 'CONTRADICTION_RAG_REQUESTED_BUT_EXPLICITLY_EXCLUDED';
+      conflicts.push('CONTRADICTION_RAG_REQUESTED_BUT_EXPLICITLY_EXCLUDED');
     }
 
     // Contradicción: pedir web y a la vez excluirla
     if (explicitWebRequested && exclusions.excludeWeb) {
-      isAmbiguous = true;
-      ambiguityReason = 'CONTRADICTION_WEB_REQUESTED_BUT_EXPLICITLY_EXCLUDED';
+      conflicts.push('CONTRADICTION_WEB_REQUESTED_BUT_EXPLICITLY_EXCLUDED');
+    }
+
+    // Contradicciones en herramientas
+    if (explicitMathRequested && toolExclusions.math) {
+      conflicts.push('CONTRADICTION_MATH_REQUESTED_BUT_EXCLUDED');
+    }
+    if (explicitSportsRequested && toolExclusions.sports) {
+      conflicts.push('CONTRADICTION_SPORTS_REQUESTED_BUT_EXCLUDED');
+    }
+    if (explicitGmailAccountAction && toolExclusions.gmail) {
+      conflicts.push('CONTRADICTION_GMAIL_REQUESTED_BUT_EXCLUDED');
     }
 
     // Mensaje ultra-corto o confuso
-    if (trimmed.length < 3 && !/^(si|no|ok)$/i.test(trimmed)) {
-      isAmbiguous = true;
-      ambiguityReason = 'QUERY_TOO_SHORT_UNCERTAIN';
+    const isTooShort = trimmed.length < 3 && !/^(si|no|ok)$/i.test(trimmed);
+    const isAmbiguous = conflicts.length > 0 || isTooShort;
+    const ambiguityReason: string | undefined =
+      conflicts.length > 0
+        ? conflicts[0]
+        : isTooShort
+          ? 'QUERY_TOO_SHORT_UNCERTAIN'
+          : undefined;
+
+    // Cálculo independiente de confianza contextual:
+    // - LOW: Contradicciones directas o incertidumbre severa
+    // - HIGH: Directivas unívocas explícitas sin conflictos
+    // - MEDIUM: Decisión basada exclusivamente en heurísticas
+    const hasExplicitDirectives =
+      explicitRagRequested ||
+      explicitWebRequested ||
+      explicitMemoryRequested ||
+      exclusions.matchedDirectives.length > 0 ||
+      Boolean(toolExclusions.math || toolExclusions.sports || toolExclusions.gmail);
+
+    let contextConfidence: 'high' | 'medium' | 'low';
+    if (isAmbiguous || conflicts.length > 0) {
+      contextConfidence = 'low';
+    } else if (hasExplicitDirectives) {
+      contextConfidence = 'high';
+    } else {
+      contextConfidence = 'medium';
     }
 
     // ── 5. Resolución de Fuentes Independientes ──────────────────────────────
 
     // 5.1. Historial Conversacional Inmediato (conversationHistory)
-    // Siempre permitido salvo que el usuario pida reinicio explícito de sesión.
-    const conversationHistory: SourceState = hasHistory || this.isFollowUpQuery(normalized)
-      ? 'SELECTED'
-      : 'UNNEEDED';
+    const conversationHistory: SourceState =
+      hasHistory || this.isFollowUpQuery(normalized) ? 'SELECTED' : 'UNNEEDED';
 
     // 5.2. Memoria Persistente a Largo Plazo (memory)
     let memory: SourceState = 'UNNEEDED';
@@ -105,10 +144,8 @@ export class ContextSelectorService {
     } else if (explicitMemoryRequested) {
       memory = 'REQUESTED';
     } else if (isConceptualOrGeneral || explicitCodeRequested || explicitMathRequested) {
-      // Las consultas técnicas conceptuales o matemáticas no necesitan hurgar en recuerdos personales
       memory = 'UNNEEDED';
     } else if (intent === 'LOCAL' && hasHistory) {
-      // Contexto conversacional general puede enriquecerse si no fue excluida
       memory = 'SELECTED';
     }
 
@@ -119,7 +156,6 @@ export class ContextSelectorService {
     } else if (explicitRagRequested) {
       rag = 'REQUESTED';
     } else if (isConceptualOrGeneral || explicitCodeRequested || explicitMathRequested) {
-      // Conceptos generales de software, algoritmos o matemáticas: NUNCA RAG ciego
       rag = 'UNNEEDED';
     } else if (intent === 'RAG' && intentConfidence === 'high') {
       rag = 'SELECTED';
@@ -137,72 +173,100 @@ export class ContextSelectorService {
       web = 'SELECTED';
     }
 
-    // 5.5. Herramientas Deterministas (tools)
+    // 5.5. Herramientas Deterministas Granulares (toolStates y activeTools)
+    const toolStates: Partial<Record<ToolName, SourceState>> = {
+      math: 'UNNEEDED',
+      sports: 'UNNEEDED',
+      gmail: 'UNNEEDED',
+    };
+
+    if (toolExclusions.math) {
+      toolStates.math = 'EXCLUDED';
+    } else if (explicitMathRequested && !hasExplanationSignal) {
+      toolStates.math = 'SELECTED';
+    }
+
+    if (toolExclusions.sports) {
+      toolStates.sports = 'EXCLUDED';
+    } else if (explicitSportsRequested) {
+      toolStates.sports = 'SELECTED';
+    }
+
+    if (toolExclusions.gmail) {
+      toolStates.gmail = 'EXCLUDED';
+    } else if (explicitGmailAccountAction && !explicitCodeRequested) {
+      toolStates.gmail = 'SELECTED';
+    }
+
+    // Regla Mandatoria: activeTools se deriva estrictamente de toolStates
+    const activeTools: ToolName[] = (Object.keys(toolStates) as ToolName[]).filter(
+      (tool) => toolStates[tool] === 'SELECTED' || toolStates[tool] === 'REQUESTED',
+    );
+
+    // Estado agregado de tools para retrocompatibilidad
     let tools: SourceState = 'UNNEEDED';
-    const activeTools: string[] = [];
-
-    if (explicitMathRequested && !hasExplanationSignal) {
+    if (activeTools.length > 0) {
       tools = 'SELECTED';
-      activeTools.push('math');
+    } else if (
+      (explicitMathRequested && toolStates.math === 'EXCLUDED') ||
+      (explicitSportsRequested && toolStates.sports === 'EXCLUDED') ||
+      (explicitGmailAccountAction && toolStates.gmail === 'EXCLUDED')
+    ) {
+      tools = 'EXCLUDED';
     }
 
-    if (explicitSportsRequested) {
-      tools = 'SELECTED';
-      activeTools.push('sports');
-    }
-
-    // GMAIL: Únicamente si es una acción real sobre la cuenta o bandeja, NUNCA por hablar de código o sintaxis
-    if (explicitGmailAccountAction && !explicitCodeRequested) {
-      tools = 'SELECTED';
-      activeTools.push('gmail');
-    }
-
-    // ── 6. Determinación de la Razón de Política (policyReason) ───────────────
-    let policyReason = 'STANDARD_EVALUATION';
+    // ── 6. Determinación de la Acción Sugerida (suggestedAction) ──────────────
+    // ADV-01: La exclusión de una fuente (ej. web) NO debe degradar la acción sugerida
+    // de otra fuente que fue explícitamente solicitada (ej. rag).
     let suggestedAction: ContextPlan['suggestedAction'] = 'LLM';
 
-    if (exclusions.matchedDirectives.length > 0) {
-      if (rag === 'EXCLUDED' && explicitRagRequested) {
-        policyReason = 'CONTRADICTION_RESOLVED_NEGATIVE_PRECEDENCE';
-      } else if (rag === 'EXCLUDED' && web === 'EXCLUDED') {
-        policyReason = 'USER_EXCLUSION_DOCUMENTS_AND_WEB';
-      } else if (rag === 'EXCLUDED') {
-        policyReason = 'USER_EXCLUSION_DOCUMENTS';
-      } else if (web === 'EXCLUDED') {
-        policyReason = 'USER_EXCLUSION_WEB';
-      } else if (memory === 'EXCLUDED') {
-        policyReason = 'USER_EXCLUSION_MEMORY';
-      }
-    } else if (rag === 'REQUESTED' && web === 'REQUESTED') {
-      policyReason = 'MULTISOURCE_COMPARISON_RAG_AND_WEB';
+    if (rag === 'REQUESTED' && web === 'REQUESTED') {
       suggestedAction = 'HYBRID_SEARCH';
     } else if (rag === 'REQUESTED') {
-      policyReason = 'EXPLICIT_DOCUMENT_RETRIEVAL';
       suggestedAction = 'RAG_SEARCH';
+    } else if (activeTools.length > 0) {
+      suggestedAction = 'TOOL';
+    } else if (web === 'REQUESTED' || (web === 'SELECTED' && activeTools.length === 0)) {
+      suggestedAction = 'WEB_SEARCH';
+    } else if (rag === 'SELECTED') {
+      suggestedAction = 'RAG_SEARCH';
+    } else {
+      suggestedAction = 'LLM';
+    }
+
+    // ── 7. Determinación de la Razón de Política (policyReason) ───────────────
+    let policyReason = 'STANDARD_EVALUATION';
+
+    if (conflicts.length > 0) {
+      policyReason = 'CONTRADICTION_RESOLVED_NEGATIVE_PRECEDENCE';
+    } else if (exclusions.excludeDocuments && exclusions.excludeWeb) {
+      policyReason = 'USER_EXCLUSION_DOCUMENTS_AND_WEB';
+    } else if (exclusions.excludeDocuments) {
+      policyReason = 'USER_EXCLUSION_DOCUMENTS';
+    } else if (exclusions.excludeWeb) {
+      policyReason = 'USER_EXCLUSION_WEB';
+    } else if (exclusions.excludeMemory) {
+      policyReason = 'USER_EXCLUSION_MEMORY';
+    } else if (rag === 'REQUESTED' && web === 'REQUESTED') {
+      policyReason = 'MULTISOURCE_COMPARISON_RAG_AND_WEB';
+    } else if (rag === 'REQUESTED') {
+      policyReason = 'EXPLICIT_DOCUMENT_RETRIEVAL';
     } else if (web === 'REQUESTED' || (web === 'SELECTED' && activeTools.length === 0)) {
       policyReason = 'EXPLICIT_WEB_SEARCH';
-      suggestedAction = 'WEB_SEARCH';
     } else if (explicitCodeRequested) {
       policyReason = 'PURE_CODE_GENERATION';
-      suggestedAction = 'LLM';
     } else if (explicitMathRequested && hasExplanationSignal) {
       policyReason = 'ARITHMETIC_EXPLANATION';
-      suggestedAction = 'LLM';
     } else if (activeTools.includes('math')) {
       policyReason = 'DIRECT_MATH_CALCULATION';
-      suggestedAction = 'TOOL';
     } else if (activeTools.includes('sports')) {
       policyReason = 'SPORTS_RESULT_QUERY';
-      suggestedAction = 'TOOL';
     } else if (activeTools.includes('gmail')) {
       policyReason = 'GMAIL_ACCOUNT_ACTION';
-      suggestedAction = 'TOOL';
     } else if (isConceptualOrGeneral) {
       policyReason = 'CONCEPTUAL_LOCAL_KNOWLEDGE';
-      suggestedAction = 'LLM';
     } else if (explicitMemoryRequested) {
       policyReason = 'PERSONAL_IDENTITY_AND_MEMORY_QUERY';
-      suggestedAction = 'LLM';
     }
 
     const sources: ContextSources = {
@@ -215,11 +279,14 @@ export class ContextSelectorService {
 
     return {
       sources,
+      toolStates,
       activeTools,
       exclusions,
       ambiguity: {
         isAmbiguous,
-        confidence: isAmbiguous ? 'low' : intentConfidence,
+        confidence: contextConfidence,
+        contextConfidence,
+        conflicts,
         reason: ambiguityReason,
       },
       policyReason,
@@ -239,15 +306,23 @@ export class ContextSelectorService {
   private detectExclusions(n: string): ContextExclusionDirectives {
     const matched: string[] = [];
 
-    // Exclusión de documentos / biblioteca / RAG
+    // Exclusión de documentos / biblioteca / corpus / archivos / RAG
+    // Captura variantes imperativas y preposicionales negativas:
+    // - no uses mis documentos
+    // - sin consultar la biblioteca
+    // - sin usar documentos
+    // - no accedas al corpus
+    // - no revises archivos
+    // - bajo ningun concepto uses la biblioteca
+    // Evita falsos positivos como: "cómo usar documentos en TypeScript", "¿qué documentos necesito?"
     const docExclusionPattern =
-      /(?:sin\s+(?:consultar\s+)?(?:documentos?|biblioteca|archivos?|pdfs?)|no\s+(?:uses?|consultes?|leas?|revises?)\s+(?:la\s+|los\s+|mis\s+|mi\s+)?(?:biblioteca|documentos?|archivos?|pdfs?)|ni\s+(?:documentos?|biblioteca|archivos?|pdfs?)|sin\s+rag|solo\s+con\s+tu\s+conocimiento)/i;
+      /(?:no\s+(?:uses?|consultes?|leas?|revises?|accedas?(?:\s+a|\s+al)?|busques?\s+(?:en|el))\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|sin\s+(?:consultar|usar|leer|revisar|mirar|acceder(?:\s+a|\s+al)?)?\s*(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|ni\s+(?:usar\s+|consultar\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|bajo\s+ningun\s+concepto\s+uses\s+(?:la\s+|los\s+|mis\s+|mi\s+|el\s+)?(?:documentos?|biblioteca|corpus|archivos?|pdfs?)|sin\s+rag|solo\s+con\s+tu\s+conocimiento)/i;
     const matchDoc = n.match(docExclusionPattern);
     if (matchDoc) matched.push(matchDoc[0]);
 
     // Exclusión de internet / búsqueda web
     const webExclusionPattern =
-      /(?:sin\s+(?:usar\s+|consultar\s+)?(?:internet|la\s+web|google)|no\s+(?:busques?|navegues?)\s+en\s+(?:internet|la\s+web|google)|ni\s+(?:usar\s+)?(?:internet|la\s+web|google)|offline|modo\s+offline|desconectado)/i;
+      /(?:sin\s+(?:usar\s+|consultar\s+)?(?:internet|la\s+web|google)|no\s+(?:busques?|navegues?|uses?)\s+(?:en\s+)?(?:internet|la\s+web|google)|ni\s+(?:usar\s+)?(?:internet|la\s+web|google)|bajo\s+ningun\s+concepto\s+uses\s+(?:la\s+web|internet)|offline|modo\s+offline|desconectado)/i;
     const matchWeb = n.match(webExclusionPattern);
     if (matchWeb) matched.push(matchWeb[0]);
 
@@ -265,8 +340,27 @@ export class ContextSelectorService {
     };
   }
 
+  private detectToolExclusions(n: string): Partial<Record<ToolName, boolean>> {
+    const mathExcluded =
+      /(?:no\s+uses?\s+(?:la\s+)?calculadora|sin\s+calculadora|sin\s+matematica)/i.test(n);
+    const sportsExcluded =
+      /(?:no\s+(?:busques?|mires?|revises?)\s+(?:deportes|futbol|partidos)|sin\s+deportes|sin\s+futbol)/i.test(
+        n,
+      );
+    const gmailExcluded =
+      /(?:no\s+(?:revises?|uses?|abras?)\s+(?:mis\s+)?(?:correos?|emails?|mails?|gmail|bandeja)|sin\s+(?:usar\s+)?(?:gmail|correos?|bandeja))/i.test(
+        n,
+      );
+
+    return {
+      math: mathExcluded,
+      sports: sportsExcluded,
+      gmail: gmailExcluded,
+    };
+  }
+
   private isExplicitDocumentRequest(n: string): boolean {
-    return /(?:busca\s+en\s+(?:mis\s+|mi\s+|los\s+|la\s+|el\s+)?(?:documentos|biblioteca|archivos|pdfs|notas)|segun\s+(?:mis\s+|mi\s+|los\s+|el\s+)?(?:documentos|archivos|textos|apuntes|libro)|que\s+dice\s+(?:el\s+libro|el\s+documento|el\s+texto|muldoon|carrington|monroe|ziewe)|busca\s+(?:el\s+documento|el\s+libro|el\s+archivo)\s+sobre)/i.test(
+    return /(?:busca(?:r)?\s+(?:en|el)\s+(?:mis\s+|mi\s+|los\s+|la\s+|el\s+)?(?:documentos|biblioteca|archivos|pdfs|notas|libro)|segun\s+(?:mis\s+|mi\s+|los\s+|el\s+)?(?:documentos|archivos|textos|apuntes|libro)|que\s+dice\s+(?:el\s+libro|el\s+documento|el\s+texto|muldoon|carrington|monroe|ziewe)|busca\s+(?:el\s+documento|el\s+libro|el\s+archivo)\s+sobre|si\s+busca\s+en\s+mis\s+documentos)/i.test(
       n,
     );
   }
@@ -290,7 +384,7 @@ export class ContextSelectorService {
   }
 
   private isExplicitMathRequest(n: string): boolean {
-    return /(?:cuanto\s+es\s+\d+|calcula(?:r)?\s+|raiz\s+cuadrada|logaritmo\s+en\s+base|\d+\s*[\+\-\*\/]\s*\d+)/i.test(
+    return /(?:cuanto\s+es\s+\d+|calcula(?:r|me)?\s+|raiz\s+cuadrada|logaritmo\s+en\s+base|\d+\s*[\+\-\*\/]\s*\d+)/i.test(
       n,
     );
   }
@@ -308,18 +402,39 @@ export class ContextSelectorService {
   }
 
   private isExplicitGmailAccountAction(n: string): boolean {
-    // Exclusivamente operaciones reales sobre la cuenta de Gmail
-    const isOperationOnMailbox =
-      /(?:revisa(?:r)?\s+(?:mi\s+)?(?:bandeja|inbox|correo|email|gmail)|busca(?:r)?\s+(?:mis\s+|los\s+)?(?:correos?|emails?|mails?|mensajes?)|lee(?:r)?\s+(?:mis\s+)?(?:correos?|emails?|mails?)|tengo\s+(?:correos?|emails?)\s+(?:nuevos?|sin\s+leer)|enviar\s+(?:un\s+)?(?:email|correo|mail)\s+a\s+\S+@\S+|redacta(?:r)?\s+(?:un\s+)?(?:borrador|draft|email|correo)\s+(?:para|a)\s+)/i.test(
+    // 1. Excluir consultas de desarrollo / programación
+    const isCodeOrTheoretical =
+      /(?:sintaxis|regex|expresion\s+regular|funcion|validar|rfc\s*5322|protocolo|smtp|imap|pop3|typescript|javascript|python)/i.test(
         n,
       );
-    // Excluir preguntas teóricas, gramaticales o de programación sobre emails
-    const isTheoreticalEmail =
-      /(?:sintaxis|regex|expresion\s+regular|funcion|validar|rfc\s*5322|como\s+funciona\s+el\s+protocolo|formato\s+de\s+un\s+email)/i.test(
+    if (isCodeOrTheoretical) return false;
+
+    // 2. Excluir copywriting puro / redacción creativa que no instruye operar sobre el buzón
+    const isPureCopywriting =
+      /(?:redacta(?:me|r)?|escribi(?:me|r)?|mejora(?:r)?|corregi(?:r)?)\s+(?:un\s+|este\s+)?(?:email|correo|mail|mensaje)\s+(?:para|a|felicitando)/i.test(
+        n,
+      ) && !/(?:en\s+(?:mi\s+)?(?:gmail|cuenta|bandeja)|guarda(?:r)?|envia(?:r)?)/i.test(n);
+    if (isPureCopywriting) return false;
+
+    // 3. Operaciones de lectura y búsqueda en buzón
+    const isMailboxSearchOrRead =
+      /(?:revisa(?:r)?\s+(?:mi\s+)?(?:bandeja|inbox|correo|email|gmail|casilla)|busca(?:r)?\s+(?:mis\s+|los\s+|el\s+ultimo\s+)?(?:correos?|emails?|mails?)|lee(?:r)?\s+(?:mis\s+|el\s+ultimo\s+)?(?:correos?|emails?|mails?)|tengo\s+(?:correos?|emails?)\s+(?:nuevos?|sin\s+leer))/i.test(
         n,
       );
 
-    return isOperationOnMailbox && !isTheoreticalEmail;
+    // 4. Operación de envío real
+    const isMailSendAction =
+      /(?:envia(?:r)?|manda(?:r)?)\s+(?:este\s+|un\s+)?(?:email|correo|mail)\s+(?:a|para)\s+/i.test(
+        n,
+      );
+
+    // 5. Creación de borrador dentro de la cuenta
+    const isAccountDraftCreation =
+      /(?:crea(?:r)?|guarda(?:r)?)\s+(?:un\s+)?borrador\s+en\s+(?:mi\s+)?(?:gmail|cuenta|inbox|bandeja|correo)/i.test(
+        n,
+      );
+
+    return isMailboxSearchOrRead || isMailSendAction || isAccountDraftCreation;
   }
 
   private isConceptualOrTheoretical(n: string): boolean {
