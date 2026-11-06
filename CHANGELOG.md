@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Architecture & Research — DEV-001-B2.2 Completada (B2.2-A a B2.2-E): Auditoría de Aislamiento, Especificación de MicroVM QEMU/WHPX y Criterios del Prototipo (2026-11-06)
+
+> **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / DESIGN ONLY (Sin instalación de hipervisores, sin reinicio del host, sin despacho al sistema operativo).  
+> **Frontera de Ejecución:** 🔒 STRICT NO-EXECUTION. El Execution Broker continúa operando exclusivamente en modo `SIMULATED`. Adaptadores reales permanecen terminantemente bloqueados.  
+> **Arquitectura Candidata Principal:** MicroVM Efímera QEMU + Windows Hypervisor Platform (WHPX) coordinada por Host Supervisor en Windows con Job Objects.  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base B2.1:** `c8a7ba4`
+
+- **DEV-001-B2.2-A — Auditoría de Factibilidad y Aislamiento de WSL2 (`docs/DEV_001_B2_2_A_WSL2_FEASIBILITY_AUDIT.md`)**:
+  - Detección del estado real del host: `HypervisorPresent: False`, `VirtualMachinePlatform` inactiva, `wsl.exe` en estado de stub y cero distribuciones instaladas.
+  - Verificación de hardware: CPU Intel Core i7-12700 con virtualización VT-x habilitada en firmware (`VirtualizationFirmwareEnabled: True`); GPU NVIDIA RTX 5070 con 12 GB VRAM lista.
+  - Identificación de los 5 vectores críticos de escape en WSL2 predeterminado (automount en `/mnt/c/`, interop de ejecutables Windows, red NAT/SSRF, sockets WSLg y desbordamiento de VRAM).
+- **DEV-001-B2.2-B — Diseño de Aislamiento y Mitigaciones en Profundidad (`docs/DEV_001_B2_2_B_SANDBOX_DESIGN.md`)**:
+  - Corrección de falacias de seguridad: mitigación de montajes manuales DrvFS y sockets 9P mediante usuario no privilegiado (`uid=10001`) y `cap_drop = ALL`.
+  - Supresión de canales auxiliares `/run/WSL`, variables `WSLENV` y sockets `AF_VSOCK`.
+  - Aislamiento de red mediante network namespace huérfano (zero-interfaces, `/etc/resolv.conf` nulo y `closefrom(3)`).
+- **DEV-001-B2.2-C — Factibilidad de MicroVM y Compatibilidad de Hipervisores (`docs/DEV_001_B2_2_C_MICROVM_FEASIBILITY.md`)**:
+  - Descarte fundamentado de Firecracker (requiere Linux KVM nativo) y Cloud-Hypervisor (experimental en Windows).
+  - Selección de **QEMU con WHPX (`-accel whpx -M microvm`)** como arquitectura candidata preferida frente a WSL2 para código no confiable.
+  - Lanzador estático en C con `PR_SET_NO_NEW_PRIVS`, `PR_CAP_AMBIENT_CLEAR_ALL` y filtro BPF Seccomp estricto.
+  - Distinción entre código no confiable (cero GPU) y tareas audiovisuales autenticadas (watchdog externo de VRAM con `SIGKILL`).
+- **DEV-001-B2.2-D — Especificación de Seguridad QEMU/WHPX y Host Supervisor (`docs/DEV_001_B2_2_D_QEMU_WHPX_SUPERVISOR_SPEC.md`)**:
+  - Matriz positiva de hardware virtual: `-nic none`, `-vga none`, `-nodefaults`, `-monitor none`, puerto serie virtual exclusivo (`-serial stdio`).
+  - Confinamiento del proceso QEMU en Windows mediante Windows Job Object (`JobMemoryLimit = 1.25 GB`, `CpuRate = 20%`, `KILL_ON_JOB_CLOSE`) y token restringido.
+  - Verificación de integridad criptográfica SHA-256 de kernel e initramfs previa al arranque (*Fail-Closed*).
+  - Protocolo de tareas estructuradas (`{"type": "TASK", "capability": "...", "arguments": ...}`) eliminando cualquier ejecución de código libre arbitrario.
+  - Destrucción verificable en 3 fases (vCPUs halt, terminación de procesos anfitriones y purga de RAM/pipes).
+  - Especialización multi-entorno: Sandbox de Código (aislamiento máximo), Sandbox Audiovisual (GPU controlada) y Sandbox de Investigación (red controlada).
+  - Suite de 18 pruebas adversariales de escape documentada.
+- **DEV-001-B2.2-E — Criterios de Aceptación del Prototipo (`docs/DEV_001_B2_2_E_PROTOTYPE_READINESS.md`)**:
+  - Definición del primer prototipo "deliberadamente aburrido": prueba manual aislada con capacidad única fija `diagnostic:ping`.
+  - Desconexión al 100% de NestJS, del Execution Broker y de la autonomía del agente.
+  - Criterios objetivos de corte para graduación a fase B2.3 (100% de 18 tests aprobados, latencia < 1500 ms, destrucción comprobada).
+
 ### Security Hardening & Implementation — DEV-001-B2.1 Homologada con Restricciones: Execution Broker en Modo Estricto No-Execution (2026-11-06)
 
 > **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B2.1-REVIEW` con dictamen técnico favorable).  
