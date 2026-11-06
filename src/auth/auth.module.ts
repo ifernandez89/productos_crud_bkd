@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { SingleInstanceLockService } from './single-instance-lock.service';
 import {
   JARBEES_JWT_ALGORITHM,
   JARBEES_JWT_AUDIENCE,
@@ -40,7 +41,7 @@ import {
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [JwtModule, AuthService],
+  providers: [AuthService, JwtStrategy, SingleInstanceLockService],
+  exports: [JwtModule, AuthService, SingleInstanceLockService],
 })
 export class AuthModule {}

@@ -19,7 +19,6 @@ import { Public } from '../auth/public.decorator';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Public()
   @Post()
   @ApiOperation({ summary: 'Create a product' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
@@ -27,14 +26,12 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
-  @Public()
   @Get()
   @ApiResponse({ status: 200, description: 'Return all products' })
   findAll() {
     return this.productsService.findAll();
   }
 
-  @Public()
   @Get(':id')
   @ApiResponse({ status: 200, description: 'Return a product by id' })
   @ApiResponse({ status: 404, description: 'Product not found' })
@@ -42,7 +39,6 @@ export class ProductsController {
     return this.productsService.findOne(id);
   }
 
-  @Public()
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product' })
   update(
@@ -52,7 +48,6 @@ export class ProductsController {
     return this.productsService.update(id, updateProductDto);
   }
 
-  @Public()
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a product' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })

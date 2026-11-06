@@ -136,6 +136,14 @@ export class Studio3DController {
           );
         }
       }
+      if (fs.existsSync(resolvedCandidate)) {
+        const destLstat = fs.lstatSync(resolvedCandidate);
+        if (destLstat.isSymbolicLink() || !destLstat.isFile()) {
+          throw new ForbiddenException(
+            'SecurityKernel: el destino de escritura 3D es un enlace simbólico, junction o directorio no permitido.',
+          );
+        }
+      }
       return resolvedCandidate;
     }
   }

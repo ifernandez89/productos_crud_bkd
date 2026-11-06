@@ -18,7 +18,6 @@ import { ChunkRequestDto } from './dto/chunk-request.dto';
 export class ReaderController {
   constructor(private readonly readerService: ReaderService) {}
 
-  @Public()
   @Get()
   @ApiOperation({ summary: 'Listar todos los documentos disponibles en la biblioteca de audiolibros' })
   async listDocuments() {
@@ -26,14 +25,12 @@ export class ReaderController {
     return { success: true, documentos };
   }
 
-  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un documento con sus bloques de lectura' })
   async getDocument(@Param('id') id: string) {
     return this.readerService.getDocument(id);
   }
 
-  @Public()
   @Post(':id/chunk')
   @ApiOperation({ summary: 'Solicitar audio (WAV) de un bloque específico mediante POST' })
   async getChunkAudioPost(
@@ -50,7 +47,6 @@ export class ReaderController {
     res.status(200).send(audioBuffer);
   }
 
-  @Public()
   @Get(':id/chunk/:chunkIndex')
   @ApiOperation({ summary: 'Obtener audio (WAV) de un bloque mediante GET directo' })
   async getChunkAudioGet(

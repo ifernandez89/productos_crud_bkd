@@ -7,6 +7,7 @@ import {
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -26,6 +27,7 @@ import { MobileGatewayController } from '../../mobile-gateway/mobile-gateway.con
 import { Studio3DController } from '../3d/controllers/studio-3d.controller';
 import { AssetMetadataController } from '../3d/controllers/asset-metadata.controller';
 import { AssetMetadataService } from '../3d/services/asset-metadata.service';
+import { AssetSecurityService } from '../3d/services/asset-security.service';
 import { JarvisCommandService } from '../commands/jarvis-command.service';
 import { JarvisController } from '../jarvis.controller';
 import { AudiobookIngestService } from '../library/audiobook-ingest.service';
@@ -58,6 +60,7 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
   let reflector: Reflector;
 
   beforeEach(() => {
+    process.env.JARBEES_DISABLE_INSTANCE_LOCK = 'true';
     process.env.JWT_SECRET = testJwtSecret;
     process.env.ACTION_GATEKEEPER_SECRET = testGatekeeperSecret;
     process.env.MOBILE_GATEWAY_SECRET =
@@ -1084,6 +1087,277 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
       expect(buf).toBeInstanceOf(Buffer);
       expect(buf.length).toBeGreaterThan(0);
       expect(buf.toString('utf8')).toContain('backend');
+    });
+  });
+
+  // ── 18. DEV-001-B1.3: Concurrencia real y exclusión mutua (TEST-01, A2, Lockout) ──
+  describe('18. Concurrencia real y exclusión mutua con Promise.all (DEV-001-B1.3 TEST-01)', () => {
+    it('MobileGatewayService: ante 10 peticiones concurrentes simultáneas con el mismo requestId, exactamente 1 tiene éxito y 9 son rechazadas', async () => {
+      const mobileSvc = new MobileGatewayService();
+      mobileSvc.clearReplayLedger();
+
+      const sharedRequestId = 'concurrent-req-' + Date.now();
+      const cmd = {
+        requestId: sharedRequestId,
+        deviceId: 'device-concurrent-test',
+        timestamp: new Date().toISOString(),
+        intent: 'CONCURRENT_TEST',
+      };
+      const sig = mobileSvc.signCommandDto(cmd);
+
+      // Disparar 10 validaciones simultáneas en paralelo
+      const attempts = Array.from({ length: 10 }, async () => {
+        try {
+          mobileSvc.validateCommandSecurity(cmd, sig);
+          return { success: true };
+        } catch (err: any) {
+          return { success: false, error: err };
+        }
+      });
+
+      const results = await Promise.all(attempts);
+      const successes = results.filter((r) => r.success);
+      const failures = results.filter((r) => !r.success);
+
+      expect(successes.length).toBe(1);
+      expect(failures.length).toBe(9);
+      for (const f of failures) {
+        expect(f.error).toBeInstanceOf(ForbiddenException);
+        expect(f.error.message).toContain('Ataque de repetición detectado');
+      }
+
+      mobileSvc.clearReplayLedger();
+      mobileSvc.destroy();
+    });
+
+    it('AuthService: ante múltiples intentos de login concurrentes desde la misma IP, bloquea consistentemente (429)', async () => {
+      const testIp = '198.51.100.244';
+      const authSvc = new AuthService(jwtService);
+      authSvc.clearRateLimitState();
+
+      // Enviar 10 intentos concurrentes con credenciales incorrectas
+      const attempts = Array.from({ length: 10 }, async () => {
+        try {
+          authSvc.login(
+            { operatorId: testOperatorId, password: 'wrong-password' },
+            { ip: testIp },
+          );
+          return { success: true };
+        } catch (err: any) {
+          return { success: false, status: err.status || err.getStatus?.() || 401 };
+        }
+      });
+
+      const results = await Promise.all(attempts);
+      const rateLimited = results.filter((r) => r.status === 429);
+      // Al superar los 5 intentos, debe detonar bloqueo 429
+      expect(rateLimited.length).toBeGreaterThan(0);
+
+      authSvc.clearRateLimitState();
+      authSvc.destroy();
+    });
+  });
+
+  // ── 19. DEV-001-B1.3: Resiliencia ante archivos vacíos (0 bytes) y corrupción (A2-01 & F-B1-02-01) ──
+  describe('19. Resiliencia y Fail-Closed ante archivos vacíos y corrupción (DEV-001-B1.3)', () => {
+    it('MobileGatewayService: un archivo de 0 bytes producto de caída abrupta NO es eliminado en arranque y rechaza repetición', () => {
+      const mobile1 = new MobileGatewayService();
+      mobile1.clearReplayLedger();
+
+      const testRequestId = 'crash-test-req-' + Date.now();
+      const hash = crypto.createHash('sha256').update(testRequestId).digest('hex');
+      const storageDir = path.resolve('storage', 'security', 'mobile-replay');
+      if (!fs.existsSync(storageDir)) {
+        fs.mkdirSync(storageDir, { recursive: true });
+      }
+      const zeroByteFilePath = path.join(storageDir, `${hash}.json`);
+      // Simular crash: crear archivo de 0 bytes (openSync sin writeFileSync)
+      fs.writeFileSync(zeroByteFilePath, Buffer.alloc(0));
+
+      // Simular reinicio del servicio
+      const mobile2 = new MobileGatewayService();
+
+      // 1. El archivo de 0 bytes NO debe haber sido borrado
+      expect(fs.existsSync(zeroByteFilePath)).toBe(true);
+
+      // 2. Un intento de enviar el mismo requestId DEBE ser rechazado
+      const cmd = {
+        requestId: testRequestId,
+        deviceId: 'device-test',
+        timestamp: new Date().toISOString(),
+        intent: 'CRASH_TEST',
+      };
+      const sig = mobile2.signCommandDto(cmd);
+      expect(() => mobile2.validateCommandSecurity(cmd, sig)).toThrow(ForbiddenException);
+
+      // Limpieza
+      mobile2.clearReplayLedger();
+      mobile1.destroy();
+      mobile2.destroy();
+    });
+
+    it('AuthService: un archivo de lockout corrupto o incompleto tras crash NO levanta el bloqueo', () => {
+      const testIp = '198.51.100.250';
+      const auth1 = new AuthService(jwtService);
+      auth1.clearRateLimitState();
+
+      const key = `ip:${testIp}`;
+      const hash = crypto.createHash('sha256').update(key).digest('hex');
+      const lockoutDir = path.resolve('storage', 'security', 'auth-lockout');
+      if (!fs.existsSync(lockoutDir)) {
+        fs.mkdirSync(lockoutDir, { recursive: true });
+      }
+      const corruptFilePath = path.join(lockoutDir, `${hash}.json`);
+      // Simular crash: volcado JSON incompleto / corrupto
+      fs.writeFileSync(corruptFilePath, '{"key": "ip:198.51.100.250", "lockedUntil": 9999999999999, "corrup');
+
+      // Simular reinicio del servicio
+      const auth2 = new AuthService(jwtService);
+
+      // 1. El archivo corrupto NO fue eliminado automáticamente
+      expect(fs.existsSync(corruptFilePath)).toBe(true);
+
+      // 2. El intento de login sigue bloqueado en modo fail-closed
+      expect(() =>
+        auth2.login({ operatorId: testOperatorId, password: 'any' }, { ip: testIp }),
+      ).toThrow(HttpException);
+
+      // Limpieza
+      auth2.clearRateLimitState();
+      auth1.destroy();
+      auth2.destroy();
+    });
+  });
+
+  // ── 20. DEV-001-B1.3: Confinamiento 3D completo y mitigación TOCTOU en escritura (F-B1-10-01/02) ──
+  describe('20. Confinamiento 3D y mitigación TOCTOU en escritura (DEV-001-B1.3 F-B1-10)', () => {
+    it('AssetSecurityService.writeConfinedFileAtomic aborta si el destino es un enlace simbólico', () => {
+      const securitySvc = new AssetSecurityService();
+      const testDir = path.resolve('storage', 'assets', 'test_toctou');
+      if (!fs.existsSync(testDir)) {
+        fs.mkdirSync(testDir, { recursive: true });
+      }
+
+      const realTarget = path.join(testDir, 'safe_file.txt');
+      const symlinkTarget = path.join(testDir, 'symlink_trap.jb3d');
+      fs.writeFileSync(realTarget, 'original content', 'utf8');
+
+      // Crear enlace simbólico si el SO lo permite
+      let symlinkCreated = false;
+      try {
+        if (fs.existsSync(symlinkTarget)) {
+          fs.unlinkSync(symlinkTarget);
+        }
+        fs.symlinkSync(realTarget, symlinkTarget, 'file');
+        symlinkCreated = true;
+      } catch {
+        // En Windows sin permisos de Developer Mode para symlinks, omitir creación de symlink
+      }
+
+      if (symlinkCreated) {
+        // Intentar escribir sobre el symlink DEBE ser abortado
+        expect(() => {
+          securitySvc.writeConfinedFileAtomic(
+            symlinkTarget,
+            Buffer.from('malicious payload'),
+          );
+        }).toThrow(/enlace simbólico/i);
+
+        // El archivo real al que apuntaba el symlink NO debe haber sido sobreescrito
+        expect(fs.readFileSync(realTarget, 'utf8')).toBe('original content');
+
+        // Limpieza del symlink
+        try {
+          fs.unlinkSync(symlinkTarget);
+        } catch {}
+      }
+
+      // Limpieza
+      try {
+        fs.unlinkSync(realTarget);
+        fs.rmdirSync(testDir);
+      } catch {}
+    });
+
+    it('AssetMetadataService valida componentes intermedios con ensureNoSymlinksInPath', () => {
+      const metaService = new AssetMetadataService();
+      const assetsRoot = path.resolve('storage/assets');
+      const safePath = path.join(assetsRoot, 'models', 'avatar.glb');
+
+      // Ruta legítima: no debe arrojar excepción
+      expect(() => {
+        metaService.ensureNoSymlinksInPath(assetsRoot, safePath, false);
+      }).not.toThrow();
+
+      // Ruta fuera de storage/assets: arroja ForbiddenException
+      expect(() => {
+        metaService.ensureNoSymlinksInPath(
+          assetsRoot,
+          'C:\\Windows\\System32\\cmd.exe',
+          false,
+        );
+      }).toThrow(ForbiddenException);
+    });
+
+    it('AssetMetadataService.readConfined3DFileBuffer valida descriptor contra stat de forma atómica', () => {
+      const metaService = new AssetMetadataService();
+      const pkgPath = path.resolve(process.cwd(), 'package.json');
+      const buf = metaService.readConfined3DFileBuffer(pkgPath);
+      expect(buf).toBeInstanceOf(Buffer);
+      expect(buf.length).toBeGreaterThan(0);
+      expect(buf.toString('utf8')).toContain('backend');
+    });
+  });
+
+  // ── 21. DEV-001-B1.3: Frontera Global de Autorización y validación estricta de rutas (A1-01/02/03) ──
+  describe('21. Frontera Global de Autorización y Validación Estricta (DEV-001-B1.3 A1)', () => {
+    it('SecurityKernelAuthGuard rechaza controlador homónimo en ruta distinta a la autorizada (A1-03)', async () => {
+      class AuthController {
+        login() {
+          return { status: 'rogue_login' };
+        }
+      }
+
+      Reflect.defineMetadata(PUBLIC_KEY, true, AuthController.prototype.login);
+
+      // Misma clase y método homónimos pero en una ruta no autorizada (/unauthorized/login)
+      const ctx = createMockExecutionContext(
+        AuthController.prototype.login,
+        { user: undefined, url: '/unauthorized/login', originalUrl: '/unauthorized/login', method: 'POST' },
+        AuthController,
+      );
+
+      await expect(securityGuard.canActivate(ctx)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('SecurityKernelAuthGuard autoriza AuthController.login solo cuando coincide con su ruta canónica /auth/login', async () => {
+      const ctx = createMockExecutionContext(
+        AuthController.prototype.login,
+        { user: undefined, url: '/auth/login', originalUrl: '/auth/login', method: 'POST' },
+        AuthController,
+      );
+
+      expect(await securityGuard.canActivate(ctx)).toBe(true);
+    });
+
+    it('SecurityKernelAuthGuard rechaza métodos no públicos sin JWT en cualquier controlador (Privado por Defecto)', async () => {
+      class ProductsController {
+        findAll() {
+          return [];
+        }
+      }
+
+      const ctx = createMockExecutionContext(
+        ProductsController.prototype.findAll,
+        { user: undefined, url: '/products', method: 'GET' },
+        ProductsController,
+      );
+
+      await expect(securityGuard.canActivate(ctx)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

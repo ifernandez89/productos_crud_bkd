@@ -27,7 +27,6 @@ export class AichatController {
     private readonly converter: ConverterService,
   ) {}
 
-  @Public()
   @Get('disciplines')
   @ApiOperation({
     summary: 'Listar disciplinas y especialistas disponibles para el selector del frontend',
@@ -41,14 +40,12 @@ export class AichatController {
     };
   }
 
-  @Public()
   @Get('specialists')
   @ApiOperation({ summary: 'Alias de disciplines' })
   getSpecialists() {
     return this.getDisciplines();
   }
 
-  @Public()
   @Post('preguntar')
   @ApiOperation({ summary: 'Ask a question to the AI' })
   async preguntar(@Body() createAichatDto: CreateAichatDto) {
@@ -71,25 +68,21 @@ export class AichatController {
     }
   }
 
-  @Public()
   @Get('listar')
   async listar() {
     return this.aichatService.obtenerPreguntas();
   }
 
-  @Public()
   @Get()
   findAll() {
     return this.aichatService.findAll();
   }
 
-  @Public()
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.aichatService.findOne(id);
   }
 
-  @Public()
   @Get('session/ultimo-mensaje')
   @ApiOperation({ summary: 'Get the last assistant message' })
   getLastAssistantMessage() {

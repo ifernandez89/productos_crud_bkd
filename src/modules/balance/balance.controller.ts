@@ -34,7 +34,6 @@ export class AnswerDto {
 export class BalanceController {
   constructor(private readonly balanceService: BalanceService) {}
 
-  @Public()
   @Post('start')
   @ApiOperation({
     summary:
@@ -44,7 +43,6 @@ export class BalanceController {
     return this.balanceService.start(dto.type);
   }
 
-  @Public()
   @Post(':id/answer')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Envía la respuesta a una pregunta de la sesión' })
@@ -52,7 +50,6 @@ export class BalanceController {
     return this.balanceService.submitAnswer(id, dto.questionId, dto.answer);
   }
 
-  @Public()
   @Post(':id/finish')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -62,7 +59,6 @@ export class BalanceController {
     return this.balanceService.finish(id);
   }
 
-  @Public()
   @Get('latest')
   @ApiOperation({
     summary:
@@ -72,7 +68,6 @@ export class BalanceController {
     return this.balanceService.getLatest();
   }
 
-  @Public()
   @Get('history')
   @ApiOperation({
     summary: 'Obtiene el historial de informes de balance completados',
@@ -81,7 +76,6 @@ export class BalanceController {
     return this.balanceService.getHistory();
   }
 
-  @Public()
   @Get('trends')
   @ApiOperation({
     summary:

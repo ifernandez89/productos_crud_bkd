@@ -253,6 +253,9 @@ export class AssetMetadataService {
       );
     }
 
+    // F-B1-10: Inspección exhaustiva de cada segmento intermedio contra symlinks y junctions (DEV-001-B1.3)
+    this.ensureNoSymlinksInPath(canonicalRoot, resolvedCandidate, true);
+
     let realRoot: string;
     let realTarget: string;
     try {
@@ -295,6 +298,155 @@ export class AssetMetadataService {
     return Boolean(rel) && !rel.startsWith('..') && !path.isAbsolute(rel);
   }
 
+  /**
+   * F-B1-10: Inspecciona cada componente intermedio entre la raíz autorizada y el destino
+   * para detectar y abortar ante cualquier symlink, junction NTFS o enlace blando (DEV-001-B1.3).
+   */
+  ensureNoSymlinksInPath(
+    canonicalRoot: string,
+    targetPath: string,
+    mustExist: boolean,
+  ): void {
+    const normRoot = path.resolve(canonicalRoot);
+    const normTarget = path.resolve(targetPath);
+    const rel = path.relative(normRoot, normTarget);
+    if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso 3D denegado fuera de storage/assets.',
+      );
+    }
+
+    const segments = rel.split(/[\\/]/);
+    let current = normRoot;
+
+    for (let i = 0; i < segments.length; i++) {
+      current = path.join(current, segments[i]);
+      const isTargetFile = i === segments.length - 1;
+
+      if (!isTargetFile || mustExist) {
+        if (fsSync.existsSync(current)) {
+          const lstat = fsSync.lstatSync(current);
+          if (lstat.isSymbolicLink()) {
+            throw new ForbiddenException(
+              `SecurityKernel: componente de ruta "${segments[i]}" es un enlace simbólico o junction no autorizado.`,
+            );
+          }
+        } else if (!isTargetFile && mustExist) {
+          throw new ForbiddenException(
+            `SecurityKernel: directorio intermedio no existe en storage/assets: ${segments[i]}`,
+          );
+        }
+      } else {
+        if (fsSync.existsSync(current)) {
+          const lstat = fsSync.lstatSync(current);
+          if (lstat.isSymbolicLink()) {
+            throw new ForbiddenException(
+              `SecurityKernel: el archivo destino "${segments[i]}" es un enlace simbólico no autorizado.`,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * F-B1-10: Lectura atómica de assets 3D con protección anti-TOCTOU (DEV-001-B1.3).
+   * Abre un descriptor de archivo exclusivo y valida fstat(fd) contra lstat(safePath)
+   * antes de leer el buffer a memoria, impidiendo ataques de reemplazo concurrente de enlaces.
+   */
+  readConfined3DFileBuffer(safePath: string): Buffer {
+    const fd = fsSync.openSync(safePath, 'r');
+    try {
+      const fstat = fsSync.fstatSync(fd);
+      const lstat = fsSync.lstatSync(safePath);
+
+      if (
+        fstat.ino !== lstat.ino ||
+        fstat.dev !== lstat.dev ||
+        lstat.isSymbolicLink() ||
+        !fstat.isFile()
+      ) {
+        throw new ForbiddenException(
+          'SecurityKernel: anomalía TOCTOU detectada al leer el asset 3D.',
+        );
+      }
+
+      const buffer = Buffer.alloc(fstat.size);
+      fsSync.readSync(fd, buffer, 0, fstat.size, 0);
+      return buffer;
+    } finally {
+      fsSync.closeSync(fd);
+    }
+  }
+
+  /**
+   * F-B1-10: Escritura atómica confinada en disco (DEV-001-B1.3: F-B1-10-01).
+   * Utiliza archivo temporal, fsyncSync y renameSync atómico.
+   */
+  writeConfinedFileAtomic(targetPath: string, content: string | Buffer): void {
+    const absTarget = path.resolve(targetPath);
+    const parentDir = path.dirname(absTarget);
+
+    if (!fsSync.existsSync(parentDir)) {
+      fsSync.mkdirSync(parentDir, { recursive: true });
+    }
+
+    if (fsSync.existsSync(absTarget)) {
+      const destLstat = fsSync.lstatSync(absTarget);
+      if (destLstat.isSymbolicLink() || !destLstat.isFile()) {
+        throw new ForbiddenException(
+          `SecurityKernel: el destino de escritura "${path.basename(absTarget)}" es un enlace simbólico, junction o directorio no permitido.`,
+        );
+      }
+    }
+
+    const tempFileName = `.__jarbees_meta_tmp_${crypto.randomUUID()}.tmp`;
+    const tempFilePath = path.join(parentDir, tempFileName);
+
+    const fd = fsSync.openSync(
+      tempFilePath,
+      fsSync.constants.O_CREAT | fsSync.constants.O_EXCL | fsSync.constants.O_WRONLY,
+      0o600,
+    );
+
+    try {
+      const fstat = fsSync.fstatSync(fd);
+      const lstat = fsSync.lstatSync(tempFilePath);
+      if (
+        fstat.ino !== lstat.ino ||
+        fstat.dev !== lstat.dev ||
+        lstat.isSymbolicLink() ||
+        !fstat.isFile()
+      ) {
+        throw new ForbiddenException(
+          'SecurityKernel: anomalía TOCTOU detectada al preparar archivo temporal de metadata.',
+        );
+      }
+
+      fsSync.writeFileSync(fd, content);
+      fsSync.fsyncSync(fd);
+    } finally {
+      fsSync.closeSync(fd);
+    }
+
+    if (fsSync.existsSync(absTarget)) {
+      const preRenameLstat = fsSync.lstatSync(absTarget);
+      if (preRenameLstat.isSymbolicLink() || !preRenameLstat.isFile()) {
+        try { fsSync.unlinkSync(tempFilePath); } catch {}
+        throw new ForbiddenException(
+          'SecurityKernel: intento de secuestro de ruta detectado antes del renombrado atómico.',
+        );
+      }
+    }
+
+    try {
+      fsSync.renameSync(tempFilePath, absTarget);
+    } catch (err) {
+      try { fsSync.unlinkSync(tempFilePath); } catch {}
+      throw err;
+    }
+  }
+
   private async ensureDirectories(): Promise<void> {
     try {
       await fs.mkdir(this.metadataDir, { recursive: true });
@@ -320,7 +472,7 @@ export class AssetMetadataService {
       metadata.createdAt = metadata.updatedAt;
     }
 
-    await fs.writeFile(filepath, JSON.stringify(metadata, null, 2), 'utf-8');
+    this.writeConfinedFileAtomic(filepath, JSON.stringify(metadata, null, 2));
     
     // Actualizar catálogo
     await this.updateCatalog(metadata);
@@ -475,7 +627,7 @@ export class AssetMetadataService {
     if (!this.isSubPath(this.metadataDir, reportPath)) {
       throw new ForbiddenException('SecurityKernel: ruta de reporte fuera de confinamiento.');
     }
-    await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf-8');
+    this.writeConfinedFileAtomic(reportPath, JSON.stringify(report, null, 2));
 
     return report;
   }
@@ -552,7 +704,7 @@ export class AssetMetadataService {
    * 🎯 Calcular checksum SHA-256
    */
   private async calculateChecksum(filepath: string): Promise<string> {
-    const buffer = await fs.readFile(filepath);
+    const buffer = this.readConfined3DFileBuffer(filepath);
     return crypto.createHash('sha256').update(buffer).digest('hex');
   }
 

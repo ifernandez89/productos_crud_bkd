@@ -3,6 +3,8 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  OnModuleDestroy,
+  OnModuleInit,
   Optional,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,6 +13,10 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import {
+  SingleInstanceLockService,
+  SingleInstanceLockException,
+} from './single-instance-lock.service';
 import {
   JARBEES_JWT_ALGORITHM,
   JARBEES_JWT_AUDIENCE,
@@ -80,17 +86,21 @@ const LOGIN_WINDOW_MS = 60 * 1000; // 1 minuto
 const MAX_LOGIN_ATTEMPTS_PER_MINUTE = 5;
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(AuthService.name);
   private readonly jwtSecret: string;
   private readonly bruteForceBuckets = new Map<string, BruteForceBucket>();
   private readonly derivedLegacyScryptCache = new Map<string, string>();
+  private readonly corruptedLockoutKeys = new Set<string>();
   private readonly lockoutDir: string;
+  private readonly cleanupInterval: NodeJS.Timeout;
+  private readonly instanceLock: SingleInstanceLockService;
   private legacyPlaintextWarned = false;
 
   constructor(
     private readonly jwt: JwtService,
     @Optional() private readonly cfg?: ConfigService,
+    @Optional() private readonly instanceLockService?: SingleInstanceLockService,
   ) {
     // Fail-closed: la aplicación no puede instanciar AuthService sin JWT_SECRET válido
     this.jwtSecret = resolveRequiredJwtSecret(this.cfg);
@@ -102,7 +112,64 @@ export class AuthService {
       'security',
       'auth-lockout',
     );
+
+    this.instanceLock =
+      this.instanceLockService ??
+      new SingleInstanceLockService({
+        lockDir: path.dirname(this.lockoutDir),
+        port: process.env.JARBEES_INSTANCE_MUTEX_PORT
+          ? parseInt(process.env.JARBEES_INSTANCE_MUTEX_PORT, 10)
+          : undefined,
+      });
+
     this.initLockoutStore();
+
+    // Limpieza periódica de lockouts expirados y temporales huérfanos cada 60s (DEV-001-B1.3 / B1.3.1)
+    this.cleanupInterval = setInterval(() => {
+      this.pruneExpiredLockouts();
+    }, 60000);
+
+    if (typeof this.cleanupInterval.unref === 'function') {
+      this.cleanupInterval.unref();
+    }
+  }
+
+  async onModuleInit() {
+    await this.acquireInstanceLock();
+  }
+
+  async acquireInstanceLock(): Promise<void> {
+    if (!this.instanceLock.isLockHeld()) {
+      await this.instanceLock.acquireLock();
+    }
+  }
+
+  assertInstanceLock(): void {
+    if (process.env.JARBEES_DISABLE_INSTANCE_LOCK === 'true') {
+      return;
+    }
+    if (!this.instanceLock.isLockHeld()) {
+      throw new SingleInstanceLockException(
+        'SecurityKernel: AuthService no puede operar porque el lock de instancia única no ha sido adquirido en el host.',
+      );
+    }
+  }
+
+  getInstanceLockService(): SingleInstanceLockService {
+    return this.instanceLock;
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    if (this.instanceLock) {
+      this.instanceLock.releaseLock();
+    }
+  }
+
+  destroy() {
+    this.onModuleDestroy();
   }
 
   private initLockoutStore(): void {
@@ -110,15 +177,76 @@ export class AuthService {
       if (!fs.existsSync(this.lockoutDir)) {
         fs.mkdirSync(this.lockoutDir, { recursive: true });
       }
+      this.pruneOrphanedTempFiles();
       this.pruneAndLoadPersistedLockouts();
     } catch (err: any) {
       this.logger.error(`Error inicializando directorio auth-lockout (${this.lockoutDir}): ${err.message}`);
     }
   }
 
+  private pruneOrphanedTempFiles(): void {
+    const now = Date.now();
+    const ORPHAN_THRESHOLD_MS = 5000; // Cualquier archivo .tmp con más de 5s está abandonado (DEV-001-B1.3.1)
+
+    try {
+      if (!fs.existsSync(this.lockoutDir)) return;
+      const files = fs.readdirSync(this.lockoutDir);
+      for (const file of files) {
+        if (!file.includes('.tmp')) continue;
+        const fullPath = path.join(this.lockoutDir, file);
+        try {
+          const stat = fs.statSync(fullPath);
+          if (now - stat.mtimeMs > ORPHAN_THRESHOLD_MS) {
+            fs.unlinkSync(fullPath);
+            this.logger.warn(
+              `[AuthService] Archivo temporal huérfano eliminado: ${file} (antigüedad: ${Math.round((now - stat.mtimeMs) / 1000)}s).`,
+            );
+          }
+        } catch (err: any) {
+          this.logger.error(`Error evaluando temporal huérfano ${file}: ${err.message}`);
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Error limpiando temporales huérfanos: ${err.message}`);
+    }
+  }
+
   private getLockoutFilePath(key: string): string {
     const safeKey = crypto.createHash('sha256').update(key).digest('hex');
     return path.join(this.lockoutDir, `${safeKey}.json`);
+  }
+
+  private pruneExpiredLockouts(): void {
+    const now = Date.now();
+    this.pruneOrphanedTempFiles();
+    try {
+      if (!fs.existsSync(this.lockoutDir)) return;
+      const files = fs.readdirSync(this.lockoutDir);
+      for (const file of files) {
+        if (!file.endsWith('.json')) continue;
+        const fullPath = path.join(this.lockoutDir, file);
+        try {
+          const raw = fs.readFileSync(fullPath, 'utf8');
+          if (!raw || raw.trim().length === 0) continue;
+          const data = JSON.parse(raw);
+          if (
+            data &&
+            typeof data === 'object' &&
+            data.key &&
+            (!data.lockedUntil || data.lockedUntil <= now) &&
+            now - (data.windowStartedAt || 0) >= LOGIN_WINDOW_MS
+          ) {
+            try {
+              fs.unlinkSync(fullPath);
+            } catch {}
+          }
+        } catch {
+          // No borrar archivos corruptos en la purga periódica
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Error purgando lockouts expirados: ${err.message}`);
+    }
   }
 
   private pruneAndLoadPersistedLockouts(): void {
@@ -129,8 +257,17 @@ export class AuthService {
       for (const file of files) {
         if (!file.endsWith('.json')) continue;
         const fullPath = path.join(this.lockoutDir, file);
+        const fileKeyHash = file.slice(0, -5);
         try {
           const raw = fs.readFileSync(fullPath, 'utf8');
+          if (!raw || raw.trim().length === 0) {
+            // Archivo de 0 bytes: NO BORRAR (Fail-Closed ante caídas)
+            this.corruptedLockoutKeys.add(fileKeyHash);
+            this.logger.warn(
+              `[AuthService] Archivo de lockout vacío (0 bytes) detectado: ${file}. Se retiene en disco (Fail-Closed).`,
+            );
+            continue;
+          }
           const data = JSON.parse(raw);
           if (data && typeof data === 'object' && data.key) {
             if (data.lockedUntil && data.lockedUntil > now) {
@@ -141,13 +278,17 @@ export class AuthService {
                 lockedUntil: data.lockedUntil,
               });
             } else if (now - (data.windowStartedAt || 0) >= LOGIN_WINDOW_MS) {
-              fs.unlinkSync(fullPath);
+              try {
+                fs.unlinkSync(fullPath);
+              } catch {}
             }
           }
-        } catch {
-          try {
-            fs.unlinkSync(fullPath);
-          } catch {}
+        } catch (parseErr: any) {
+          // Archivo corrupto o incompleto tras crash: NO BORRAR AUTOMÁTICAMENTE (DEV-001-B1.3: F-B1-02-01 resuelto)
+          this.corruptedLockoutKeys.add(fileKeyHash);
+          this.logger.error(
+            `[AuthService] Archivo de lockout corrupto detectado: ${file} (${parseErr.message}). Retenido en cuarentena Fail-Closed.`,
+          );
         }
       }
     } catch (err: any) {
@@ -155,14 +296,77 @@ export class AuthService {
     }
   }
 
+  /**
+   * Sincronización multi-worker / multi-proceso desde disco (DEV-001-B1.3: F-B1-02-02 resuelto).
+   * Permite que múltiples workers de Node.js en el mismo host compartan el estado de bloqueos.
+   */
+  private syncBucketFromDisk(key: string, bucket: BruteForceBucket, now: number): BruteForceBucket {
+    const keyHash = crypto.createHash('sha256').update(key).digest('hex');
+    if (this.corruptedLockoutKeys.has(keyHash)) {
+      bucket.lockedUntil = Math.max(bucket.lockedUntil, now + LOGIN_WINDOW_MS);
+      return bucket;
+    }
+
+    try {
+      const filePath = this.getLockoutFilePath(key);
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        if (raw && raw.trim().length > 0) {
+          const diskData = JSON.parse(raw);
+          if (diskData && typeof diskData === 'object') {
+            if (diskData.lockedUntil && diskData.lockedUntil > now) {
+              bucket.lockedUntil = Math.max(bucket.lockedUntil, diskData.lockedUntil);
+              bucket.consecutiveFailures = Math.max(
+                bucket.consecutiveFailures,
+                diskData.consecutiveFailures || 0,
+              );
+            }
+            if (
+              diskData.attemptsInWindow &&
+              diskData.windowStartedAt &&
+              now - diskData.windowStartedAt < LOGIN_WINDOW_MS
+            ) {
+              bucket.attemptsInWindow = Math.max(
+                bucket.attemptsInWindow,
+                diskData.attemptsInWindow,
+              );
+              bucket.windowStartedAt = Math.min(
+                bucket.windowStartedAt,
+                diskData.windowStartedAt,
+              );
+            }
+          }
+        }
+      }
+    } catch {}
+    return bucket;
+  }
+
+  /**
+   * Persistencia atómica de buckets mediante archivo temporal + fsyncSync + renameSync (DEV-001-B1.3: F-B1-02-01).
+   */
   private persistLockoutBucket(key: string, bucket: BruteForceBucket): void {
     try {
       if (!fs.existsSync(this.lockoutDir)) {
         fs.mkdirSync(this.lockoutDir, { recursive: true });
       }
       const filePath = this.getLockoutFilePath(key);
+      const tempPath = `${filePath}.${crypto.randomUUID()}.tmp`;
       const payload = JSON.stringify({ key, ...bucket });
-      fs.writeFileSync(filePath, payload, 'utf8');
+
+      const fd = fs.openSync(
+        tempPath,
+        fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY,
+        0o600,
+      );
+      try {
+        fs.writeFileSync(fd, payload, 'utf8');
+        fs.fsyncSync(fd);
+      } finally {
+        fs.closeSync(fd);
+      }
+
+      fs.renameSync(tempPath, filePath);
     } catch (err: any) {
       this.logger.error(`Error persistiendo lockout para ${key}: ${err.message}`);
     }
@@ -210,6 +414,9 @@ export class AuthService {
     issuer: string;
     audience: string;
   } {
+    // 0. Exclusión mutua estricta: asegurar que esta instancia posee el lock del host
+    this.assertInstanceLock();
+
     const clientIp = this.resolveClientIp(clientContext);
     const candidateOperator =
       typeof credentials?.operatorId === 'string' && credentials.operatorId.trim()
@@ -387,11 +594,12 @@ export class AuthService {
    */
   clearRateLimitState(): void {
     this.bruteForceBuckets.clear();
+    this.corruptedLockoutKeys.clear();
     try {
       if (fs.existsSync(this.lockoutDir)) {
         const files = fs.readdirSync(this.lockoutDir);
         for (const file of files) {
-          if (file.endsWith('.json')) {
+          if (file.endsWith('.json') || file.includes('.tmp')) {
             try {
               fs.unlinkSync(path.join(this.lockoutDir, file));
             } catch {}
@@ -479,6 +687,9 @@ export class AuthService {
       this.bruteForceBuckets.set(key, bucket);
     }
 
+    // Sincronizar con el estado persistido en disco para entornos multi-worker (DEV-001-B1.3: F-B1-02-02)
+    bucket = this.syncBucketFromDisk(key, bucket, now);
+
     if (bucket.lockedUntil > now) {
       const remainingSec = Math.ceil((bucket.lockedUntil - now) / 1000);
       throw new HttpException(
@@ -508,12 +719,16 @@ export class AuthService {
     const now = Date.now();
     let maxLockedUntil = 0;
     for (const key of keys) {
-      const bucket = this.bruteForceBuckets.get(key) ?? {
+      let bucket = this.bruteForceBuckets.get(key) ?? {
         attemptsInWindow: 1,
         windowStartedAt: now,
         consecutiveFailures: 0,
         lockedUntil: 0,
       };
+
+      // F-B1-02-02: Sincronizar desde disco antes de registrar el fallo para evitar Lost Updates
+      bucket = this.syncBucketFromDisk(key, bucket, now);
+
       bucket.consecutiveFailures += 1;
 
       if (bucket.consecutiveFailures >= 10) {

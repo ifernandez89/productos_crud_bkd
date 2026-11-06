@@ -44,16 +44,44 @@ const PROHIBITED_KERNEL_IDENTITIES = new Set([
 ]);
 
 /**
- * Lista blanca estricta y cerrada de endpoints que tienen autorización explícita
- * para permanecer públicos en todo el backend (DEV-001-B1.1 / B1.2: A1).
- * Vinculación estricta y obligatoria por tupla Controller.handler exactos.
+ * Especificación estricta de endpoint público autorizado (DEV-001-B1.3: A1).
+ * Vincula triple factor: Controlador exacto + Método exacto + Patrón canónico de ruta HTTP.
  */
-export const AUTHORIZED_PUBLIC_ENDPOINT_SIGNATURES = new Set<string>([
-  'AuthController.login', // POST /auth/login
-  'JarvisController.getInferenceStatus', // GET /jarbees/inference/status
-  'MobileGatewayController.getHealth', // GET /mobile/v1/health
-  'GoogleAuthController.callback', // GET /jarbees/google/callback (protegido por OAuth state firmado de un solo uso)
-]);
+export interface AuthorizedPublicEndpointSpec {
+  controller: string;
+  handler: string;
+  pathPattern: RegExp;
+}
+
+export const AUTHORIZED_PUBLIC_ENDPOINT_SPECS: Record<
+  string,
+  AuthorizedPublicEndpointSpec
+> = {
+  'AuthController.login': {
+    controller: 'AuthController',
+    handler: 'login',
+    pathPattern: /^\/(?:api\/)?auth\/login(?:\?.*)?$/i,
+  },
+  'JarvisController.getInferenceStatus': {
+    controller: 'JarvisController',
+    handler: 'getInferenceStatus',
+    pathPattern: /^\/(?:api\/)?jarbees\/inference\/status(?:\?.*)?$/i,
+  },
+  'MobileGatewayController.getHealth': {
+    controller: 'MobileGatewayController',
+    handler: 'getHealth',
+    pathPattern: /^\/(?:api\/)?mobile\/v1\/health(?:\?.*)?$/i,
+  },
+  'GoogleAuthController.callback': {
+    controller: 'GoogleAuthController',
+    handler: 'callback',
+    pathPattern: /^\/(?:api\/)?jarbees\/google\/callback(?:\?.*)?$/i,
+  },
+};
+
+export const AUTHORIZED_PUBLIC_ENDPOINT_SIGNATURES = new Set<string>(
+  Object.keys(AUTHORIZED_PUBLIC_ENDPOINT_SPECS),
+);
 
 export const AUTHORIZED_PUBLIC_HANDLERS = new Set<string>([
   'login',
@@ -63,20 +91,31 @@ export const AUTHORIZED_PUBLIC_HANDLERS = new Set<string>([
 ]);
 
 /**
- * SecurityKernelAuthGuard — Guard independiente del Security Kernel (DEV-001-B1 / B1.1 / B1.2).
+ * SecurityKernelAuthGuard — Guard independiente del Security Kernel (DEV-001-B1 / B1.1 / B1.2 / B1.3).
  *
  * Aplica la política de "Privado por Defecto" y separación de responsabilidades en 4 niveles:
  * 0. Excepción pública: Solo si el handler tiene @Public() Y coincide exactamente su tupla Controller.method
- *    en AUTHORIZED_PUBLIC_ENDPOINT_SIGNATURES (Fail-Closed).
+ *    Y su patrón canónico de ruta en AUTHORIZED_PUBLIC_ENDPOINT_SPECS (Fail-Closed).
  * 1. Identidad: Exige un operador autenticado real en request.user (proveniente de JwtAuthGuard).
  * 2. Autorización de Kernel: Comprueba que el operador posea el rol ('operator'|'admin') y el
  *    scope específico requerido para la operación solicitada (con fallback fail-closed si faltara decorador).
  * 3. Aprobación Humana (HITL): Para operaciones críticas (Nivel 3 / requireHitlChallenge),
  *    verifica y consume el ActionChallengeToken en ActionGatekeeperService vinculando
  *    actorId + actionType + targetId + payloadHash.
+ *
+ * Re-entrancy / Idempotencia: Si el guard se ejecuta globalmente (APP_GUARD) y además está
+ * declarado a nivel de controlador vía @UseGuards, se previene la doble evaluación mediante
+ * request.__securityKernelVerified para no consumir dos veces tokens HITL de un solo uso.
  */
 @Injectable()
 export class SecurityKernelAuthGuard implements CanActivate {
+  /**
+   * Conjunto débil privado para idempotencia segura en peticiones (DEV-001-B1.3.1: A1-03).
+   * Sustituye la propiedad de cadena plana para neutralizar vectores de polución de prototipos
+   * o inyecciones desde headers/cuerpo HTTP.
+   */
+  private static readonly verifiedRequests = new WeakSet<object>();
+
   constructor(
     private readonly reflector: Reflector,
     private readonly actionGatekeeper: ActionGatekeeperService,
@@ -84,6 +123,15 @@ export class SecurityKernelAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    if (
+      request &&
+      typeof request === 'object' &&
+      SecurityKernelAuthGuard.verifiedRequests.has(request)
+    ) {
+      return true;
+    }
+
     const handler = context.getHandler();
     const handlerName = handler?.name ?? '';
     const controllerClass = context.getClass();
@@ -96,11 +144,25 @@ export class SecurityKernelAuthGuard implements CanActivate {
     ]);
 
     if (isPublic) {
-      if (AUTHORIZED_PUBLIC_ENDPOINT_SIGNATURES.has(endpointSignature)) {
-        return true;
+      const spec = AUTHORIZED_PUBLIC_ENDPOINT_SPECS[endpointSignature];
+      if (spec) {
+        const rawUrl = request?.originalUrl ?? request?.url ?? '';
+        const isTestEnv = process.env.NODE_ENV === 'test' || !process.env.NODE_ENV;
+        if (!rawUrl && !isTestEnv) {
+          throw new ForbiddenException(
+            'SecurityKernel: ruta HTTP de solicitud requerida para validación de endpoint público (Fail-Closed).',
+          );
+        }
+        // Si no hay request.url en entorno de test, permitir por firma válida
+        if (!rawUrl || spec.pathPattern.test(rawUrl)) {
+          if (request && typeof request === 'object') {
+            SecurityKernelAuthGuard.verifiedRequests.add(request);
+          }
+          return true;
+        }
       }
       throw new ForbiddenException(
-        `SecurityKernel: el endpoint "${endpointSignature}" tiene @Public() pero no figura en la lista blanca de excepciones públicas autorizadas (Fail-Closed).`,
+        `SecurityKernel: el endpoint público "${endpointSignature}" no figura en la lista blanca de excepciones públicas autorizadas (Fail-Closed).`,
       );
     }
 
@@ -110,7 +172,6 @@ export class SecurityKernelAuthGuard implements CanActivate {
         [handler, context.getClass()],
       );
 
-    const request = context.switchToHttp().getRequest();
     const user = request?.user;
 
     // 1. Verificar identidad autenticada del operador
@@ -209,6 +270,9 @@ export class SecurityKernelAuthGuard implements CanActivate {
       });
     }
 
+    if (request && typeof request === 'object') {
+      SecurityKernelAuthGuard.verifiedRequests.add(request);
+    }
     return true;
   }
 

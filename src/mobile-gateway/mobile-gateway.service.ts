@@ -68,8 +68,10 @@ export class MobileGatewayService implements OnModuleDestroy {
   private readonly secret: Buffer;
   private readonly maxClockDriftMs = 30000; // 30 segundos
   private readonly seenRequestIds = new Map<string, number>();
+  private readonly corruptedReplayHashes = new Set<string>();
   private readonly cleanupInterval: NodeJS.Timeout;
   private readonly replayDir: string;
+  private ledgerIntegrityCompromised = false;
 
   constructor(
     @Optional()
@@ -131,19 +133,37 @@ export class MobileGatewayService implements OnModuleDestroy {
         for (const file of files) {
           if (!file.endsWith('.json')) continue;
           const fullPath = path.join(this.replayDir, file);
+          const fileHash = file.slice(0, -5);
           try {
             const raw = fs.readFileSync(fullPath, 'utf8');
+            if (!raw || raw.trim().length === 0) {
+              // Archivo de tamaño 0 bytes producto de caída abrupta entre openSync y writeFileSync:
+              // PROHIBIDO BORRAR: Se retiene en disco para que openSync(O_CREAT|O_EXCL) siga fallando con EEXIST.
+              this.corruptedReplayHashes.add(fileHash);
+              this.logger.warn(
+                `[MobileGateway] Registro de replay vacío (0 bytes) detectado: ${file}. Se retiene en disco para prevenir replay tras caída (Fail-Closed).`,
+              );
+              continue;
+            }
+
             const parsed = JSON.parse(raw);
             if (!parsed?.expiresAt || parsed.expiresAt < now) {
-              fs.unlinkSync(fullPath);
+              // Solo eliminar archivos válidos cuya ventana de expiración ya haya vencido
+              try {
+                fs.unlinkSync(fullPath);
+              } catch {}
             } else if (parsed.requestId && !this.seenRequestIds.has(parsed.requestId)) {
-              // Pre-cargar en memoria registros no expirados tras reinicio
+              // Pre-cargar en memoria registros válidos no expirados tras reinicio
               this.seenRequestIds.set(parsed.requestId, parsed.expiresAt);
             }
-          } catch {
-            try {
-              fs.unlinkSync(fullPath);
-            } catch {}
+          } catch (parseErr: any) {
+            // Error de parseo (JSON corrupto o incompleto tras corte abrupto de energía):
+            // PROHIBIDO BORRAR EL ARCHIVO AUTOMÁTICAMENTE (DEV-001-B1.3: A2-01 resuelto).
+            // Retener el archivo y registrar su hash en memoria para que no pueda ser reutilizado.
+            this.corruptedReplayHashes.add(fileHash);
+            this.logger.error(
+              `[MobileGateway] Archivo de replay corrupto o incompleto detectado: ${file} (${parseErr.message}). Retenido en cuarentena Fail-Closed.`,
+            );
           }
         }
       }
@@ -160,7 +180,8 @@ export class MobileGatewayService implements OnModuleDestroy {
       if (!fs.existsSync(this.replayDir)) {
         fs.mkdirSync(this.replayDir, { recursive: true });
       }
-      // Creación atómica exclusiva a nivel de SO (O_CREAT | O_EXCL)
+      // 1. Creación atómica exclusiva a nivel de SO (O_CREAT | O_EXCL)
+      // Garantiza exclusión mutua atómica a nivel de kernel de archivos
       const fd = fs.openSync(
         filePath,
         fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY,
@@ -169,6 +190,9 @@ export class MobileGatewayService implements OnModuleDestroy {
       try {
         const payload = JSON.stringify({ requestId, consumedAt, expiresAt });
         fs.writeFileSync(fd, payload, 'utf8');
+        // 2. Durabilidad física obligatoria (DEV-001-B1.3: A2-02 resuelto)
+        // Fuerza el volcado físico a disco garantizando persistencia ante cortes abruptos
+        fs.fsyncSync(fd);
       } finally {
         fs.closeSync(fd);
       }
@@ -198,6 +222,8 @@ export class MobileGatewayService implements OnModuleDestroy {
    */
   clearReplayLedger() {
     this.seenRequestIds.clear();
+    this.corruptedReplayHashes.clear();
+    this.ledgerIntegrityCompromised = false;
     try {
       if (fs.existsSync(this.replayDir)) {
         const files = fs.readdirSync(this.replayDir);
@@ -298,12 +324,13 @@ export class MobileGatewayService implements OnModuleDestroy {
       throw new UnauthorizedException('Firma HMAC de Mobile Gateway inválida o alterada.');
     }
 
-    // Anti-Replay atómico y duradero (DEV-001-B1.2: A2)
+    // Anti-Replay atómico y duradero (DEV-001-B1.2 / B1.3: A2)
     // Garantía: ejecución como máximo una vez (at-most-once execution).
-    // Se verifica e inserta primero en disco de forma atómica (O_CREAT | O_EXCL) y se replica en memoria.
-    if (this.seenRequestIds.has(dto.requestId)) {
+    // Se verifica e inserta primero en disco de forma atómica (O_CREAT | O_EXCL + fsync) y se replica en memoria.
+    const reqHash = crypto.createHash('sha256').update(dto.requestId).digest('hex');
+    if (this.seenRequestIds.has(dto.requestId) || this.corruptedReplayHashes.has(reqHash)) {
       throw new ForbiddenException(
-        `Ataque de repetición detectado: el requestId "${dto.requestId}" ya fue procesado.`,
+        `Ataque de repetición detectado: el requestId "${dto.requestId}" ya fue procesado o retenido.`,
       );
     }
 
