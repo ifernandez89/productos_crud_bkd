@@ -4,6 +4,40 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Hardening & Implementation — DEV-001-B2.1 Homologada con Restricciones: Execution Broker en Modo Estricto No-Execution (2026-11-06)
+
+> **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B2.1-REVIEW` con dictamen técnico favorable).  
+> **Frontera de Ejecución:** 🔒 STRICT NO-EXECUTION. Despacho al sistema operativo (`child_process`, `exec`, `spawn`, `fork`, shell, python, red saliente) TERMINANTEMENTE DESCONECTADO (`executionDispatched: false`, `status: 'SIMULATED'`).  
+> **Fase B2.2 (Sandbox WSL2):** 🔒 BLOQUEADA hasta auditoría de aislamiento y factibilidad técnica (`DEV-001-B2.2-A`).  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base B1:** `c459087d1d1c9308687d1e8413b2bb5501a9797a`
+
+- **Execution Broker Service (`src/jarvis/execution/execution-broker.service.ts`)**:
+  - Implementación del plano de decisión y control de capacidades desacoplado al 100% de la ejecución en el sistema operativo.
+  - Orquestación desacoplada: valida identidad, evalúa políticas, verifica tokens criptográficos HITL, persiste auditoría y produce respuestas sintéticas simuladas (`status: 'SIMULATED'`).
+  - Cero importaciones o invocaciones de módulos de ejecución de Node.js (`child_process`, `cluster`, `v8`, `net`, `http`), verificado mediante espías de prueba unitaria.
+- **Policy Evaluator Service (`src/jarvis/execution/policy-evaluator.service.ts`)**:
+  - Evaluación determinista en modo *Fail-Closed*: cualquier solicitud con actor anónimo, capacidad no registrada o parámetros ausentes es rechazada con `DENIED`.
+  - Modo Hermético Offline forzado (`hermeticOfflineMode: true`): bloqueo terminante de capacidades de red (`net:http_request`, `net:fetch`, `git:clone`) y mitigación preventiva de SSRF.
+  - Sanitización estricta de rutas de archivos: bloqueo de secuencias `..`, rutas absolutas fuera del workspace, y acceso a archivos confidenciales (`.env`, `.git`, `credentials`, `secrets`).
+- **Broker Audit Service & Ledger Monotónico (`src/jarvis/execution/broker-audit.service.ts`)**:
+  - Registro de auditoría persistente *append-only* en `storage/security/execution-audit/audit-ledger.jsonl`.
+  - Integridad criptográfica mediante cadena SHA-256 (`previousHash` -> `recordHash`) y secuencia monotónica incremental continua.
+  - Exclusión mutua en cola FIFO (`writeMutex`) para garantizar orden estricto de eventos bajo concurrencia masiva sin intercalación de bytes.
+  - Resiliencia y cuarentena automática: detección de registros corruptos o alteraciones de cadena con aislamiento en `.corrupt.<timestamp>` y reinicio de cadena limpia.
+- **Catálogo de Capacidades e Inmutabilidad Profunda (`src/jarvis/execution/execution-broker.types.ts`)**:
+  - Tipado riguroso de capacidades con clasificación de riesgo de 4 niveles (`LEVEL_0_OBSERVATION` a `LEVEL_3_HIGH_RISK_MUTATION`).
+  - Congelamiento profundo (*Deep Freeze*) mediante `Object.freeze` sobre las definiciones de capacidad y sobre los arreglos internos de `requiredParameters`, previniendo mutaciones en tiempo de ejecución.
+- **Integración Criptográfica Human-In-The-Loop (HITL) con B1**:
+  - Integración nativa con `ActionGatekeeperService` para operaciones Nivel 3 (`code:apply_diff`).
+  - Vinculación canónica completa: el token HITL valida `actorId`, `workspaceId`, `targetFilePath`, `targetBaseCommitSha`, `diffHash = sha256(canonicalDiff)` y consumo único de `nonce`.
+  - Detección anti-TOCTOU: cualquier modificación posterior en el diff invalida la ejecución con `403 Forbidden` (`DIFF_HASH_MISMATCH`).
+- **Resultados de Validación y Homologación B2.1**:
+  - Compilación NestJS (`npm run build`): Exitosa (código 0, cero errores de tipado).
+  - Pruebas unitarias y de concurrencia del Broker: **19/19 PASS** (`src/jarvis/execution/execution-broker.spec.ts`).
+  - Total de pruebas de seguridad acumuladas en B1 y B2: **148 pruebas automatizadas aprobadas (0 fallos)**.
+  - Documentación de arquitectura y auditoría independiente favorable: `docs/DEV_001_B2_1_REVIEW_REPORT.md` (Veredicto: *Homologable con Restricciones*).
+
 ### Security Hardening & Consolidation — DEV-001-B1 Homologada (B1.3 + B1.3.1): Cierre Integral de Frontera de Autorización, Persistencia Fail-Closed y Exclusión Mutua de Instancia (2026-11-06)
 
 > **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B1.3-REVIEW` y `DEV-001-B1.3.1-REVIEW` con dictamen técnico favorable).  
