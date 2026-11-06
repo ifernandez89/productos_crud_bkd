@@ -16,6 +16,7 @@ import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from '../knowledge/disciplines-catalog.service';
 import { CoreContextService } from './core-context.service';
+import { KnowledgeEvolutionService } from '../memory/knowledge-evolution.service';
 
 export type RagRetrievalStatus =
   | 'NOT_AUTHORIZED'
@@ -48,6 +49,8 @@ export class JarvisPromptBuilderService {
     private readonly disciplinesCatalog?: DisciplinesCatalogService,
     @Optional()
     private readonly coreContextService?: CoreContextService,
+    @Optional()
+    private readonly knowledgeEvolution?: KnowledgeEvolutionService,
   ) {}
 
   async buildJarvisContext(
@@ -225,6 +228,11 @@ export class JarvisPromptBuilderService {
         userMessage,
       );
 
+    let episodicInstruction = '';
+    const isAutobiographicalMemoryQuery = Boolean(
+      this.knowledgeEvolution?.isAutobiographicalQuery(userMessage),
+    );
+
     if (useMemory) {
       const memoryLimit = isPersonalOrIdentity ? 6 : 3;
       let memories = await this.memoryRepo.search(userMessage, memoryLimit);
@@ -239,11 +247,29 @@ export class JarvisPromptBuilderService {
           if (!existingIds.has(fm.id)) memories.push(fm);
         }
       }
-      if (memories.length > 0) {
+      if (memories.length > 0 && !isAutobiographicalMemoryQuery) {
         usedMemory = true;
         contextParts.push(
           `### MEMORIA PERSISTENTE DEL USUARIO\n${memories.map((m) => m.content).join('\n')}`,
         );
+      }
+
+      if (isAutobiographicalMemoryQuery && this.knowledgeEvolution) {
+        const recall =
+          await this.knowledgeEvolution.recallAutobiographicalMemory(
+            userMessage,
+          );
+        if (recall.isAutobiographicalQuery && recall.formattedContextBlock) {
+          usedMemory = true;
+          contextParts.push(recall.formattedContextBlock);
+          if (recall.episodes.length === 0) {
+            episodicInstruction =
+              '\n\n📌 INSTRUCCIÓN OBLIGATORIA DE HONESTIDAD AUTOBIOGRÁFICA (MEM-003): Revisaste la base de datos de memoria episódica y NO existen registros para la fecha o el tema consultado. Informá con total honestidad y claridad que no tenés registros ni conversaciones almacenadas para esa fecha/tema, y abstenete absolutamente de inventar recuerdos, hipótesis o decisiones.';
+          } else {
+            episodicInstruction =
+              '\n\n📌 INSTRUCCIÓN OBLIGATORIA DE MEMORIA AUTOBIOGRÁFICA (MEM-002/003): Respondé a la consulta reconstruyendo fielmente los episodios verificados de arriba. Indicá la fecha/hora exacta, las fuentes/documentos utilizados (con sus IDs), el AgentRun/mensajes de procedencia, y diferenciá explícitamente entre lo expresado por el usuario (USER_STATEMENT), los hechos observados (OBSERVED_FACT), las hipótesis planteadas (HYPOTHESIS), las decisiones acordadas (DECISION) y las preguntas pendientes (OPEN_QUESTION).';
+          }
+        }
       }
     }
 
@@ -256,7 +282,13 @@ export class JarvisPromptBuilderService {
         userMessage,
       );
 
-    if (useDocuments && !isDisciplinePanoramic && !isTemporalQuery && !isPersonalOrIdentity) {
+    if (
+      useDocuments &&
+      !isDisciplinePanoramic &&
+      !isTemporalQuery &&
+      !isPersonalOrIdentity &&
+      !isAutobiographicalMemoryQuery
+    ) {
       const docSummary = await this.detectDocumentSummaryRequest(userMessage);
 
       if (docSummary.isRequest && docSummary.title) {
@@ -399,7 +431,7 @@ export class JarvisPromptBuilderService {
 
     const userPrompt =
       contextParts.length > 0
-        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}${disciplineInstruction}${languageReminder}`
+        ? `${contextParts.join('\n\n')}\n\n### PREGUNTA ACTUAL\n${userMessage}${webInstruction}${docInstruction}${disciplineInstruction}${episodicInstruction}${languageReminder}`
         : userMessage;
 
     return { systemPrompt, userPrompt, usedMemory, usedDocs };

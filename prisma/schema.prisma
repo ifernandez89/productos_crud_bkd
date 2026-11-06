@@ -573,11 +573,19 @@ model Query {
 
 model TopicSnapshot {
   id               Int              @id @default(autoincrement())
+  eventType        String           @default("conversation_episode") // "conversation_episode" | "research_episode" | "architecture_decision" | "daily_challenge"
   topic            String // "Qwen", "NestJS", "arquitectura backend"
+  summary          String? // Resumen conciso del acontecimiento
   conclusion       String // qué se aprendió / concluyó en ese momento
+  epistemicItems   String           @default("[]") // JSON: Array<{ type: 'USER_STATEMENT'|'ASSISTANT_STATEMENT'|'OBSERVED_FACT'|'HYPOTHESIS'|'DECISION'|'OPEN_QUESTION', content: string }>
+  entities         String           @default("[]") // JSON serializado: ["JarBees", "William Judge", "IntentRouter"]
   tags             String           @default("[]") // JSON serializado: ["llm", "rendimiento", "local"]
   sessionId        String?
+  agentRunId       Int? // Puntero a AgentRun.id
+  sourceMessageIds String           @default("[]") // JSON: [148, 149] -> IDs verificados en ConversationMessage
   sourceDocId      Int?
+  sourceDocIds     String           @default("[]") // JSON: [246] -> IDs verificados en Document
+  sourceChunkIds   String           @default("[]") // JSON: [56365, 56389] -> IDs verificados en Chunk
   revocationStatus RevocationStatus @default(ACTIVE)
   revokedAt        DateTime?
   revocationReason String?
@@ -588,6 +596,8 @@ model TopicSnapshot {
   @@index([topic])
   @@index([createdAt])
   @@index([sessionId])
+  @@index([agentRunId])
+  @@index([eventType])
   @@index([sourceDocId])
   @@index([revocationStatus])
 }

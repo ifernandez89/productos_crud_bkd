@@ -1572,6 +1572,9 @@ export class JarvisService {
           { role: 'system', content: finalSystemPrompt },
           { role: 'user', content: userPrompt },
         ],
+        ...(this.knowledgeEvolution.isAutobiographicalQuery(userMessage)
+          ? { maxTokens: 2048 }
+          : {}),
       });
     } catch (genErr: any) {
       this.logger.warn(
@@ -1633,8 +1636,13 @@ export class JarvisService {
     let finalAnswer = responseContent;
     let confidenceScore = 100;
 
+    const isAutobiographical =
+      this.knowledgeEvolution.isAutobiographicalQuery(userMessage);
     const isEvasiveResponse =
-      !webContext && this.looksEvasive(response.content) && mode !== 'OFFLINE';
+      !webContext &&
+      !isAutobiographical &&
+      this.looksEvasive(response.content) &&
+      mode !== 'OFFLINE';
     if (isEvasiveResponse) {
       this.logger.log(
         `[jarvis] respuesta evasiva detectada → buscando en internet`,
@@ -1999,7 +2007,10 @@ export class JarvisService {
     });
 
     this.knowledgeEvolution
-      .extractAndSave(question, answer, sessionId)
+      .extractAndSave(question, answer, sessionId, {
+        agentRunId: agentRun.id,
+        retrievedChunks,
+      })
       .catch((err) => {
         this.logger.warn(
           `[evolution:extract] error background: ${err?.message ?? err}`,

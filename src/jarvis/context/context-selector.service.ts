@@ -155,7 +155,12 @@ export class ContextSelectorService {
       rag = 'EXCLUDED'; // Prioridad absoluta: directiva negativa del usuario
     } else if (explicitRagRequested) {
       rag = 'REQUESTED';
-    } else if (isConceptualOrGeneral || explicitCodeRequested || explicitMathRequested) {
+    } else if (
+      isConceptualOrGeneral ||
+      explicitCodeRequested ||
+      explicitMathRequested ||
+      this.isAutobiographicalMemoryRequest(normalized)
+    ) {
       rag = 'UNNEEDED';
     } else if (intent === 'RAG' && intentConfidence === 'high') {
       rag = 'SELECTED';
@@ -412,7 +417,15 @@ export class ContextSelectorService {
   }
 
   private isExplicitMemoryRequest(n: string): boolean {
-    return /(?:quien\s+soy|que\s+sabes\s+(?:sobre|de)\s+mi|mi\s+lenguaje\s+favorito|te\s+acordas\s+de\s+mi|como\s+me\s+llamo|mis\s+proyectos\s+personales)/i.test(
+    return (
+      /(?:quien\s+soy|que\s+sabes\s+(?:sobre|de)\s+mi|mi\s+lenguaje\s+favorito|te\s+acordas\s+de\s+mi|como\s+me\s+llamo|mis\s+proyectos\s+personales)/i.test(
+        n,
+      ) || this.isAutobiographicalMemoryRequest(n)
+    );
+  }
+
+  private isAutobiographicalMemoryRequest(n: string): boolean {
+    return /(?:que\s+(?:hablamos|conversamos|discutimos|investigamos|probamos|decidimos|acordamos|concluimos)|que\s+estuvimos\s+(?:investigando|hablando|probando|discutiendo)|cuando\s+(?:hablamos|conversamos|discutimos|investigamos|mencionamos|tratamos)|como\s+evoluciono\s+nuestra\s+(?:evaluacion|opinion|arquitectura|investigacion|idea)|en\s+nuestras?\s+(?:conversaciones|sesiones)\s+(?:anteriores|previas|pasadas)|tenemos\s+registros?\s+de\s+haber\s+hablado)/i.test(
       n,
     );
   }

@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Added & Homologated — JarBees Autobiographical & Episodic Memory (MEM-001 · MEM-002 · MEM-003) (2026-11-05)
+
+- **MEM-001: Evolución del Modelo `TopicSnapshot` y Consolidación Episódica con Estatuto Epistémico** (`prisma/schema.prisma`, `src/jarvis/memory/knowledge-evolution.service.ts`, `scripts/mem001-migrate-staging.js`, `scripts/mem001-consolidate-day001.js`):
+  - Extendido el modelo `TopicSnapshot` en Prisma y `jarbees_stage` con metadatos autobiográficos verificados: `eventType` (`conversation_episode`), `summary`, `epistemicItems` (`Json`), `entities` (`String[]`), `agentRunId` (`Int?`), `sourceMessageIds` (`Int[]`), `sourceDocIds` (`Int[]`) y `sourceChunkIds` (`Int[]`), más índices compuestos `(userId, createdAt)` y `(userId, topic)`.
+  - Implementada separación explícita de estatuto epistémico en 6 categorías dentro de cada episodio (`USER_STATEMENT`, `ASSISTANT_STATEMENT`, `OBSERVED_FACT`, `HYPOTHESIS`, `DECISION`, `OPEN_QUESTION`), impidiendo que afirmaciones conversacionales o hipótesis de trabajo se consoliden como hechos objetivos sin respaldo documental.
+  - Redirigida la extracción episódica al servidor local GPU (`llama-server.exe` en RTX 5070 / `extractAndSave` con fallback determinista estructurado `buildStructuredEpisodeFromTurn`), eliminando la dependencia rota de Gemini API en `KnowledgeEvolutionService`.
+- **MEM-002: Recuperación Histórica Multi-Camino (SQL Temporal + Entidades/Decisiones + Hidratación de Provenance)** (`src/jarvis/memory/knowledge-evolution.service.ts`, `src/jarvis/prompt/jarvis-prompt-builder.service.ts`, `src/jarvis/tools/intent/intent-router.service.ts`, `src/jarvis/context/context-selector.service.ts`, `src/jarvis/cognitive/uncertainty-engine.service.ts`):
+  - Implementado detector autobiográfico (`isAutobiographicalQuery`) y parser de rangos temporales en español (`parseTemporalRange`: fechas explícitas `5 de noviembre de 2026`, `ISO YYYY-MM-DD`, `hoy`, `ayer`) que filtra por SQL exacto antes de combinar coincidencias por tópico, entidades, decisiones e historial.
+  - Hidratación automática en tiempo real de punteros de origen: cada episodio recuperado resuelve sus títulos de `Document` (`sourceDocIds`) y extractos de `ConversationMessage` (`sourceMessageIds`) en PostgreSQL antes de inyectarse en `buildJarvisContext`.
+  - Enrutamiento cognitivo dedicado: `IntentRouterService` clasifica consultas autobiográficas como `LOCAL` (`high`), `ContextSelectorService` activa `sources.memory = REQUESTED` manteniendo `sources.rag = UNNEEDED` salvo pedido documental explícito, y `UncertaintyEngineService` exime las consultas con memoria episódica verificada de penalizaciones por ausencia de RAG (`confidenceScore = 95`).
+- **MEM-003: Compuerta de Verificación de Provenance y Guardrail de Abstención Autobiográfica** (`src/jarvis/memory/knowledge-evolution.service.ts`, `src/jarvis/jarvis.service.ts`, `src/jarvis/memory/episodic-autobiographical-memory.spec.ts`):
+  - Implementada validación estricta de contrato (`validateEpisodeSchema`) y verificación cruzada contra PostgreSQL (`verifyProvenanceInDb`): ningún episodio se persiste si sus `agentRunId`, `sourceMessageIds` o `sourceDocIds` no existen realmente en `AgentRun`, `ConversationMessage` y `Document` (episodios huérfanos rechazados con `saved: false`).
+  - Guardrail de abstención histórica (`buildAutobiographicalAbstentionBlock`): cuando una consulta sobre el pasado arroja `0` episodios verificados, JarBees declara explícitamente la ausencia de registros y se abstiene de fabular, bloqueando además búsquedas web compensatorias en `looksEvasive()`.
+  - Suite unitaria `src/jarvis/memory/episodic-autobiographical-memory.spec.ts` (**3/3 PASS** con `--runInBand`).
+- **Homologación en Staging — Batería de Aceptación `M1–M5`** (`docs/JARBEES_MEM_001_003_HOMOLOGATION_REPORT.md`, `docs/JARBEES_EPISODIC_AUTOBIOGRAPHICAL_MEMORY_DESIGN.md`, `scripts/mem-homologation-m1-m5.js`, `scripts/mem-homologation-m1-m5-results.json`):
+  - **M1 (Fecha — 20.52 s):** Recuperación íntegra de los 4 episodios del `2026-11-05` (`AgentRun #72, #76, #77, #78`) con desglose completo de hipótesis, decisiones y conclusiones.
+  - **M2 (Tema — 5.12 s):** Identificación exacta de la investigación sobre William Judge y el mesmerismo (`2026-11-05 20:56`, sesión `daily-day001-t1-1793922974096`, `AgentRun #76`, `Msgs [148, 149]`, `Doc #246`, `Chunks [56365, 56389]`).
+  - **M3 (Decisión — 5.74 s):** Recuperación de la decisión metodológica de 4 pasos sobre `IntentRouter` y `ContextSelector` (`AgentRun #77`, `Msgs [150, 151]`), distinguiendo `HYPOTHESIS` de `DECISION`.
+  - **M4 (Evolución — 10.88 s):** Reconstrucción cronológica de la evolución del análisis de razonamiento y arquitectura cognitiva entre `AgentRun #72` y `AgentRun #78`.
+  - **M5 (Honestidad — 1.14 s):** Abstención limpia y sin fabulación ante consulta sobre fecha inexistente (`5 de noviembre de 2025`, `0` registros).
+
 ### Verified & Operational — JarBees Main Smoke Test & Daily 5 Minute Challenge Day 001 (2026-11-05)
 
 - **Validación Práctica Cotidiana (Daily Challenge - Day 001)** (`docs/JARBEES_DAILY_CHALLENGE_DAY_001.md`, `scripts/daily-challenge-day001.js`):

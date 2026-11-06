@@ -165,6 +165,19 @@ export class IntentRouterService {
       }
     }
 
+    // AUTOBIOGRAPHICAL / EPISODIC MEMORY — alta confianza (va a LOCAL + Memory)
+    if (
+      /(?:que\s+(?:hablamos|conversamos|discutimos|investigamos|probamos|decidimos|acordamos|concluimos)|que\s+estuvimos\s+(?:investigando|hablando|probando|discutiendo)|cuando\s+(?:hablamos|conversamos|discutimos|investigamos|mencionamos|tratamos)|como\s+evoluciono\s+nuestra\s+(?:evaluacion|opinion|arquitectura|investigacion|idea)|en\s+nuestras?\s+(?:conversaciones|sesiones)\s+(?:anteriores|previas|pasadas)|tenemos\s+registros?\s+de\s+haber\s+hablado)/i.test(
+        n,
+      )
+    ) {
+      return {
+        intent: 'LOCAL',
+        confidence: 'high',
+        reason: 'autobiographical episodic memory query',
+      };
+    }
+
     // TASKS — alta confianza
     if (
       /(tareas pendientes|lista de tareas|tareas para hoy|recordame|recuerdame|anotar tarea|anota una tarea|mis pendientes|que tenemos pendiente|que quedo pendiente|cuales son los pendientes|que tengo pendiente)/i.test(

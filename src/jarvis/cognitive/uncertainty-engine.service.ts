@@ -31,9 +31,14 @@ export class UncertaintyEngineService {
     const isMathOrDeterministic =
       /(\d+\s*[\+\-\*\/\^]\s*\d|calcula |exactamente|operacion|algebra)/i.test(userQuery);
 
+    const isAutobiographicalMemory =
+      /\b(qu[eé]\s+(?:hablamos|conversamos|discutimos|investigamos|probamos|decidimos|acordamos|concluimos)|qu[eé]\s+estuvimos\s+(?:investigando|hablando|probando|discutiendo)|cu[aá]ndo\s+(?:hablamos|conversamos|discutimos|investigamos|mencionamos|tratamos)|c[oó]mo\s+evolucion[oó]\s+nuestra\s+(?:evaluaci[oó]n|opini[oó]n|arquitectura|investigaci[oó]n|idea)|en\s+nuestras?\s+(?:conversaciones|sesiones)\s+(?:anteriores|previas|pasadas))\b/i.test(
+        userQuery,
+      );
+
     if (retrievedChunks.length === 0) {
-      if (isMathOrDeterministic) {
-        confidenceScore = 95; // Operaciones deterministas/algebraicas no dependen de RAG
+      if (isMathOrDeterministic || isAutobiographicalMemory) {
+        confidenceScore = 95; // Operaciones deterministas y consultas de memoria episódica PostgreSQL no dependen de RAG documental
       } else {
         confidenceScore = Math.min(confidenceScore, 40);
         unknowns.push('No hay documentos RAG recuperados para fundamentar esta respuesta.');
