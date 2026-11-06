@@ -172,9 +172,14 @@ async function main() {
             'Hipótesis de acoplamiento: una clasificación general o estocástica en IntentRouter (ej. LOCAL) induce a ContextSelector a seleccionar un plan restrictivo que bloquea capacidades necesarias.',
         },
         {
+          type: 'ASSISTANT_STATEMENT',
+          content:
+            'Recomendación metodológica propuesta por JarBees: comprobar primero la hipótesis sin tocar código mediante un plan experimental de 4 pasos: (1) logging estructurado correlacionado entre IntentRouter y ContextSelector, (2) análisis de divergencias donde se asignó UNNEEDED, (3) simulación de entradas sintácticas ambiguas y (4) validación de precedencia determinista.',
+        },
+        {
           type: 'DECISION',
           content:
-            'Decisión acordada: NO modificar código apresuradamente; comprobar primero la hipótesis mediante un plan experimental de 4 pasos: (1) logging estructurado correlacionado entre IntentRouter y ContextSelector, (2) análisis de divergencias donde se asignó UNNEEDED, (3) simulación de entradas sintácticas ambiguas y (4) validación de precedencia determinista.',
+            'Decisión acordada con el usuario: aprobar el criterio de no aplicar parches impulsivos de código sin telemetría previa y mantener el selector bajo observación cotidiana mientras se prioriza la Memoria Autobiográfica (MEM-001..003).',
         },
         {
           type: 'OPEN_QUESTION',

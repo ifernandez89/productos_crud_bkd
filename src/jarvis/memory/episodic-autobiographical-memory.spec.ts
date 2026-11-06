@@ -78,6 +78,13 @@ describe('MEM-001 / MEM-002 / MEM-003 — Autobiographical & Episodic Memory Sui
 
     const documents = new Map<number, any>([
       [246, { id: 246, title: 'William Judge - El mesmerismo' }],
+      [300, { id: 300, title: 'Otro Documento' }],
+    ]);
+
+    const chunks = new Map<number, any>([
+      [56365, { id: 56365, documentId: 246 }],
+      [56389, { id: 56389, documentId: 246 }],
+      [90001, { id: 90001, documentId: 300 }],
     ]);
 
     return {
@@ -116,6 +123,18 @@ describe('MEM-001 / MEM-002 / MEM-003 — Autobiographical & Episodic Memory Sui
             return Promise.resolve(
               where.id.in
                 .map((id: number) => documents.get(id))
+                .filter(Boolean),
+            );
+          }
+          return Promise.resolve([]);
+        }),
+      },
+      chunk: {
+        findMany: jest.fn(({ where }: any) => {
+          if (where?.id?.in) {
+            return Promise.resolve(
+              where.id.in
+                .map((id: number) => chunks.get(id))
                 .filter(Boolean),
             );
           }
@@ -367,6 +386,104 @@ describe('MEM-001 / MEM-002 / MEM-003 — Autobiographical & Episodic Memory Sui
     const uReport = uncertainty.evaluateUncertainty(query, []);
     expect(uReport.confidenceScore).toBe(95);
     expect(uReport.uncertaintyWarningDirectives).toBe('');
+  });
+
+  it('Quality Controls 1-4: verifies chunk provenance (existence & doc ownership), decision vs assistant recommendation, UTC-3 SQL bounds, and legacy snapshot compatibility', async () => {
+    const prisma = createMockPrisma();
+    const service = new KnowledgeEvolutionService(
+      prisma as any,
+      mockLlm as any,
+    );
+
+    // Control 1A: Reject nonexistent chunk ID
+    const missingChunk = await service.recordVerifiedEpisode({
+      topic: 'Chunk inexistente',
+      summary: 'Prueba de chunk que no existe en la tabla Chunk',
+      conclusion: 'No debe persistirse.',
+      epistemicItems: [{ type: 'OBSERVED_FACT', content: 'Cita' }],
+      entities: ['Judge'],
+      tags: ['judge'],
+      agentRunId: 76,
+      sourceMessageIds: [148],
+      sourceDocIds: [246],
+      sourceChunkIds: [999999],
+    });
+    expect(missingChunk.saved).toBe(false);
+    expect(missingChunk.errors[0]).toContain('sourceChunkIds no existen en Chunk');
+
+    // Control 1B: Reject chunk belonging to a different document than sourceDocIds
+    const wrongDocChunk = await service.recordVerifiedEpisode({
+      topic: 'Chunk de otro documento',
+      summary: 'Prueba de chunk 90001 (doc 300) declarado bajo doc 246',
+      conclusion: 'No debe persistirse por inconsistencia de procedencia.',
+      epistemicItems: [{ type: 'OBSERVED_FACT', content: 'Cita' }],
+      entities: ['Judge'],
+      tags: ['judge'],
+      agentRunId: 76,
+      sourceMessageIds: [148],
+      sourceDocIds: [246],
+      sourceChunkIds: [90001],
+    });
+    expect(wrongDocChunk.saved).toBe(false);
+    expect(wrongDocChunk.errors[0]).toContain('no pertenecen a los sourceDocIds declarados');
+
+    // Control 2: Assistant recommendation is NOT stored as DECISION unless user explicitly agreed
+    const builtFromRecommendation = service.buildStructuredEpisodeFromTurn(
+      'Analizá la arquitectura actual de JarBees e identificá un posible punto de fallo.',
+      'La hipótesis principal es el desacople. Mi recomendación es registrar de forma correlacionada la telemetría antes de modificar código.',
+      'session-rec',
+      {
+        agentRunId: 77,
+        sourceMessageIds: [150, 151],
+        sourceDocIds: [],
+        sourceChunkIds: [],
+      },
+    );
+    const hasSpuriousDecision = builtFromRecommendation.epistemicItems.some(
+      (i) => i.type === 'DECISION',
+    );
+    expect(hasSpuriousDecision).toBe(false);
+    expect(
+      builtFromRecommendation.epistemicItems.some(
+        (i) =>
+          i.type === 'ASSISTANT_STATEMENT' &&
+          i.content.includes('Recomendación/Propuesta del asistente'),
+      ),
+    ).toBe(true);
+
+    // Control 3: Exact SQL bounds for "5 de noviembre de 2026" in America/Argentina/Buenos_Aires (UTC-03:00 -> UTC)
+    const range = service.parseTemporalRange('¿Qué investigamos el 5 de noviembre de 2026?');
+    expect(range.hasExplicitDate).toBe(true);
+    expect(range.start?.toISOString()).toBe('2026-11-05T03:00:00.000Z');
+    expect(range.end?.toISOString()).toBe('2026-11-06T03:00:00.000Z');
+
+    // Control 4: Compatibility with legacy pre-MEM-001 TopicSnapshot rows (null summary/epistemicItems)
+    prisma.snapshots.push({
+      id: 74,
+      topic: 'Consolidación y Reconsolidación de la Memoria',
+      summary: null,
+      conclusion: 'La consolidación sináptica transita de E-LTP a L-LTP mediante síntesis proteica.',
+      epistemicItems: null,
+      entities: null,
+      tags: '["neurociencia","plasticidad","memoria"]',
+      sessionId: 'evolution-lab-session',
+      agentRunId: null,
+      sourceMessageIds: null,
+      sourceDocId: null,
+      sourceDocIds: null,
+      sourceChunkIds: null,
+      revocationStatus: 'ACTIVE',
+      createdAt: new Date('2026-11-01T15:56:56.911Z'),
+    });
+
+    const legacyRecall = await service.recallAutobiographicalMemory(
+      '¿Qué hablamos el 1 de noviembre de 2026 sobre consolidacion de la memoria?',
+    );
+    expect(legacyRecall.episodes.length).toBe(1);
+    expect(legacyRecall.episodes[0].id).toBe(74);
+    expect(legacyRecall.episodes[0].summary).toContain('E-LTP a L-LTP');
+    expect(legacyRecall.diagnostics?.sqlStartIso).toBe('2026-11-01T03:00:00.000Z');
+    expect(legacyRecall.diagnostics?.sqlEndIso).toBe('2026-11-02T03:00:00.000Z');
   });
 });
 

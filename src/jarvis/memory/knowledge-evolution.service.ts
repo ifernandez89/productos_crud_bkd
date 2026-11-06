@@ -92,6 +92,13 @@ export interface AutobiographicalRecallResult {
   fallbackRunsUsed: boolean;
   emptyReason?: 'NO_RECORDS_FOR_DATE' | 'NO_RECORDS_FOR_TOPIC';
   formattedContextBlock: string;
+  diagnostics?: {
+    sqlQueryMs: number;
+    provenanceHydrationMs: number;
+    totalRecallMs: number;
+    sqlStartIso?: string;
+    sqlEndIso?: string;
+  };
 }
 
 export interface TopicSnapshot {
@@ -461,6 +468,37 @@ export class KnowledgeEvolutionService {
       }
     }
 
+    if (
+      episode.sourceChunkIds.length > 0 &&
+      typeof (this.prisma as any).chunk?.findMany === 'function'
+    ) {
+      const foundChunks = await this.prisma.chunk.findMany({
+        where: { id: { in: episode.sourceChunkIds } },
+        select: { id: true, documentId: true },
+      });
+      const foundChunkIds = new Set(foundChunks.map((c) => c.id));
+      const missingChunks = episode.sourceChunkIds.filter(
+        (id) => !foundChunkIds.has(id),
+      );
+      if (missingChunks.length > 0) {
+        errors.push(
+          `Los siguientes sourceChunkIds no existen en Chunk: [${missingChunks.join(', ')}].`,
+        );
+      }
+
+      if (episode.sourceDocIds.length > 0) {
+        const declaredDocIds = new Set(episode.sourceDocIds);
+        const orphanChunks = foundChunks.filter(
+          (c) => !declaredDocIds.has(c.documentId),
+        );
+        if (orphanChunks.length > 0) {
+          errors.push(
+            `Inconsistencia de procedencia: los chunks [${orphanChunks.map((c) => `#${c.id}(doc=${c.documentId})`).join(', ')}] no pertenecen a los sourceDocIds declarados [${episode.sourceDocIds.join(', ')}].`,
+          );
+        }
+      }
+    }
+
     return {
       valid: errors.length === 0,
       errors,
@@ -688,6 +726,17 @@ export class KnowledgeEvolutionService {
       },
     ];
 
+    const userExplicitlyAgreedDecision =
+      /\b(decidimos|acordamos|adoptamos|queda\s+definido|aprobado|resolvimos|vamos\s+a\s+implementar|confirmado)\b/i.test(
+        cleanUser,
+      );
+    if (userExplicitlyAgreedDecision) {
+      epistemicItems.push({
+        type: 'DECISION',
+        content: `Acordado explícitamente por el usuario: ${cleanUser.slice(0, 260)}`,
+      });
+    }
+
     for (const s of sentences) {
       if (epistemicItems.length >= 8) break;
       if (
@@ -697,11 +746,20 @@ export class KnowledgeEvolutionService {
       ) {
         epistemicItems.push({ type: 'HYPOTHESIS', content: s.slice(0, 280) });
       } else if (
-        /\b(decisi[oó]n|decidimos|acordamos|la\s+soluci[oó]n\s+radica|comprobar\s+la\s+hip[oó]tesis|recomendaci[oó]n|registrar\s+de\s+forma\s+correlacionada)\b/i.test(
+        /\b(decisi[oó]n\s+acordada|decisi[oó]n\s+confirmada|decidimos|acordamos)\b/i.test(
           s,
         )
       ) {
         epistemicItems.push({ type: 'DECISION', content: s.slice(0, 280) });
+      } else if (
+        /\b(la\s+soluci[oó]n\s+radica|comprobar\s+la\s+hip[oó]tesis|recomendaci[oó]n|registrar\s+de\s+forma\s+correlacionada|propongo)\b/i.test(
+          s,
+        )
+      ) {
+        epistemicItems.push({
+          type: 'ASSISTANT_STATEMENT',
+          content: `Recomendación/Propuesta del asistente: ${s.slice(0, 250)}`,
+        });
       } else if (
         /\?$/.test(s) ||
         /\b(a[uú]n\s+no\s+est[aá]\s+claro|[aá]rea\s+en\s+desarrollo|pendiente|no\s+hay\s+evidencia\s+definitiva)\b/i.test(
@@ -895,6 +953,7 @@ export class KnowledgeEvolutionService {
       };
     }
 
+    const recallStartMs = Date.now();
     const temporalRange = this.parseTemporalRange(query, referenceNow);
     const queryType = this.classifyAutobiographicalQueryType(
       query,
@@ -918,6 +977,7 @@ export class KnowledgeEvolutionService {
       };
     }
 
+    const sqlStartMs = Date.now();
     const candidateSnapshots = await this.prisma.topicSnapshot.findMany({
       where: whereClause,
       orderBy: { createdAt: 'asc' },
@@ -934,16 +994,16 @@ export class KnowledgeEvolutionService {
     } else if (searchTerms.length > 0) {
       const scored = candidateSnapshots
         .map((snap) => {
-          const haystack = [
-            snap.topic,
-            snap.summary ?? '',
-            snap.conclusion,
-            snap.entities ?? '',
-            snap.tags ?? '',
-            snap.epistemicItems ?? '',
-          ]
-            .join(' ')
-            .toLowerCase();
+          const haystack = this.normalizeSearchText(
+            [
+              snap.topic,
+              snap.summary ?? '',
+              snap.conclusion,
+              snap.entities ?? '',
+              snap.tags ?? '',
+              snap.epistemicItems ?? '',
+            ].join(' '),
+          );
 
           let hits = 0;
           for (const term of searchTerms) {
@@ -977,6 +1037,7 @@ export class KnowledgeEvolutionService {
         fallbackRunsUsed = true;
       }
     }
+    const sqlQueryMs = Date.now() - sqlStartMs;
 
     // 3. Si no existen registros para esa fecha o tema -> Honestidad Autobiográfica (MEM-003)
     if (matchedSnapshots.length === 0) {
@@ -990,6 +1051,7 @@ export class KnowledgeEvolutionService {
         searchTerms,
       );
 
+      const totalRecallMs = Date.now() - recallStartMs;
       return {
         isAutobiographicalQuery: true,
         queryType,
@@ -998,15 +1060,29 @@ export class KnowledgeEvolutionService {
         fallbackRunsUsed: false,
         emptyReason,
         formattedContextBlock: abstentionBlock,
+        diagnostics: {
+          sqlQueryMs,
+          provenanceHydrationMs: 0,
+          totalRecallMs,
+          sqlStartIso: temporalRange.start?.toISOString(),
+          sqlEndIso: temporalRange.end?.toISOString(),
+        },
       };
     }
 
     // 4. Hidratar procedencia (Documentos y Mensajes originales) sin duplicar datos
+    const hydrationStartMs = Date.now();
     const hydratedEpisodes = await this.hydrateEpisodes(matchedSnapshots);
+    const provenanceHydrationMs = Date.now() - hydrationStartMs;
     const formattedContextBlock = this.formatEpisodesForPrompt(
       queryType,
       temporalRange,
       hydratedEpisodes,
+    );
+    const totalRecallMs = Date.now() - recallStartMs;
+
+    this.logger.log(
+      `[MEM-002] Recall (${queryType}): episodes=${hydratedEpisodes.length}, sql=${sqlQueryMs}ms, hydration=${provenanceHydrationMs}ms, total=${totalRecallMs}ms`,
     );
 
     return {
@@ -1016,6 +1092,13 @@ export class KnowledgeEvolutionService {
       episodes: hydratedEpisodes,
       fallbackRunsUsed,
       formattedContextBlock,
+      diagnostics: {
+        sqlQueryMs,
+        provenanceHydrationMs,
+        totalRecallMs,
+        sqlStartIso: temporalRange.start?.toISOString(),
+        sqlEndIso: temporalRange.end?.toISOString(),
+      },
     };
   }
 
@@ -1060,7 +1143,7 @@ export class KnowledgeEvolutionService {
     const filtered = runs.filter((r) => {
       if (this.isAutobiographicalQuery(r.question)) return false;
       if (searchTerms.length === 0) return true;
-      const text = `${r.question} ${r.answer ?? ''}`.toLowerCase();
+      const text = this.normalizeSearchText(`${r.question} ${r.answer ?? ''}`);
       return searchTerms.some((t) => text.includes(t));
     });
 
@@ -1378,6 +1461,13 @@ export class KnowledgeEvolutionService {
     }
   }
 
+  private normalizeSearchText(text: string): string {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+
   private extractSearchKeywords(query: string): string[] {
     // Eliminar fechas explícitas antes de extraer keywords temáticas
     const withoutDates = query
@@ -1392,6 +1482,8 @@ export class KnowledgeEvolutionService {
       .replace(/[^a-záéíóúñ0-9_-]+/gi, ' ')
       .split(/\s+/)
       .map((t) => t.trim())
+      .filter((t) => t.length >= 4 && !STOPWORDS_ES.has(t))
+      .map((t) => this.normalizeSearchText(t))
       .filter((t) => t.length >= 4 && !STOPWORDS_ES.has(t));
 
     return Array.from(new Set(tokens));
