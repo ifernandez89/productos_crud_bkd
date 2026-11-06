@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Architecture & Protocol — DEV-001-B2.3 Preparación Técnica y Protocolo de Aceptación del Prototipo (2026-11-06)
+
+> **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / SPECIFICATION ONLY (Sin habilitar características de Windows, sin instalar QEMU, sin reinicio del host, sin despacho al sistema operativo).  
+> **Frontera de Ejecución:** 🔒 STRICT NO-EXECUTION. El Execution Broker continúa operando exclusivamente en modo `SIMULATED`. Adaptadores reales permanecen terminantemente bloqueados.  
+> **Marco de Aceptación:** Protocolo de medición host vs guest desacoplado, matriz canónica de 18 pruebas adversariales (19 aserciones independientes) y gobernanza de ejecución por 5 puertas de control (Gates).  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base B2.2:** `781f47b`
+
+- **DEV-001-B2.3-PREPARATION — Especificación de Preparación Técnica (`docs/DEV_001_B2_3_PREPARATION_SPEC.md`)**:
+  - Verificación de prerrequisitos de virtualización en Windows 10 Pro (Build 19041) con dos operaciones DISM explícitas e independientes (`VirtualMachinePlatform` y `HypervisorPlatform`); precisión técnica de que `HypervisorPresent: True` valida la activación del hipervisor anfitrión pero la viabilidad de arranque de QEMU/WHPX queda sujeta a prueba práctica; empaquetado aislado de QEMU (v8.2+/v9.x) en directorio local no administrativo (`tools/sandbox/bin/qemu/`).
+  - Protocolo de medición de memoria desacoplado: distinción formal en el anfitrión entre memoria comprometida (`PagefileUsage` / *commit charge*) y memoria física residente (`WorkingSetSize`) vía `GetProcessMemoryInfo`; precisión de que `JOB_OBJECT_LIMIT_JOB_MEMORY` actúa como tope de memoria comprometida del Job Object y no constituye un límite directo de RAM física; desacoplamiento ortogonal respecto al consumo contable en Linux invitado (`-m 1024M` y cgroups `memory.current`).
+  - Protocolo de medición de CPU desacoplado: cuota relativa agregada `CpuRate = 2000` (límite del 20% sobre la capacidad global del sistema para el Job Object, sin núcleos ni hilos dedicados) desacoplada de la topología virtual interna asignada a la MicroVM (`-smp 2` para 2 vCPUs lógicas invitadas).
+  - Protocolo de compatibilidad de `ActiveProcessLimit = 1`: límite que restringe exclusivamente procesos del SO (`EPROCESS`), no hilos de ejecución (`ETHREAD`); verificación previa con valor 2 para auditar posibles procesos auxiliares de la compilación Windows de QEMU y prevenir fallos `0xC0000022`.
+  - Protocolo de evidencia adversarial con aserciones técnicas independientes: verificación de ausencia total de dispositivos de bloque (`/sys/block/`, `/dev/sd*`, `/dev/nvme*`) en TEST-01; medición dual de memoria en TEST-07; verificación desacoplada de red en TEST-04/05/06 comprobando ausencia de interfaces/rutas por separado de la creación de `socket()` y del fallo independiente de `connect()` con `ENETUNREACH`.
+  - Gobernanza de transición práctica en 5 etapas secuenciales con autorización explícita: Gate 1 (Activación de WHPX en 2 comandos DISM + Reinicio), Gate 2 (Staging de Binarios y Kernel con SHA-256), Gate 3 (Prueba de Humo Aislada `diagnostic:ping` en arnés CLI), Gate 4 (Ejecución Automatizada de los 18 Tests) y Gate 5 (Homologación Práctica).
+
 ### Security Architecture & Research — DEV-001-B2.2 Completada (B2.2-A a B2.2-E): Auditoría de Aislamiento, Especificación de MicroVM QEMU/WHPX y Criterios del Prototipo (2026-11-06)
 
 > **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / DESIGN ONLY (Sin instalación de hipervisores, sin reinicio del host, sin despacho al sistema operativo).  
