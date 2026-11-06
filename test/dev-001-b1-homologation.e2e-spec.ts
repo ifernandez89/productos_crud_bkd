@@ -17,6 +17,7 @@ jest.setTimeout(30000);
 
 import { AuthController } from '../src/auth/auth.controller';
 import { AuthService } from '../src/auth/auth.service';
+import { SingleInstanceLockService } from '../src/auth/single-instance-lock.service';
 import { JwtStrategy } from '../src/auth/jwt.strategy';
 import { JwtAuthGuard } from '../src/auth/jwt.guard';
 import { Public } from '../src/auth/public.decorator';
@@ -49,6 +50,8 @@ import { AssetMetadataService } from '../src/jarvis/3d/services/asset-metadata.s
 import { MobileGatewayController } from '../src/mobile-gateway/mobile-gateway.controller';
 import { MobileGatewayService } from '../src/mobile-gateway/mobile-gateway.service';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { UploadController } from '../src/upload/upload.controller';
+import { UploadService } from '../src/upload/upload.service';
 
 // Mock Dummy Controller with unapproved @Public() handler to test whitelist enforcement
 @UseGuards(SecurityKernelAuthGuard)
@@ -192,9 +195,11 @@ describe('DEV-001-B1-HOMOLOGATION — Security Kernel HTTP Integration Suite (e2
         AssetMetadataController,
         MobileGatewayController,
         RoguePublicController,
+        UploadController,
       ],
       providers: [
         AuthService,
+        SingleInstanceLockService,
         JwtStrategy,
         ActionGatekeeperService,
         CryptoVaultService,
@@ -202,6 +207,7 @@ describe('DEV-001-B1-HOMOLOGATION — Security Kernel HTTP Integration Suite (e2
         MobileGatewayService,
         Reflector,
         SecurityKernelAuthGuard,
+        UploadService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: AuditService, useValue: mockAuditService },
         { provide: AssetMetadataService, useValue: mockAssetMetadataService },
@@ -219,6 +225,7 @@ describe('DEV-001-B1-HOMOLOGATION — Security Kernel HTTP Integration Suite (e2
         { provide: ObjectLabService, useValue: {} },
         { provide: APP_GUARD, useClass: JwtAuthGuard },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
+        { provide: APP_GUARD, useClass: SecurityKernelAuthGuard },
       ],
     }).compile();
 
@@ -779,6 +786,74 @@ describe('DEV-001-B1-HOMOLOGATION — Security Kernel HTTP Integration Suite (e2
       expect(afterRestartReplayRes.status).toBe(403);
       expect(afterRestartReplayRes.body.message).toContain('Ataque de repetición detectado');
     });
+
+    it('E10. Concurrencia HTTP: múltiples llamadas simultáneas con el mismo requestId (Promise.all) solo una tiene éxito (DEV-001-B1.3 TEST-01)', async () => {
+      const cmdDto = {
+        requestId: crypto.randomUUID(),
+        deviceId: 'device-concurrent-m22',
+        timestamp: new Date().toISOString(),
+        intent: 'GET_TIME',
+      };
+      const signature = mobileService.signCommandDto(cmdDto, { path: '/mobile/v1/command', method: 'POST' });
+
+      const responses = await Promise.all([
+        request(app.getHttpServer()).post('/mobile/v1/command').set('Authorization', `Bearer ${operatorMobileToken}`).set('x-jarbees-signature', signature).send(cmdDto),
+        request(app.getHttpServer()).post('/mobile/v1/command').set('Authorization', `Bearer ${operatorMobileToken}`).set('x-jarbees-signature', signature).send(cmdDto),
+        request(app.getHttpServer()).post('/mobile/v1/command').set('Authorization', `Bearer ${operatorMobileToken}`).set('x-jarbees-signature', signature).send(cmdDto),
+        request(app.getHttpServer()).post('/mobile/v1/command').set('Authorization', `Bearer ${operatorMobileToken}`).set('x-jarbees-signature', signature).send(cmdDto),
+        request(app.getHttpServer()).post('/mobile/v1/command').set('Authorization', `Bearer ${operatorMobileToken}`).set('x-jarbees-signature', signature).send(cmdDto),
+      ]);
+
+      const successCount = responses.filter(r => r.status === 200).length;
+      const replayCount = responses.filter(r => r.status === 403 && r.body?.message?.includes('Ataque de repetición')).length;
+
+      expect(successCount).toBe(1);
+      expect(replayCount).toBe(4);
+    });
+
+    it('E11. Resiliencia fail-closed ante ledger de 0 bytes o corrupto: no se destruye y bloquea repetición (DEV-001-B1.3 A2-01)', async () => {
+      const fs = require('fs');
+      const path = require('path');
+      const testDir = path.resolve(process.cwd(), 'storage/security/mobile-replay');
+      fs.mkdirSync(testDir, { recursive: true });
+
+      const fakeZeroByteId = crypto.randomUUID();
+      const hash = crypto.createHash('sha256').update(fakeZeroByteId).digest('hex');
+      const fakeZeroByteFile = path.join(testDir, `${hash}.json`);
+      fs.writeFileSync(fakeZeroByteFile, ''); // 0 bytes
+
+      // Reiniciar la app
+      await app.close();
+      app = await createTestApp();
+      jwtService = app.get(JwtService);
+      gatekeeperService = app.get(ActionGatekeeperService);
+      mobileService = app.get(MobileGatewayService);
+      googleAuthService = app.get(GoogleAuthService);
+
+      // El archivo corrupto DEBE preservarse en disco (no borrarse automáticamente)
+      expect(fs.existsSync(fakeZeroByteFile)).toBe(true);
+
+      // Cualquier intento de reusar ese requestId o hash debe ser rechazado fail-closed
+      const cmdDto = {
+        requestId: fakeZeroByteId,
+        deviceId: 'device-zero-byte',
+        timestamp: new Date().toISOString(),
+        intent: 'GET_TIME',
+      };
+      const signature = mobileService.signCommandDto(cmdDto, { path: '/mobile/v1/command', method: 'POST' });
+
+      const res = await request(app.getHttpServer())
+        .post('/mobile/v1/command')
+        .set('Authorization', `Bearer ${operatorMobileToken}`)
+        .set('x-jarbees-signature', signature)
+        .send(cmdDto);
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toContain('Ataque de repetición detectado');
+
+      // Limpieza del archivo de test
+      try { fs.unlinkSync(fakeZeroByteFile); } catch {}
+    });
   });
 
   // =========================================================================
@@ -883,6 +958,12 @@ describe('DEV-001-B1-HOMOLOGATION — Security Kernel HTTP Integration Suite (e2
         .expect(200);
       expect(res.body.success).toBe(true);
       expect(res.body.stats.totalAssets).toBe(42);
+    });
+
+    it('F8. POST /upload/image sin JWT retorna 401 Unauthorized demostrando frontera global en controladores legacy (DEV-001-B1.3 A1-01)', async () => {
+      await request(app.getHttpServer())
+        .post('/upload/image')
+        .expect(401);
     });
   });
 });

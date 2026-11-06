@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Hardening & Consolidation — DEV-001-B1 Homologada (B1.3 + B1.3.1): Cierre Integral de Frontera de Autorización, Persistencia Fail-Closed y Exclusión Mutua de Instancia (2026-11-06)
+
+> **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B1.3-REVIEW` y `DEV-001-B1.3.1-REVIEW` con dictamen técnico favorable).  
+> **Fase B2:** 🔒 BLOQUEADA hasta diseño formal de sandboxing y autorización explícita del operador.  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base:** `71dae1d29e27c18c4d44d4dd392f63dd4b5bc93c`
+
+- **A1 — Frontera Global de Autorización y Desmantelamiento de `@Public()` Legacy (`src/app.module.ts`, `src/jarvis/security/security-kernel-auth.guard.ts`)**:
+  - Eliminación completa de las 30 anotaciones `@Public()` no justificadas en controladores heredados (`ProductsController`, `AichatController`, `ReaderController`, `TranslatorController`, `UploadController`, `BalanceController`).
+  - `SecurityKernelAuthGuard` promovido a guard global a nivel de aplicación (`APP_GUARD`) en `AppModule`, garantizando que ninguna ruta o controlador nuevo quede fuera de la frontera de seguridad por omisión de guard.
+  - Validación de triple factor para endpoints públicos autorizados (`AUTHORIZED_PUBLIC_ENDPOINT_SPECS`): coincidencia obligatoria de clase controladora (`context.getClass().name`), nombre de método handler (`context.getHandler().name`) y patrón regex canónico sobre la ruta normalizada.
+  - Marcador de verificación interna mediante `WeakSet<object>` privado y no exportable (`REQUEST_SECURITY_VERIFIED`), eliminando vulnerabilidades de inyección o suplantación a través de parámetros, encabezados o middlewares HTTP.
+  - Validación obligatoria de `rawUrl` (`request.originalUrl ?? request.url`), denegando con `400 Bad Request` peticiones malformadas o vacías en producción.
+- **A2 — Durabilidad Atómica Anti-Replay y Cuarentena Fail-Closed (`src/mobile-gateway/mobile-gateway.service.ts`)**:
+  - Durabilidad forzada a nivel de kernel de sistema operativo mediante `fs.fsyncSync(fd)` antes de confirmar operaciones críticas en disco.
+  - Política estricta *Fail-Closed*: registros de libro mayor con tamaño 0 bytes o contenido corrupto no son eliminados, sino puestos en cuarentena (`.corrupt.<timestamp>`) y rechazados con `403 Forbidden` ("Replay ledger verification failed (fail-closed)").
+  - Purga de memoria y disco temporizada con desreferenciación `.unref()` en el temporizador cíclico de 60s, evitando fugas de memoria o retención de bucle de eventos.
+- **F-B1-02 & F-B1-02-02 — Exclusión Mutua de Proceso y Persistencia Robusta de Bloqueo Progresivo (`src/auth/single-instance-lock.service.ts`, `src/auth/auth.service.ts`)**:
+  - Creación del servicio `SingleInstanceLockService` que utiliza enlace a socket TCP loopback local (`127.0.0.1:40199`, `exclusive: true`) arbitrado por el kernel del sistema operativo (Win32 `SO_EXCLUSIVEADDRUSE` / POSIX `SO_REUSEADDR` disabled).
+  - Garantía de exclusión mutua atómica para despliegues single-host: una segunda instancia de la aplicación colisiona inmediatamente con `EADDRINUSE` y aborta el arranque (`ProcessExit`), evitando condiciones de carrera de actualización perdida (*Lost Update*) entre múltiples procesos.
+  - Resiliencia ante fallos abruptos (crash/SIGKILL) con recuperación instantánea sin archivos de bloqueo obsoletos (*stale lockfiles*), delegando la liberación de descriptores al kernel del SO.
+  - Sincronización previa obligatoria con disco (`syncBucketFromDisk()`) antes de registrar intentos fallidos de autenticación, asegurando contabilidad persistente y bloqueos progresivos (5 intentos = 5/15 min de penalización con `429 Too Many Requests`).
+  - Purga segura de archivos temporales huérfanos con ventana de gracia (>5000 ms) para proteger escrituras concurrentes legítimas en disco.
+- **F-B1-10 — Confinamiento Canónico de Assets 3D y Mitigación Anti-TOCTOU (`src/jarvis/3d/controllers/studio-3d.controller.ts`, `src/jarvis/3d/services/asset-security.service.ts`, `src/jarvis/3d/services/asset-metadata.service.ts`)**:
+  - Centralización obligatoria de validaciones de ruta mediante `resolveConfinedAssetPath` e inspección exhaustiva de segmentos intermedios (`ensureNoSymlinksInPath`) para neutralizar junctions NTFS y enlaces simbólicos.
+  - Verificación estricta de descriptores de archivo en lecturas (`fstatSync(fd).ino === lstatSync(resolved).ino` y `dev`), mitigando la ventana de manipulación TOCTOU (*Time-of-Check to Time-of-Use*).
+  - Escrituras atómicas confinadas en `AssetMetadataService` y `Studio3DController` mediante archivos temporales en el mismo directorio de destino y reemplazo atómico con `fs.renameSync`.
+- **Resultados de Validación y Homologación**:
+  - Compilación NestJS (`npm run build`): Exitosa (código 0, cero errores de tipado TypeScript).
+  - Pruebas unitarias y de procesos concurrentes: **87/87 PASS** (7 suites, incluyendo `dev-001-b1-process-concurrency.spec.ts` con 7 tests de fork real de procesos y exclusión mutua de socket).
+  - Pruebas de integración HTTP real (e2e): **43/43 PASS** (`test/dev-001-b1-homologation.e2e-spec.ts`), con 100% de aserciones de seguridad verificadas contra servidor HTTP real.
+  - Total acumulado: **130 pruebas de seguridad automatizadas aprobadas (0 fallos)**.
+  - Informes de auditoría independiente favorables: `docs/DEV_001_B1_3_REVIEW_REPORT.md` y `docs/DEV_001_B1_3_1_REVIEW_REPORT.md`.
+- **Restricciones Operacionales Formalmente Registradas para Homologación B1**:
+  - **Arquitectura Single-Host y Single-Instance**: El despliegue de JarBees debe realizarse en un único host con aceleración GPU (NVIDIA GeForce RTX 5070). La operación en clúster multi-nodo queda explícitamente deshabilitada hasta la integración de un coordinador de transacciones distribuido.
+  - **Lockout por IP en Entornos Compartidos**: En infraestructuras con múltiples clientes compartiendo una misma IP pública (NAT corporativo), un atacante puede inducir lockout temporal sobre dicha IP si el reverse proxy no sanitiza adecuadamente los encabezados `X-Forwarded-For`.
+  - **Bloqueo Estricto de Autonomía de Agente (Fase B2)**: Se mantiene el bloqueo técnico y operativo absoluto sobre capacidades autónomas (navegador headless, ejecución de shell, llamadas arbitrarias a internet y manipulación irrestricta de archivos) hasta la aprobación, diseño e implementación del sandboxing de Fase B2.
+
 ### Security Hardening & Remediation — DEV-001-B1.2: Cierre de Brechas de Persistencia, Confinamiento y Aislamiento (2026-11-06)
 
 > **Estado:** ⚠️ Pendiente de revisión independiente (`DEV-001-B1.2-REVIEW`). Fase B1 NO homologada; Fase B2 BLOQUEADA.  

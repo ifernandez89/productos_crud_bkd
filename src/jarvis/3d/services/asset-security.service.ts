@@ -230,6 +230,86 @@ export class AssetSecurityService {
   }
 
   /**
+   * Escritura atómica confinada con mitigación anti-TOCTOU y neutralización de symlinks (DEV-001-B1.3: F-B1-10-01).
+   * Escribe en un archivo temporal exclusivo dentro del mismo directorio confinado,
+   * valida descriptor (fstat/lstat), fuerza volcado a disco con fsyncSync y renombra atómicamente
+   * verificando que el destino no sea ni haya sido sustituido por un enlace simbólico o junction.
+   */
+  writeConfinedFileAtomic(targetPath: string, contentBuffer: Buffer): void {
+    const absTarget = path.resolve(targetPath);
+    const parentDir = path.dirname(absTarget);
+
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true });
+    }
+
+    // Si el destino ya existe en el sistema de archivos, comprobar que no sea symlink ni junction
+    if (fs.existsSync(absTarget)) {
+      const destLstat = fs.lstatSync(absTarget);
+      if (destLstat.isSymbolicLink() || !destLstat.isFile()) {
+        throw new Error(
+          `SecurityKernel: el destino de escritura "${path.basename(absTarget)}" es un enlace simbólico, junction o directorio no permitido.`,
+        );
+      }
+    }
+
+    // 1. Crear archivo temporal con UUID exclusivo en el mismo directorio (O_CREAT | O_EXCL)
+    const tempFileName = `.__jarbees_tmp_${crypto.randomUUID()}.tmp`;
+    const tempFilePath = path.join(parentDir, tempFileName);
+
+    const fd = fs.openSync(
+      tempFilePath,
+      fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY,
+      0o600,
+    );
+
+    try {
+      const fstat = fs.fstatSync(fd);
+      const lstat = fs.lstatSync(tempFilePath);
+      if (
+        fstat.ino !== lstat.ino ||
+        fstat.dev !== lstat.dev ||
+        lstat.isSymbolicLink() ||
+        !fstat.isFile()
+      ) {
+        throw new Error('Anomalía TOCTOU detectada al preparar archivo temporal de escritura.');
+      }
+
+      fs.writeFileSync(fd, contentBuffer);
+      fs.fsyncSync(fd);
+    } finally {
+      fs.closeSync(fd);
+    }
+
+    // 2. Comprobación previa al reemplazo: re-verificar que el destino no haya sido sustituido por un symlink
+    if (fs.existsSync(absTarget)) {
+      const preRenameLstat = fs.lstatSync(absTarget);
+      if (preRenameLstat.isSymbolicLink() || !preRenameLstat.isFile()) {
+        try { fs.unlinkSync(tempFilePath); } catch {}
+        throw new Error(
+          'SecurityKernel: intento de secuestro de ruta detectado antes del renombrado atómico.',
+        );
+      }
+    }
+
+    // 3. Reemplazo / creación atómica
+    try {
+      fs.renameSync(tempFilePath, absTarget);
+    } catch (renameErr) {
+      try { fs.unlinkSync(tempFilePath); } catch {}
+      throw renameErr;
+    }
+
+    // 4. Verificación post-reemplazo
+    const finalLstat = fs.lstatSync(absTarget);
+    if (finalLstat.isSymbolicLink() || !finalLstat.isFile()) {
+      throw new Error(
+        'SecurityKernel: el archivo resultante del reemplazo 3D no es válido o fue alterado.',
+      );
+    }
+  }
+
+  /**
    * Empaqueta y cifra un archivo GLB del disco en un archivo .jb3d
    */
   async packFile(sourceGlbPath: string, targetJb3dPath: string): Promise<PackResult> {
@@ -244,8 +324,7 @@ export class AssetSecurityService {
     const sourceBuffer = this.readConfinedFileBuffer(absSource);
     const encryptedBuffer = this.encryptGlbToJb3d(sourceBuffer);
 
-    await fs.promises.mkdir(path.dirname(absTarget), { recursive: true });
-    await fs.promises.writeFile(absTarget, encryptedBuffer);
+    this.writeConfinedFileAtomic(absTarget, encryptedBuffer);
 
     const durationMs = Date.now() - startTime;
     const ratio = Number((encryptedBuffer.length / sourceBuffer.length).toFixed(4));
@@ -281,8 +360,7 @@ export class AssetSecurityService {
     const sourceBuffer = this.readConfinedFileBuffer(absSource);
     const decryptedGlb = this.decryptJb3dToGlb(sourceBuffer);
 
-    await fs.promises.mkdir(path.dirname(absTarget), { recursive: true });
-    await fs.promises.writeFile(absTarget, decryptedGlb);
+    this.writeConfinedFileAtomic(absTarget, decryptedGlb);
 
     const durationMs = Date.now() - startTime;
     const ratio = Number((decryptedGlb.length / sourceBuffer.length).toFixed(4));

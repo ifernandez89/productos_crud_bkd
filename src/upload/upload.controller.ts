@@ -15,7 +15,6 @@ import { Public } from '../auth/public.decorator';
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
-  @Public()
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')

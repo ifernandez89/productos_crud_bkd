@@ -17,6 +17,7 @@ import { MobileGatewayModule } from './mobile-gateway/mobile-gateway.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { SecurityKernelAuthGuard } from './jarvis/security/security-kernel-auth.guard';
 
 import { SharedModule } from './shared/shared.module';
 
@@ -55,6 +56,9 @@ import { SharedModule } from './shared/shared.module';
     // Guard global JWT — todos los endpoints requieren autenticación
     // excepto los marcados con @Public()
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Guard global del Security Kernel — lista blanca estricta de excepciones públicas (A1)
+    // y verificación de identidad y scopes de operador
+    { provide: APP_GUARD, useClass: SecurityKernelAuthGuard },
     // Rate limiting global — 100 req/min default
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],

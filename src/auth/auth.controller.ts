@@ -5,13 +5,16 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService, OperatorLoginRequest } from './auth.service';
 import { Public } from './public.decorator';
+import { SecurityKernelAuthGuard } from '../jarvis/security/security-kernel-auth.guard';
 
 @ApiTags('auth')
+@UseGuards(SecurityKernelAuthGuard)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

@@ -30,7 +30,6 @@ export class TranslatorController {
   // Recibe un PDF multipart y lo traduce al español de forma asíncrona.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Post('translate-pdf')
   @ApiOperation({
     summary: 'Subir un PDF en idioma extranjero y traducirlo al español con Qwen3:4b',
@@ -89,7 +88,6 @@ export class TranslatorController {
   // Traduce un documento ya indexado en la BD por su ID.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Post('translate-document/:id')
   @ApiOperation({
     summary: 'Traducir un documento ya indexado en la biblioteca (por ID)',
@@ -121,7 +119,6 @@ export class TranslatorController {
   // Consulta el progreso de un job de traducción.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Get('status/:jobId')
   @ApiOperation({ summary: 'Consultar el progreso de una traducción en curso' })
   getStatus(@Param('jobId') jobId: string) {
@@ -138,7 +135,6 @@ export class TranslatorController {
   // Lista todos los jobs de traducción en memoria.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Get('jobs')
   @ApiOperation({ summary: 'Listar todos los jobs de traducción (historial en memoria)' })
   listJobs() {
@@ -153,7 +149,6 @@ export class TranslatorController {
   // Lista todos los libros traducidos al español disponibles.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Get('list')
   @ApiOperation({ summary: 'Listar todos los libros traducidos al español disponibles en la biblioteca' })
   async listTranslated() {
@@ -170,7 +165,6 @@ export class TranslatorController {
   // Oculta un documento del Reader sin borrarlo.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Post('hide/:id')
   @ApiOperation({
     summary: 'Ocultar un documento del Reader (sin borrarlo)',
@@ -191,7 +185,6 @@ export class TranslatorController {
   // Detecta el idioma de un texto sin traducir.
   // ──────────────────────────────────────────────────────────────────────────────
 
-  @Public()
   @Post('detect-language')
   @ApiOperation({ summary: 'Detectar el idioma de un texto (para diagnóstico)' })
   detectLanguage(@Body() body: { text: string }) {
