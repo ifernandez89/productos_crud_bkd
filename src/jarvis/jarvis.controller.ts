@@ -11,8 +11,12 @@ import {
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
   BadRequestException,
+  ForbiddenException,
+  UnauthorizedException,
   Headers,
+  Req,
   Res,
   Optional,
   Logger,
@@ -44,6 +48,10 @@ import { Public } from '../auth/public.decorator';
 import { getAvailableDisciplines } from '../shared/disciplines';
 import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { ActionGatekeeperService } from './security/action-gatekeeper.service';
+import {
+  SecurityKernelAuthGuard,
+  RequireSecurityPermission,
+} from './security/security-kernel-auth.guard';
 import { MissionRecoveryService } from './planner/mission-recovery.service';
 import { InferenceDiagnosticsService } from './llm/inference-diagnostics.service';
 import { ExecutionEngine, ExecutionPlan } from './planner/execution-engine.service';
@@ -62,6 +70,7 @@ import {
 } from './memory/memory-consolidation.service';
 
 @ApiTags('jarbees')
+@UseGuards(SecurityKernelAuthGuard)
 @Controller('jarbees')
 export class JarvisController {
   private readonly logger = new Logger(JarvisController.name);
@@ -112,15 +121,29 @@ export class JarvisController {
   @Public()
   @Get('inference/status')
   @ApiOperation({
-    summary: 'Estado de pasarela de inferencia y motores locales',
+    summary: 'Estado básico de disponibilidad de pasarela de inferencia',
     description:
-      'Devuelve el estado de llama.cpp (RTX 5070), Ollama (fallback), modelo activo y política de conmutación.',
+      'Devuelve información básica de disponibilidad sin rutas ni detalles internos del host.',
   })
   async getInferenceStatus() {
-    return await this.inferenceGateway.getHealthStatus();
+    const raw = await this.inferenceGateway.getHealthStatus();
+    return {
+      status: raw.serverHealthy || raw.fallbackAvailable ? 'ok' : 'degraded',
+      serverHealthy: raw.serverHealthy,
+      modelReady: raw.modelReady,
+      modelLoading: raw.modelLoading,
+      fallbackAvailable: raw.fallbackAvailable,
+      activeProvider: raw.activeProvider,
+      defaultModel: raw.defaultModel,
+      loadedModel: raw.loadedModel,
+      activeModel: raw.activeModel,
+      circuitBreaker: raw.circuitBreaker,
+      providers: raw.providers,
+    };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('inference/diagnostics')
   @ApiOperation({
     summary: 'Diagnóstico estructurado de inferencia llama.cpp, latencia, VRAM y aislamiento bge-m3',
@@ -128,9 +151,23 @@ export class JarvisController {
   async getInferenceDiagnostics(
     @Query('probe') probe?: string,
     @Query('model') model?: string,
+    @Req() req?: any,
   ) {
     if (!this.inferenceDiagnostics) {
       throw new BadRequestException('InferenceDiagnosticsService no está inicializado.');
+    }
+    if (probe === 'true') {
+      const scopes: string[] = Array.isArray(req?.user?.scopes)
+        ? req.user.scopes
+        : [];
+      if (
+        !scopes.includes('jarbees:mutate') &&
+        req?.user?.role !== 'admin'
+      ) {
+        throw new ForbiddenException(
+          'SecurityKernel: ejecutar un sondeo activo de inferencia (probe=true) requiere el scope "jarbees:mutate".',
+        );
+      }
     }
     const report = await this.inferenceDiagnostics.runDiagnostics({
       runInferenceProbe: probe === 'true',
@@ -139,7 +176,8 @@ export class JarvisController {
     return { success: true, report };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('telemetry/tokens')
   @ApiOperation({
     summary: 'Telemetría programática de consumo de tokens y escalones de contexto para auto-inspección de la IA',
@@ -159,7 +197,8 @@ export class JarvisController {
     return { success: true, report };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('telemetry/budget')
   @ApiOperation({
     summary: 'Consulta programática de presupuesto de tokens, reparaciones y límites de misión para la IA',
@@ -179,7 +218,8 @@ export class JarvisController {
     return { success: true, report };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('context/core')
   @ApiOperation({
     summary: 'Obtiene el CoreContext compacto permanente (máximo 25 líneas) de JarBees',
@@ -198,7 +238,8 @@ export class JarvisController {
     return { success: true, coreContext };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('capabilities/registry')
   @ApiOperation({
     summary: 'Consulta el registro dinámico de capacidades reales (AVAILABLE, DEGRADED, UNAVAILABLE)',
@@ -213,6 +254,8 @@ export class JarvisController {
     };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('capabilities/refresh')
   @ApiOperation({
     summary: 'Fuerza un sondeo activo del entorno y actualiza el CapabilityRegistry (soporta dryRun)',
@@ -230,7 +273,8 @@ export class JarvisController {
     return { success: true, registry };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('memory/tripartite')
   @ApiOperation({
     summary: 'Consulta unificada de la Memoria Tripartita (Working + Episodic 50/30/20 + Associative TripleStore)',
@@ -252,6 +296,8 @@ export class JarvisController {
     return { success: true, stats, recall };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('memory/sleep')
   @ApiOperation({
     summary: 'Ejecuta bajo demanda la rutina sleep de consolidación, deduplicación y calibración epistémica',
@@ -264,6 +310,8 @@ export class JarvisController {
     return { success: true, report };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:engineering' })
   @Post('engineering/mission')
   @ApiOperation({
     summary: 'Ejecutar misión interactiva de ingeniería verificada (Protegido por Auth + Confinamiento + HITL)',
@@ -271,6 +319,7 @@ export class JarvisController {
   async executeEngineeringMission(
     @Body() mission: ManagedMissionRequest,
     @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
   ) {
     if (!mission?.missionId || !mission?.objective || !mission?.entryFile) {
       throw new BadRequestException(
@@ -281,6 +330,7 @@ export class JarvisController {
     if (this.engineeringMissionManager) {
       const record = await this.engineeringMissionManager.executeManagedMission({
         ...mission,
+        actorId: req?.user?.userId ?? mission.actorId,
         humanApprovalToken: actionToken || mission.humanApprovalToken,
       });
       return {
@@ -322,6 +372,8 @@ export class JarvisController {
     };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:engineering' })
   @Get('engineering/missions')
   @ApiOperation({
     summary: 'Listar misiones de ingeniería administradas y sus estados',
@@ -338,6 +390,8 @@ export class JarvisController {
     };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:engineering' })
   @Get('engineering/mission/:missionId')
   @ApiOperation({
     summary: 'Consultar estado detallado, diffs, presupuesto y checkpoints de una misión de ingeniería',
@@ -355,6 +409,14 @@ export class JarvisController {
     return { success: true, mission: record };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:engineering',
+    actionType: 'ENGINEERING_APPROVE_MISSION',
+    targetIdSource: { from: 'param', key: 'missionId' },
+    requireHitlChallenge: true,
+  })
   @Post('engineering/mission/:missionId/approve')
   @ApiOperation({
     summary: 'Aprobar humanamente (HITL) e integrar los cambios verificados de una misión en el workspace',
@@ -362,6 +424,7 @@ export class JarvisController {
   approveEngineeringMission(
     @Param('missionId') missionId: string,
     @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
   ) {
     if (!this.engineeringMissionManager) {
       throw new BadRequestException(
@@ -371,10 +434,23 @@ export class JarvisController {
     const record = this.engineeringMissionManager.approveAndIntegrateMission(
       missionId,
       actionToken,
+      {
+        alreadyVerifiedByKernel: Boolean(req?.hitlChallengeVerified?.verified),
+        actorId: req?.user?.userId,
+      },
     );
     return { success: true, mission: record };
   }
 
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:engineering',
+    actionType: 'ENGINEERING_RESTORE_CHECKPOINT',
+    targetIdSource: { from: 'param', key: 'missionId' },
+    requireHitlChallenge: true,
+    includeBodyInPayloadHash: true,
+  })
   @Post('engineering/mission/:missionId/restore-checkpoint')
   @ApiOperation({
     summary: 'Restaurar manualmente un checkpoint previo de una misión de ingeniería',
@@ -382,10 +458,21 @@ export class JarvisController {
   restoreEngineeringMissionCheckpoint(
     @Param('missionId') missionId: string,
     @Body() body: { attemptIndex: number },
+    @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
   ) {
     if (!this.engineeringMissionManager) {
       throw new BadRequestException(
         'EngineeringMissionManagerService no está inicializado.',
+      );
+    }
+    if (!req?.hitlChallengeVerified?.verified) {
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        actionToken,
+        'ENGINEERING_RESTORE_CHECKPOINT',
+        missionId,
+        body,
+        req?.user?.userId,
       );
     }
     const restored = this.engineeringMissionManager.restoreCheckpointManually(
@@ -401,7 +488,8 @@ export class JarvisController {
 
   // ── Sesión persistente ──────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('session')
   @ApiOperation({
     summary: 'Obtener o crear sessionId persistente',
@@ -418,7 +506,8 @@ export class JarvisController {
 
   // ── Historial de conversación ───────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('history')
   @ApiOperation({
     summary: 'Historial de mensajes de una sesión',
@@ -437,7 +526,8 @@ export class JarvisController {
     return { sessionId, messages };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('disciplines')
   @ApiOperation({
     summary: 'Listar disciplinas y especialistas disponibles para JarBees',
@@ -451,7 +541,8 @@ export class JarvisController {
 
   // ── Query principal ─────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('query')
   @ApiOperation({ summary: 'Consultar a Jarvis con selector de especialista opcional' })
   async query(
@@ -477,7 +568,8 @@ export class JarvisController {
 
   // ── Feedback ────────────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('feedback')
   @ApiOperation({ summary: 'Registrar feedback de una respuesta de Jarvis' })
   async saveFeedback(@Body() body: FeedbackDto) {
@@ -487,7 +579,8 @@ export class JarvisController {
 
   // ── Planner ─────────────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('planner')
   @ApiOperation({ summary: 'Crear un plan de tareas a partir de un objetivo' })
   async createPlan(@Body() body: { objective: string; sessionId?: string }) {
@@ -500,7 +593,8 @@ export class JarvisController {
     return { success: true, plan };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('planner/execute')
   @ApiOperation({
     summary: 'Crear y ejecutar un plan completo',
@@ -518,7 +612,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('missions/recoverable')
   @ApiOperation({
     summary: 'Listar misiones interrumpidas o pendientes de recuperación',
@@ -530,7 +625,8 @@ export class JarvisController {
     return { success: true, missions };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('missions/:id/resume')
   @ApiOperation({
     summary: 'Reanudar misión interrumpida de forma idempotente',
@@ -545,7 +641,8 @@ export class JarvisController {
 
   // ── Dashboard ───────────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('dashboard')
   @ApiOperation({
     summary:
@@ -557,7 +654,8 @@ export class JarvisController {
 
   // ── Memoria ─────────────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('memory')
   @ApiOperation({ summary: 'Guardar un hecho en la memoria permanente' })
   async saveMemory(
@@ -571,7 +669,8 @@ export class JarvisController {
     return { success: true, memory };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('memory/:id')
   @ApiOperation({ summary: 'Recuperar una memoria por ID' })
   async getMemory(@Param('id', ParseIntPipe) id: number) {
@@ -579,7 +678,8 @@ export class JarvisController {
     return { memory };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('memory')
   @ApiOperation({ summary: 'Listar todas las memorias' })
   async listMemories() {
@@ -589,7 +689,8 @@ export class JarvisController {
 
   // ── Biblioteca — Documentos ─────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/document')
   @ApiOperation({ summary: 'Ingerir un documento de texto o markdown' })
   async ingestDocument(
@@ -610,7 +711,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/document/pdf')
   @ApiOperation({ summary: 'Subir e ingerir un PDF a la biblioteca' })
   @ApiConsumes('multipart/form-data')
@@ -683,7 +785,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:research' })
   @Post('library/document/url')
   @ApiOperation({
     summary: 'Ingerir contenido desde una URL (Scraping simple)',
@@ -694,7 +797,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/document')
   @ApiOperation({ summary: 'Listar documentos de la biblioteca' })
   async listDocuments(@Query('category') category?: string) {
@@ -702,7 +806,8 @@ export class JarvisController {
     return { documents };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/index')
   @ApiOperation({
     summary: 'Obtener el índice completo de la biblioteca (library-index.json)',
@@ -711,7 +816,8 @@ export class JarvisController {
     return this.jarvisService.getLibraryIndex();
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/document/search')
   @ApiOperation({ summary: 'Buscar en documentos' })
   async searchDocuments(@Query('q') query: string) {
@@ -719,7 +825,8 @@ export class JarvisController {
     return { documents };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/document/recent')
   @ApiOperation({ summary: 'Documentos más recientes' })
   async recentDocuments(@Query('limit') limit?: string) {
@@ -729,7 +836,8 @@ export class JarvisController {
     return { documents };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/document/:id')
   @ApiOperation({ summary: 'Obtener documento con sus chunks' })
   async getDocument(@Param('id', ParseIntPipe) id: number) {
@@ -739,88 +847,145 @@ export class JarvisController {
 
   // ── Seguridad y Autorización de Acciones Críticas (HITL) ───────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 2,
+    requiredScope: 'jarbees:security:challenge',
+  })
   @Post('security/challenge')
   @ApiOperation({
     summary: 'Solicitar un Action Challenge Token (HITL criptográfico de un solo uso)',
     description:
-      'Genera un token firmado con HMAC-SHA256 con validez de 60 segundos para autorizar una acción destructiva concreta (ej: LIBRARY_DELETE_DOCUMENT). Previene inyecciones indirectas.',
+      'Genera un token firmado con HMAC-SHA256 con validez de 60 segundos vinculado a actorId, actionType, targetId y payloadHash. Requiere operador autenticado.',
   })
-  requestActionChallenge(
+  async requestActionChallenge(
     @Body()
     body: {
       actionType: string;
       targetId: string | number;
       payload?: Record<string, any>;
     },
+    @Req() req?: any,
   ) {
-    return this.actionGatekeeper.createChallenge(
-      body.actionType,
-      body.targetId,
-      body.payload,
+    const actorId = req?.user?.userId;
+    if (!actorId || typeof actorId !== 'string') {
+      throw new UnauthorizedException(
+        'Emisión HITL denegada: se requiere sesión autenticada de operador.',
+      );
+    }
+
+    const challenge = this.actionGatekeeper.createChallenge(
+      body?.actionType,
+      body?.targetId,
+      body?.payload,
+      actorId,
     );
+
+    await this.auditService.log('security.challenge.issued', {
+      actorId,
+      actionType: challenge.actionType,
+      targetId: challenge.targetId,
+      payloadHash: challenge.payloadHash,
+      expiresAt: challenge.expiresAt,
+    });
+
+    return challenge;
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:library:delete',
+    actionType: 'LIBRARY_DELETE_DOCUMENT',
+    targetIdSource: { from: 'param', key: 'id' },
+    requireHitlChallenge: true,
+  })
   @Delete('library/document/:id')
   @ApiOperation({
-    summary: 'Eliminar un documento (Requiere Action Challenge Token o confirmación HITL autorizada)',
+    summary: 'Eliminar un documento (Requiere Operador Autenticado + Action Challenge Token firmado)',
   })
   async deleteDocument(
     @Param('id', ParseIntPipe) id: number,
     @Headers('x-action-token') actionToken?: string,
     @Query('actionToken') queryActionToken?: string,
-    @Query('confirm') confirm?: string,
-    @Headers('x-human-confirmation') humanConfirmation?: string,
+    @Req() req?: any,
   ) {
     const token = actionToken || queryActionToken;
+    const actorId = req?.user?.userId;
 
-    // Si no se proporcionó token firmado, pero se pasó confirmación legacy
-    if (!token) {
-      const isLegacyDevBypass =
-        (confirm === 'true' || humanConfirmation === 'yes') &&
-        process.env.SKIP_HITL === 'true';
+    if (!actorId) {
+      throw new UnauthorizedException(
+        'Operación destructiva rechazada: se requiere operador autenticado.',
+      );
+    }
 
-      if (!isLegacyDevBypass) {
-        throw new BadRequestException(
-          'Operación destructiva rechazada. Se requiere un Action Challenge Token firmado. Solicite un token primero en POST /api/jarbees/security/challenge con actionType="LIBRARY_DELETE_DOCUMENT" y targetId=' + id,
-        );
-      }
-    } else {
-      // Validar y consumir el token de un solo uso (Anti-Replay)
+    if (!req?.hitlChallengeVerified?.verified) {
       this.actionGatekeeper.verifyAndConsumeChallenge(
         token,
         'LIBRARY_DELETE_DOCUMENT',
         id,
+        undefined,
+        actorId,
       );
     }
 
     // Audit before performing destructive action
     await this.auditService.log('deleteDocument.request', {
       id,
+      actorId,
       by: 'api',
-      tokenVerified: Boolean(token),
+      tokenVerified: true,
     });
 
     await this.documentRepo.deleteDocument(id);
 
-    await this.auditService.log('deleteDocument.success', { id, by: 'api' });
+    await this.auditService.log('deleteDocument.success', {
+      id,
+      actorId,
+      by: 'api',
+    });
     return {
       success: true,
       message: `Documento #${id} eliminado con autorización confirmada.`,
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:library:approve',
+    actionType: 'LIBRARY_APPROVE_DOCUMENT',
+    targetIdSource: { from: 'param', key: 'id' },
+    requireHitlChallenge: true,
+  })
   @Post('library/document/:id/approve')
   @ApiOperation({
     summary:
-      'Aprobar un documento en cuarentena e iniciar su indexación jerárquica',
+      'Aprobar un documento en cuarentena e iniciar su indexación jerárquica (Requiere HITL)',
   })
-  async approveDocument(@Param('id', ParseIntPipe) id: number) {
-    await this.auditService.log('approveDocument.request', { id });
+  async approveDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
+  ) {
+    const actorId = req?.user?.userId;
+    if (!actorId) {
+      throw new UnauthorizedException(
+        'Aprobación de cuarentena rechazada: se requiere operador autenticado.',
+      );
+    }
+    if (!req?.hitlChallengeVerified?.verified) {
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        actionToken,
+        'LIBRARY_APPROVE_DOCUMENT',
+        id,
+        undefined,
+        actorId,
+      );
+    }
+    await this.auditService.log('approveDocument.request', { id, actorId });
     await this.ingestService.approveDocument(id);
-    await this.auditService.log('approveDocument.success', { id });
+    await this.auditService.log('approveDocument.success', { id, actorId });
     return {
       success: true,
       message:
@@ -828,7 +993,8 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/stats')
   @ApiOperation({
     summary:
@@ -838,7 +1004,8 @@ export class JarvisController {
     return this.documentRepo.getLibraryStats();
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/category-summary')
   @ApiOperation({
     summary: 'Generar resumen inteligente por categoría',
@@ -857,7 +1024,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/document-summary')
   @ApiOperation({
     summary: 'Generar resumen detallado de un documento específico',
@@ -878,7 +1046,8 @@ export class JarvisController {
 
   // ── Diagnóstico y Validación de Conocimiento RAG ─────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/diagnostic')
   @ApiOperation({
     summary: 'Diagnóstico completo de la biblioteca RAG',
@@ -893,7 +1062,8 @@ export class JarvisController {
     return { success: true, diagnostic: diag, formatted };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/knowledge-test')
   @ApiOperation({
     summary: 'Validación automática del RAG con N pruebas',
@@ -903,13 +1073,15 @@ export class JarvisController {
       'Retorna tasa de éxito y diagnóstico por documento. Body: { numTests?: number }',
   })
   async runKnowledgeTest(@Body() body: { numTests?: number }) {
+    const boundedTests = Math.min(Math.max(1, Number(body?.numTests ?? 3) || 3), 10);
     const result = await this.knowledgeTestService.runKnowledgeValidation(
-      body.numTests ?? 3,
+      boundedTests,
     );
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Post('library/probe')
   @ApiOperation({
     summary: 'Inspeccionar qué chunks recupera el RAG para una consulta',
@@ -930,7 +1102,8 @@ export class JarvisController {
 
   // ── JarBees General Intelligence Trials (Edición 1.0) ──────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('trials/spec')
   @ApiOperation({
     summary: 'Especificación completa del banco de pruebas (12 categorías, 36 preguntas, rúbricas)',
@@ -940,7 +1113,8 @@ export class JarvisController {
     return { success: true, spec };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('trials/history')
   @ApiOperation({
     summary: 'Historial de ejecuciones y puntuaciones del banco de pruebas guardadas en disco',
@@ -950,7 +1124,8 @@ export class JarvisController {
     return { success: true, count: history.length, history };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('trials/run')
   @ApiOperation({
     summary: 'Ejecutar banco de pruebas de inteligencia general y calibración',
@@ -975,7 +1150,8 @@ export class JarvisController {
 
   // ── Biblioteca — Synthesis Pipeline (Map-Reduce) ───────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/synthesis/document')
   @ApiOperation({
     summary: 'Generar o actualizar ficha narrativa de un documento (map-reduce)',
@@ -997,7 +1173,8 @@ export class JarvisController {
     return { success: result.status !== 'error', ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/synthesis/collection')
   @ApiOperation({
     summary: 'Sintetizar todos los libros de una colección (map-reduce)',
@@ -1017,7 +1194,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Post('library/synthesis/query')
   @ApiOperation({
     summary: 'Consultar insights pre-computados por colección o autor',
@@ -1040,7 +1218,8 @@ export class JarvisController {
 
   // ── Biblioteca — Colecciones ────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/collection')
   @ApiOperation({ summary: 'Crear una colección temática' })
   async createCollection(
@@ -1056,7 +1235,8 @@ export class JarvisController {
     return { success: true, collection };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/collection')
   @ApiOperation({
     summary: 'Listar todas las colecciones con conteo de documentos',
@@ -1066,7 +1246,8 @@ export class JarvisController {
     return { collections };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('library/collection/:id')
   @ApiOperation({ summary: 'Ver colección con sus documentos' })
   async getCollection(@Param('id', ParseIntPipe) id: number) {
@@ -1074,7 +1255,8 @@ export class JarvisController {
     return { collection };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Patch('library/collection/:id')
   @ApiOperation({ summary: 'Actualizar una colección' })
   async updateCollection(
@@ -1091,15 +1273,44 @@ export class JarvisController {
     return { success: true, collection };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:library:delete',
+    actionType: 'LIBRARY_DELETE_COLLECTION',
+    targetIdSource: { from: 'param', key: 'id' },
+    requireHitlChallenge: true,
+  })
   @Delete('library/collection/:id')
-  @ApiOperation({ summary: 'Eliminar una colección' })
-  async deleteCollection(@Param('id', ParseIntPipe) id: number) {
+  @ApiOperation({ summary: 'Eliminar una colección (Requiere Operador Autenticado + HITL)' })
+  async deleteCollection(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
+  ) {
+    const actorId = req?.user?.userId;
+    if (!actorId) {
+      throw new UnauthorizedException(
+        'Operación destructiva rechazada: se requiere operador autenticado.',
+      );
+    }
+    if (!req?.hitlChallengeVerified?.verified) {
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        actionToken,
+        'LIBRARY_DELETE_COLLECTION',
+        id,
+        undefined,
+        actorId,
+      );
+    }
+    await this.auditService.log('deleteCollection.request', { id, actorId });
     await this.collectionRepo.delete(id);
+    await this.auditService.log('deleteCollection.success', { id, actorId });
     return { success: true };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('library/collection/:id/document/:docId')
   @ApiOperation({ summary: 'Agregar documento a una colección' })
   async addDocumentToCollection(
@@ -1110,20 +1321,45 @@ export class JarvisController {
     return { success: true, entry };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 3,
+    requiredScope: 'jarbees:library:delete',
+    actionType: 'LIBRARY_REMOVE_COLLECTION_DOC',
+    targetIdSource: { from: 'param', key: 'id', compositeParamKey: 'docId' },
+    requireHitlChallenge: true,
+  })
   @Delete('library/collection/:id/document/:docId')
-  @ApiOperation({ summary: 'Quitar documento de una colección' })
+  @ApiOperation({ summary: 'Quitar documento de una colección (Requiere Operador Autenticado + HITL)' })
   async removeDocumentFromCollection(
     @Param('id', ParseIntPipe) id: number,
     @Param('docId', ParseIntPipe) docId: number,
+    @Headers('x-action-token') actionToken?: string,
+    @Req() req?: any,
   ) {
+    const actorId = req?.user?.userId;
+    if (!actorId) {
+      throw new UnauthorizedException(
+        'Operación destructiva rechazada: se requiere operador autenticado.',
+      );
+    }
+    if (!req?.hitlChallengeVerified?.verified) {
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        actionToken,
+        'LIBRARY_REMOVE_COLLECTION_DOC',
+        `${id}:${docId}`,
+        undefined,
+        actorId,
+      );
+    }
     await this.collectionRepo.removeDocument(id, docId);
     return { success: true };
   }
 
   // ── Browser Tool ────────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:research' })
   @Post('browser/fetch')
   @ApiOperation({
     summary: 'Extraer contenido de una URL (axios → Playwright si es SPA)',
@@ -1134,7 +1370,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:research' })
   @Post('browser/navigate')
   @ApiOperation({
     summary:
@@ -1151,7 +1388,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:research' })
   @Post('browser/search')
   @ApiOperation({
     summary: 'Buscar en Google y devolver resultados con título, URL y snippet',
@@ -1166,7 +1404,8 @@ export class JarvisController {
     return { success: true, results };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:research' })
   @Post('investigate')
   @ApiOperation({
     summary: 'Investigar una URL y convertirla en conocimiento consultable',
@@ -1180,7 +1419,8 @@ export class JarvisController {
     return { success: true, ...result };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('profile')
   @ApiOperation({ summary: 'Obtener perfil del usuario' })
   async getProfile() {
@@ -1188,9 +1428,9 @@ export class JarvisController {
     return { profile };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Patch('profile')
-  @Public()
   @ApiOperation({ summary: 'Actualizar perfil del usuario' })
   async updateProfile(
     @Body()
@@ -1208,7 +1448,8 @@ export class JarvisController {
 
   // ── Observabilidad ──────────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('observability/stats')
   @ApiOperation({
     summary: 'Estadísticas de uso (herramientas, latencia, éxitos)',
@@ -1217,7 +1458,8 @@ export class JarvisController {
     return this.jarvisService.getObservabilityStats();
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('observability/runs')
   @ApiOperation({ summary: 'Runs recientes del agente' })
   async getRecentRuns(@Query('limit') limit?: string) {
@@ -1227,7 +1469,8 @@ export class JarvisController {
     return { runs };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('observability/explain/:runId')
   @ApiOperation({ 
     summary: 'Explicar proceso cognitivo de una ejecución',
@@ -1241,7 +1484,8 @@ export class JarvisController {
     return { success: true, trace };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('observability/cognitive-stats')
   @ApiOperation({ 
     summary: 'Estadísticas de observabilidad cognitiva',
@@ -1254,35 +1498,40 @@ export class JarvisController {
 
   // ── Jarvis config y registro ──────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('identity')
   @ApiOperation({ summary: 'Obtener identidad de Jarvis' })
   async getIdentity() {
     return { identity: await this.jarvisService.getIdentity() };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('capabilities')
   @ApiOperation({ summary: 'Obtener capacidades activas de Jarvis' })
   async getCapabilities() {
     return { capabilities: await this.jarvisService.getCapabilities() };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('skills')
   @ApiOperation({ summary: 'Listar todas las skills cargadas' })
   async listSkills() {
     return { skills: await this.jarvisService.listSkills() };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('skills/relevant')
   @ApiOperation({ summary: 'Buscar skills relevantes para una consulta' })
   async findRelevantSkills(@Query('q') query: string) {
     return { skills: await this.jarvisService.findRelevantSkills(query) };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('tools')
   @ApiOperation({ summary: 'Listar herramientas habilitadas' })
   async listTools() {
@@ -1291,7 +1540,8 @@ export class JarvisController {
 
   // ── Knowledge Evolution ─────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('evolution')
   @ApiOperation({
     summary: 'Consultar cómo evolucionó un tema',
@@ -1317,7 +1567,8 @@ export class JarvisController {
     return { success: true, report };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('evolution/topics')
   @ApiOperation({
     summary: 'Listar todos los temas registrados',
@@ -1331,7 +1582,8 @@ export class JarvisController {
 
   // ── Visión / Multimodal ─────────────────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('vision/analyze')
   @ApiOperation({
     summary: 'Analizar imagen con Qwen2.5-VL (OCR, errores, diagramas)',
@@ -1427,7 +1679,8 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('vision/ocr')
   @ApiOperation({
     summary: 'OCR rápido — extrae solo el texto de una imagen o PDF escaneado',
@@ -1449,7 +1702,8 @@ export class JarvisController {
 
   // ── Voz & Procesamiento de Audio (Opus CLI + SAPI STT/TTS) ───────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('voice/status')
   @ApiOperation({
     summary: 'Estado del motor de voz (Opus CLI, Windows SAPI STT y TTS Helena)',
@@ -1458,7 +1712,8 @@ export class JarvisController {
     return this.voiceService.getStatus();
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('voice/transcribe')
   @ApiOperation({
     summary: 'Transcribir nota de voz (Opus, OGG, WebM o WAV) a texto',
@@ -1494,7 +1749,8 @@ export class JarvisController {
     }
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('voice/chat')
   @ApiOperation({
     summary: 'Enviar nota de voz directamente al chat de JarBees',
@@ -1561,7 +1817,8 @@ export class JarvisController {
     }
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('voice/speak')
   @ApiOperation({
     summary: 'Sintetizar texto a voz WAV (TTS) con voz Helena en español',
@@ -1579,7 +1836,8 @@ export class JarvisController {
     res.end(audioBuffer);
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Get('library/:id/audiobook')
   @ApiOperation({
     summary: 'Generar y descargar audiolibro narrado de un documento o síntesis de la biblioteca',
@@ -1633,7 +1891,8 @@ export class JarvisController {
 
   // ── Ingesta Inversa de Audiolibros ──────────────────────────────────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('audiobooks')
   @ApiOperation({
     summary: 'Listar audiolibros encontrados en I:\\Musica\\Audiolibros y mas',
@@ -1647,7 +1906,11 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 2,
+    requiredScope: 'jarbees:audiobooks:ingest',
+  })
   @Post('audiobooks/ingest')
   @ApiOperation({
     summary: 'Transcribir e ingestar un audiolibro a la base de datos de conocimiento de JarBees',
@@ -1665,7 +1928,11 @@ export class JarvisController {
     return result;
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({
+    level: 2,
+    requiredScope: 'jarbees:audiobooks:ingest',
+  })
   @Post('audiobooks/ingest-all')
   @ApiOperation({
     summary: 'Ingesta por lotes de todos los audiolibros disponibles en I:\\Musica\\Audiolibros y mas',
@@ -1682,7 +1949,8 @@ export class JarvisController {
 
   // ── Observabilidad Cognitiva & Motor Dialéctico (Fases 1, 2 y 3) ───────────────
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('explain/:runId')
   @ApiOperation({
     summary: 'Explicabilidad cognitiva forense de un AgentRun',
@@ -1700,7 +1968,8 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('runs')
   @ApiOperation({
     summary: 'Listar ejecuciones recientes de JarBees con métricas cognitivas',
@@ -1715,7 +1984,8 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
   @Get('cognitive/stats')
   @ApiOperation({
     summary: 'Estadísticas globales de observabilidad y calibración cognitiva',
@@ -1728,7 +1998,8 @@ export class JarvisController {
     };
   }
 
-  @Public()
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
   @Post('runs/:runId/claims/:claimId/evaluate')
   @ApiOperation({
     summary: 'Evaluar y calibrar una afirmación individual de un run (Fase 3)',

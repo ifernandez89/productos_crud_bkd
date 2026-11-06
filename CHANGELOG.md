@@ -4,6 +4,34 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Hardening & Remediation — DEV-001-B1.2: Cierre de Brechas de Persistencia, Confinamiento y Aislamiento (2026-11-06)
+
+> **Estado:** ⚠️ Pendiente de revisión independiente (`DEV-001-B1.2-REVIEW`). Fase B1 NO homologada; Fase B2 BLOQUEADA.  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base:** `89993c777d55c56af788980d2d28ebdb95ede8c3`
+
+- **A1 — Validación Estricta de Firmas `Controller.handler` en Lista Blanca Pública (`src/jarvis/security/security-kernel-auth.guard.ts`)**:
+  - Reemplazada la lista blanca por nombres simples de función por `AUTHORIZED_PUBLIC_ENDPOINT_SIGNATURES = Set(['AuthController.login', 'JarvisController.getInferenceStatus', 'MobileGatewayController.getHealth', 'GoogleAuthController.callback'])`.
+  - El guard extrae dinámicamente `${context.getClass().name}.${context.getHandler().name}` y deniega con `403 Forbidden` (*Fail-Closed*) cualquier controlador no autorizado que utilice el decorador `@Public()` con métodos homónimos.
+- **A2 — Libro Mayor Atómico y Persistencia Anti-Replay en Mobile Gateway (`src/mobile-gateway/mobile-gateway.service.ts`)**:
+  - Implementada persistencia durable y atómica a nivel de sistema operativo para `requestId` en `storage/security/mobile-replay/<hash>.json` utilizando primitivas exclusivas (`fs.openSync` con `O_CREAT | O_EXCL` y permisos `0o600`).
+  - Garantiza ejecución como máximo una vez (*at-most-once execution*), neutralizando ataques de repetición de comandos HMAC incluso ante reinicios del proceso o instancias efímeras.
+  - Precarga de registros no expirados al arrancar y purga automática periódica de entradas vencidas.
+- **F-B1-02 — Persistencia Durable del Bloqueo Progresivo en Autenticación (`src/auth/auth.service.ts`)**:
+  - Persistencia de contadores de fallos y marcas de bloqueo temporal en `storage/security/auth-lockout/<hash>.json`.
+  - Los bloqueos progresivos por fuerza bruta tras 5 intentos fallidos (y penalizaciones de 5/15 min) sobreviven a reinicios de la aplicación NestJS, respondiendo con `429 Too Many Requests`.
+- **F-B1-10 — Confinamiento Canónico de Assets 3D y Mitigación Anti-TOCTOU (`src/jarvis/3d/controllers/studio-3d.controller.ts`, `src/jarvis/3d/services/asset-security.service.ts`)**:
+  - Implementada inspección exhaustiva de componentes de directorios intermedios (`ensureNoSymlinksInPath`) validando con `fs.lstatSync` que ningún segmento sea un enlace simbólico o *junction* NTFS hacia zonas fuera de `storage/assets`.
+  - Resolución canónica obligatoria con `fs.realpathSync` tanto en origen como en destino.
+  - Mitigación de ventana TOCTOU mediante lector atómico `readConfined3DFileBuffer` (`fs.openSync` con verificación de identidad `fstatSync(fd).ino === lstatSync(path).ino` y `dev`).
+- **A5 — Clasificación de Frontera y Aislamiento Arquitectónico de `AssetSecurityService` (`src/jarvis/3d/services/asset-security.service.ts`)**:
+  - Documentación y tipado explícito clasificando el formato `.jb3d` (AES-256-CTR con clave estática y sin MAC) como ofuscación de conveniencia para cliente web (Three.js), carente de autenticidad e integridad criptográfica de servidor.
+  - Aislamiento estricto: prohibido su uso para autenticación, autorización o persistencia de secretos; el Security Kernel opera de forma 100% independiente de este módulo.
+- **Resultados de Validación Reportados**:
+  - Pruebas unitarias de seguridad: **70/70 PASS** (`src/jarvis/security/`, `src/mobile-gateway/`, `src/shared/crypto-vault`, `src/google/google-auth`).
+  - Pruebas de integración HTTP real (e2e): **40/40 PASS** (`test/dev-001-b1-homologation.e2e-spec.ts`), incluyendo verificación explícita de `C4` (persistencia de bloqueo tras reinicio) y `E9` (rechazo `403` de replay tras reinicio).
+  - Compilación NestJS (`npm run build`): Exitosa (código 0, cero errores de tipado TypeScript).
+
 ### Added & Homologated — JarBees Autobiographical & Episodic Memory (MEM-001 · MEM-002 · MEM-003) (2026-11-05)
 
 - **MEM-001: Evolución del Modelo `TopicSnapshot` y Consolidación Episódica con Estatuto Epistémico** (`prisma/schema.prisma`, `src/jarvis/memory/knowledge-evolution.service.ts`, `scripts/mem001-migrate-staging.js`, `scripts/mem001-consolidate-day001.js`):

@@ -9,6 +9,19 @@ import * as path from 'path';
  * Módulo de empaquetado, cifrado y descifrado de contenedores protegidos .jb3d
  * Compatible al 100% con la implementación de Web Crypto API en Jarbees_the_game.
  *
+ * ⚠️ CLASIFICACIÓN DE FRONTERA DE SEGURIDAD (DEV-001-B1.2 A5):
+ * - Este servicio constituye EXCLUSIVAMENTE una capa de conveniencia y ofuscación de
+ *   assets 3D (.glb) para su consumo en el runtime cliente (Jarbees_the_game / Three.js).
+ * - Utiliza AES-256-CTR con claves estáticas y NO implementa un código de autenticación de
+ *   mensaje (MAC / HMAC / Poly1305). Por diseño criptográfico (maleabilidad de CTR),
+ *   NO proporciona autenticidad ni integridad criptográfica contra adversarios activos.
+ * - QUEDA TERMINANTEMENTE PROHIBIDO utilizar este servicio o el formato .jb3d para:
+ *     1. Decisiones de autorización, autenticación o control de acceso en el backend.
+ *     2. Almacenamiento o transporte de credenciales, secretos, tokens o datos sensibles.
+ *     3. Fronteras de aislamiento del Security Kernel.
+ * - El Security Kernel (SecurityKernelAuthGuard, CryptoVaultService, ActionGatekeeperService)
+ *   está estrictamente aislado de este módulo y jamás delega confianza en .jb3d.
+ *
  * Estructura de cabecera binaria (.jb3d v1):
  * [0..3]   : Magic bytes 'JB3D' (0x4A, 0x42, 0x33, 0x44)
  * [4]      : Versión (1)
@@ -193,6 +206,30 @@ export class AssetSecurityService {
   }
 
   /**
+   * Lectura segura con protección contra TOCTOU e inspección de symlinks.
+   */
+  readConfinedFileBuffer(filePath: string): Buffer {
+    const fd = fs.openSync(filePath, 'r');
+    try {
+      const fstat = fs.fstatSync(fd);
+      const lstat = fs.lstatSync(filePath);
+      if (
+        fstat.ino !== lstat.ino ||
+        fstat.dev !== lstat.dev ||
+        lstat.isSymbolicLink() ||
+        !fstat.isFile()
+      ) {
+        throw new Error('Anomalía TOCTOU o enlace simbólico detectado al leer el asset 3D.');
+      }
+      const buffer = Buffer.alloc(fstat.size);
+      fs.readSync(fd, buffer, 0, fstat.size, 0);
+      return buffer;
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
+
+  /**
    * Empaqueta y cifra un archivo GLB del disco en un archivo .jb3d
    */
   async packFile(sourceGlbPath: string, targetJb3dPath: string): Promise<PackResult> {
@@ -204,7 +241,7 @@ export class AssetSecurityService {
       throw new Error(`Archivo fuente no encontrado: ${absSource}`);
     }
 
-    const sourceBuffer = await fs.promises.readFile(absSource);
+    const sourceBuffer = this.readConfinedFileBuffer(absSource);
     const encryptedBuffer = this.encryptGlbToJb3d(sourceBuffer);
 
     await fs.promises.mkdir(path.dirname(absTarget), { recursive: true });
@@ -241,7 +278,7 @@ export class AssetSecurityService {
       throw new Error(`Archivo .jb3d no encontrado: ${absSource}`);
     }
 
-    const sourceBuffer = await fs.promises.readFile(absSource);
+    const sourceBuffer = this.readConfinedFileBuffer(absSource);
     const decryptedGlb = this.decryptJb3dToGlb(sourceBuffer);
 
     await fs.promises.mkdir(path.dirname(absTarget), { recursive: true });

@@ -798,9 +798,18 @@ export class JarvisCommandService {
       (d) => d.title.toLowerCase().trim() === title.toLowerCase().trim(),
     );
     const target = exact ?? candidates[0];
-    await this.documentRepo.deleteDocument(target.id);
 
-    return `🗑️ Documento eliminado correctamente.\n\n  • **Título:** ${target.title}\n  • **Categoría:** ${target.category ?? 'sin categoría'}\n  • **ID:** ${target.id}`;
+    // DEV-001-B1.1 (F-B1-04 / SEC-03): Prohibido ejecutar borrados destructivos desde texto libre sin HITL explícito.
+    this.logger.warn(
+      `[SecurityKernel] Intento de eliminación por texto libre bloqueado para documento #${target.id} ("${target.title}"). Se exige endpoint explícito + token HITL.`,
+    );
+
+    return (
+      `🛡️ **Operación destructiva bloqueada en canal de texto libre (SecurityKernel · SEC-03)**\n\n` +
+      `Por seguridad, el borrado de documentos no puede ejecutarse mediante interpretación de chat.\n` +
+      `• **Documento identificado:** ${target.title} (ID: \`${target.id}\`)\n` +
+      `• **Procedimiento requerido:** Solicite un token de aprobación humana de un solo uso en \`POST /api/jarbees/security/challenge\` (\`actionType: "LIBRARY_DELETE_DOCUMENT"\`, \`targetId: ${target.id}\`) y ejecute \`DELETE /api/jarbees/library/document/${target.id}\` con el header \`x-action-token\`.`
+    );
   }
 
   private async deduplicateDocuments(): Promise<string> {
@@ -810,18 +819,26 @@ export class JarvisCommandService {
     }
 
     const allDupeIds = groups.flatMap((g) => g.duplicates);
-    const deleted = await this.documentRepo.deleteManyDocuments(allDupeIds);
+
+    // DEV-001-B1.1 (F-B1-04 / SEC-03): Prohibido borrar múltiples documentos desde texto libre sin autorización HITL.
+    this.logger.warn(
+      `[SecurityKernel] Deduplicación destructiva por chat bloqueada (${allDupeIds.length} duplicados detectados: [${allDupeIds.join(', ')}]).`,
+    );
 
     const lines: string[] = [
-      `🧹 **Duplicados eliminados: ${deleted} documento${deleted !== 1 ? 's' : ''}**`,
+      `🛡️ **Eliminación masiva de duplicados bloqueada en canal de texto libre (SecurityKernel · SEC-03)**`,
+      `Se detectaron **${allDupeIds.length} documento${allDupeIds.length !== 1 ? 's' : ''} duplicado${allDupeIds.length !== 1 ? 's' : ''}**, pero el canal de chat no está autorizado a ejecutar borrados sin token HITL explícito:`,
       ``,
     ];
     for (const g of groups) {
       lines.push(
-        `  • "${g.title}" — se eliminaron ${g.duplicates.length} copia${g.duplicates.length !== 1 ? 's' : ''} (conservado id:${g.keeper})`,
+        `  • "${g.title}" — duplicados detectados IDs: [${g.duplicates.join(', ')}] (original conservado id:${g.keeper})`,
       );
     }
-    lines.push(``, `✅ Biblioteca limpia.`);
+    lines.push(
+      ``,
+      `🔒 Utilice \`DELETE /api/jarbees/library/document/:id\` con un \`ActionChallengeToken\` (\`LIBRARY_DELETE_DOCUMENT\`) para eliminar cada registro de forma verificada.`,
+    );
     return lines.join('\n');
   }
 

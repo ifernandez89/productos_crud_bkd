@@ -72,6 +72,8 @@ storage/assets/renders/
 storage/assets/sounds/
 storage/assets/textures/
 storage/assets/three/
+storage/security/
+storage/engineering-missions/
 
 prisma/dev.db
 data/

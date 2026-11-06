@@ -1,11 +1,18 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DocumentRepository } from '../repositories/document.repository';
 import { EmbeddingsService } from './embeddings.service';
 import { OllamaProvider } from '../llm/ollama.provider';
 import { DocumentSynthesisService } from './document-synthesis.service';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
@@ -40,9 +47,16 @@ export interface AudiobookIngestResult {
 @Injectable()
 export class AudiobookIngestService {
   private readonly logger = new Logger(AudiobookIngestService.name);
-  private readonly baseDir = 'I:\\Musica\\Audiolibros y mas';
+  private readonly baseDir: string;
   private readonly transcriptDir: string;
   private readonly scriptPath: string;
+  private static readonly ALLOWED_AUDIO_EXTENSIONS = new Set([
+    '.mp3',
+    '.m4a',
+    '.mp4',
+    '.wav',
+    '.ogg',
+  ]);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -51,6 +65,9 @@ export class AudiobookIngestService {
     private readonly ollamaProvider: OllamaProvider,
     private readonly synthesisService: DocumentSynthesisService,
   ) {
+    this.baseDir = path.resolve(
+      process.env.JARBEES_AUDIOBOOKS_DIR || 'I:\\Musica\\Audiolibros y mas',
+    );
     this.transcriptDir = path.join(this.baseDir, '_transcripciones');
     this.scriptPath = path.join(process.cwd(), 'scripts', 'transcribe_audiobook.py');
 
@@ -61,6 +78,183 @@ export class AudiobookIngestService {
         this.logger.warn(`No se pudo crear carpeta de transcripciones: ${err.message}`);
       }
     }
+  }
+
+  /**
+   * Valida y resuelve de forma canónica una ruta de audiolibro (DEV-001-B1: SEC-02).
+   * - Rechaza rutas UNC, secuencias de traversal (..), bytes nulos y extensiones fuera de whitelist
+   *   ANTES de realizar cualquier consulta al sistema de archivos (elimina el oráculo de archivos).
+   * - Comprueba que la ruta canónica real (resolviendo enlaces simbólicos / junctions) permanezca
+   *   estrictamente confinada dentro de baseDir.
+   */
+  validateAuthorizedAudioPath(rawFilePath: string): string {
+    if (!rawFilePath || typeof rawFilePath !== 'string') {
+      throw new ForbiddenException(
+        'SecurityKernel: ruta de archivo inválida o vacía.',
+      );
+    }
+
+    const trimmed = rawFilePath.trim();
+    if (
+      trimmed.length === 0 ||
+      trimmed.includes('\0') ||
+      /^(\\\\|\/\/)/.test(trimmed) ||
+      /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(trimmed)
+    ) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. Se detectó traversal, ruta UNC o formato prohibido.',
+      );
+    }
+
+    const ext = path.extname(trimmed).toLowerCase();
+    if (!AudiobookIngestService.ALLOWED_AUDIO_EXTENSIONS.has(ext)) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. Extensión de archivo no autorizada para ingesta de audio.',
+      );
+    }
+
+    const canonicalBase = path.resolve(this.baseDir);
+    const resolvedCandidate = path.resolve(canonicalBase, trimmed);
+
+    const isInsideLexically = this.isSubPath(canonicalBase, resolvedCandidate);
+    if (!isInsideLexically) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. La ruta solicitada está fuera del directorio autorizado.',
+      );
+    }
+
+    // DEV-001-B1.1 (F-B1-08): Resolver realpathSync y verificar confinamiento canónico ANTES de
+    // distinguir errores de existencia, unificando todas las respuestas de rechazo en 403 Forbidden
+    // para eliminar cualquier oráculo secundario sobre junctions o directorios intermedios.
+    let realBase: string;
+    let realTarget: string;
+    try {
+      realBase = fs.realpathSync(canonicalBase);
+      realTarget = fs.realpathSync(resolvedCandidate);
+    } catch {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. El archivo de audiolibro no está autorizado o no es accesible dentro del directorio confinado.',
+      );
+    }
+
+    if (!this.isSubPath(realBase, realTarget)) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. La ruta canónica real escapa del directorio autorizado.',
+      );
+    }
+
+    let candidateLstat: fs.Stats;
+    let targetLstat: fs.Stats;
+    try {
+      candidateLstat = fs.lstatSync(resolvedCandidate);
+      targetLstat = fs.lstatSync(realTarget);
+    } catch {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. El archivo de audiolibro no está autorizado o no es accesible dentro del directorio confinado.',
+      );
+    }
+
+    if (
+      candidateLstat.isSymbolicLink() ||
+      !candidateLstat.isFile() ||
+      targetLstat.isSymbolicLink() ||
+      !targetLstat.isFile()
+    ) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. Se rechazan enlaces simbólicos, junctions o directorios.',
+      );
+    }
+
+    return realTarget;
+  }
+
+  /**
+   * Abre el archivo validado por descriptor (fd), verifica invariancia de inodo/dispositivo (fstat === lstat)
+   * y genera una copia efímera aislada desde el fd para el subproceso Python, cerrando la ventana TOCTOU (F-B1-08).
+   */
+  stageVerifiedAudioFileForSubprocess(safeFilePath: string): {
+    stagedPath: string;
+    cleanup: () => void;
+  } {
+    const lstat = fs.lstatSync(safeFilePath);
+    if (lstat.isSymbolicLink() || !lstat.isFile()) {
+      throw new ForbiddenException(
+        'SecurityKernel: TOCTOU detectado antes de abrir descriptor de audio.',
+      );
+    }
+
+    const fd = fs.openSync(safeFilePath, fs.constants.O_RDONLY);
+    let stagedPath = '';
+    try {
+      const fstat = fs.fstatSync(fd);
+      if (
+        !fstat.isFile() ||
+        fstat.dev !== lstat.dev ||
+        (lstat.ino !== 0 && fstat.ino !== 0 && fstat.ino !== lstat.ino) ||
+        fstat.size !== lstat.size
+      ) {
+        throw new ForbiddenException(
+          'SecurityKernel: discrepancia TOCTOU entre lstat y fstat en el descriptor de archivo.',
+        );
+      }
+
+      const ext = path.extname(safeFilePath).toLowerCase();
+      const randomId = crypto.randomBytes(12).toString('hex');
+      stagedPath = path.join(os.tmpdir(), `jarbees_audio_stage_${randomId}${ext}`);
+
+      const outFd = fs.openSync(
+        stagedPath,
+        fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY,
+        0o600,
+      );
+      try {
+        const buffer = Buffer.allocUnsafe(64 * 1024);
+        let bytesRead = 0;
+        let position = 0;
+        while (
+          (bytesRead = fs.readSync(fd, buffer, 0, buffer.length, position)) > 0
+        ) {
+          fs.writeSync(outFd, buffer, 0, bytesRead);
+          position += bytesRead;
+        }
+      } finally {
+        fs.closeSync(outFd);
+      }
+    } finally {
+      fs.closeSync(fd);
+    }
+
+    return {
+      stagedPath,
+      cleanup: () => {
+        if (stagedPath && fs.existsSync(stagedPath)) {
+          try {
+            fs.unlinkSync(stagedPath);
+          } catch {
+            // Ignorar error de limpieza efímera
+          }
+        }
+      },
+    };
+  }
+
+  private isSubPath(parentDir: string, targetPath: string): boolean {
+    const normParent =
+      process.platform === 'win32'
+        ? path.resolve(parentDir).toLowerCase()
+        : path.resolve(parentDir);
+    const normTarget =
+      process.platform === 'win32'
+        ? path.resolve(targetPath).toLowerCase()
+        : path.resolve(targetPath);
+
+    const rel = path.relative(normParent, normTarget);
+    return (
+      Boolean(rel) &&
+      !rel.startsWith('..') &&
+      !path.isAbsolute(rel) &&
+      !rel.startsWith('_transcripciones')
+    );
   }
 
   /**
@@ -143,7 +337,8 @@ export class AudiobookIngestService {
     filePath: string,
     modelSize = 'base',
   ): Promise<{ fullText: string; audioDurationSec: number; transcriptionDurationSec: number; cached: boolean }> {
-    const filename = path.basename(filePath);
+    const safeFilePath = this.validateAuthorizedAudioPath(filePath);
+    const filename = path.basename(safeFilePath);
     const safeSlug = this.sanitizeSlug(filename);
     const outJsonPath = path.join(this.transcriptDir, `${safeSlug}.json`);
 
@@ -165,12 +360,13 @@ export class AudiobookIngestService {
 
     this.logger.log(`[Audiobook] Iniciando transcripción con faster-whisper (${modelSize}) de: "${filename}"`);
     const pythonExe = 'python';
+    const staged = this.stageVerifiedAudioFileForSubprocess(safeFilePath);
 
     try {
       const { stdout } = await execFileAsync(pythonExe, [
         this.scriptPath,
         '--input',
-        filePath,
+        staged.stagedPath,
         '--output',
         outJsonPath,
         '--model',
@@ -191,6 +387,8 @@ export class AudiobookIngestService {
     } catch (err) {
       this.logger.error(`Error ejecutando transcripción en Python: ${err.message}`);
       throw new BadRequestException(`Fallo en transcripción del audiolibro: ${err.message}`);
+    } finally {
+      staged.cleanup();
     }
   }
 
@@ -201,17 +399,15 @@ export class AudiobookIngestService {
     filePath: string,
     categoryOverride?: string,
   ): Promise<AudiobookIngestResult> {
-    if (!fs.existsSync(filePath)) {
-      throw new BadRequestException(`Archivo de audio no encontrado: ${filePath}`);
-    }
+    const safeFilePath = this.validateAuthorizedAudioPath(filePath);
 
-    const filename = path.basename(filePath);
+    const filename = path.basename(safeFilePath);
     const meta = this.inferMetadata(filename);
     const category = categoryOverride || meta.category;
 
     // 1. Transcripción (o recuperación de disco)
     const { fullText, audioDurationSec, transcriptionDurationSec, cached } =
-      await this.transcribeAudio(filePath);
+      await this.transcribeAudio(safeFilePath);
 
     if (!fullText || fullText.trim().length === 0) {
       throw new BadRequestException('El archivo de audio no generó texto transcribible.');
@@ -222,7 +418,7 @@ export class AudiobookIngestService {
       where: {
         OR: [
           { title: { equals: meta.cleanTitle, mode: 'insensitive' } },
-          { source: filePath },
+          { source: safeFilePath },
         ],
       },
     });
@@ -233,7 +429,7 @@ export class AudiobookIngestService {
           title: meta.cleanTitle,
           content: fullText,
           category,
-          source: filePath,
+          source: safeFilePath,
           status: 'indexing',
         },
       });

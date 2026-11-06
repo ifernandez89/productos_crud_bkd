@@ -53,6 +53,7 @@ export interface ManagedMissionRequest extends VerificationMissionRequest {
   budget?: Partial<EngineeringMissionBudget>;
   requireHumanApprovalBeforeIntegrate?: boolean;
   humanApprovalToken?: string;
+  actorId?: string;
 }
 
 export interface ManagedMissionRecord {
@@ -101,6 +102,9 @@ export class EngineeringMissionManagerService {
     /isolated-test-runner/i,
     /engineering-mission-manager/i,
     /(?:^|\/)security\//i,
+    /(?:^|\/)auth\//i,
+    /crypto-vault/i,
+    /(?:^|\/)mobile-gateway\//i,
     /action-gatekeeper/i,
     /action-execution-gate/i,
     /(?:^|\/)\.env/i,
@@ -147,13 +151,24 @@ export class EngineeringMissionManagerService {
           `Misión bloqueada por política de autoprotección: no se permite modificar el VerificationHarness ni archivos críticos (${req.allowedFiles.join(', ')}) sin un token de aprobación humana firmada (ENGINEERING_SENSITIVE_MISSION).`,
         );
       }
-      if (this.actionGatekeeper) {
-        this.actionGatekeeper.verifyAndConsumeChallenge(
-          req.humanApprovalToken,
-          'ENGINEERING_SENSITIVE_MISSION',
-          req.missionId,
+      if (!req.actorId || typeof req.actorId !== 'string' || !req.actorId.trim()) {
+        throw new ForbiddenException(
+          'Misión sensible bloqueada: se requiere identidad de operador autenticado (actorId) vinculada al token HITL.',
         );
       }
+      if (!this.actionGatekeeper) {
+        throw new ForbiddenException(
+          'Misión sensible bloqueada (Fail-Closed): ActionGatekeeperService no está disponible para verificar el reto HITL.',
+        );
+      }
+      const canonicalPayload = this.buildCanonicalSensitiveMissionPayload(req);
+      this.actionGatekeeper.verifyAndConsumeChallenge(
+        req.humanApprovalToken,
+        'ENGINEERING_SENSITIVE_MISSION',
+        req.missionId,
+        canonicalPayload,
+        req.actorId.trim(),
+      );
     }
 
     const budget: EngineeringMissionBudget = {
@@ -366,6 +381,7 @@ export class EngineeringMissionManagerService {
   approveAndIntegrateMission(
     missionId: string,
     humanApprovalToken?: string,
+    options?: { alreadyVerifiedByKernel?: boolean; actorId?: string },
   ): ManagedMissionRecord {
     const record = this.getMissionRecord(missionId);
     if (!record) {
@@ -377,11 +393,28 @@ export class EngineeringMissionManagerService {
       );
     }
 
-    if (this.actionGatekeeper && humanApprovalToken) {
+    if (!options?.alreadyVerifiedByKernel) {
+      if (!humanApprovalToken) {
+        throw new ForbiddenException(
+          `Operación crítica rechazada: se requiere un Action Challenge Token firmado (ENGINEERING_APPROVE_MISSION) para aprobar la misión "${missionId}".`,
+        );
+      }
+      if (!options?.actorId || !options.actorId.trim()) {
+        throw new ForbiddenException(
+          `Operación crítica rechazada: se requiere actorId autenticado para aprobar la misión "${missionId}".`,
+        );
+      }
+      if (!this.actionGatekeeper) {
+        throw new ForbiddenException(
+          'Operación crítica rechazada (Fail-Closed): ActionGatekeeperService no está disponible.',
+        );
+      }
       this.actionGatekeeper.verifyAndConsumeChallenge(
         humanApprovalToken,
         'ENGINEERING_APPROVE_MISSION',
         missionId,
+        undefined,
+        options.actorId.trim(),
       );
     }
 
@@ -522,6 +555,23 @@ export class EngineeringMissionManagerService {
         `El workspaceDir "${resolvedWorkspace}" está fuera de las raíces autorizadas del proyecto o directorio temporal.`,
       );
     }
+  }
+
+  buildCanonicalSensitiveMissionPayload(
+    req: Pick<
+      ManagedMissionRequest,
+      'missionId' | 'objective' | 'entryFile' | 'allowedFiles' | 'workspaceDir'
+    >,
+  ): Record<string, any> {
+    return {
+      missionId: req.missionId,
+      objective: req.objective,
+      entryFile: req.entryFile,
+      allowedFiles: Array.isArray(req.allowedFiles)
+        ? [...req.allowedFiles]
+        : [],
+      workspaceDir: req.workspaceDir ?? null,
+    };
   }
 
   private touchesProtectedFiles(

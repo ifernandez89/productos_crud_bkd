@@ -5,11 +5,15 @@ import {
   BadRequestException,
   UnauthorizedException,
   OnModuleDestroy,
+  Optional,
 } from '@nestjs/common';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 import { URL } from 'url';
+import { validateCryptoSecret } from '../auth/jwt-secret.util';
 
 export interface MobileCommandDto {
   requestId: string;
@@ -27,15 +31,36 @@ export interface MobileCommandDto {
 }
 
 export const MOBILE_ALLOWED_APPS: Record<string, string> = {
-  calculator: 'calc',
-  calc: 'calc',
-  notepad: 'notepad',
-  vscode: 'code',
-  code: 'code',
-  explorer: 'explorer',
+  calculator: 'calc.exe',
+  calc: 'calc.exe',
+  notepad: 'notepad.exe',
+  vscode: 'code.cmd',
+  code: 'code.cmd',
+  explorer: 'explorer.exe',
 };
 
 const ALLOWED_VK_CODES = new Set([0xad, 0xae, 0xaf, 0xb3]);
+const SHELL_METACHAR_REGEX = /[\s"&|<>^%;$`\\\r\n\0]/;
+
+function canonicalizeObject(value: unknown): string {
+  if (value === undefined || value === null) return '{}';
+  const sortRecursive = (input: any): any => {
+    if (Array.isArray(input)) {
+      return input.map(sortRecursive);
+    }
+    if (input !== null && typeof input === 'object') {
+      const sorted: Record<string, any> = {};
+      for (const key of Object.keys(input).sort()) {
+        if (input[key] !== undefined) {
+          sorted[key] = sortRecursive(input[key]);
+        }
+      }
+      return sorted;
+    }
+    return input;
+  };
+  return JSON.stringify(sortRecursive(value));
+}
 
 @Injectable()
 export class MobileGatewayService implements OnModuleDestroy {
@@ -44,30 +69,117 @@ export class MobileGatewayService implements OnModuleDestroy {
   private readonly maxClockDriftMs = 30000; // 30 segundos
   private readonly seenRequestIds = new Map<string, number>();
   private readonly cleanupInterval: NodeJS.Timeout;
+  private readonly replayDir: string;
 
-  constructor() {
-    const rawSecret =
-      process.env.MOBILE_GATEWAY_SECRET ||
-      process.env.JWT_SECRET ||
-      'jarbees-mobile-gateway-default-hmac-key-2026';
+  constructor(
+    @Optional()
+    options?: {
+      gatewaySecret?: string;
+      replayDir?: string;
+    },
+  ) {
+    const rawSecret = validateCryptoSecret(
+      options?.gatewaySecret ?? process.env.MOBILE_GATEWAY_SECRET,
+      'MOBILE_GATEWAY_SECRET',
+    );
 
     this.secret = crypto
       .createHash('sha256')
       .update(`${rawSecret}:jarbees_mobile_gateway_salt`)
       .digest();
 
-    // Limpieza de nonces/requestIds expirados cada 60s
+    this.replayDir = path.resolve(
+      options?.replayDir ??
+        process.env.MOBILE_GATEWAY_REPLAY_DIR ??
+        path.join(process.env.JARBEES_STORAGE_DIR || 'storage', 'security', 'mobile-replay'),
+    );
+
+    this.initReplayStore();
+
+    // Limpieza de nonces/requestIds expirados en memoria y disco cada 60s
     this.cleanupInterval = setInterval(() => {
-      const now = Date.now();
-      for (const [reqId, expiresAt] of this.seenRequestIds.entries()) {
-        if (expiresAt < now) {
-          this.seenRequestIds.delete(reqId);
-        }
-      }
+      this.pruneExpiredReplays();
     }, 60000);
 
     if (typeof this.cleanupInterval.unref === 'function') {
       this.cleanupInterval.unref();
+    }
+  }
+
+  private initReplayStore(): void {
+    try {
+      if (!fs.existsSync(this.replayDir)) {
+        fs.mkdirSync(this.replayDir, { recursive: true });
+      }
+      this.pruneExpiredReplays();
+    } catch (err: any) {
+      this.logger.error(`Error inicializando directorio anti-replay (${this.replayDir}): ${err.message}`);
+    }
+  }
+
+  private pruneExpiredReplays(): void {
+    const now = Date.now();
+    for (const [reqId, expiresAt] of this.seenRequestIds.entries()) {
+      if (expiresAt < now) {
+        this.seenRequestIds.delete(reqId);
+      }
+    }
+
+    try {
+      if (fs.existsSync(this.replayDir)) {
+        const files = fs.readdirSync(this.replayDir);
+        for (const file of files) {
+          if (!file.endsWith('.json')) continue;
+          const fullPath = path.join(this.replayDir, file);
+          try {
+            const raw = fs.readFileSync(fullPath, 'utf8');
+            const parsed = JSON.parse(raw);
+            if (!parsed?.expiresAt || parsed.expiresAt < now) {
+              fs.unlinkSync(fullPath);
+            } else if (parsed.requestId && !this.seenRequestIds.has(parsed.requestId)) {
+              // Pre-cargar en memoria registros no expirados tras reinicio
+              this.seenRequestIds.set(parsed.requestId, parsed.expiresAt);
+            }
+          } catch {
+            try {
+              fs.unlinkSync(fullPath);
+            } catch {}
+          }
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Error limpiando archivos de replay expirados: ${err.message}`);
+    }
+  }
+
+  private persistAtomicRequestId(requestId: string, consumedAt: number, expiresAt: number): void {
+    const safeHash = crypto.createHash('sha256').update(requestId).digest('hex');
+    const filePath = path.join(this.replayDir, `${safeHash}.json`);
+
+    try {
+      if (!fs.existsSync(this.replayDir)) {
+        fs.mkdirSync(this.replayDir, { recursive: true });
+      }
+      // Creación atómica exclusiva a nivel de SO (O_CREAT | O_EXCL)
+      const fd = fs.openSync(
+        filePath,
+        fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_WRONLY,
+        0o600,
+      );
+      try {
+        const payload = JSON.stringify({ requestId, consumedAt, expiresAt });
+        fs.writeFileSync(fd, payload, 'utf8');
+      } finally {
+        fs.closeSync(fd);
+      }
+    } catch (err: any) {
+      if (err.code === 'EEXIST') {
+        throw new ForbiddenException(
+          `Ataque de repetición detectado: el requestId "${requestId}" ya fue procesado y persistido.`,
+        );
+      }
+      this.logger.error(`Error persistiendo requestId ${requestId}: ${err.message}`);
+      throw new ForbiddenException('MobileGateway: fallo de almacenamiento anti-replay (Fail-Closed).');
     }
   }
 
@@ -82,21 +194,50 @@ export class MobileGatewayService implements OnModuleDestroy {
   }
 
   /**
-   * Valida autenticidad (HMAC), ventana de tiempo anti-replay y unicidad de requestId.
+   * Limpia en memoria y en disco los registros de replay (utilizado para pruebas y teardown)
+   */
+  clearReplayLedger() {
+    this.seenRequestIds.clear();
+    try {
+      if (fs.existsSync(this.replayDir)) {
+        const files = fs.readdirSync(this.replayDir);
+        for (const file of files) {
+          try {
+            fs.unlinkSync(path.join(this.replayDir, file));
+          } catch {}
+        }
+      }
+    } catch {}
+  }
+
+  /**
+   * Calcula el hash SHA-256 canónico del payload del comando móvil.
+   */
+  computeCanonicalPayloadHash(
+    parameters?: Record<string, any>,
+    context?: Record<string, any>,
+    deviceId?: string,
+  ): string {
+    const canonical = canonicalizeObject({
+      deviceId: deviceId || '',
+      parameters: parameters || {},
+      context: context || null,
+    });
+    return crypto.createHash('sha256').update(canonical).digest('hex');
+  }
+
+  /**
+   * Valida autenticidad obligatoria (HMAC-SHA256 vinculado a método, ruta, requestId, timestamp, intent y payloadHash),
+   * ventana de tiempo anti-replay y unicidad atómica de requestId.
+   * Endurecido en DEV-001-B1.1 (F-B1-09): elimina MOBILE_GATEWAY_DISABLE_AUTH y hace obligatoria la firma.
    */
   validateCommandSecurity(
     dto: MobileCommandDto,
     signature?: string,
     headerTimestamp?: string,
+    requestContext?: { method?: string; path?: string },
   ): void {
-    if (process.env.MOBILE_GATEWAY_DISABLE_AUTH === 'true') {
-      this.logger.warn(
-        `[MobileGateway] MOBILE_GATEWAY_DISABLE_AUTH=true activo. Omitiendo validación de firma para ${dto.intent}.`,
-      );
-      return;
-    }
-
-    if (!dto.requestId || typeof dto.requestId !== 'string') {
+    if (!dto || !dto.requestId || typeof dto.requestId !== 'string') {
       throw new BadRequestException('Se requiere "requestId" válido.');
     }
 
@@ -118,70 +259,164 @@ export class MobileGatewayService implements OnModuleDestroy {
       );
     }
 
-    // Anti-Replay: el requestId debe ser único dentro de la ventana de validez
+    // Firma HMAC obligatoria en todos los comandos (sin bypass por ausencia de header ni por variable de entorno)
+    if (!signature || typeof signature !== 'string' || signature.trim().length === 0) {
+      throw new UnauthorizedException(
+        'MobileGateway: falta la firma obligatoria "x-jarbees-signature" (HMAC-SHA256).',
+      );
+    }
+
+    const method = (requestContext?.method || 'POST').toUpperCase();
+    const normalizedPath = this.normalizeGatewayPath(
+      requestContext?.path || '/mobile/v1/command',
+    );
+    const expectedSignature = this.generateHmacSignature(
+      dto.requestId,
+      commandTimestampStr,
+      dto.intent,
+      {
+        method,
+        path: normalizedPath,
+        parameters: dto.parameters,
+        context: dto.context,
+        deviceId: dto.deviceId,
+      },
+    );
+
+    const trimmedSig = signature.trim();
+    if (!/^[0-9a-fA-F]{64}$/.test(trimmedSig)) {
+      throw new UnauthorizedException('Firma HMAC de Mobile Gateway inválida o con formato incorrecto.');
+    }
+
+    const sigBuffer = Buffer.from(trimmedSig, 'hex');
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+
+    if (
+      sigBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(sigBuffer, expectedBuffer)
+    ) {
+      throw new UnauthorizedException('Firma HMAC de Mobile Gateway inválida o alterada.');
+    }
+
+    // Anti-Replay atómico y duradero (DEV-001-B1.2: A2)
+    // Garantía: ejecución como máximo una vez (at-most-once execution).
+    // Se verifica e inserta primero en disco de forma atómica (O_CREAT | O_EXCL) y se replica en memoria.
     if (this.seenRequestIds.has(dto.requestId)) {
       throw new ForbiddenException(
         `Ataque de repetición detectado: el requestId "${dto.requestId}" ya fue procesado.`,
       );
     }
 
-    // Registrar requestId para evitar repeticiones futuras
-    this.seenRequestIds.set(dto.requestId, now + this.maxClockDriftMs * 2);
+    const expiresAt = now + this.maxClockDriftMs * 2;
+    this.persistAtomicRequestId(dto.requestId, now, expiresAt);
+    this.seenRequestIds.set(dto.requestId, expiresAt);
+  }
 
-    // Validación de firma HMAC si viene provista o si es requerida en producción
-    if (signature) {
-      const payloadToSign = `${dto.requestId}:${commandTimestampStr}:${dto.intent.toUpperCase()}`;
-      const expectedSignature = crypto
-        .createHmac('sha256', this.secret)
-        .update(payloadToSign)
-        .digest('hex');
-
-      const sigBuffer = Buffer.from(signature, 'hex');
-      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-
-      if (
-        sigBuffer.length !== expectedBuffer.length ||
-        !crypto.timingSafeEqual(sigBuffer, expectedBuffer)
-      ) {
-        throw new UnauthorizedException('Firma HMAC de Mobile Gateway inválida o alterada.');
-      }
-    }
+  private normalizeGatewayPath(rawPath: string): string {
+    const withoutQuery = (rawPath || '/mobile/v1/command').split('?')[0].trim();
+    const withoutApiPrefix = withoutQuery.replace(/^\/api(?=\/)/i, '');
+    return withoutApiPrefix || '/mobile/v1/command';
   }
 
   /**
-   * Genera firma HMAC para clientes autorizados (utilidad para tests y clientes móviles oficiales).
+   * Genera firma HMAC-SHA256 vinculada a método, ruta, requestId, timestamp, intent y hash canónico del payload.
    */
-  generateHmacSignature(requestId: string, timestamp: string, intent: string): string {
-    const payload = `${requestId}:${timestamp}:${intent.toUpperCase()}`;
+  generateHmacSignature(
+    requestId: string,
+    timestamp: string,
+    intent: string,
+    binding?: {
+      method?: string;
+      path?: string;
+      parameters?: Record<string, any>;
+      context?: Record<string, any>;
+      deviceId?: string;
+    },
+  ): string {
+    const method = (binding?.method || 'POST').toUpperCase();
+    const path = this.normalizeGatewayPath(binding?.path || '/mobile/v1/command');
+    const payloadHash = this.computeCanonicalPayloadHash(
+      binding?.parameters,
+      binding?.context,
+      binding?.deviceId,
+    );
+    const payload = `${method}:${path}:${requestId}:${timestamp}:${String(intent || '').toUpperCase().trim()}:${payloadHash}`;
     return crypto.createHmac('sha256', this.secret).update(payload).digest('hex');
   }
 
   /**
-   * Comprueba si una URL apunta a localhost, IP privada o bucle local (Anti-SSRF).
+   * Generar firma directamente desde un MobileCommandDto completo.
+   */
+  signCommandDto(
+    dto: MobileCommandDto,
+    options?: { method?: string; path?: string; headerTimestamp?: string },
+  ): string {
+    return this.generateHmacSignature(
+      dto.requestId,
+      options?.headerTimestamp || dto.timestamp,
+      dto.intent,
+      {
+        method: options?.method || 'POST',
+        path: options?.path || '/mobile/v1/command',
+        parameters: dto.parameters,
+        context: dto.context,
+        deviceId: dto.deviceId,
+      },
+    );
+  }
+
+  /**
+   * Comprueba si una URL apunta a localhost, IP privada, esquema inseguro o contiene metacaracteres de shell/control.
    */
   isPrivateOrLocalUrl(rawUrl: string): boolean {
+    if (!rawUrl || typeof rawUrl !== 'string' || rawUrl.length > 2048) {
+      return true;
+    }
+
+    if (SHELL_METACHAR_REGEX.test(rawUrl)) {
+      return true;
+    }
+
     try {
       const parsed = new URL(rawUrl);
       if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
         return true;
       }
 
-      const host = parsed.hostname.toLowerCase();
+      if (parsed.username || parsed.password) {
+        return true;
+      }
+
+      const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
       if (
         host === 'localhost' ||
+        host.endsWith('.localhost') ||
+        host.endsWith('.local') ||
         host === '127.0.0.1' ||
+        host.startsWith('127.') ||
         host === '0.0.0.0' ||
         host === '169.254.169.254' ||
-        host === '::1'
+        host.startsWith('169.254.') ||
+        host === '::1' ||
+        host === '0:0:0:0:0:0:0:1' ||
+        host.startsWith('fc') ||
+        host.startsWith('fd') ||
+        host.startsWith('fe80')
       ) {
         return true;
       }
 
-      // Rangos privados RFC 1918
+      // Bloquear representaciones IP numéricas alternativas (decimal entero, hexadecimal u octal)
+      if (/^\d+$/.test(host) || /^0x[0-9a-f]+$/i.test(host)) {
+        return true;
+      }
+
+      // Rangos privados RFC 1918 y CGNAT
       if (
         /^10\./.test(host) ||
         /^192\.168\./.test(host) ||
-        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host) ||
+        /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(host)
       ) {
         return true;
       }
@@ -193,14 +428,17 @@ export class MobileGatewayService implements OnModuleDestroy {
   }
 
   /**
-   * Ejecuta comandos OS a través de exec (desacoplado para facilitar mock/aislamiento en tests).
+   * Ejecuta un binario del sistema de forma directa mediante execFile (shell: false) sin invocar cmd.exe ni intérprete de comandos.
    */
-  protected executeOsCommand(cmd: string): void {
-    exec(cmd);
+  protected executeOsCommand(executable: string, args: string[] = []): void {
+    execFile(executable, args, {
+      shell: false,
+      windowsHide: false,
+    });
   }
 
   /**
-   * Envía un evento de tecla virtual (VK) nativo de Windows utilizando keybd_event vía user32.dll.
+   * Envía un evento de tecla virtual (VK) nativo de Windows utilizando keybd_event vía user32.dll sin shell.
    */
   private sendVirtualKey(vkCode: number, repeatCount: number = 1): void {
     if (!ALLOWED_VK_CODES.has(vkCode)) {
@@ -226,7 +464,12 @@ export class MobileGatewayService implements OnModuleDestroy {
       }
     `;
     const base64 = Buffer.from(psScript, 'utf16le').toString('base64');
-    this.executeOsCommand(`powershell -NoProfile -NonInteractive -EncodedCommand ${base64}`);
+    this.executeOsCommand('powershell.exe', [
+      '-NoProfile',
+      '-NonInteractive',
+      '-EncodedCommand',
+      base64,
+    ]);
   }
 
   /**
@@ -284,9 +527,10 @@ export class MobileGatewayService implements OnModuleDestroy {
     dto: MobileCommandDto,
     signature?: string,
     headerTimestamp?: string,
+    requestContext?: { method?: string; path?: string },
   ): Promise<any> {
-    // 1. Validar autenticación, timestamp y anti-replay
-    this.validateCommandSecurity(dto, signature, headerTimestamp);
+    // 1. Validar autenticación HMAC obligatoria, timestamp, vinculación de payload y anti-replay
+    this.validateCommandSecurity(dto, signature, headerTimestamp, requestContext);
 
     const intent = String(dto.intent || '').toUpperCase().trim();
     const params = dto.parameters || {};
@@ -385,7 +629,7 @@ export class MobileGatewayService implements OnModuleDestroy {
           );
         }
 
-        this.executeOsCommand(`start ${commandToRun}`);
+        this.executeOsCommand(commandToRun, []);
         return {
           requestId: dto.requestId,
           success: true,
@@ -397,20 +641,30 @@ export class MobileGatewayService implements OnModuleDestroy {
 
       case 'OPEN_BROWSER':
       case 'OPEN_URL': {
-        const rawUrl = params.url || 'https://google.com';
+        const rawUrl = String(params.url || 'https://google.com').trim();
         if (this.isPrivateOrLocalUrl(rawUrl)) {
           throw new ForbiddenException(
-            `Acceso bloqueado por política Anti-SSRF: la URL "${rawUrl}" apunta a un recurso privado o inválido.`,
+            `Acceso bloqueado por política Anti-SSRF o metacaracteres inseguros: la URL "${rawUrl}" apunta a un recurso privado o inválido.`,
           );
         }
 
-        this.executeOsCommand(`start ${rawUrl}`);
+        if (process.env.MOBILE_GATEWAY_ENABLE_OPEN_URL !== 'true') {
+          throw new ForbiddenException(
+            'La acción OPEN_URL se encuentra deshabilitada por política de seguridad del host (DEV-001-B1.1).',
+          );
+        }
+
+        const canonicalUrl = new URL(rawUrl).toString();
+        this.executeOsCommand('rundll32.exe', [
+          'url.dll,FileProtocolHandler',
+          canonicalUrl,
+        ]);
         return {
           requestId: dto.requestId,
           success: true,
           intent,
-          result: { url: rawUrl },
-          message: `Abriendo navegador en la PC con ${rawUrl}`,
+          result: { url: canonicalUrl },
+          message: `Abriendo navegador en la PC con ${canonicalUrl}`,
         };
       }
 

@@ -8,15 +8,22 @@ import {
   HttpStatus,
   HttpException,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { AssetMetadataService, Asset3DMetadata } from '../services/asset-metadata.service';
+import {
+  SecurityKernelAuthGuard,
+  RequireSecurityPermission,
+} from '../../security/security-kernel-auth.guard';
 import * as crypto from 'crypto';
 
 /**
  * 🎨 Asset Metadata API Controller
  * 
- * Endpoints para gestión de metadata de assets 3D en JarBees Studio
+ * Endpoints para gestión de metadata de assets 3D en JarBees Studio.
+ * Endurecido en DEV-001-B1.1 (F-B1-10): protegido con SecurityKernelAuthGuard y scopes jarbees:3d:read / jarbees:3d:mutate.
  */
+@UseGuards(SecurityKernelAuthGuard)
 @Controller('jarvis/3d/metadata')
 export class AssetMetadataController {
   private readonly logger = new Logger(AssetMetadataController.name);
@@ -27,6 +34,8 @@ export class AssetMetadataController {
    * 📊 GET /jarvis/3d/metadata/stats
    * Obtener estadísticas del catálogo completo
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:3d:read' })
   @Get('stats')
   async getCatalogStats() {
     try {
@@ -36,6 +45,7 @@ export class AssetMetadataController {
         stats,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error fetching catalog stats: ${error.message}`);
       throw new HttpException(
         'Failed to retrieve catalog statistics',
@@ -48,6 +58,8 @@ export class AssetMetadataController {
    * 📖 GET /jarvis/3d/metadata/:packageId
    * Obtener metadata de un asset específico
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:3d:read' })
   @Get(':packageId')
   async getMetadata(@Param('packageId') packageId: string) {
     try {
@@ -86,6 +98,8 @@ export class AssetMetadataController {
    * - tags: string (comma-separated)
    * - minQuality: number (0-100)
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:3d:read' })
   @Get()
   async searchMetadata(
     @Query('assetType') assetType?: string,
@@ -111,6 +125,7 @@ export class AssetMetadataController {
         results,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error searching metadata: ${error.message}`);
       throw new HttpException(
         'Failed to search metadata',
@@ -123,6 +138,8 @@ export class AssetMetadataController {
    * 💾 POST /jarvis/3d/metadata
    * Guardar o actualizar metadata de un asset
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:3d:mutate' })
   @Post()
   async saveMetadata(@Body() metadata: Asset3DMetadata) {
     try {
@@ -135,6 +152,7 @@ export class AssetMetadataController {
         filepath,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error saving metadata: ${error.message}`);
       throw new HttpException(
         'Failed to save metadata',
@@ -147,6 +165,8 @@ export class AssetMetadataController {
    * 🎨 POST /jarvis/3d/metadata/extract
    * Extraer metadata automáticamente desde un modelo GLB/GLTF
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:3d:mutate' })
   @Post('extract')
   async extractMetadata(
     @Body('modelPath') modelPath: string,
@@ -175,6 +195,7 @@ export class AssetMetadataController {
         filepath,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error extracting metadata: ${error.message}`);
       throw new HttpException(
         'Failed to extract metadata',
@@ -187,6 +208,8 @@ export class AssetMetadataController {
    * 📊 POST /jarvis/3d/metadata/report
    * Generar reporte completo de render con análisis de calidad
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:3d:mutate' })
   @Post('report')
   async generateRenderReport(
     @Body('renderPath') renderPath: string,
@@ -217,6 +240,7 @@ export class AssetMetadataController {
         report,
       };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       this.logger.error(`Error generating render report: ${error.message}`);
       throw new HttpException(
         'Failed to generate render report',
@@ -229,6 +253,8 @@ export class AssetMetadataController {
    * 🎯 GET /jarvis/3d/metadata/:packageId/similar
    * Encontrar assets similares basados en tags, estilo y categoría
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:3d:read' })
   @Get(':packageId/similar')
   async findSimilarAssets(
     @Param('packageId') packageId: string,
@@ -276,6 +302,8 @@ export class AssetMetadataController {
    * 🔄 POST /jarvis/3d/metadata/:packageId/clone
    * Clonar configuración de metadata para crear una variante
    */
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:3d:mutate' })
   @Post(':packageId/clone')
   async cloneMetadata(
     @Param('packageId') packageId: string,

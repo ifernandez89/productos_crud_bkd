@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { FeedbackRepository } from './repositories/feedback.repository';
 import { JarvisService } from './jarvis.service';
 import { JarvisController } from './jarvis.controller';
@@ -73,6 +73,7 @@ import { CapabilityExecutor } from './capabilities/capability-executor.service';
 import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
 import { ActionGatekeeperService } from './security/action-gatekeeper.service';
+import { SecurityKernelAuthGuard } from './security/security-kernel-auth.guard';
 import { RedactedObservabilityService } from './security/redacted-observability.service';
 import { SpecialistCapabilityRouterService } from './llm/specialist-capability-router.service';
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
@@ -135,7 +136,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
 @Module({
   imports: [
     PrismaModule,
-    GoogleModule,
+    forwardRef(() => GoogleModule),
     CognitiveModule,
     JneModule,
     DialogueModule,
@@ -228,6 +229,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     AuditService,
     ActionExecutionGateService,
     ActionGatekeeperService,
+    SecurityKernelAuthGuard,
     RedactedObservabilityService,
     SpecialistCapabilityRouterService,
     HierarchicalParserService,
@@ -330,6 +332,8 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     OpenRouterProvider,
     AstrologyTool,
     ActionGatekeeperService,
+    SecurityKernelAuthGuard,
+    AuditService,
     MissionCheckpointService,
     MissionRecoveryService,
     RedactedObservabilityService,

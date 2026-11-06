@@ -7,6 +7,8 @@ describe('RedactedObservabilityService (Data Sanitization & Token Masking)', () 
   let vault: CryptoVaultService;
 
   beforeEach(async () => {
+    process.env.CREDENTIALS_ENCRYPTION_KEY =
+      'test-dedicated-vault-primary-key-2026-secure';
     const module: TestingModule = await Test.createTestingModule({
       providers: [RedactedObservabilityService, CryptoVaultService],
     }).compile();
