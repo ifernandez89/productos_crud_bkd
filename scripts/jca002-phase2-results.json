@@ -1,0 +1,75 @@
+[
+  {
+    "test": "P2.1 - Conceptual \"Explicame qué es la memoria\"",
+    "prompt": "Explicame qué es la memoria",
+    "statusCode": 201,
+    "durationMs": 5192,
+    "route": "UNKNOWN",
+    "responseSummary": "La **memoria** es una función fundamental del cerebro que nos permite **almacenar, retener y recuperar información** que utilizamos en nuestra vida diaria. Es como una base de datos interna que nos ayuda a recordar cosas que hemos aprendido, experiencias pasadas, hechos, nombres, lugares, etc.\n\n### ",
+    "rawResponse": {
+      "answer": "La **memoria** es una función fundamental del cerebro que nos permite **almacenar, retener y recuperar información** que utilizamos en nuestra vida diaria. Es como una base de datos interna que nos ayuda a recordar cosas que hemos aprendido, experiencias pasadas, hechos, nombres, lugares, etc.\n\n### ¿Cómo funciona la memoria?\nLa memoria se divide en varios tipos, según cómo procesamos y almacenamos la información:\n\n1. **Memoria sensorial**:  \n   Es la más breve y se encarga de captar información de los sentidos (vista, oído, tacto, etc.) durante un breve momento. Por ejemplo, cuando ves un objeto, tu cerebro lo registra durante unos segundos.\n\n2. **Memoria a corto plazo**:  \n   Guarda información durante unos segundos o minutos. Es como la memoria de tu mente cuando estás estudiando algo y lo recuerdas al instante. Sin embargo, si no repites la información, se pierde.\n\n3. **Memoria a largo plazo**:  \n   Es la que nos permite recordar cosas durante meses, años o incluso toda la vida. Esto incluye conocimientos, habilidades, recuerdos personales, etc. Por ejemplo, recordar tu nombre, tu fecha de nacimiento o cómo llegar a tu casa.\n\n### ¿Por qué es importante?\nLa memoria es clave para:\n- Aprender y crecer.\n- Tomar decisiones basadas en experiencias pasadas.\n- Mantener relaciones personales y sociales.\n- Realizar tareas cotidianas, como cocinar, conducir o trabajar.\n\n### ¿Qué pasa si la memoria falla?\nCuando la memoria no funciona bien, puede afectar la calidad de vida. Por ejemplo, en enfermedades como el **alzhéimer**, la memoria se ve muy afectada, y la persona pierde la capacidad de recordar cosas básicas.\n\n¿Querés que te explique cómo se forma la memoria o qué pasa cuando no funciona bien? 😊",
+      "sessionId": "jca002-phase2-1793919403910"
+    }
+  },
+  {
+    "test": "P2.2 - Conceptual \"Resumí cómo funciona la percepción\"",
+    "prompt": "Resumí cómo funciona la percepción",
+    "statusCode": 201,
+    "durationMs": 18043,
+    "route": "UNKNOWN",
+    "responseSummary": "La **percepción** es el proceso mediante el cual nuestro cerebro recibe, interpreta y organiza la información que recibimos a través de los sentidos —vista, oído, tacto, gusto y olfato— para darle sentido al mundo que nos rodea. \n\nFunciona de esta manera:\n\n1. **Recepción de estímulos**: Los sentidos",
+    "rawResponse": {
+      "answer": "La **percepción** es el proceso mediante el cual nuestro cerebro recibe, interpreta y organiza la información que recibimos a través de los sentidos —vista, oído, tacto, gusto y olfato— para darle sentido al mundo que nos rodea. \n\nFunciona de esta manera:\n\n1. **Recepción de estímulos**: Los sentidos captan información del entorno (por ejemplo, ves un objeto, escuchas un sonido, sientes un tacto).\n2. **Transmisión a la mente**: Esta información viaja a través del sistema nervioso hasta el cerebro.\n3. **Interpretación y organización**: El cerebro procesa los estímulos, los relaciona con conocimientos previos y les da un significado. Por ejemplo, si ves una manzana, tu mente identifica su forma, color y te recuerda que es comestible.\n4. **Respuesta o acción**: Basado en esta interpretación, tomamos decisiones o reaccionamos al entorno.\n\nEn resumen, la percepción es como el \"filtro\" que el cerebro usa para entender lo que nos rodea, transformando lo que recibimos en algo que podemos usar y actuar. ¿Querés que te explique cómo se relaciona la percepción con la memoria? 😊",
+      "sessionId": "jca002-phase2-1793919403910"
+    }
+  },
+  {
+    "test": "P2.3 - Conceptual \"Quiero conocer la teoría de Jung\"",
+    "prompt": "Quiero conocer la teoría de Jung",
+    "statusCode": 403,
+    "durationMs": 93196,
+    "route": "UNKNOWN",
+    "responseSummary": "",
+    "rawResponse": {
+      "message": "[Data Privacy Gate] Inferencia cloud en fallback 'openrouter' bloqueada: los motores locales fallaron y la consulta contiene datos confidenciales que no pueden transmitirse a la nube.",
+      "error": "Forbidden",
+      "statusCode": 403
+    }
+  },
+  {
+    "test": "P2.4 - Existente \"Resumí el libro William Judge - El mesmerismo\"",
+    "prompt": "Resumí el libro William Judge - El mesmerismo",
+    "statusCode": 201,
+    "durationMs": 135540,
+    "route": "UNKNOWN",
+    "responseSummary": "**Resumen del libro *William Judge - El mesmerismo* (posiblemente referido a la vida y obra de William Henry Judge, no a un libro específico con ese título)**\n\nWilliam Henry Judge (1851–1924) fue un médico, filósofo, escritor y pensador espiritual que vivió en el siglo XIX y principios del XX. Su vi",
+    "rawResponse": {
+      "answer": "**Resumen del libro *William Judge - El mesmerismo* (posiblemente referido a la vida y obra de William Henry Judge, no a un libro específico con ese título)**\n\nWilliam Henry Judge (1851–1924) fue un médico, filósofo, escritor y pensador espiritual que vivió en el siglo XIX y principios del XX. Su vida y obra están estrechamente vinculadas al movimiento espiritista y a la filosofía espiritualista, aunque también tuvo una importante relación con el mesmerismo, una práctica pseudocientífica que se desarrolló en el siglo XIX y que se basaba en la idea de que ciertas personas (llamadas \"mesmeristas\") podían influir en el cuerpo y la mente de otros mediante un \"flujo magnético\" o \"poder magnético\".\n\n### Contexto del mesmerismo:\nEl mesmerismo fue un fenómeno popular en el siglo XIX, especialmente en Europa y Estados Unidos. Se basaba en la idea de que existía un \"flujo magnético\" en el cuerpo humano que podía ser manipulado para provocar estados de trance, curaciones o alteraciones psíquicas. Aunque no tenía base científica, fue muy difundido por médicos y charlatanes, y fue considerado una forma de terapia alternativa.\n\n### Relación de William Judge con el mesmerismo:\nWilliam Judge, aunque no fue un practicante del mesmerismo en sí mismo, estuvo profundamente involucrado en el estudio de las prácticas espirituales y de los fenómenos psíquicos. Su interés en el mesmerismo se derivó de su búsqueda de conocimientos sobre la naturaleza humana, la mente y el espíritu. En sus escritos, a menudo se refería a la conexión entre el mesmerismo y la espiritualidad, sugiriendo que ciertos fenómenos observados en el mesmerismo podían tener una explicación espiritual o metafísica.\n\n### Crítica y evolución:\nJudge no se limitó a aceptar el mesmerismo como una práctica válida. En su obra, especialmente en *La Filosofía Espiritualista* (1895), criticó la falta de rigor científico y la pseudociencia que rodeaba el mesmerismo. Sin embargo, reconoció que ciertos fenómenos observados en el mesmerismo podían ser interpretados como manifestaciones de la influencia espiritual o de la mente sobre el cuerpo, lo que lo llevó a integrar estos conceptos en su filosofía espiritualista.\n\n### Conclusión:\nEl mesmerismo fue una práctica que interesó a William Judge como parte de su búsqueda de entender la conexión entre la mente, el cuerpo y el espíritu. Aunque no lo aceptó como una ciencia válida, lo utilizó como un punto de partida para explorar cuestiones más profundas sobre la naturaleza de la realidad, la conciencia y la espiritualidad. Su enfoque fue crítico, filosófico y espiritual, lo que lo diferenciaba de muchos de sus contemporáneos que se limitaban a la práctica del mesmerismo sin cuestionar su base teórica.\n\n**Nota:** Si el libro *William Judge - El mesmerismo* se refiere a una obra específica, sería útil tener más información sobre su autor y contenido para ofrecer un resumen más preciso.",
+      "sessionId": "jca002-phase2-1793919403910"
+    }
+  },
+  {
+    "test": "P2.5 - Inexistente \"Explicá el capítulo 3 de un libro inexistente\"",
+    "prompt": "Explicá el capítulo 3 de un libro inexistente",
+    "statusCode": 201,
+    "durationMs": 13088,
+    "route": "UNKNOWN",
+    "responseSummary": "¡Hola! 😊\n\nEl capítulo 3 de un libro inexistente es un concepto interesante, pero, como ya mencionamos, no hay documentos RAG recuperados para fundamentar esta respuesta. En otras palabras, no tengo información real sobre un libro que no existe, así que no puedo explicar su contenido. \n\nSi querés, p",
+    "rawResponse": {
+      "answer": "¡Hola! 😊\n\nEl capítulo 3 de un libro inexistente es un concepto interesante, pero, como ya mencionamos, no hay documentos RAG recuperados para fundamentar esta respuesta. En otras palabras, no tengo información real sobre un libro que no existe, así que no puedo explicar su contenido. \n\nSi querés, puedo ayudarte a crear un ejemplo ficticio de cómo podría ser ese capítulo, o a escribir un resumen de un libro que sí exista. ¿Te gustaría que haga algo así? 😊",
+      "sessionId": "jca002-phase2-1793919403910"
+    }
+  },
+  {
+    "test": "P2.6 - Conceptual con palabras de título \"Explicame la teoría sintérgica\"",
+    "prompt": "Explicame la teoría sintérgica",
+    "statusCode": 201,
+    "durationMs": 26,
+    "route": "UNKNOWN",
+    "responseSummary": "⚠️ ❌ No encontré ningún documento con el título \"la teoría sintérgica\".\n\n¿Quizás quisiste decir?\n  • *William Judge - El mesmerismo*\n  • *Stefan Zweig Franz Anton Mesmer*\n\nUsá el título exacto o escribí `mis documentos` para ver todos.\n\n💡 Tip: usá comillas para el título exacto:\n   `resumen de 'Nom",
+    "rawResponse": {
+      "answer": "⚠️ ❌ No encontré ningún documento con el título \"la teoría sintérgica\".\n\n¿Quizás quisiste decir?\n  • *William Judge - El mesmerismo*\n  • *Stefan Zweig Franz Anton Mesmer*\n\nUsá el título exacto o escribí `mis documentos` para ver todos.\n\n💡 Tip: usá comillas para el título exacto:\n   `resumen de 'Nombre exacto del documento'`\n\nO revisá tus documentos con: `mis documentos`",
+      "sessionId": "jca002-phase2-1793919403910"
+    }
+  }
+]

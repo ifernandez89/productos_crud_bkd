@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Verified & Operational — JarBees Main Smoke Test & Daily 5 Minute Challenge Day 001 (2026-11-05)
+
+- **Validación Práctica Cotidiana (Daily Challenge - Day 001)** (`docs/JARBEES_DAILY_CHALLENGE_DAY_001.md`, `scripts/daily-challenge-day001.js`):
+  - Inaugurado el ciclo cotidiano de evaluación práctica (Investigador, Ingeniero, Pensador Crítico) en staging (`localhost:4001`) con `jarbees_stage` e inferencia local en GPU (NVIDIA GeForce RTX 5070) con `llama-server.exe` (`--parallel 1`).
+  - **Tarea 1 (Investigador):** Recuperación documental RAG exitosa (`William Judge - El mesmerismo`, id=246) ante consulta conversacional (*«Buscá en nuestra colección qué plantea William Judge sobre el mesmerismo...»*). Latencia: 10.04 s (10,036 ms). Separación tajante entre fuentes citadas e interpretaciones del modelo.
+  - **Tarea 2 (Ingeniero):** Diagnóstico conceptual de arquitectura identificando el desacople potencial entre `IntentRouter` y `ContextSelector` ante clasificaciones genéricas. Propuesta metodológica de 4 pasos (telemetría correlacionada y pruebas de precedencia) sin parches impulsivos de código. Latencia: 21.06 s (21,060 ms).
+  - **Tarea 3 (Pensador Crítico):** Rigor epistemológico y honestidad al delimitar claramente las mejoras de infraestructura/gobernanza de contexto de la inferencia lógica causal autónoma. Latencia: 14.35 s (14,354 ms).
+  - **Evaluación Global:** 10 / 10 (PASS). Tiempo total de inferencia GPU: ~45 s combinados.
+- **Smoke Test Post-Merge en Main** (`docs/JCA_002_POST_REMEDIATION_VALIDATION_REPORT.md`, `scripts/main-smoke-test.js`):
+  - Batería de 8 pruebas de validación sobre `main` (commit `3ae6c9d`) en backend de staging (`localhost:4001`): conversación natural, conocimiento documental, RAG positivo, RAG negativo (abstención), rigor científico, matemática determinista, multi-turn context y preservación de privacidad de datos.
+  - Confirmación de aislamiento: entorno productivo (`localhost:4000`, `jarbees_data`, ngrok) 100% aislado y protegido sin ninguna modificación.
+
 ### Fixed & Calibrated — JarBees Rapid Cognitive Sweep Remediation & Epistemic Hardening (2026-11-05)
 
 - **Corrección del Parser Documental (`src/jarvis/commands/jarvis-command.service.ts`)**:
