@@ -185,6 +185,10 @@ flowchart TD
 
 ### 4.2. Protocolo de Comunicación Broker <-> MicroVM
 La comunicación no utiliza redes, sockets TCP ni carpetas compartidas:
+
+> [!NOTE] Evolución Arquitectónica del Protocolo (H-01 Remediation)
+> El ejemplo de carga útil siguiente representa el esquema conceptual preliminar evaluado durante la factibilidad de MicroVMs. En la especificación formal posterior (`DEV_001_B2_2_D` §8 y `DEV_001_B2_2_E` §2.4), este esquema fue **expresamente sustituido** por un protocolo de tareas estructuradas (`{"type": "TASK", "capability": "...", "arguments": ...}`) para erradicar cualquier interfaz de ejecución de código libre o intérprete no acotado.
+
 1. **Canal Único:** Puerto serie virtual (`ttyS0`), mapeado a la entrada/salida estándar (`stdio`) del proceso QEMU en el host.
 2. **Estructura del Mensaje (Entrada):**
    ```json

@@ -38,6 +38,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Desconexión al 100% de NestJS, del Execution Broker y de la autonomía del agente.
   - Criterios objetivos de corte para graduación a fase B2.3 (100% de 18 tests aprobados, latencia < 1500 ms, destrucción comprobada).
 
+- **DEV-001-B2.2-REVIEW-REMEDIATION — Cierre de Observaciones de Auditoría Independiente**:
+  - `H-01`: Incorporación de nota de evolución arquitectónica en B2.2-C §4.2, confirmando la superación del esquema exploratorio de código libre en favor del protocolo de tareas estructuradas.
+  - `H-05`: Matriz de correspondencia 1:1 de los 18 riesgos (R-01 a R-18) con las 18 pruebas adversariales, definiendo aserciones independientes para canales auxiliares (TEST-11A) y VSOCK (TEST-11B), y asignando TEST-18 a la integridad previa al arranque por SHA-256.
+  - `H-06`: Reformulación rigurosa de la garantía G-5 en B2.2-D §9 y B2.2-E §5 (no persistencia lógica entre sesiones dentro del sandbox aislado, excluyendo expresamente garantías forenses de silicio de memoria RAM física).
+  - `H-07`: Calificación precisa de criterios de aceptación para R-01 (mitigación por ausencia de drivers NTFS en kernel, no prueba de inaccesibilidad absoluta), R-10 (separación de PIDs sin descartar canales laterales de temporización) y R-17 (cuota relativa de CPU `CpuRate = 2000` en Job Object).
+  - `H-08`: Documentación explícita de la condición objetivo `ActiveProcessLimit = 1` como pendiente de validación de compatibilidad con la compilación de QEMU para Windows en fase práctica.
+  - `H-02`: Normalización del estado del árbol de trabajo eliminando deltas residuales en `docs/DEV_001_B2_2_E_PROTOTYPE_READINESS.md`.
+
 ### Security Hardening & Implementation — DEV-001-B2.1 Homologada con Restricciones: Execution Broker en Modo Estricto No-Execution (2026-11-06)
 
 > **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B2.1-REVIEW` con dictamen técnico favorable).  

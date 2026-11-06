@@ -128,7 +128,7 @@ Para garantizar una gobernanza de recursos exacta y no confundir cuotas virtuale
 | :--- | :--- | :--- | :--- |
 | **Memoria RAM** | **1.024 MB (1.0 GB)** asignados a la VM | **1.280 MB (1.25 GB)** límite duro del proceso | Parámetro `-m 1024M` en QEMU; `JobMemoryLimit` en Windows Job Object. Absorbe overhead de QEMU sin permitir fugas. |
 | **CPU / Cómputo** | **2 vCPUs lógicas** expuestas al kernel invitado | **CpuRate = 2000 (20%)** de la capacidad del host | Parámetro `-smp 2`; `JobObjectCpuRateControlInformation` en Windows. Impide que un bucle infinito sature el procesador anfitrión. |
-| **Límite de Procesos** | **Máximo 64 PIDs** en cgroups v2 (`pids.max`) | **ActiveProcessLimit = 1** en el Job Object | Cgroups v2 dentro de la VM previene fork-bombs; el Job Object impide que QEMU engendre procesos hijos en Windows. |
+| **Límite de Procesos** | **Máximo 64 PIDs** en cgroups v2 (`pids.max`) | **ActiveProcessLimit = 1** (Condición Objetivo)* | Cgroups v2 dentro de la VM previene fork-bombs; el Job Object impide que QEMU engendre procesos hijos en Windows. (*Pendiente de validación de compatibilidad con la versión específica de QEMU en fase práctica). |
 | **Volumen de Salida** | Buffer interno de ttyS0 | **Máximo 1.048.576 bytes (1 MB)** acumulados | Host Supervisor corta el pipe de lectura si excede 1 MB, abortando la sesión. |
 | **Tiempo de Ejecución** | Timeout interno solicitado | **Watchdog externo de 30.000 ms** (30 segundos) | Temporizador independiente en el Host Supervisor que ejecuta `TerminateJobObject()` ante expiración. |
 
@@ -165,7 +165,7 @@ El Host Supervisor crea un objeto de trabajo anónimo (`CreateJobObjectW`) antes
 1. `JOB_OBJECT_LIMIT_JOB_MEMORY`: Límite duro de memoria virtual de **1.280 MB (1.25 GB)**. Si QEMU intenta exceder este consumo, el kernel de Windows termina el proceso instantáneamente.
 2. `JOB_OBJECT_LIMIT_CPU_RATE`: Tasa máxima de CPU del 20% (máximo 2 hilos del Core i7-12700).
 3. `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`: Si el Host Supervisor se interrumpe, crashea o es terminado, el kernel de Windows termina automáticamente a QEMU, impidiendo la existencia de procesos huérfanos.
-4. `JOB_OBJECT_LIMIT_ACTIVE_PROCESS`: Máximo 1 proceso en el Job Object (`ActiveProcessLimit = 1`). QEMU no puede engendrar procesos hijos en Windows.
+4. `JOB_OBJECT_LIMIT_ACTIVE_PROCESS`: Máximo 1 proceso en el Job Object (`ActiveProcessLimit = 1`) como condición de diseño objetivo para impedir que QEMU engendre procesos hijos en Windows. *(Nota de Compatibilidad H-08: Debe validarse en la fase práctica que la compilación de QEMU utilizada para Windows no requiera procesos auxiliares en su inicialización que provoquen un rechazo `0xC0000022 / STATUS_ACCESS_DENIED`).*
 
 ### 6.2. Permisos y Listas de Control de Acceso (ACLs)
 - **Cuenta de Ejecución:** QEMU no debe ejecutarse bajo la cuenta interactiva del usuario con privilegios de administrador. Se ejecutará bajo un token restringido (`CreateRestrictedToken`) despojado de `SE_DEBUG_NAME`, `SE_LOAD_DRIVER_NAME`, `SE_SECURITY_NAME`.
@@ -273,8 +273,10 @@ Para no prometer propiedades físicas indemostrables (como el borrado inmediato 
                                           │
                                           ▼
 +-----------------------------------------------------------------------------------+
-| 5. Ausencia total de persistencia recuperable por ejecuciones posteriores:        |
-|    la siguiente MicroVM arranca desde un initramfs prístino verificado en RAM.    |
+| 5. No persistencia lógica entre ejecuciones dentro del entorno aislado,           |
+|    condicionada a verificar que no existen mecanismos de escritura persistente     |
+|    ni canales de exportación no autorizados. La recuperación forense a nivel      |
+|    físico de memoria RAM queda explícitamente fuera de las garantías certificadas.|
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -317,23 +319,26 @@ flowchart TD
 
 ## 11. Plan de Verificación de las 18 Pruebas Adversariales
 
-| ID | Prueba Adversarial | Metodología de Inyección | Criterio de Aceptación Definitivo |
+> **Inventario Formal de Pruebas y Aserciones:**  
+> La suite adversarial está compuesta formalmente por **18 pruebas principales** (`TEST-01` a `TEST-18`), que evalúan un total de **19 aserciones independientes** (dado que `TEST-11` se descompone en dos aserciones atómicas: `11a` para canales Unix/9P y `11b` para sockets `AF_VSOCK`).
+
+| ID | Prueba Adversarial | Metodología de Inyección | Criterio de Aceptación Definitivo (Precisiones H-05 / H-07) |
 | :--- | :--- | :--- | :--- |
-| **TEST-01** | Lectura de Disco Host (`C:\`) | Tarea busca particiones NTFS y rutas Windows. | Cero llamadas al filesystem del host; inalcanzabilidad física (sin drivers NTFS). |
+| **TEST-01** | Lectura de Disco Host (`C:\`) | Tarea busca particiones NTFS y rutas Windows. | Mitigación a nivel de kernel: cero llamadas exitosas al filesystem del host por ausencia de controladores NTFS montados. No constituye prueba de inaccesibilidad física o por canales laterales externos al hipervisor. |
 | **TEST-02** | Montaje Forzado de Bloques | Invocación de `mount(2)` en runtime C. | Rechazo con `EPERM` por Seccomp y carencia de `CAP_SYS_ADMIN`. |
-| **TEST-03** | Invocación de Binarios Windows | Intento de invocar `powershell.exe`. | Inexistencia total del subsistema `binfmt_misc` y de rutas del host. |
+| **TEST-03** | Invocación de Binarios Windows | Intento de invocar `powershell.exe`. | Inexistencia total del subsistema `binfmt_misc` y de rutas del host (`ENOENT`). |
 | **TEST-04** | Conexión a Servidor de Producción | `socket(AF_INET, SOCK_STREAM)` a `127.0.0.1:4000`. | `EAFNOSUPPORT` en `socket()` o `ENETUNREACH` sin interfaces de red. |
 | **TEST-05** | Conexión a Lock Socket B1 | Conexión TCP a `127.0.0.1:40199`. | Inalcanzabilidad física: `-nic none` garantiza cero adaptadores de red. |
 | **TEST-06** | Acceso a Red Externa / DNS | Paquete UDP a `8.8.8.8:53`. | Fallo inmediato en creación de socket sin interfaz de salida. |
 | **TEST-07** | Agotamiento de Memoria RAM (OOM) | `malloc(1GB)` infinito en bucle C. | Kernel OOM killer interno o Job Object mata a QEMU a los 1.25 GB; host intacto. |
 | **TEST-08** | Bomba de Bifurcación (*Fork-Bomb*) | Invocación de fork-bomb en bash. | Rechazo estricto al superar 64 procesos (`pids.max = 64`). |
-| **TEST-09** | Persistencia entre Sesiones | Escribir archivo, reiniciar MicroVM y verificar. | El archivo desaparece por completo (entorno 100% en RAM). |
-| **TEST-10** | Monitoreo de Procesos del Host | `readdir("/proc")` buscando PIDs anfitriones. | Únicamente PIDs 1, 2 y el worker confinado son visibles. |
-| **TEST-11** | Búsqueda de Sockets de Integración | Búsqueda de `/run/WSL`, sockets 9P o pipes. | Cero sockets o canales auxiliares existentes en el rootfs. |
+| **TEST-09** | Persistencia Lógica entre Sesiones | Escribir archivo, reiniciar MicroVM y verificar. | El archivo desaparece por completo (entorno 100% en RAM efímera sin backend de disco). |
+| **TEST-10** | Monitoreo de Procesos del Host | `readdir("/proc")` buscando PIDs anfitriones. | La virtualización por MicroVM (kernel y espacio de procesos propio del hipervisor) aísla y oculta intrínsecamente los PIDs del host. El parámetro `hidepid=2` actúa como endurecimiento de defensa en profundidad dentro del propio invitado, restringiendo visibilidad entre usuarios locales de la MicroVM. No descarta canales laterales de temporización. |
+| **TEST-11** | Búsqueda de Canales Auxiliares y VSOCK | Búsqueda de `/run/WSL`, sockets 9P y llamada `socket(AF_VSOCK)`. | **Aserción 11a (Unix/9P):** Inexistencia de endpoints (`ENOENT`).<br/>**Aserción 11b (VSOCK):** Rechazo de creación de socket con `EAFNOSUPPORT` por Seccomp BPF. |
 | **TEST-12** | Descriptores Heredados No Autorizados | Lectura de `/proc/self/fd` antes de ejecutar. | Exactamente 3 descriptores presentes: FDs 0, 1 y 2. Falla segura si $> 2$. |
 | **TEST-13** | Inspección de GPU y Dispositivos Host | Búsqueda de `/dev/dxg`, `/dev/dri`, GPUs, USBs. | Ausencia total de dispositivos PCI; `-nodefaults` verified. |
 | **TEST-14** | Intento de Mutación de Rootfs | Escritura en `/init` o binarios del sistema. | `EROFS` (Read-Only Filesystem a nivel de kernel). |
 | **TEST-15** | Destrucción Completa en Terminación | `TerminateJobObject()` desde el Host Supervisor. | Destrucción instantánea de QEMU y liberación de 100% de RAM del host. |
 | **TEST-16** | Inyección de Comandos No Estructurados | Envío de código libre no estructurado o secuencias ANSI. | El supervisor rechaza con `InvalidProtocolPayloadException`. |
-| **TEST-17** | Consumo Excesivo de CPU en el Host | Bucle infinito `while(1)` consumiendo 100% CPU. | Capped estrictamente al 20% (CpuRate = 2000) en el Job Object; host inalterado. |
-| **TEST-18** | Resiliencia ante Corrupción o Caída | Simulación de pánico de kernel o aborto abrupto. | El Host Supervisor detecta salida no-cero, limpia y falla en modo cerrado. |
+| **TEST-17** | Consumo Excesivo de CPU en el Host | Bucle infinito `while(1)` consumiendo 100% CPU. | Demuestra que la cuota de CPU anfitriona (`CpuRate = 2000`) se aplica efectivamente limitando el consumo de QEMU bajo las condiciones configuradas de Job Object en Windows; no certifica que el procesador físico permanezca completamente inalterado ante cargas concurrentes. |
+| **TEST-18** | Integridad de Arranque y Falla Segura | Arranque con hash SHA-256 alterado de kernel/initramfs o inyección de salida corrupta. | Aborto preventivo inmediato *Fail-Closed* del Host Supervisor con registro de auditoría sin despachar ejecución ni continuar el arranque. |

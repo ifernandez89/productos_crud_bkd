@@ -51,7 +51,7 @@ flowchart TD
 ### Detalle de los Cuatro Componentes:
 1. **Host Supervisor CLI (`tools/security/sandbox-supervisor-cli.ts`)**:
    - Proceso independiente ejecutado manualmente por el operador desde PowerShell estándar.
-   - Crea el Windows Job Object (`JobMemoryLimit = 1.25 GB`, `CpuRate = 2000`, `KILL_ON_JOB_CLOSE`).
+   - Crea el Windows Job Object (`JobMemoryLimit = 1.25 GB`, `CpuRate = 2000`, `KILL_ON_JOB_CLOSE`, y `ActiveProcessLimit = 1` como condición objetivo condicionada a validación de compatibilidad con la versión de QEMU).
    - Verifica los hashes SHA-256 del kernel y del `initramfs` antes de invocar a QEMU.
    - Inyecta la tarea estructurada mediante pipes anónimos de `stdin` y captura `stdout` con tope de 1 MB.
    - Coordina la terminación forzosa y la verificación de destrucción de recursos.
@@ -152,18 +152,18 @@ Para que el prototipo sea considerado exitoso y homologable en una futura fase B
 
 ### Criterios de Rechazo Inmediato (Fail-Closed):
 - El proceso QEMU intenta abrir cualquier socket de red o consultar DNS.
-- El proceso QEMU engendra un proceso hijo en Windows (violación de `ActiveProcessLimit = 1`).
+- El proceso QEMU engendra un proceso hijo no autorizado en Windows (o viola el límite verificado del Job Object).
 - La memoria virtual de QEMU excede los 1.280 MB en el host Windows.
 - La ejecución tarda más de 1.500 ms en completar el ciclo total (arranque, ping y destrucción).
 - Queda cualquier archivo temporal huérfano en disco tras la finalización.
 - Se detecta cualquier intento de ejecutar comandos no estructurados fuera del esquema JSON de `diagnostic:ping`.
 
-### Criterios de Aceptación Definitivos:
+### Criterios de Aceptación Definitivos (Precisiones H-05 a H-08):
 1. **Comportamiento Determinista de Ping:** La respuesta JSON devuelta por `stdout` coincide con el esquema exacto y el `echoToken` inyectado.
-2. **Aprobación de la Batería Adversarial de 18 Tests:** Superación de los 18 casos de prueba de inalcanzabilidad física documentados en B2.2-D.
-3. **Destrucción Comprobada en 3 Fases:** Confirmación mediante `WaitForSingleObject` de que el proceso QEMU ha finalizado y el Job Object ha liberado el 100% de la memoria asociada.
+2. **Aprobación de la Batería Adversarial de 18 Tests:** Superación de los 18 casos de prueba documentados en B2.2-D §11 evaluando el conjunto canónico de 19 aserciones independientes (incluyendo TEST-11A, TEST-11B y TEST-18).
+3. **Destrucción Comprobada en 3 Fases y No Persistencia Lógica:** Confirmación mediante `WaitForSingleObject` de que el proceso QEMU ha finalizado, el Job Object ha liberado la memoria asociada y no existe persistencia lógica entre sesiones (G-1 a G-5). Se asume expresamente que la recuperación forense a nivel físico de celdas de silicio de la RAM queda fuera de las garantías certificadas.
 4. **Registro de Auditoría Monotónico:** Emisión de un registro estructurado con el hash SHA-256 de los artefactos, el tiempo transcurrido y el código de salida.
-5. **Falla Segura ante Expiración de Tiempo:** Inyección de un timeout artificial (100 ms) que demuestre que el Host Supervisor termina a QEMU forzosamente mediante `TerminateJobObject()` sin bloquear el sistema.
+5. **Falla Segura ante Expiración de Tiempo:** Inyección de un timeout artificial (100 ms) que demuestre que el Host Supervisor termina a QEMU forzosamente mediante `TerminateJobObject()` sin bloquear el sistema anfitrión.
 
 ---
 
@@ -184,3 +184,4 @@ Frontera de Ejecución: 🔒 STRICT NO-EXECUTION (Despacho al SO desconectado)
 Adaptadores Reales:    🔒 BLOQUEADOS
 Implementación Práctica: PENDIENTE DE HABILITACIÓN DE HIPERVISOR POR EL OPERADOR
 ```
+
