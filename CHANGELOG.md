@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Security Architecture & Audit — DEV-001-B2.4 Auditoría de Preparación del Host y Dossier de Autorización de Gate 1 (2026-11-06)
+
+> **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / AUDIT ONLY (Sin comandos DISM, sin reinicio del host, sin software instalado, sin despacho al sistema operativo).  
+> **Frontera de Ejecución:** 🔒 STRICT NO-EXECUTION. El Execution Broker continúa operando exclusivamente en modo `SIMULATED`. Adaptadores reales permanecen terminantemente bloqueados.  
+> **Diagnóstico del Host:** Hardware y sistema operativo 100% aptos para WHPX (Intel Core i7-12700 con VT-x + SLAT/EPT, Windows 10 Pro Build 19041, `WinHvPlatform.dll` presente, `HypervisorPresent: False` verificado).  
+> **Rama:** `security/dev-001-b`  
+> **Commit Base B2.3:** `57a7a29`
+
+- **DEV-001-B2.4 — Auditoría de Preparación del Host (`docs/DEV_001_B2_4_HOST_READINESS_REVIEW.md`)**:
+  - Inspección empírica no invasiva del host: confirmación de soporte SLAT en hardware (`SecondLevelAddressTranslationExtensions: True`), 32 GB RAM, y librerías `WinHvPlatform.dll` y `WinHvEmulation.dll` en `System32`.
+  - Análisis de impacto del microkernel Hyper-V (Root Partition Windows): sobrecarga de CPU despreciable (< 1-2%) y preservación nativa de la GPU NVIDIA GeForce RTX 5070 con acceso directo PCIe inalterado para cargas CUDA, TensorRT y NVENC.
+  - Barrera de seguridad por elevación: confirmación de que comandos DISM y BCD exigen privilegios de Administrador local, imposibilitando modificaciones autónomas o no mediadas por parte del agente.
+  - Protocolo de reversibilidad garantizada para deshabilitar características opcionales y restaurar el estado inicial exacto (`HypervisorPresent: False`).
+  - Precisión técnica de semántica de errores de red en la suite adversarial: distinción formal entre `ENETUNREACH` (aislamiento de red externa/host sin ruta) y `ECONNREFUSED` (loopback interno del invitado sin servicio atendiendo en puerto 4000).
+  - Establecimiento formal de la gobernanza secuencial estricta de las 5 puertas de control: Gate 1 (WHPX + Reinicio) -> Gate 2 (Staging SHA-256) -> Gate 3 (Smoke Ping) -> Gate 4 (Batería Adversarial) -> Gate 5 (Homologación), con independencia estricta de autorización en cada etapa.
+
 ### Security Architecture & Protocol — DEV-001-B2.3 Preparación Técnica y Protocolo de Aceptación del Prototipo (2026-11-06)
 
 > **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / SPECIFICATION ONLY (Sin habilitar características de Windows, sin instalar QEMU, sin reinicio del host, sin despacho al sistema operativo).  
