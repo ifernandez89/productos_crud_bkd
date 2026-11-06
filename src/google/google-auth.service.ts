@@ -1,7 +1,14 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
+import * as crypto from 'crypto';
 import { google } from 'googleapis';
 import { PrismaService } from '../prisma/prisma.service';
 import { CryptoVaultService } from '../shared/crypto-vault.service';
+import { validateCryptoSecret } from '../auth/jwt-secret.util';
 
 export interface BackendGoogleCredentialsDto {
   refreshToken: string;
@@ -10,15 +17,35 @@ export interface BackendGoogleCredentialsDto {
   scope?: string;
 }
 
+interface PendingOAuthStateRecord {
+  nonce: string;
+  actorId: string;
+  issuedAt: number;
+  expiresAt: number;
+  consumed: boolean;
+}
+
 @Injectable()
 export class GoogleAuthService implements OnModuleInit {
   private readonly logger = new Logger(GoogleAuthService.name);
   private oauth2Client;
+  private readonly oauthStateTtlMs = 10 * 60 * 1000; // 10 minutos
+  private readonly pendingOAuthStates = new Map<string, PendingOAuthStateRecord>();
+  private readonly stateSigningKey: Buffer;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly cryptoVault: CryptoVaultService,
   ) {
+    const rawStateSecret = validateCryptoSecret(
+      process.env.CREDENTIALS_ENCRYPTION_KEY,
+      'CREDENTIALS_ENCRYPTION_KEY',
+    );
+    this.stateSigningKey = crypto
+      .createHash('sha256')
+      .update(`${rawStateSecret}:jarbees_google_oauth_state_v1`)
+      .digest();
+
     const clientId = process.env.GOOGLE_CLIENT_ID || 'PENDING_CLIENT_ID';
     const clientSecret =
       process.env.GOOGLE_CLIENT_SECRET || 'PENDING_CLIENT_SECRET';
@@ -31,6 +58,136 @@ export class GoogleAuthService implements OnModuleInit {
       clientSecret,
       redirectUri,
     );
+  }
+
+  /**
+   * Genera un token state OAuth2 aleatorio, firmado con HMAC-SHA256, asociado al actor iniciador,
+   * de un solo uso y con vencimiento de 10 minutos (DEV-001-B1.1: F-B1-10).
+   */
+  createOAuthState(actorId = 'operator'): string {
+    const now = Date.now();
+    this.pruneExpiredOAuthStates(now);
+
+    const safeActorId = (actorId || 'operator').trim() || 'operator';
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const expiresAt = now + this.oauthStateTtlMs;
+
+    this.pendingOAuthStates.set(nonce, {
+      nonce,
+      actorId: safeActorId,
+      issuedAt: now,
+      expiresAt,
+      consumed: false,
+    });
+
+    const payloadJson = JSON.stringify({
+      nonce,
+      actorId: safeActorId,
+      iat: now,
+      exp: expiresAt,
+    });
+    const payloadB64 = Buffer.from(payloadJson, 'utf8').toString('base64url');
+    const signature = crypto
+      .createHmac('sha256', this.stateSigningKey)
+      .update(payloadB64)
+      .digest('hex');
+
+    return `${payloadB64}.${signature}`;
+  }
+
+  /**
+   * Verifica criptográficamente y consume de forma atómica (single-use) el state OAuth2.
+   */
+  verifyAndConsumeOAuthState(stateToken?: string): {
+    actorId: string;
+    nonce: string;
+  } {
+    if (!stateToken || typeof stateToken !== 'string') {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: falta el parámetro "state" firmado de la sesión iniciadora.',
+      );
+    }
+
+    const parts = stateToken.trim().split('.');
+    if (parts.length !== 2) {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: formato de parámetro "state" inválido.',
+      );
+    }
+
+    const [payloadB64, providedSigHex] = parts;
+    const expectedSigHex = crypto
+      .createHmac('sha256', this.stateSigningKey)
+      .update(payloadB64)
+      .digest('hex');
+
+    const providedBuf = Buffer.from(providedSigHex, 'utf8');
+    const expectedBuf = Buffer.from(expectedSigHex, 'utf8');
+    if (
+      providedBuf.length !== expectedBuf.length ||
+      !crypto.timingSafeEqual(providedBuf, expectedBuf)
+    ) {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: firma criptográfica de "state" inválida.',
+      );
+    }
+
+    let parsed: { nonce?: string; actorId?: string; exp?: number };
+    try {
+      parsed = JSON.parse(
+        Buffer.from(payloadB64, 'base64url').toString('utf8'),
+      );
+    } catch {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: payload de "state" corrupto.',
+      );
+    }
+
+    const now = Date.now();
+    this.pruneExpiredOAuthStates(now);
+
+    if (!parsed?.nonce || !parsed?.exp || now > parsed.exp) {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: el parámetro "state" ha expirado.',
+      );
+    }
+
+    const record = this.pendingOAuthStates.get(parsed.nonce);
+    if (!record) {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: "state" desconocido, expirado o no emitido por esta instancia.',
+      );
+    }
+
+    if (record.consumed) {
+      throw new ForbiddenException(
+        'OAuthCallback denegado: Replay detectado. El parámetro "state" ya fue utilizado.',
+      );
+    }
+
+    if (now > record.expiresAt) {
+      this.pendingOAuthStates.delete(parsed.nonce);
+      throw new ForbiddenException(
+        'OAuthCallback denegado: el parámetro "state" ha expirado.',
+      );
+    }
+
+    // Consumo atómico (single-use)
+    record.consumed = true;
+    this.pendingOAuthStates.delete(parsed.nonce);
+
+    return {
+      actorId: record.actorId,
+      nonce: record.nonce,
+    };
+  }
+
+  private pruneExpiredOAuthStates(now: number): void {
+    for (const [nonce, rec] of this.pendingOAuthStates.entries()) {
+      if (rec.consumed || now > rec.expiresAt) {
+        this.pendingOAuthStates.delete(nonce);
+      }
+    }
   }
 
   /**
@@ -115,9 +272,9 @@ export class GoogleAuthService implements OnModuleInit {
   }
 
   /**
-   * Genera la URL para que el usuario inicie sesión y otorgue permisos (flujo opcional).
+   * Genera la URL para que el usuario inicie sesión y otorgue permisos, incluyendo state firmado de un solo uso.
    */
-  getAuthUrl(): string {
+  getAuthUrl(actorId = 'operator'): string {
     const scopes = [
       // Calendar
       'https://www.googleapis.com/auth/calendar.readonly',
@@ -135,18 +292,23 @@ export class GoogleAuthService implements OnModuleInit {
       'https://www.googleapis.com/auth/userinfo.email',
     ];
 
+    const state = this.createOAuthState(actorId);
+
     return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       prompt: 'consent', // Fuerza siempre a dar un refresh token
       scope: scopes,
+      state,
     });
   }
 
   /**
-   * Recibe el code del callback y solicita los tokens a Google.
+   * Recibe el code y el state firmado del callback, verifica el state single-use y solicita los tokens a Google.
    * Cifra los tokens antes de guardarlos en PostgreSQL.
    */
-  async handleCallback(code: string): Promise<void> {
+  async handleCallback(code: string, state?: string): Promise<void> {
+    this.verifyAndConsumeOAuthState(state);
+
     try {
       const { tokens } = await this.oauth2Client.getToken(code);
       this.oauth2Client.setCredentials(tokens);
@@ -198,7 +360,8 @@ export class GoogleAuthService implements OnModuleInit {
   }
 
   /**
-   * Recupera el cliente configurado, descifrando credenciales y refrescando tokens si es necesario.
+   * Recupera el cliente configurado, descifrando credenciales (con soporte de rotación atómica
+   * desde CREDENTIALS_ENCRYPTION_KEY_PREVIOUS hacia CREDENTIALS_ENCRYPTION_KEY) y refrescando tokens si es necesario.
    */
   async getAuthenticatedClient() {
     const userProfile = await this.prisma.userProfile.findFirst();
@@ -215,11 +378,61 @@ export class GoogleAuthService implements OnModuleInit {
 
     if (!creds) return null;
 
-    // Descifrado seguro de tokens desde la BD
-    const decryptedAccessToken = this.cryptoVault.decrypt(creds.accessToken);
-    const decryptedRefreshToken = creds.refreshToken
-      ? this.cryptoVault.decrypt(creds.refreshToken)
+    // Descifrado seguro de tokens desde la BD con detección de rotación de clave
+    const accessRotation = this.cryptoVault.decryptWithRotation(creds.accessToken);
+    const refreshRotation = creds.refreshToken
+      ? this.cryptoVault.decryptWithRotation(creds.refreshToken)
       : undefined;
+
+    const decryptedAccessToken = accessRotation.plainText;
+    const decryptedRefreshToken = refreshRotation?.plainText;
+
+    // Si algún token fue descifrado con CREDENTIALS_ENCRYPTION_KEY_PREVIOUS (o legacy plaintext),
+    // re-cifrarlo atómicamente con la clave primaria sin poner en riesgo la credencial existente.
+    if (
+      (accessRotation.needsReencryption && accessRotation.reencryptedValue) ||
+      (refreshRotation?.needsReencryption && refreshRotation?.reencryptedValue)
+    ) {
+      try {
+        const nextAccessToken =
+          accessRotation.needsReencryption && accessRotation.reencryptedValue
+            ? accessRotation.reencryptedValue
+            : creds.accessToken;
+        const nextRefreshToken =
+          refreshRotation?.needsReencryption && refreshRotation?.reencryptedValue
+            ? refreshRotation.reencryptedValue
+            : creds.refreshToken;
+
+        // Verificación previa al commit: asegurar que el nuevo ciphertext es descifrable por la clave primaria
+        if (this.cryptoVault.decrypt(nextAccessToken) !== decryptedAccessToken) {
+          throw new Error('Verificación post-cifrado de accessToken falló.');
+        }
+        if (
+          nextRefreshToken &&
+          decryptedRefreshToken &&
+          this.cryptoVault.decrypt(nextRefreshToken) !== decryptedRefreshToken
+        ) {
+          throw new Error('Verificación post-cifrado de refreshToken falló.');
+        }
+
+        if (typeof this.prisma.userCredential.update === 'function') {
+          await this.prisma.userCredential.update({
+            where: { id: creds.id },
+            data: {
+              accessToken: nextAccessToken,
+              refreshToken: nextRefreshToken,
+            },
+          });
+          this.logger.log(
+            `[Google Auth] Credencial #${creds.id} rotada atómicamente hacia la clave primaria CREDENTIALS_ENCRYPTION_KEY.`,
+          );
+        }
+      } catch (rotationErr: any) {
+        this.logger.warn(
+          `[Google Auth] Error no destructivo al rotar credencial #${creds.id} (se conserva el registro válido original): ${rotationErr.message}`,
+        );
+      }
+    }
 
     this.oauth2Client.setCredentials({
       access_token: decryptedAccessToken,

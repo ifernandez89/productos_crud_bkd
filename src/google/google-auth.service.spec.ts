@@ -1,12 +1,17 @@
+import { ForbiddenException } from '@nestjs/common';
 import { GoogleAuthService } from './google-auth.service';
 import { CryptoVaultService } from '../shared/crypto-vault.service';
 
-describe('GoogleAuthService & CryptoVault Integration', () => {
+describe('GoogleAuthService & CryptoVault Integration (DEV-001-B1.1)', () => {
+  const PRIMARY_KEY = 'test-dedicated-vault-primary-key-2026-secure-v2';
+  const PREVIOUS_KEY = 'test-legacy-vault-previous-key-2026-secure-v1';
   let service: GoogleAuthService;
   let mockPrisma: any;
   let cryptoVault: CryptoVaultService;
 
   beforeEach(() => {
+    process.env.CREDENTIALS_ENCRYPTION_KEY = PRIMARY_KEY;
+    delete process.env.CREDENTIALS_ENCRYPTION_KEY_PREVIOUS;
     cryptoVault = new CryptoVaultService();
 
     mockPrisma = {
@@ -17,7 +22,7 @@ describe('GoogleAuthService & CryptoVault Integration', () => {
       userCredential: {
         upsert: jest.fn().mockImplementation((args) => Promise.resolve(args.create)),
         findUnique: jest.fn(),
-        update: jest.fn(),
+        update: jest.fn().mockResolvedValue({ id: 10 }),
       },
     };
 
@@ -36,11 +41,9 @@ describe('GoogleAuthService & CryptoVault Integration', () => {
     expect(mockPrisma.userCredential.upsert).toHaveBeenCalledTimes(1);
     const callArgs = mockPrisma.userCredential.upsert.mock.calls[0][0];
 
-    // Assert that saved values in DB are encrypted with enc:v1: prefix
     expect(callArgs.create.accessToken.startsWith('enc:v1:')).toBe(true);
     expect(callArgs.create.refreshToken.startsWith('enc:v1:')).toBe(true);
 
-    // Verify they can be decrypted back to original
     expect(cryptoVault.decrypt(callArgs.create.accessToken)).toBe(rawAccessToken);
     expect(cryptoVault.decrypt(callArgs.create.refreshToken)).toBe(rawRefreshToken);
   });
@@ -58,17 +61,82 @@ describe('GoogleAuthService & CryptoVault Integration', () => {
       provider: 'google',
       accessToken: encryptedAccessToken,
       refreshToken: encryptedRefreshToken,
-      expiryDate: BigInt(Date.now() + 3600 * 1000), // unexpired
+      expiryDate: BigInt(Date.now() + 3600 * 1000),
       scope: 'https://www.googleapis.com/auth/calendar',
     });
 
     const client = await service.getAuthenticatedClient();
 
     expect(client).toBeDefined();
-    // oauth2Client internal credentials should be decrypted
     const credentials = (client as any).credentials;
     expect(credentials.access_token).toBe(rawAccessToken);
     expect(credentials.refresh_token).toBe(rawRefreshToken);
+    expect(mockPrisma.userCredential.update).not.toHaveBeenCalled();
+  });
+
+  it('should atomically re-encrypt synthetic credentials decrypted with CREDENTIALS_ENCRYPTION_KEY_PREVIOUS and preserve valid credentials on DB error', async () => {
+    const legacyVault = new CryptoVaultService({ primarySecret: PREVIOUS_KEY });
+    const rawRefreshToken = '1//04syntheticLegacyRefreshToken';
+    const rawAccessToken = 'ya29.syntheticLegacyAccessToken';
+
+    const legacyAccessCipher = legacyVault.encrypt(rawAccessToken);
+    const legacyRefreshCipher = legacyVault.encrypt(rawRefreshToken);
+
+    const rotatingVault = new CryptoVaultService({
+      primarySecret: PRIMARY_KEY,
+      previousSecret: PREVIOUS_KEY,
+    });
+    const rotatingService = new GoogleAuthService(mockPrisma, rotatingVault);
+
+    mockPrisma.userCredential.findUnique.mockResolvedValue({
+      id: 77,
+      userProfileId: 1,
+      provider: 'google',
+      accessToken: legacyAccessCipher,
+      refreshToken: legacyRefreshCipher,
+      expiryDate: BigInt(Date.now() + 3600 * 1000),
+      scope: 'https://www.googleapis.com/auth/calendar',
+    });
+
+    const client = await rotatingService.getAuthenticatedClient();
+    expect(client).toBeDefined();
+    expect(mockPrisma.userCredential.update).toHaveBeenCalledTimes(1);
+
+    const updateArgs = mockPrisma.userCredential.update.mock.calls[0][0];
+    expect(updateArgs.where.id).toBe(77);
+    // Primary-only vault can decrypt the rotated values
+    expect(cryptoVault.decrypt(updateArgs.data.accessToken)).toBe(rawAccessToken);
+    expect(cryptoVault.decrypt(updateArgs.data.refreshToken)).toBe(rawRefreshToken);
+
+    // Simulate a DB update failure during rotation: valid credentials must NOT be lost
+    mockPrisma.userCredential.update.mockRejectedValueOnce(new Error('DB transient lock'));
+    const clientAfterDbFailure = await rotatingService.getAuthenticatedClient();
+    expect(clientAfterDbFailure).toBeDefined();
+    expect((clientAfterDbFailure as any).credentials.access_token).toBe(rawAccessToken);
+  });
+
+  it('should generate signed single-use OAuth state and reject missing, tampered, or replayed state on callback', () => {
+    const state = service.createOAuthState('operator-ignacio');
+    expect(typeof state).toBe('string');
+
+    // Missing state rejected
+    expect(() => service.verifyAndConsumeOAuthState(undefined)).toThrow(
+      ForbiddenException,
+    );
+
+    // Tampered state rejected
+    expect(() =>
+      service.verifyAndConsumeOAuthState(state.slice(0, -4) + 'ffff'),
+    ).toThrow(ForbiddenException);
+
+    // Valid first consumption succeeds
+    const verified = service.verifyAndConsumeOAuthState(state);
+    expect(verified.actorId).toBe('operator-ignacio');
+
+    // Replay of the exact same state MUST be rejected (single-use)
+    expect(() => service.verifyAndConsumeOAuthState(state)).toThrow(
+      ForbiddenException,
+    );
   });
 
   it('should auto-initialize credentials from process.env on module init', async () => {

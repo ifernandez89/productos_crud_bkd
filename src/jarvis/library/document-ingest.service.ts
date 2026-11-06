@@ -59,13 +59,8 @@ export class DocumentIngestService {
       status: 'quarantined',
     });
 
-    if (process.env.SKIP_QUARANTINE === 'true') {
-      this.logger.log(
-        `Bypassing quarantine for text "${cleanTitle}" because SKIP_QUARANTINE is true`,
-      );
-      await this.approveDocument(doc.id);
-    }
-
+    // DEV-001-B1.1 (F-B1-06): Eliminado bypass SKIP_QUARANTINE. Todo documento ingestado permanece en cuarentena
+    // hasta recibir aprobación explícita Nivel 3 con ActionChallengeToken (LIBRARY_APPROVE_DOCUMENT).
     this.logger.log(
       `[library] ingestado "${cleanTitle}" en cuarentena — categoría: ${detectedCategory}`,
     );
@@ -136,13 +131,7 @@ export class DocumentIngestService {
       `[library] PDF "${cleanTitle}" ingestado en cuarentena — categoría: ${detectedCategory}`,
     );
 
-    if (process.env.SKIP_QUARANTINE === 'true') {
-      this.logger.log(
-        `Bypassing quarantine for PDF "${cleanTitle}" because SKIP_QUARANTINE is true`,
-      );
-      await this.approveDocument(doc.id);
-    }
-
+    // DEV-001-B1.1 (F-B1-06): Eliminado bypass SKIP_QUARANTINE en ingesta PDF.
     // Generar respuesta con el contenido del PDF
     const answer = await this.answerFromText(text, cleanTitle, question);
 

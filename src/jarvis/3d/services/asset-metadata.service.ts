@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { promises as fs } from 'fs';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
@@ -182,11 +183,116 @@ export interface RenderReport {
 @Injectable()
 export class AssetMetadataService {
   private readonly logger = new Logger(AssetMetadataService.name);
-  private readonly metadataDir = path.join(process.cwd(), 'storage', 'assets', 'metadata');
-  private readonly catalogPath = path.join(process.cwd(), 'storage', 'assets', 'catalog.json');
+  private readonly assetsRootDir = path.resolve(process.cwd(), 'storage', 'assets');
+  private readonly metadataDir = path.join(this.assetsRootDir, 'metadata');
+  private readonly catalogPath = path.join(this.assetsRootDir, 'catalog.json');
 
   constructor() {
     this.ensureDirectories();
+  }
+
+  /**
+   * Valida que packageId sea un identificador seguro sin traversal ni separadores de ruta (F-B1-10).
+   */
+  validateSafePackageId(packageId: string): string {
+    if (!packageId || typeof packageId !== 'string') {
+      throw new ForbiddenException('SecurityKernel: packageId inválido o vacío.');
+    }
+    const trimmed = packageId.trim();
+    if (
+      !/^[a-zA-Z0-9._-]{1,80}$/.test(trimmed) ||
+      trimmed.includes('..') ||
+      trimmed.startsWith('.')
+    ) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. packageId contiene secuencias o caracteres prohibidos.',
+      );
+    }
+    return trimmed;
+  }
+
+  /**
+   * Valida y confina canónicamente rutas de modelos/renders dentro de storage/assets (F-B1-10).
+   */
+  validateAuthorizedAssetPath(
+    rawFilePath: string,
+    allowedExtensions: string[],
+  ): string {
+    if (!rawFilePath || typeof rawFilePath !== 'string') {
+      throw new ForbiddenException('SecurityKernel: ruta de asset inválida o vacía.');
+    }
+
+    const trimmed = rawFilePath.trim();
+    if (
+      trimmed.length === 0 ||
+      trimmed.includes('\0') ||
+      /^(\\\\|\/\/)/.test(trimmed) ||
+      /(?:^|[\\/])\.\.(?:[\\/]|$)/.test(trimmed)
+    ) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. Se detectó traversal, ruta UNC o formato prohibido.',
+      );
+    }
+
+    const ext = path.extname(trimmed).toLowerCase();
+    const allowedSet = new Set(allowedExtensions.map((e) => e.toLowerCase()));
+    if (!allowedSet.has(ext)) {
+      throw new ForbiddenException(
+        `SecurityKernel: extensión "${ext}" no autorizada para metadata 3D.`,
+      );
+    }
+
+    const canonicalRoot = path.resolve(this.assetsRootDir);
+    const resolvedCandidate = path.isAbsolute(trimmed)
+      ? path.resolve(trimmed)
+      : path.resolve(canonicalRoot, trimmed);
+
+    if (!this.isSubPath(canonicalRoot, resolvedCandidate)) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. La ruta solicitada está fuera de storage/assets.',
+      );
+    }
+
+    let realRoot: string;
+    let realTarget: string;
+    try {
+      realRoot = fsSync.existsSync(canonicalRoot)
+        ? fsSync.realpathSync(canonicalRoot)
+        : canonicalRoot;
+      realTarget = fsSync.realpathSync(resolvedCandidate);
+    } catch {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. El archivo solicitado no existe o no es accesible dentro de storage/assets.',
+      );
+    }
+
+    if (!this.isSubPath(realRoot, realTarget)) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. La ruta canónica real escapa de storage/assets.',
+      );
+    }
+
+    const lstat = fsSync.lstatSync(resolvedCandidate);
+    if (lstat.isSymbolicLink() || !lstat.isFile()) {
+      throw new ForbiddenException(
+        'SecurityKernel: acceso denegado. Se rechazan enlaces simbólicos, junctions o directorios.',
+      );
+    }
+
+    return realTarget;
+  }
+
+  private isSubPath(parentDir: string, targetPath: string): boolean {
+    const normParent =
+      process.platform === 'win32'
+        ? path.resolve(parentDir).toLowerCase()
+        : path.resolve(parentDir);
+    const normTarget =
+      process.platform === 'win32'
+        ? path.resolve(targetPath).toLowerCase()
+        : path.resolve(targetPath);
+    const rel = path.relative(normParent, normTarget);
+    return Boolean(rel) && !rel.startsWith('..') && !path.isAbsolute(rel);
   }
 
   private async ensureDirectories(): Promise<void> {
@@ -201,8 +307,13 @@ export class AssetMetadataService {
    * 📝 Guardar metadata de un paquete 3D
    */
   async saveMetadata(metadata: Asset3DMetadata): Promise<string> {
-    const filename = `${metadata.packageId}_info.json`;
-    const filepath = path.join(this.metadataDir, filename);
+    const safePkgId = this.validateSafePackageId(metadata?.packageId);
+    metadata.packageId = safePkgId;
+    const filename = `${safePkgId}_info.json`;
+    const filepath = path.resolve(this.metadataDir, filename);
+    if (!this.isSubPath(this.metadataDir, filepath)) {
+      throw new ForbiddenException('SecurityKernel: ruta de metadata fuera de confinamiento.');
+    }
 
     metadata.updatedAt = new Date().toISOString();
     if (!metadata.createdAt) {
@@ -222,14 +333,18 @@ export class AssetMetadataService {
    * 📖 Leer metadata de un paquete
    */
   async loadMetadata(packageId: string): Promise<Asset3DMetadata | null> {
-    const filename = `${packageId}_info.json`;
-    const filepath = path.join(this.metadataDir, filename);
+    const safePkgId = this.validateSafePackageId(packageId);
+    const filename = `${safePkgId}_info.json`;
+    const filepath = path.resolve(this.metadataDir, filename);
+    if (!this.isSubPath(this.metadataDir, filepath)) {
+      throw new ForbiddenException('SecurityKernel: ruta de metadata fuera de confinamiento.');
+    }
 
     try {
       const content = await fs.readFile(filepath, 'utf-8');
       return JSON.parse(content);
     } catch (error) {
-      this.logger.warn(`Metadata not found: ${packageId}`);
+      this.logger.warn(`Metadata not found: ${safePkgId}`);
       return null;
     }
   }
@@ -276,16 +391,25 @@ export class AssetMetadataService {
     modelPath: string,
     additionalInfo?: Partial<Asset3DMetadata>
   ): Promise<Asset3DMetadata> {
-    const stats = await fs.stat(modelPath);
-    const checksum = await this.calculateChecksum(modelPath);
-    const packageId = additionalInfo?.packageId || crypto.randomUUID();
+    const safeModelPath = this.validateAuthorizedAssetPath(modelPath, [
+      '.glb',
+      '.gltf',
+      '.fbx',
+      '.obj',
+      '.blend',
+    ]);
+    const stats = await fs.stat(safeModelPath);
+    const checksum = await this.calculateChecksum(safeModelPath);
+    const packageId = additionalInfo?.packageId
+      ? this.validateSafePackageId(additionalInfo.packageId)
+      : crypto.randomUUID();
 
     const metadata: Asset3DMetadata = {
       packageId,
-      assetName: path.basename(modelPath, path.extname(modelPath)),
+      assetName: path.basename(safeModelPath, path.extname(safeModelPath)),
       assetType: 'model',
-      sourcePath: modelPath,
-      sourceFormat: path.extname(modelPath).toLowerCase(),
+      sourcePath: safeModelPath,
+      sourceFormat: path.extname(safeModelPath).toLowerCase(),
       fileSize: stats.size,
       checksum,
       tags: [],
@@ -311,15 +435,24 @@ export class AssetMetadataService {
       vramUsage: number;
     }
   ): Promise<RenderReport> {
+    const safeRenderPath = this.validateAuthorizedAssetPath(renderPath, [
+      '.png',
+      '.jpg',
+      '.jpeg',
+      '.webp',
+    ]);
+    const safePkgId = this.validateSafePackageId(metadata?.packageId);
+    metadata.packageId = safePkgId;
+
     // Generar thumbnail (reducir a 512px)
-    const thumbnailPath = renderPath.replace('.png', '_thumb.png');
+    const thumbnailPath = safeRenderPath.replace(/\.png$/i, '_thumb.png');
 
     // Análisis de calidad básico (expandir con sharp/jimp)
-    const quality = await this.analyzeRenderQuality(renderPath);
+    const quality = await this.analyzeRenderQuality(safeRenderPath);
 
     const report: RenderReport = {
-      packageId: metadata.packageId,
-      renderPath,
+      packageId: safePkgId,
+      renderPath: safeRenderPath,
       thumbnail: thumbnailPath,
       metadata: {
         ...metadata,
@@ -335,10 +468,13 @@ export class AssetMetadataService {
     };
 
     // Guardar reporte
-    const reportPath = path.join(
+    const reportPath = path.resolve(
       this.metadataDir,
-      `${metadata.packageId}_render_report.json`
+      `${safePkgId}_render_report.json`
     );
+    if (!this.isSubPath(this.metadataDir, reportPath)) {
+      throw new ForbiddenException('SecurityKernel: ruta de reporte fuera de confinamiento.');
+    }
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2), 'utf-8');
 
     return report;
