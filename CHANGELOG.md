@@ -9,7 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 > **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B1.3-REVIEW` y `DEV-001-B1.3.1-REVIEW` con dictamen técnico favorable).  
 > **Fase B2:** 🔒 BLOQUEADA hasta diseño formal de sandboxing y autorización explícita del operador.  
 > **Rama:** `security/dev-001-b`  
-> **Commit Base:** `71dae1d29e27c18c4d44d4dd392f63dd4b5bc93c`
+> **Commit Base:** `71dae1d29e27c18c4d44d4dd392f63dd4b5bc93c`  
+> **Commit de Consolidación:** `c459087d1d1c9308687d1e8413b2bb5501a9797a`
 
 - **A1 — Frontera Global de Autorización y Desmantelamiento de `@Public()` Legacy (`src/app.module.ts`, `src/jarvis/security/security-kernel-auth.guard.ts`)**:
   - Eliminación completa de las 30 anotaciones `@Public()` no justificadas en controladores heredados (`ProductsController`, `AichatController`, `ReaderController`, `TranslatorController`, `UploadController`, `BalanceController`).
