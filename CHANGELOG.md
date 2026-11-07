@@ -4,21 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
-### Security Architecture & Audit — DEV-001-B2.4 Auditoría de Preparación del Host y Dossier de Autorización de Gate 1 (2026-11-06)
+### Security Architecture & Verification — DEV-001-B2.4 Auditoría del Host, Remediación, Metadatos y Verificación de Línea Base (2026-11-06)
 
-> **Estado:** ✅ Completada en modalidad STRICT READ-ONLY / AUDIT ONLY (Sin comandos DISM, sin reinicio del host, sin software instalado, sin despacho al sistema operativo).  
+> **Estado:** ✅ Verificada en modalidad STRICT READ-ONLY / AUDIT & VERIFICATION ONLY (Sin comandos DISM, sin reinicio del host, sin software instalado, sin despacho al sistema operativo).
 > **Frontera de Ejecución:** 🔒 STRICT NO-EXECUTION. El Execution Broker continúa operando exclusivamente en modo `SIMULATED`. Adaptadores reales permanecen terminantemente bloqueados.  
-> **Diagnóstico del Host:** Hardware y sistema operativo 100% aptos para WHPX (Intel Core i7-12700 con VT-x + SLAT/EPT, Windows 10 Pro Build 19041, `WinHvPlatform.dll` presente, `HypervisorPresent: False` verificado).  
+> **Dictámenes Técnicos:** Dossier Documental B2.4: ✅ FAVORABLE / CERRADO (H-01 a H-06 remediados). Línea Base Experimental: ⚠️ PARCIALMENTE VERIFICADA (GPU RTX 5070 con metadatos completos de Ollama v0.40.11 / CPU instantánea reclasificada como no validada / Benchmark de cómputo CPU-only declarado PENDIENTE).
 > **Rama:** `security/dev-001-b`  
 > **Commit Base B2.3:** `57a7a29`
 
-- **DEV-001-B2.4 — Auditoría de Preparación del Host (`docs/DEV_001_B2_4_HOST_READINESS_REVIEW.md`)**:
-  - Inspección empírica no invasiva del host: confirmación de soporte SLAT en hardware (`SecondLevelAddressTranslationExtensions: True`), 32 GB RAM, y librerías `WinHvPlatform.dll` y `WinHvEmulation.dll` en `System32`.
-  - Análisis de impacto del microkernel Hyper-V (Root Partition Windows): sobrecarga de CPU despreciable (< 1-2%) y preservación nativa de la GPU NVIDIA GeForce RTX 5070 con acceso directo PCIe inalterado para cargas CUDA, TensorRT y NVENC.
-  - Barrera de seguridad por elevación: confirmación de que comandos DISM y BCD exigen privilegios de Administrador local, imposibilitando modificaciones autónomas o no mediadas por parte del agente.
-  - Protocolo de reversibilidad garantizada para deshabilitar características opcionales y restaurar el estado inicial exacto (`HypervisorPresent: False`).
-  - Precisión técnica de semántica de errores de red en la suite adversarial: distinción formal entre `ENETUNREACH` (aislamiento de red externa/host sin ruta) y `ECONNREFUSED` (loopback interno del invitado sin servicio atendiendo en puerto 4000).
-  - Establecimiento formal de la gobernanza secuencial estricta de las 5 puertas de control: Gate 1 (WHPX + Reinicio) -> Gate 2 (Staging SHA-256) -> Gate 3 (Smoke Ping) -> Gate 4 (Batería Adversarial) -> Gate 5 (Homologación), con independencia estricta de autorización en cada etapa.
+- **DEV-001-B2.4-VERIFICATION — Informe de Verificación y Metadatos de Línea Base (`docs/DEV_001_B2_4_VERIFICATION_REPORT.md`)**:
+  - Auditoría formal de cierre de los hallazgos H-01 a H-06 en `docs/DEV_001_B2_4_HOST_READINESS_REVIEW.md`.
+  - Especificación exhaustiva de metadatos de reproducibilidad para el benchmark en GPU RTX 5070: backend Ollama v0.40.11, cuantización GGUFv2 Q4_K_M (file_type 15), hashes SHA-256 de blobs (`ac9bc7a6...` para 14B; `60e05f21...` para 7B), 100% de descarga a GPU (48 capas 14B, 28 capas 7B), prompt estándar de LRU Cache, 31 tokens de entrada y 256 tokens generados a temperatura 0.0 delimitados experimentalmente.
+  - Estandarización de notación temporal de carga de pesos (`load_duration`) desde almacenamiento NVMe a VRAM: **$10{,}552\text{ s}$ ($10\,552\text{ ms}$)** para 14B y **$6{,}423\text{ s}$ ($6\,423\text{ ms}$)** para 7B, con tiempos de warm start de 2 a 3 ms.
+  - Registro de métricas anfitrionas: RAM física libre (~20,5 GB libres) y memoria comprometida estimada vía WMI (~24,5 GB para 14B y ~19,8 GB para 7B, diferenciada del contador canónico `\Memory\Committed Bytes`); reclasificación formal del 3-6% de CPU como dato observacional no validado y declaración formal de la prueba de cómputo CPU-only sin GPU como PENDIENTE no bloqueante.
+  - Ratificación de la preservación intacta del registro de auditoría independiente `docs/DEV_001_B2_4_INDEPENDENT_REVIEW.md`.
 
 ### Security Architecture & Protocol — DEV-001-B2.3 Preparación Técnica y Protocolo de Aceptación del Prototipo (2026-11-06)
 
