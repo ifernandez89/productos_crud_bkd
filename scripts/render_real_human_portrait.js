@@ -265,7 +265,7 @@ async function renderRealHumanPortrait(modelFile = 'avaturn.glb', outputName = '
   console.log(`📁 Ruta en disco: ${outputPath}`);
 
   // Copiar al directorio de artifacts de Gemini
-  const artifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\\antigravity-ide\\brain\\bb2b02ab-1056-4da6-a344-b2bb0f45627f';
+  const artifactDir = './storage/artifacts';
   const artifactPath = path.join(artifactDir, outputName);
   fs.copyFileSync(outputPath, artifactPath);
   console.log(`🖼️ Artifact copiado para visualización: ${artifactPath}`);

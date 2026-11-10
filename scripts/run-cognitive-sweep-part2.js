@@ -4,7 +4,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const STAGING_LOG_PATH = path.resolve(
-  'C:/Users/xiphos-pc1/.gemini/antigravity/brain/9ce24296-3b98-439d-a437-90587b878b77/.system_generated/tasks/task-4042.log'
+  './storage/artifacts'
 );
 
 function getVram() {

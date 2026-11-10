@@ -645,7 +645,7 @@ async function renderCronosOmegaAlien() {
     console.log(`💾 Guardado en ArcheoScope: ${outArcheo}`);
 
     // Guardar en Artefactos con forward slashes
-    const artifactDir = 'C:/Users/xiphos-pc1/.gemini/antigravity-ide/brain/38dca50f-2500-4b68-881d-914238dc84b8';
+    const artifactDir = './storage/artifacts';
     const outArtifact = path.join(artifactDir, 'cronos_omega_alien_hovercraft.png');
     fs.writeFileSync(outArtifact, pngBuffer);
     console.log(`💾 Guardado en Artefactos: ${outArtifact}`);

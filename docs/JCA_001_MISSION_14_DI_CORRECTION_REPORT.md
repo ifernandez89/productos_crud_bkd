@@ -20,7 +20,7 @@
 | **Rama JCA Full Cognitive** | `feat/jca-full-cognitive-architecture` (`ba3c245`) | Fases 0–5 (JNE, Dialogue, TaskEnvelope, Mission, Orchestration, Evaluation). |
 | **Rama Staging Unificada (Merge Código)** | `staging/jca-unified` (`66f092b`) | Fusión limpia de ambas arquitecturas con 100% de tests aprobados. |
 | **Rama Staging Unificada (Doc HEAD)** | `staging/jca-unified` (`87161df`) | Commit que persistió este reporte formal en la rama. Cero cambios en `src/**`. |
-| **Producción (PORT 4000)** | PID `15956` / `jarbees_data` / túnel ngrok | **Intacto e inalterado.** Totalmente aislado. |
+| **Producción (PORT 4000)** | PID `<redacted>` / `jarbees_data` / túnel ngrok | **Intacto e inalterado.** Totalmente aislado. |
 | **Staging (PORT 4001)** | Inactivo (sin procesos vinculados) | **No desplegado.** Pendiente de autorización formal de staging. |
 
 ---
@@ -29,7 +29,7 @@
 
 ### Observación A: Deduplicación y Ámbito de Autorización (`authScope`)
 * **Dictamen:** **CERRADA SIN MODIFICACIONES.**
-* **Evidencia en Código:** Se inspeccionó exhaustivamente [src/jarvis/capabilities/capability-executor.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/capabilities/capability-executor.service.ts#L100-L125).
+* **Evidencia en Código:** Se inspeccionó exhaustivamente [src/jarvis/capabilities/capability-executor.service.ts](src/jarvis/capabilities/capability-executor.service.ts#L100-L125).
 * **Mecanismo:** La clave de deduplicación se construye formalmente como:
   ```typescript
   const authScope = this.computeAuthScope(contextPlan);
@@ -42,7 +42,7 @@
 * **Diagnóstico:** Previamente, `JarvisService` utilizaba `@Optional()` con instanciación manual mediante `new CapabilityRegistry()` y `new CapabilityExecutor()`, lo cual impedía que el contenedor de IoC de NestJS gobernara el ciclo de vida, la deduplicación de memoria y la compartición de instancias entre subsistemas.
 * **Solución Implementada:**
   1. **Registro en `JarvisModule`:**
-     Se registraron formalmente `CapabilityRegistry` y `CapabilityExecutor` como proveedores en [src/jarvis/jarvis.module.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.module.ts#L205-L215):
+     Se registraron formalmente `CapabilityRegistry` y `CapabilityExecutor` como proveedores en [src/jarvis/jarvis.module.ts](src/jarvis/jarvis.module.ts#L205-L215):
      ```typescript
      CapabilityRegistry,
      {
@@ -58,14 +58,14 @@
   4. **Corrección de Extensiones en Importaciones de Valor:**
      Se limpiaron las extensiones `.ts` en importaciones de valor en `capability-executor.service.ts` y `context-selector.service.ts` para cumplir estrictamente con TypeScript y CommonJS en `nest build`.
   5. **Ampliación de Contrato:**
-     Se añadió la propiedad opcional `readonly formattedResult?: string` a `MathResultData` en [src/jarvis/capabilities/capability.interface.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/capabilities/capability.interface.ts#L95) para tipado estricto en el bridge de `JarvisService`.
+     Se añadió la propiedad opcional `readonly formattedResult?: string` a `MathResultData` en [src/jarvis/capabilities/capability.interface.ts](src/jarvis/capabilities/capability.interface.ts#L95) para tipado estricto en el bridge de `JarvisService`.
 
 ---
 
 ## 3. Matriz y Resultados de Verificación de Tests
 
 ### 3.1. Suite de Inyección de Dependencias (`di-verification.spec.ts`)
-* **Archivo:** [src/jarvis/capabilities/di-verification.spec.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/capabilities/di-verification.spec.ts)
+* **Archivo:** [src/jarvis/capabilities/di-verification.spec.ts](src/jarvis/capabilities/di-verification.spec.ts)
 * **Resultados:** 3/3 PASS (100%)
   - `DI-01`: `CapabilityRegistry` y `CapabilityExecutor` se resuelven como singletons acoplados por contenedor.
   - `DI-02`: Garantía de no-duplicación — `CapabilityExecutor` y `JarvisService` comparten exactamente la misma referencia en memoria (`===`).
@@ -128,9 +128,9 @@ De los 50+ archivos involucrados entre ambas ramas, únicamente **3 archivos** p
 
 | Archivo Intersectado | Rama `jca-001` | Rama `jca-full` | Resolución en `staging/jca-unified` |
 |---|---|---|---|
-| [src/jarvis/jarvis.module.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.module.ts) | Registró providers y exports de `ContextSelectorService`, `CapabilityRegistry`, `CapabilityExecutor`. | Importó los 6 módulos cognitivos (`JneModule`, `DialogueModule`, `TaskEnvelopeModule`, `MissionModule`, etc.). | **Fusión aditiva perfecta:** El módulo ahora importa los 6 submódulos JCA y provee/exporta formalmente las capacidades JCA-001. |
-| [src/jarvis/prompt/jarvis-prompt-builder.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) | Eliminó la segunda búsqueda vectorial oculta aguas abajo (Capa 2). Agregó tipado `RagRetrievalStatus`. | Aplicó corrección crítica L574 (búsqueda inversa de títulos) y blindó mandatos operativos en extracción de libros (Fase 2). | **Fusión aditiva perfecta:** Ambas correcciones residían en bloques distintos sin superposición. Se preservan ambas defensas. |
-| [src/jarvis/jarvis.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.service.ts) | Gobernó RAG pre-search con `if (ragAuthorized)` derivado de `ContextPlan`. Eliminó el bloque legacy `shouldOverride`. | Había añadido un parche intermedio a `shouldOverride` para excluir directivas operativas. | **Resolución por precedencia arquitectónica:** El bloque legacy `shouldOverride` fue completamente reemplazado por la gobernanza formal de `ContextSelectorService` (`ragAuthorized`). El código de JCA-001 prevalece por diseño superior. |
+| [src/jarvis/jarvis.module.ts](src/jarvis/jarvis.module.ts) | Registró providers y exports de `ContextSelectorService`, `CapabilityRegistry`, `CapabilityExecutor`. | Importó los 6 módulos cognitivos (`JneModule`, `DialogueModule`, `TaskEnvelopeModule`, `MissionModule`, etc.). | **Fusión aditiva perfecta:** El módulo ahora importa los 6 submódulos JCA y provee/exporta formalmente las capacidades JCA-001. |
+| [src/jarvis/prompt/jarvis-prompt-builder.service.ts](src/jarvis/prompt/jarvis-prompt-builder.service.ts) | Eliminó la segunda búsqueda vectorial oculta aguas abajo (Capa 2). Agregó tipado `RagRetrievalStatus`. | Aplicó corrección crítica L574 (búsqueda inversa de títulos) y blindó mandatos operativos en extracción de libros (Fase 2). | **Fusión aditiva perfecta:** Ambas correcciones residían en bloques distintos sin superposición. Se preservan ambas defensas. |
+| [src/jarvis/jarvis.service.ts](src/jarvis/jarvis.service.ts) | Gobernó RAG pre-search con `if (ragAuthorized)` derivado de `ContextPlan`. Eliminó el bloque legacy `shouldOverride`. | Había añadido un parche intermedio a `shouldOverride` para excluir directivas operativas. | **Resolución por precedencia arquitectónica:** El bloque legacy `shouldOverride` fue completamente reemplazado por la gobernanza formal de `ContextSelectorService` (`ragAuthorized`). El código de JCA-001 prevalece por diseño superior. |
 
 ### 4.2. Módulos Totalmente Desacoplados y Complementarios
 - **Subárbol JCA-001:** `src/jarvis/context/*`, `src/jarvis/capabilities/*`, `src/jarvis/repositories/document.repository.ts`, `src/jarvis/repositories/pgvector.service.ts`.
@@ -147,7 +147,7 @@ De los 50+ archivos involucrados entre ambas ramas, únicamente **3 archivos** p
 2. **Precedencia de Inferencia:**
    - La RTX 5070 (12 GB VRAM) está gobernada por `ModelSelectionEngineService` para proyectar consumo de memoria contextual ($K \times T$). Al iniciar staging, verificar que `llama-server` (puerto 8080) esté accesible para inferencia primaria.
 3. **Cero Impacto en Producción:**
-   - Producción continúa en puerto 4000 (PID 16052), conectada a `jarbees_data`/`jarbees_prod` a través de ngrok, sin reinicios ni cambios de configuración.
+   - Producción continúa en puerto 4000 (PID `<redacted>`), conectada a `jarbees_data`/`jarbees_prod` a través de ngrok, sin reinicios ni cambios de configuración.
 
 ---
 

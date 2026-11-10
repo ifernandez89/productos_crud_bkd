@@ -3,10 +3,10 @@
 
 **Fecha:** 2026-11-05  
 **Estado:** `HOMOLOGACIÓN REAL EN STAGING COMPLETADA Y APROBADA CON ÉXITO`  
-**Entorno de Staging:** `http://localhost:4001` (PID `12964`)  
+**Entorno de Staging:** `http://localhost:4001` (PID `<redacted>`)  
 **Base de Datos Staging:** PostgreSQL `jarbees_stage` (41 tablas sincronizadas)  
-**Entorno de Producción:** `http://localhost:4000` (PID `3172` / ngrok PID `6968`, `jarbees_data`) — **100% INTACTO Y ACTIVO**  
-**Motor de Inferencia:** `llama-server` en `127.0.0.1:8080` (PID `12476`, RTX 5070 12GB, `--parallel 1`)  
+**Entorno de Producción:** `http://localhost:4000` (PID `<redacted>` / ngrok PID `<redacted>`, `jarbees_data`) — **100% INTACTO Y ACTIVO**  
+**Motor de Inferencia:** `llama-server` en `127.0.0.1:8080` (PID `<redacted>`, RTX 5070 12GB, `--parallel 1`)  
 **Autor:** Antigravity AI — Advanced Cognitive Architecture Lab  
 
 ---
@@ -33,7 +33,7 @@ El despliegue y la batería de homologación funcional T1–T4 confirmaron que:
 
 ### 2.2. Inviolabilidad de `jarbees_data` (Producción)
 * **Verificación continua:** Se comprobó que `jarbees_data` mantuvo sus 41 tablas y sus 228 documentos completamente intactos.
-* **Proceso productivo:** El backend en puerto 4000 (PID `3172`) continuó respondiendo a `GET /api/mobile/v1/health` (`status: ok`) y sirviendo peticiones a través del túnel ngrok sin reinicios ni demoras.
+* **Proceso productivo:** El backend en puerto 4000 (PID `<redacted>`) continuó respondiendo a `GET /api/mobile/v1/health` (`status: ok`) y sirviendo peticiones a través del túnel ngrok sin reinicios ni demoras.
 
 ---
 
@@ -94,7 +94,7 @@ El despliegue y la batería de homologación funcional T1–T4 confirmaron que:
 
 Durante la ejecución inicial de T3 se detectó una discrepancia de tipado en el bridge de `JarvisService` (L694):
 - **Diagnóstico:** `mathResult.data.formattedResult` era opcional, mientras que la propiedad contractualmente garantizada por `MathResultData` es `mathResult.data.result` (`'1000'`). Al intentar persistir un mensaje en la tabla `ConversationMessage` de Prisma, el campo `content: undefined` provocó un error de validación `Argument content is missing`.
-- **Corrección:** Se actualizó [src/jarvis/jarvis.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.service.ts#L694) para asignar con fallback seguro:
+- **Corrección:** Se actualizó [src/jarvis/jarvis.service.ts](src/jarvis/jarvis.service.ts#L694) para asignar con fallback seguro:
   ```typescript
   const directAnswer =
     mathResult.data.result ||

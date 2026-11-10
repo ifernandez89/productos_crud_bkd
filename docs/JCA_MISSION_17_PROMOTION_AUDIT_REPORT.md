@@ -6,8 +6,8 @@
 **Estado:** `RECOMENDACIÓN FORMAL DE PROMOCIÓN A MAIN (PENDIENTE DE AUTORIZACIÓN EXPLÍCITA)`  
 **Commit Candidato a Main:** `c139558e28894a1c3d4c28a5e224cd1405528eba`  
 **Rama Base (`main`):** `e5e84ff3acc22a7b5bfd49e4779808f636ffcc39`  
-**Entorno de Staging:** `http://localhost:4001` (PID `12964`, `jarbees_stage`)  
-**Entorno de Producción:** `http://localhost:4000` (PID `3172` / ngrok PID `6968`, `jarbees_data`) — **100% INTACTO Y AISLADO**  
+**Entorno de Staging:** `http://localhost:4001` (PID `<redacted>`, `jarbees_stage`)  
+**Entorno de Producción:** `http://localhost:4000` (PID `<redacted>` / ngrok PID `<redacted>`, `jarbees_data`) — **100% INTACTO Y AISLADO**  
 **Autor:** Antigravity AI — Advanced Cognitive Architecture Lab  
 
 ---
@@ -144,7 +144,7 @@ $ git diff e5e84ff..c139558 -- prisma/
 # [Salida vacía: 0 archivos modificados en prisma/]
 ```
 
-* **Hallazgo:** El archivo [prisma/schema.prisma](file:///c:/Projects/productos_crud_bkd/prisma/schema.prisma) **no ha sufrido ninguna modificación**.
+* **Hallazgo:** El archivo [prisma/schema.prisma](prisma/schema.prisma) **no ha sufrido ninguna modificación**.
 * **Impacto en Producción:** La base de datos productiva `jarbees_data` posee exactamente el mismo esquema que utiliza `staging/jca-unified`. **No se requerirá ejecutar `prisma migrate` ni `prisma db push` sobre `jarbees_data` durante el despliegue**, eliminando por completo cualquier riesgo de bloqueo de tablas, pérdida de datos o incompatibilidad de tipos.
 
 ---

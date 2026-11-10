@@ -389,7 +389,7 @@ async function generateAngelinaPortrait() {
   console.log(`Archivo PNG guardado: ${pngPath} (${Math.round(stats.size / 1024)} KB)`);
 
   // Copiar al directorio de artifacts de Gemini
-  const artifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\\antigravity-ide\\brain\\bb2b02ab-1056-4da6-a344-b2bb0f45627f';
+  const artifactDir = './storage/artifacts';
   const artifactPng = path.join(artifactDir, 'angelina_jolie_realistic_portrait.png');
   fs.copyFileSync(pngPath, artifactPng);
   console.log(`Copia para visualización guardada en: ${artifactPng}`);

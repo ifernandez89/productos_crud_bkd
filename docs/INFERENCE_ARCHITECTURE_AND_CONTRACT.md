@@ -12,7 +12,7 @@
 
 La inferencia en JarBees **no es el centro monolítico del sistema**, sino una **capacidad interna modular, autónoma e intercambiable**. 
 
-El sistema desacopla la lógica cognitiva de JarBees (intención, agentes, RAG, planificación y herramientas) del motor físico de inferencia a través de la pasarela [`InferenceGatewayService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-gateway.service.ts).
+El sistema desacopla la lógica cognitiva de JarBees (intención, agentes, RAG, planificación y herramientas) del motor físico de inferencia a través de la pasarela [`InferenceGatewayService`](src/jarvis/llm/inference-gateway.service.ts).
 
 ### Jerarquía de Motores y Especialistas
 
@@ -41,7 +41,7 @@ El sistema desacopla la lógica cognitiva de JarBees (intención, agentes, RAG, 
 
 ### 2.1 Generación de Inferencia (`LLMGenerateOptions`)
 
-Definida en [`src/jarvis/llm/llm-provider.interface.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/llm-provider.interface.ts):
+Definida en [`src/jarvis/llm/llm-provider.interface.ts`](src/jarvis/llm/llm-provider.interface.ts):
 
 ```typescript
 export interface LLMTimeouts {
@@ -67,7 +67,7 @@ export interface LLMGenerateOptions {
 
 ### 2.2 Telemetría y Observabilidad (`GET /jarbees/inference/status`)
 
-Expositor público en [`JarvisController`](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.controller.ts) con sanitización de seguridad (oculta rutas absolutas del disco local):
+Expositor público en [`JarvisController`](src/jarvis/jarvis.controller.ts) con sanitización de seguridad (oculta rutas absolutas del disco local):
 
 ```typescript
 export interface GatewayHealthStatus {
@@ -110,8 +110,8 @@ export interface GatewayHealthStatus {
 ### 3.1 Política de Cancelación Temprana (`AbortSignal`)
 - Si un cliente HTTP interrumpe o cancela la petición (navegador cerrado, timeout del cliente, cambio de pantalla):
   1. El `AbortSignal` cancela inmediatamente la petición HTTP de axios/fetch.
-  2. En [`LlamaCppProvider`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/llamacpp.provider.ts), `llama-server` aborta el procesamiento de tokens liberando ciclos de computación de la GPU.
-  3. En [`InferenceGatewayService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-gateway.service.ts), el cerrojo asíncrono (`AsyncMutex`) se libera en menos de **80 ms**, permitiendo que las peticiones encoladas continúen sin bloqueos.
+  2. En [`LlamaCppProvider`](src/jarvis/llm/llamacpp.provider.ts), `llama-server` aborta el procesamiento de tokens liberando ciclos de computación de la GPU.
+  3. En [`InferenceGatewayService`](src/jarvis/llm/inference-gateway.service.ts), el cerrojo asíncrono (`AsyncMutex`) se libera en menos de **80 ms**, permitiendo que las peticiones encoladas continúen sin bloqueos.
   4. **Regla de idempotencia:** Las cancelaciones voluntarias del cliente **NO** disparan reintentos ni conmutación a Ollama.
 
 ### 3.2 Política de Conmutación por Fallo (Failover Matrix)
@@ -127,7 +127,7 @@ export interface GatewayHealthStatus {
 ### 3.3 Regla Inviolable de Embeddings y pgvector
 - El índice vectorial de `pgvector` de JarBees está construido con **1.024 dimensiones** mediante el modelo `bge-m3:latest`.
 - Queda **estrictamente prohibido** dirigir solicitudes de embeddings a los modelos de chat o programación de `llama.cpp` (`qwen3:8b`, `qwen2.5-coder:7b`).
-- [`LlamaCppProvider.embed()`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/llamacpp.provider.ts) arroja una excepción explícita ante cualquier intento de uso, y [`InferenceGatewayService.embed()`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-gateway.service.ts) delega exclusivamente en `OllamaProvider` con `bge-m3`.
+- [`LlamaCppProvider.embed()`](src/jarvis/llm/llamacpp.provider.ts) arroja una excepción explícita ante cualquier intento de uso, y [`InferenceGatewayService.embed()`](src/jarvis/llm/inference-gateway.service.ts) delega exclusivamente en `OllamaProvider` con `bge-m3`.
 
 ---
 
@@ -156,7 +156,7 @@ export interface GatewayHealthStatus {
 
 | Script de Prueba | Cobertura Validada |
 | :--- | :--- |
-| [`src/jarvis/llm/*.spec.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/) | 25 pruebas unitarias automatizadas en Jest (mock de axios, spawn, Circuit Breaker, routing). |
-| [`scratch/test_live_resilience.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_live_resilience.mjs) | Caos real: `taskkill` en caliente a mitad de inferencia, conflicto de puerto 8080, 20 ciclos de ping-pong de VRAM, supresión de `<think>`. |
-| [`scratch/test_final_four.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_final_four.mjs) | 4 pruebas avanzadas: Soak test (VRAM varianza 4 MB), concurrencia de 6 peticiones con `AbortSignal` (liberación en 71ms), streaming mid-flight y blackout total con auto-recuperación 503. |
-| [`scratch/bench_engines.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/bench_engines.mjs) | Benchmark comparativo con métricas TTFT (360ms) y rendimiento sostenido (~104 tok/s). |
+| [`src/jarvis/llm/*.spec.ts`](src/jarvis/llm/) | 25 pruebas unitarias automatizadas en Jest (mock de axios, spawn, Circuit Breaker, routing). |
+| [`scratch/test_live_resilience.mjs`](scratch/test_live_resilience.mjs) | Caos real: `taskkill` en caliente a mitad de inferencia, conflicto de puerto 8080, 20 ciclos de ping-pong de VRAM, supresión de `<think>`. |
+| [`scratch/test_final_four.mjs`](scratch/test_final_four.mjs) | 4 pruebas avanzadas: Soak test (VRAM varianza 4 MB), concurrencia de 6 peticiones con `AbortSignal` (liberación en 71ms), streaming mid-flight y blackout total con auto-recuperación 503. |
+| [`scratch/bench_engines.mjs`](scratch/bench_engines.mjs) | Benchmark comparativo con métricas TTFT (360ms) y rendimiento sostenido (~104 tok/s). |

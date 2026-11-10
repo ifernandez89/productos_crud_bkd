@@ -185,7 +185,7 @@ describe('JarBees Fase 4 — Suite End-to-End Real con llama-server.exe (Qwen2.5
     }
     try {
       const outPath =
-        'C:\\Users\\xiphos-pc1\\.gemini\\antigravity\\brain\\58e28ba0-d39e-413b-9850-f4d36caf4c2c\\scratch\\senior-benchmark-v1\\phase4-e2e-results.json';
+        './storage/artifacts';
       fs.mkdirSync(path.dirname(outPath), { recursive: true });
       fs.writeFileSync(
         outPath,

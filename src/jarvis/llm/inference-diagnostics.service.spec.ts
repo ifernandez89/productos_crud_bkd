@@ -392,7 +392,7 @@ describe('InferenceDiagnosticsService + Misión Interactiva Real + Prueba de Est
       }
       try {
         const outPath =
-          'C:\\Users\\xiphos-pc1\\.gemini\\antigravity\\brain\\58e28ba0-d39e-413b-9850-f4d36caf4c2c\\scratch\\senior-benchmark-v1\\real-mission-and-stress-results.json';
+          './storage/artifacts';
         fs.mkdirSync(path.dirname(outPath), { recursive: true });
         fs.writeFileSync(
           outPath,

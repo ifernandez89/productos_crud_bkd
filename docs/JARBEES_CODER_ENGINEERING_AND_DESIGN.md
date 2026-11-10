@@ -121,26 +121,26 @@ flowchart TD
 Durante la ejecución de las misiones multicomponente de la Etapa 3A, se intervinieron y mejoraron módulos centrales de producción en `src/jarvis`:
 
 ### 4.1 Persistencia y Recuperación de Misiones (`src/jarvis/planner`)
-1. **[`mission-recovery.contracts.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/planner/mission-recovery.contracts.ts)**:
+1. **[`mission-recovery.contracts.ts`](src/jarvis/planner/mission-recovery.contracts.ts)**:
    - Define contratos compartidos: `RecoverableStepType`, `RecoverableStepStatus`, `TaskStepRecord`, `ReconciledStepState`, `CheckpointReconciliationReport` y `RecoverableStepDescriptor`.
-2. **[`mission-recovery-inspector.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/planner/mission-recovery-inspector.ts)**:
+2. **[`mission-recovery-inspector.ts`](src/jarvis/planner/mission-recovery-inspector.ts)**:
    - `computeCheckpointStepsHash(steps)`: Calcula el hash SHA-256 de los pasos completados para garantizar su integridad.
    - `reconcileTaskWithCheckpoint(taskId, dbSteps, checkpoint)`: Reconcilia discrepancias entre la base de datos y el disco tras un crash súbito. Si la BD marcaba un paso en `running` pero el disco ya tenía el paso en `completed`, recupera el resultado de disco, incrementa `recoveredFromDiskCount`, marca `hasDesync: true` y calcula `progressRatio`.
-3. **[`mission-step-classifier.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/planner/mission-step-classifier.ts)**:
+3. **[`mission-step-classifier.ts`](src/jarvis/planner/mission-step-classifier.ts)**:
    - `inferMissionStepType(description)`: Clasifica correctamente pasos de verificación de código (`verify_code`) reconociendo expresiones como `verificar código`, `harness` o `reparar typescript`.
    - `buildRecoverableSteps(objective, dbSteps, checkpoint)`: Construye descriptores de pasos reconciliados marcando `reusedFromCheckpoint: true` y asociando el output previo.
-4. **[`MissionRecoveryService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/planner/mission-recovery.service.ts)**:
+4. **[`MissionRecoveryService`](src/jarvis/planner/mission-recovery.service.ts)**:
    - Conectado a `reconcileTaskWithCheckpoint()` y `buildRecoverableSteps()` en `getRecoverableMissions()` y `resumeMission()`.
 
 ### 4.2 Presupuesto y Diagnóstico de Ventana de Contexto (`src/jarvis/llm`)
-1. **[`inference-context-budget.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-context-budget.ts)**:
+1. **[`inference-context-budget.ts`](src/jarvis/llm/inference-context-budget.ts)**:
    - `evaluateContextWindowBudget(promptTokens, maxContextTokens, reservedOutputTokens)`: Evalúa si una petición cabe en la ventana operativa y clasifica el contexto en escalones:
      - `BELOW_2K`: Tareas simples o unitarias (< 2,000 tokens).
      - `2K_3K_LOCALIZED`: Modificación localizada (2,000 – 3,000 tokens).
      - `4K_5K_MULTICOMPONENT`: Integración multicomponente (4,000 – 5,000 tokens).
      - `5K_6K_NEAR_LIMIT`: Contexto amplio cercano al límite operativo (5,000 – 6,000 tokens).
      - `OVERFLOW_RISK`: Riesgo de truncamiento o desborde (> 6,000 tokens o sin headroom para tokens de salida).
-2. **[`InferenceDiagnosticsService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-diagnostics.service.ts)**:
+2. **[`InferenceDiagnosticsService`](src/jarvis/llm/inference-diagnostics.service.ts)**:
    - Expone `evaluateContextBudget()` para monitorear el margen de contexto antes de despachar una misión.
 
 ---
@@ -227,7 +227,7 @@ El motor Coder local se habilita **exclusivamente en desarrollo** como motor esp
 > 2. *Contexto de archivos acoplados e interfaces* (2,000 – 4,000 tokens).
 > 3. *Historial de diagnósticos del intento anterior* (300 – 800 tokens).
 > 4. *Headroom reservado para la salida de código* (mínimo 1,024 tokens).
-> Sobrepasar los 6,000 tokens de prompt sin margen para los 1,024 tokens de salida activa el escalón de riesgo `OVERFLOW_RISK` en [`InferenceDiagnosticsService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/inference-diagnostics.service.ts).
+> Sobrepasar los 6,000 tokens de prompt sin margen para los 1,024 tokens de salida activa el escalón de riesgo `OVERFLOW_RISK` en [`InferenceDiagnosticsService`](src/jarvis/llm/inference-diagnostics.service.ts).
 
 ---
 
@@ -344,7 +344,7 @@ flowchart LR
 
 ## 8. Visión Futura y Backlog: JarBees como Investigador Técnico Multidisciplinario
 
-> **Documento Detallado de Arquitectura**: [`docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md)  
+> **Documento Detallado de Arquitectura**: [`docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md`](docs/JARBEES_MULTIDISCIPLINARY_RESEARCH_VISION.md)  
 > **Estado**: 🟡 **Pendiente / Backlog para Reanálisis Futuro**
 
 Se ha documentado formalmente la evolución estratégica de JarBees más allá del desarrollo de software:

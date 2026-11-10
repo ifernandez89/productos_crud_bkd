@@ -12,7 +12,7 @@
 
 Este documento registra formalmente la generación de **Twinkle Tale Aetheria v2** como el **mayor estándar de calidad visual alcanzado por el servicio de renderizado gráfico de JarBees sin recurrir a modelos generativos de difusión ni APIs de inteligencia artificial**.
 
-Tomando como referencia el salto de fidelidad documentado en el [experimento A/B del Casco de Khronos](file:///c:/Projects/productos_crud_bkd/docs/PBR_AB_EXPERIMENT_RESULTS.md), este pipeline traslada la micro-texturización PBR, la iluminación cinematográfica de 3 puntos y la orquestación física de materiales a un entorno completo de paisaje fantástico clásico (isla flotante, cascada colosal, cordillera lejana y santuario celestial).
+Tomando como referencia el salto de fidelidad documentado en el [experimento A/B del Casco de Khronos](docs/PBR_AB_EXPERIMENT_RESULTS.md), este pipeline traslada la micro-texturización PBR, la iluminación cinematográfica de 3 puntos y la orquestación física de materiales a un entorno completo de paisaje fantástico clásico (isla flotante, cascada colosal, cordillera lejana y santuario celestial).
 
 ---
 
@@ -64,7 +64,7 @@ graph TD
 ```
 
 ### 4.1. Texturizado PBR Híbrido (Assets Físicos + Canvas Procedural)
-* **Rocas y Riscos:** Utiliza los mapas de textura de alta definición alojados en [`storage/assets/textures/pbr/`](file:///c:/Projects/productos_crud_bkd/storage/assets/textures/pbr) (`rock_boulder_*_1k.jpg`), aportando micro-grietas y rugosidad táctil realista.
+* **Rocas y Riscos:** Utiliza los mapas de textura de alta definición alojados en [`storage/assets/textures/pbr/`](storage/assets/textures/pbr) (`rock_boulder_*_1k.jpg`), aportando micro-grietas y rugosidad táctil realista.
 * **Césped y Follaje:** Se sintetizaron mapas de albedo con miles de micro-briznas aleatorias y mapas de normales con ruido sinusoidal multiescala aperiódico, eliminando por completo cualquier repetición geométrica.
 * **Oro Celestial y Mármol:** Sombreadores con capas de barniz (*clearcoat*), brillo especular de $0.96$ y vetas minerales cálidas.
 
@@ -77,6 +77,6 @@ graph TD
 
 ## 5. Ubicación de los Archivos del Hito
 
-* **Script Ejecutable:** [`scripts/render_twinkle_tale_realistic_3d_v2.js`](file:///c:/Projects/productos_crud_bkd/scripts/render_twinkle_tale_realistic_3d_v2.js)
-* **Imagen Maestra en Disco:** [`storage/posters/twinkle_tale_aetheria_3d_realistic_v2.png`](file:///c:/Projects/productos_crud_bkd/storage/posters/twinkle_tale_aetheria_3d_realistic_v2.png)
-* **Copia Maestra de Producción:** [`storage/posters/twinkle_tale_aetheria_3d_realistic.png`](file:///c:/Projects/productos_crud_bkd/storage/posters/twinkle_tale_aetheria_3d_realistic.png)
+* **Script Ejecutable:** [`scripts/render_twinkle_tale_realistic_3d_v2.js`](scripts/render_twinkle_tale_realistic_3d_v2.js)
+* **Imagen Maestra en Disco:** [`storage/posters/twinkle_tale_aetheria_3d_realistic_v2.png`](storage/posters/twinkle_tale_aetheria_3d_realistic_v2.png)
+* **Copia Maestra de Producción:** [`storage/posters/twinkle_tale_aetheria_3d_realistic.png`](storage/posters/twinkle_tale_aetheria_3d_realistic.png)

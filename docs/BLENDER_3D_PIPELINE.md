@@ -92,7 +92,7 @@ console.log(`Render después: ${result.render_after}`);
 
 ## 6. Caso de Estudio: Angelina Jolie (Retrato Humano con SSS & ARKit)
 
-Se implementó el script [`scripts/blender/render_angelina_blender.py`](file:///c:/Projects/productos_crud_bkd/scripts/blender/render_angelina_blender.py) sobre el modelo anatómico base `storage/assets/models/avaturn.glb`:
+Se implementó el script [`scripts/blender/render_angelina_blender.py`](scripts/blender/render_angelina_blender.py) sobre el modelo anatómico base `storage/assets/models/avaturn.glb`:
 
 - **Translucidez Dérmica (Subsurface Scattering)**:
   - Factor de dispersión: `Weight = 0.16`.
@@ -108,14 +108,14 @@ Se implementó el script [`scripts/blender/render_angelina_blender.py`](file:///
   - Teleobjetivo de retrato de **95mm f/2.8** con profundidad de campo focalizada en los ojos.
   - Key Light a 45° con soft penumbra, Fill crepuscular frío y Hair Rim Light.
 - **Entregables**:
-  - Modelo GLB con shape keys y rig intactos: [`storage/assets/models/angelina_jolie_blender.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/angelina_jolie_blender.glb)
-  - Render de retrato 1600x2000: [`storage/assets/renders/angelina_blender_portrait.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/angelina_blender_portrait.png) (5.3 MB).
+  - Modelo GLB con shape keys y rig intactos: [`storage/assets/models/angelina_jolie_blender.glb`](storage/assets/models/angelina_jolie_blender.glb)
+  - Render de retrato 1600x2000: [`storage/assets/renders/angelina_blender_portrait.png`](storage/assets/renders/angelina_blender_portrait.png) (5.3 MB).
 
 ---
 
 ## 7. Caso de Estudio: Aetheria (Ciudadela Celestial con Acrópolis PBR)
 
-Se implementó el script [`scripts/blender/render_aetheria_blender.py`](file:///c:/Projects/productos_crud_bkd/scripts/blender/render_aetheria_blender.py) generando la versión fotorrealista de Aetheria:
+Se implementó el script [`scripts/blender/render_aetheria_blender.py`](scripts/blender/render_aetheria_blender.py) generando la versión fotorrealista de Aetheria:
 
 - **Geología de Risco Flotante**:
   - Cono masivo de roca basáltica con mapa difuso, mapa de normales 1K y desplazamiento fractal de estratos rocosos y agujas suspendidas en el vacío.
@@ -131,12 +131,12 @@ Se implementó el script [`scripts/blender/render_aetheria_blender.py`](file:///
   - Cámara de 36mm con constraint `Track-To` dirigida a la Acrópolis.
   - Iluminación de 3 puntos (Sol dorado crepuscular, Fill azul cielo y Rim cian cósmico) con gestión de color `AgX`.
 - **Entregables**:
-  - Modelo 3D exportado: [`storage/assets/models/aetheria_celestial_island.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/aetheria_celestial_island.glb) (3.52 MB).
-  - Render cinemático 2048x1536: [`storage/assets/renders/aetheria_blender_cinematic.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/aetheria_blender_cinematic.png) (4.22 MB).
+  - Modelo 3D exportado: [`storage/assets/models/aetheria_celestial_island.glb`](storage/assets/models/aetheria_celestial_island.glb) (3.52 MB).
+  - Render cinemático 2048x1536: [`storage/assets/renders/aetheria_blender_cinematic.png`](storage/assets/renders/aetheria_blender_cinematic.png) (4.22 MB).
 
 ---
 
 ## 8. Lámina Comparativa de Evolución Visual
 
-La lámina [`storage/assets/renders/blender_upgrades_showcase.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/blender_upgrades_showcase.png) (2560x1440) sintetiza el salto cualitativo entre el renderizado WebGL básico y el pipeline de Blender 5.2 LTS tanto para mallas humanas como para escenas arquitectónicas y paisajísticas completas.
+La lámina [`storage/assets/renders/blender_upgrades_showcase.png`](storage/assets/renders/blender_upgrades_showcase.png) (2560x1440) sintetiza el salto cualitativo entre el renderizado WebGL básico y el pipeline de Blender 5.2 LTS tanto para mallas humanas como para escenas arquitectónicas y paisajísticas completas.
 

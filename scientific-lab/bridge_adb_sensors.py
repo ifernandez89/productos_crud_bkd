@@ -41,13 +41,18 @@ def run_bridge():
     print("=" * 65)
 
     # Check device
+    expected_serial = os.getenv("ADB_DEVICE_SERIAL", "").strip()
     devices = adb_cmd(["devices"])
-    if "ZT322BX8BF" not in devices:
-        print("⚠️ Moto G22 no detectado en modo ADB.")
+    active_lines = [
+        line for line in devices.splitlines()[1:]
+        if "\tdevice" in line and (not expected_serial or expected_serial in line)
+    ]
+    if not active_lines:
+        print("⚠️ Nodo móvil Android no detectado en modo ADB.")
         print("   Por favor, cambia en el celular el modo USB a 'Transferencia de archivos'.")
         return
 
-    print("✅ Moto G22 detectado por ADB. Conectando al bus de sensores...")
+    print("✅ Nodo móvil Android detectado por ADB. Conectando al bus de sensores...")
     # Keep sensors streaming
     adb_cmd(["shell", "monkey", "-p", "com.teacapps.barcodescanner", "-c", "android.intent.category.LAUNCHER", "1"])
     time.sleep(1.0)

@@ -827,9 +827,9 @@ OllamaProvider.generate() / embed()
 
 | Archivo | Responsabilidad |
 |---------|-----------------|
-| [`ollama.recovery.service.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.recovery.service.ts) | Singleton que gestiona el ciclo de vida del proceso Ollama: spawn, poll de disponibilidad y circuit breaker |
-| [`ollama.state.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.state.ts) | Enum `OllamaState` con estados: `UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED` |
-| [`ollama.provider.ts`](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts) | Detecta `ECONNREFUSED`, llama a `recover()` y hace retry único antes de lanzar error |
+| [`ollama.recovery.service.ts`](src/jarvis/llm/ollama.recovery.service.ts) | Singleton que gestiona el ciclo de vida del proceso Ollama: spawn, poll de disponibilidad y circuit breaker |
+| [`ollama.state.ts`](src/jarvis/llm/ollama.state.ts) | Enum `OllamaState` con estados: `UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED` |
+| [`ollama.provider.ts`](src/jarvis/llm/ollama.provider.ts) | Detecta `ECONNREFUSED`, llama a `recover()` y hace retry único antes de lanzar error |
 
 ### Circuit Breaker:
 - **Máximo 3 intentos** de restart en una ventana de **5 minutos**.
@@ -876,7 +876,7 @@ JarBees implementa un motor cognitivo de frontera desprendido de metáforas fís
 - **`CognitiveState` & `CognitiveEntanglement` (Prisma) + `CognitiveFieldService`**: Registro de estados conceptuales en PostgreSQL y **Grafo de Memoria Entrelazada** para co-activación asociativa no-local de conceptos relacionados (ej. *conciencia* ⚡ *arquitectura*). Incorpora **Decoherencia y Olvido Inteligente Avanzado** mediante la fórmula ponderada `(recency * importance * utility) - noise`.
 - **`UncertaintyEngineService` (Motor de Incertidumbre)**: Determina la certidumbre de la respuesta (0% a 100%) e identifica variables o información no respaldada en el corpus (`unknowns`), inyectando directivas de prevención de sobreconfianza.
 - **`HypothesisEngineService` (Superposición & Tunelamiento Cuántico)**: Genera paralelamente perspectivas de análisis (*Analítica*, *Pragmática*, *Crítica*) e incluye una hipótesis de **Tunelamiento Cuántico (15% de exploración)** para escapar de mínimos locales y respuestas estándar clichés.
-- **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo entrelazado y la validación de [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts). Inyecta el desglose del estado cognitivo en un bloque colapsable `<details>`.
+- **`InterferenceEngineService` (Interferencia y Colapso)**: Evalúa cada hipótesis deterministamente mediante solapamiento RAG, coincidencia con el campo cognitivo entrelazado y la validación de [EvidenceService](src/jarvis/knowledge/evidence.service.ts). Inyecta el desglose del estado cognitivo en un bloque colapsable `<details>`.
 - **`CognitiveOrchestratorService` (Desacoplamiento Adaptativo)**: Garantiza latencia cero para consultas simples/herramientas e invoca el motor profundo únicamente ante consultas estratégicas, de diseño o innovación.
 
 ---

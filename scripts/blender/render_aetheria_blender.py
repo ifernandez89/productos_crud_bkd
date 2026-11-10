@@ -618,7 +618,7 @@ def build_aetheria_scene():
     shutil.copyfile(out_png, os.path.join(posters_dir, "aetheria_blender_cinematic.png"))
 
     # Copiar a artifacts
-    artifact_dir = r"C:\Users\xiphos-pc1\.gemini\antigravity-ide\brain\c2671350-674a-49d7-b91f-df147e558782"
+    artifact_dir = os.getenv("JARBEES_ARTIFACT_DIR", "./storage/artifacts")
     if os.path.exists(artifact_dir):
         shutil.copyfile(out_png, os.path.join(artifact_dir, "aetheria_blender_cinematic.png"))
         print(f"✓ Copia en artifacts IDE guardada: aetheria_blender_cinematic.png")

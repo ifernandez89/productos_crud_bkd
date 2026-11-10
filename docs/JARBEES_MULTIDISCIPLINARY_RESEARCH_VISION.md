@@ -3,7 +3,7 @@
 > **Estado del Documento**: 🟡 **PENDIENTE / BACKLOG ARQUITECTÓNICO REGISTRADO**  
 > **Fecha de Registro**: 2026-10-29  
 > **Área**: Arquitectura Avanzada de JarBees / Extensión Cognitiva y Científica  
-> **Documento de Referencia de Ingeniería**: [`docs/JARBEES_CODER_ENGINEERING_AND_DESIGN.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_CODER_ENGINEERING_AND_DESIGN.md)
+> **Documento de Referencia de Ingeniería**: [`docs/JARBEES_CODER_ENGINEERING_AND_DESIGN.md`](docs/JARBEES_CODER_ENGINEERING_AND_DESIGN.md)
 
 ---
 

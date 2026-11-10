@@ -240,7 +240,7 @@ Tal como se esboza en la visión integral, el banco de pruebas cognitivo se comp
 
 Para garantizar que el RAG documental y la memoria funcionen tanto en entornos con la extensión PostgreSQL `pgvector` activada como en entornos locales de desarrollo (ej. Windows sin compilación C nativa de `pgvector.dll`):
 
-1. **Detección Dinámica de Soporte ([`PgvectorService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/repositories/pgvector.service.ts)):**
+1. **Detección Dinámica de Soporte ([`PgvectorService`](src/jarvis/repositories/pgvector.service.ts)):**
    - El servicio consulta `information_schema.columns` de forma no bloqueante para verificar la existencia de la columna nativa `embedding` en las tablas `Chunk`, `Chapter` y `Section`.
    - Si la columna existe, utiliza el operador nativo de distancia coseno `<=>` en PostgreSQL con aceleración por hardware o índices HNSW.
 2. **Fallback Transparente en Memoria (Zero Error Logs):**

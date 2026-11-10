@@ -279,7 +279,7 @@ async function createBeeComparisonPoster() {
   await browser.close();
 
   // Copiar a artifact dir
-  const artifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\antigravity-ide\\brain\\c2671350-674a-49d7-b91f-df147e558782';
+  const artifactDir = './storage/artifacts';
   if (fs.existsSync(artifactDir)) {
     const artifactPath = path.join(artifactDir, 'bee_robot_comparison.png');
     fs.copyFileSync(outPath, artifactPath);

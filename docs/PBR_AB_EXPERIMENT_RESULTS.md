@@ -1,6 +1,6 @@
 # Informe del Experimento A/B: Salto Visual con PBR & Iluminación Cinematográfica
 
-Este documento registra los resultados del experimento A/B ejecutado en **JarBees Graphic Studio**, comparando un pipeline 3D tradicional plano contra el pipeline de alta fidelidad basado en la skill [`threejs-graphics`](file:///c:/Projects/productos_crud_bkd/.agents/skills/threejs-graphics/SKILL.md).
+Este documento registra los resultados del experimento A/B ejecutado en **JarBees Graphic Studio**, comparando un pipeline 3D tradicional plano contra el pipeline de alta fidelidad basado en la skill [`threejs-graphics`](.agents/skills/threejs-graphics/SKILL.md).
 
 ---
 
@@ -40,4 +40,4 @@ Para garantizar rigor científico, ambas versiones fueron ejecutadas con:
 
 1. **Eficiencia de la GPU:** La RTX 5070 ejecuta sombreadores PBR complejos, mapas de normales, cálculo de sombras suaves a $2048 \times 2048$ y niebla en apenas **615 milisegundos**.
 2. **Impacto Visual:** La versión A produce una apariencia de render de los 90s (sombreado plano y plástico). La versión B logra una imagen con volumen escultórico, micro-relieve en las superficies erosionadas y separación cinematográfica entre sujeto y fondo.
-3. **Validación de la Skill:** El código estructurado de acuerdo a las pautas de [`threejs-graphics`](file:///c:/Projects/productos_crud_bkd/.agents/skills/threejs-graphics/SKILL.md) produce resultados reproducibles, medibles y estables en el entorno headless.
+3. **Validación de la Skill:** El código estructurado de acuerdo a las pautas de [`threejs-graphics`](.agents/skills/threejs-graphics/SKILL.md) produce resultados reproducibles, medibles y estables en el entorno headless.

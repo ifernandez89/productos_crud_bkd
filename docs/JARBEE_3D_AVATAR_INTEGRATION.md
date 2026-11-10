@@ -1,6 +1,6 @@
 # 🐝 Guía de Integración: JarBee 3D Cyber Avatar en el Frontend
 
-Esta guía detalla cómo implementar el nuevo modelo 3D optimizado **JarBee Cyber Avatar** en el frontend (`productos_crud_frd`), sustituyendo o complementando el avatar 2D SVG actual de [`src/components/chat/JarBeeAvatar.tsx`](file:///c:/Projects/productos_crud_frd/src/components/chat/JarBeeAvatar.tsx).
+Esta guía detalla cómo implementar el nuevo modelo 3D optimizado **JarBee Cyber Avatar** en el frontend (`productos_crud_frd`), sustituyendo o complementando el avatar 2D SVG actual de [`src/components/chat/JarBeeAvatar.tsx`](src/components/chat/JarBeeAvatar.tsx).
 
 ---
 

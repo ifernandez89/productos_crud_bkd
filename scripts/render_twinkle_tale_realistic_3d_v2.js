@@ -945,7 +945,7 @@ async function renderTwinkleTaleRealistic3Dv2() {
   console.log(`   - ${outputPathDefault}`);
 
   // Copiar al directorio de artifacts de Gemini de la conversación actual
-  const currentArtifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\\antigravity-ide\\brain\\4fa4556c-f903-4531-aa6b-e22db7fc5c1f';
+  const currentArtifactDir = './storage/artifacts';
   if (fs.existsSync(currentArtifactDir)) {
     const artifactPathV2 = path.join(currentArtifactDir, filenameV2);
     const artifactPathDefault = path.join(currentArtifactDir, filenameDefault);

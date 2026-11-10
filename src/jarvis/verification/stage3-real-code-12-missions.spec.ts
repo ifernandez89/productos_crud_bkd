@@ -393,7 +393,7 @@ describe('JarBees Etapa 3 — Validación en Código Real Multicomponente (3A), 
 
     try {
       const outDir = path.resolve(
-        'C:\\Users\\xiphos-pc1\\.gemini\\antigravity\\brain\\58e28ba0-d39e-413b-9850-f4d36caf4c2c\\scratch\\senior-benchmark-v1',
+        './storage/artifacts',
       );
       fs.mkdirSync(outDir, { recursive: true });
       fs.writeFileSync(

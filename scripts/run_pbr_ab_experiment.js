@@ -217,7 +217,7 @@ async function runAbExperiment() {
     console.log(`📁 Archivo: ${outputPath} (${sizeKb} KB)`);
 
     // Copiar al directorio de artifacts de Gemini
-    const artifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\\antigravity-ide\\brain\\bb2b02ab-1056-4da6-a344-b2bb0f45627f';
+    const artifactDir = './storage/artifacts';
     const artifactPath = path.join(artifactDir, filename);
     fs.copyFileSync(outputPath, artifactPath);
 

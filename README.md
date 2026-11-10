@@ -142,7 +142,7 @@ npm test -- --runInBand
 ## 💾 Política de Respaldos (Backups)
 
 El sistema cuenta con un respaldo automatizado hacia la unidad `G:\`:
-- **Script:** [scripts/backup-db.ps1](file:///c:/Projects/productos_crud_bkd/scripts/backup-db.ps1)
+- **Script:** [scripts/backup-db.ps1](scripts/backup-db.ps1)
 - **Frecuencia:** Día 1 de cada mes mediante el Programador de Tareas de Windows (`JarBees_Database_Monthly_Backup`).
 - **Política de Retención:** Conservación de los últimos 12 volcados binarios (`.dump`), con purga automática de copias antiguas.
 - **Ejecución manual bajo demanda:**

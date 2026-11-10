@@ -46,7 +46,7 @@ async function testAngelinaApi() {
             console.log('Ruta PNG generada:', json.data.pngPath);
 
             // Copiar a directorio de artifacts
-            const artifactDir = 'C:\\Users\\xiphos-pc1\\.gemini\\antigravity-ide\\brain\\bb2b02ab-1056-4da6-a344-b2bb0f45627f';
+            const artifactDir = './storage/artifacts';
             const destArtifact = path.join(artifactDir, 'angelina_jolie_jarbees_engine.png');
             fs.copyFileSync(json.data.pngPath, destArtifact);
             console.log('Copia guardada en Artifacts:', destArtifact);

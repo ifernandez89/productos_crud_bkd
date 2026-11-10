@@ -199,7 +199,7 @@ async function renderRealisticFace3D(modelName = 'akenaton.glb', outputName = 'r
   console.log(`🖼️  PNG 3D guardado: ${outPath} (${Math.round(pngBuffer.length / 1024)} KB en ${renderDurationMs}ms)`);
 
   const artifactDest = path.join(
-    'C:', 'Users', 'xiphos-pc1', '.gemini', 'antigravity-ide', 'brain',
+    'storage', 'artifacts',
     'bb2b02ab-1056-4da6-a344-b2bb0f45627f', outputName
   );
   fs.copyFileSync(outPath, artifactDest);
