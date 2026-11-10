@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Knowledge Integration, Gmail Bridge & GPU Lab Telemetry — Radar-Dev & GPUTaskman RTX 5070 (2026-11-10)
+
+- **Conector de Conocimiento Externo (`JarvisKnowledgeService`)**:
+  - Integración de lectura dinámica sobre archivos JSON externos configurables (`RADAR_DEV_MAESTRO_PATH` y estrategias locales en `data/`) sin exponer datos privados ni agendas personales en el control de versiones.
+  - Ampliación de indexación de palabras clave (`ciudad`, `corredor`, `sectorMacro`, `rubro`, `problemasPotenciales`, `proyectosPortfolioSugeridos`, `pilares`) para consultas sobre oportunidades de mejora de procesos y ampliación de flujos entre sistemas.
+- **Endpoints Supervisados de Correo (`JarvisController` & `GoogleGmailService`)**:
+  - Incorporación de `POST /api/jarbees/gmail/draft` y `POST /api/jarbees/gmail/send` protegidos por `SecurityKernelAuthGuard` (`jarbees:mutate`) para creación de borradores y envío bajo aprobación humana explícita.
+- **Inyección de Dependencias Global del Security Kernel (`JarvisModule`)**:
+  - Declaración de `@Global()` en `JarvisModule` para resolver la inyección de `ActionGatekeeperService` y `AuditService` dentro de `SecurityKernelAuthGuard` en módulos periféricos (`AuthModule`) durante el arranque.
+- **Higiene de Repositorio (`.gitignore`)**:
+  - Exclusión explícita de documentos estratégicos personales (`docs/*_PERSONAL.md`, `docs/personal/`) además del directorio `data/`.
+- **Laboratorio de Telemetría GPU — GPUTaskman v0.3.5 en RTX 5070 (`docs/GPUTASKMAN_RTX5070_LAB_REPORT.md`)**:
+  - Instalación portable aislada en `tools/gputaskman/` (excluida por `.gitignore`) con validación criptográfica SHA-256 (`490F75DAD045E59B095F41B059655D9214580FB262A2DD7881E9B1133CA13800`).
+  - Auditoría empírica de VRAM bajo Windows WDDM (`11.94 GB` dedicados utilizables) y desglose exacto de Pesos GGUF vs. KV Cache (`q8_0`) vs. Buffers CUDA para `qwen2.5-coder:7b` (`4.62 GB`, `30 KB/tok`), `qwen3:8b` (`6.02 GB` con `ctx=16384`, `76 KB/tok`) y `qwen2.5-coder:14b` (`8.85 GB` con `ctx=6144`, `102 KB/tok`).
+  - Registro de redistribución WDDM (`gputaskman diff`) y especificación preliminar del futuro diseño «JarBees GPU Observer» compatible con el Security Kernel (`DEV-001-B1/B2`).
+
 ### Security Architecture & Verification — DEV-001-B2.4 Auditoría del Host, Remediación, Metadatos y Verificación de Línea Base (2026-11-06)
 
 > **Estado:** ✅ Verificada en modalidad STRICT READ-ONLY / AUDIT & VERIFICATION ONLY (Sin comandos DISM, sin reinicio del host, sin software instalado, sin despacho al sistema operativo).

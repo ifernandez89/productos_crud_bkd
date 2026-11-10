@@ -68,6 +68,7 @@ import {
   MemoryConsolidationService,
   SleepConsolidationOptions,
 } from './memory/memory-consolidation.service';
+import { GoogleGmailService } from './tools/google/google-gmail.service';
 
 @ApiTags('jarbees')
 @UseGuards(SecurityKernelAuthGuard)
@@ -113,6 +114,8 @@ export class JarvisController {
     private readonly tripartiteMemory?: TripartiteMemoryService,
     @Optional()
     private readonly memoryConsolidation?: MemoryConsolidationService,
+    @Optional()
+    private readonly googleGmail?: GoogleGmailService,
   ) {}
 
 
@@ -2023,5 +2026,69 @@ export class JarvisController {
     } catch (err: any) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  // ── Integración Radar-Dev & Gmail (Bajo Aprobación Humana Explícita) ─────────
+
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
+  @Post('gmail/draft')
+  @ApiOperation({
+    summary: 'Preparar borrador de correo en Gmail desde Radar-Dev (sin envío automático)',
+  })
+  async createGmailDraft(
+    @Body()
+    body: {
+      to: string;
+      subject: string;
+      body: string;
+      organizationId?: string;
+      organizationName?: string;
+    },
+  ) {
+    if (!body?.to || !body?.subject || !body?.body) {
+      throw new BadRequestException('Se requieren los campos "to", "subject" y "body".');
+    }
+    if (!this.googleGmail) {
+      throw new BadRequestException('GoogleGmailService no está disponible.');
+    }
+    const result = await this.googleGmail.draftEmail(body.to, body.subject, body.body);
+    const success = result.startsWith('✅');
+    return {
+      success,
+      message: result,
+      organizationId: body.organizationId,
+    };
+  }
+
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
+  @Post('gmail/send')
+  @ApiOperation({
+    summary: 'Enviar correo previamente aprobado por el operador desde Radar-Dev',
+  })
+  async sendApprovedGmail(
+    @Body()
+    body: {
+      to: string;
+      subject: string;
+      body: string;
+      organizationId?: string;
+      organizationName?: string;
+    },
+  ) {
+    if (!body?.to || !body?.subject || !body?.body) {
+      throw new BadRequestException('Se requieren los campos "to", "subject" y "body".');
+    }
+    if (!this.googleGmail) {
+      throw new BadRequestException('GoogleGmailService no está disponible.');
+    }
+    const result = await this.googleGmail.sendEmail(body.to, body.subject, body.body);
+    const success = result.startsWith('✅');
+    return {
+      success,
+      message: result,
+      organizationId: body.organizationId,
+    };
   }
 }

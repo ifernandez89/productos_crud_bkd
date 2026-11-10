@@ -172,6 +172,27 @@ export class GoogleGmailService {
     }
   }
 
+  async sendEmail(to: string, subject: string, body: string): Promise<string> {
+    const gmail = await this.getClient();
+    if (!gmail) return 'No tengo acceso a Gmail. Autenticate primero.';
+
+    try {
+      const encodedSubject = `=?utf-8?B?${Buffer.from(subject, 'utf-8').toString('base64')}?=`;
+      const raw = Buffer.from(
+        `To: ${to}\r\nSubject: ${encodedSubject}\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n${body}`,
+      ).toString('base64url');
+
+      await gmail.users.messages.send({
+        userId: 'me',
+        requestBody: { raw },
+      });
+      return `✅ Correo enviado con aprobación humana.\n  📧 Para: **${to}**\n  📝 Asunto: **${subject}**`;
+    } catch (error) {
+      this.logger.error(`[Gmail] sendEmail: ${error.message}`);
+      return `❌ Error al enviar el correo: ${error.message}`;
+    }
+  }
+
   async searchEmails(query: string, maxResults = 10): Promise<string> {
     const gmail = await this.getClient();
     if (!gmail) return 'No tengo acceso a Gmail.';

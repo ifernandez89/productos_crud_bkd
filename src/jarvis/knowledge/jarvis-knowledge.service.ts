@@ -12,6 +12,21 @@ export class JarvisKnowledgeService {
     'knowledge',
   );
 
+  private getExternalFileMap(): Record<string, string> {
+    const radarDevPath =
+      process.env.RADAR_DEV_MAESTRO_PATH ||
+      'G:\\Projects2\\Radar-Dev\\data\\maestro.json';
+    const strategyPath = path.join(
+      process.cwd(),
+      'data',
+      'jarbees_independent_outreach_strategy.json',
+    );
+    return {
+      'radar_dev_agenda.json': radarDevPath,
+      'jarbees_independent_outreach_strategy.json': strategyPath,
+    };
+  }
+
   private normalizeText(text: string): string {
     return text
       .normalize('NFD')
@@ -21,23 +36,37 @@ export class JarvisKnowledgeService {
   }
 
   private getFiles(): string[] {
+    const files: string[] = [];
     try {
-      if (!fs.existsSync(this.knowledgeDir)) return [];
-      return fs
-        .readdirSync(this.knowledgeDir)
-        .filter((f) => f.endsWith('.json'));
+      if (fs.existsSync(this.knowledgeDir)) {
+        files.push(
+          ...fs
+            .readdirSync(this.knowledgeDir)
+            .filter((f) => f.endsWith('.json')),
+        );
+      }
     } catch (err: any) {
       this.logger.error(`Error reading knowledge directory: ${err.message}`);
-      return [];
     }
+
+    const externalMap = this.getExternalFileMap();
+    for (const [virtualKey, targetPath] of Object.entries(externalMap)) {
+      try {
+        if (fs.existsSync(targetPath)) {
+          files.push(virtualKey);
+        }
+      } catch {}
+    }
+
+    return files;
   }
 
   private loadFile(filename: string): any {
     try {
-      const content = fs.readFileSync(
-        path.join(this.knowledgeDir, filename),
-        'utf8',
-      );
+      const externalMap = this.getExternalFileMap();
+      const targetPath =
+        externalMap[filename] || path.join(this.knowledgeDir, filename);
+      const content = fs.readFileSync(targetPath, 'utf8');
       return JSON.parse(content);
     } catch (err: any) {
       this.logger.error(
@@ -74,6 +103,7 @@ export class JarvisKnowledgeService {
 
     // Campos de texto directo
     for (const field of [
+      'id',
       'nombre',
       'title',
       'titulo',
@@ -81,6 +111,13 @@ export class JarvisKnowledgeService {
       'slug',
       'nombreCientifico',
       'categoria',
+      'ciudad',
+      'corredor',
+      'sectorMacro',
+      'sector',
+      'rubro',
+      'categoriaTech',
+      'tipoOportunidad',
     ]) {
       if (typeof item[field] === 'string') raw.push(item[field]);
     }
@@ -98,6 +135,10 @@ export class JarvisKnowledgeService {
       'efecto',
       'accionTerapeutica',
       'propiedad',
+      'problemasPotenciales',
+      'proyectosPortfolioSugeridos',
+      'organizacionesCandidatas',
+      'pilares',
     ]) {
       if (Array.isArray(item[field])) {
         item[field].forEach((v: any) => typeof v === 'string' && raw.push(v));
@@ -146,6 +187,27 @@ export class JarvisKnowledgeService {
         'sanaciones populares',
         'curas populares',
         'remedios populares',
+      ],
+      radar_dev_agenda: [
+        'radar dev',
+        'radar-dev',
+        'agenda de oportunidades',
+        'organizaciones de entre rios',
+        'empresas de entre rios',
+        'contactos empresariales',
+        'corredor crespo',
+        'parque industrial',
+      ],
+      jarbees_independent_outreach_strategy: [
+        'outreach',
+        'independent professional outreach',
+        'proyectos independientes',
+        'flujos de trabajo',
+        'ampliacion de flujos',
+        'otros sistemas',
+        'mejora de procesos',
+        'integracion de sistemas',
+        'coprocier',
       ],
     };
     const terms = [

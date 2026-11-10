@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
 import { FeedbackRepository } from './repositories/feedback.repository';
 import { JarvisService } from './jarvis.service';
 import { JarvisController } from './jarvis.controller';
@@ -133,6 +133,7 @@ import { MissionModule } from './mission/mission.module';
 import { ModelOrchestrationModule } from './orchestration/model-orchestration.module';
 import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.module';
 
+@Global()
 @Module({
   imports: [
     PrismaModule,
