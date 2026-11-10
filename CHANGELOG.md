@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Resource Awareness & GPU Observability — DEV-001-B2.6 Validación Empírica RTX 5070 e Implementación Acotada (2026-11-10)
+
+> **Estado:** ✅ Experimentos A & B ejecutados + Implementación acotada (`DEV-001-B2.6-IMPL`) verificada con `37/37` tests `--runInBand`.
+> **Frontera de Ejecución:** 🔒 `STRICT NO-EXECUTION` preservado al 100% (`ExecutionBrokerService` permanece congelado en modo `SIMULATED`; `GpuObserverService` es de solo lectura sin invocar binarios externos).
+
+- **Especificación y Validación Empírica en Laboratorio (`docs/DEV_001_B2_6_RESOURCE_AWARENESS_SPEC.md`)**:
+  - **Experimento A (Barrido de estrés WDDM en `qwen2.5-coder:14b` de `6,144` a `32,768` tokens):** Demostró que `shared_bytes` entre `102–130 MiB` es asignación base CUDA normal, mientras que en `ctx=32768` (`11,479 MiB` proceso, `33 MiB` libres en placa) `shared_bytes` salta a `462 MiB` (3.5x) provocando degradación inmediata de `-39.4%` en prompt (`312.57 -> 189.44 tok/s`) y `-25.3%` en generación (`58.50 -> 43.69 tok/s`).
+  - **Experimento B (Perfilado de Ollama y coexistencia):** Medición de `bge-m3:latest` (`834 MiB`), `llama3.2:3b` (`2,621 MiB`, `114,688 B/tok` `fp16`), `RogerBen/hy-mt1.5-1.8b:latest` (`2,303 MiB`, `65,536 B/tok`) y `yemifo/qwen25-vl-3b-q4km:latest` (`2,243 MiB`, `36,864 B/tok`), comprobando además la coexistencia simultánea residente de `qwen2.5-coder:14b (6k)` + `bge-m3` en `10,395 / 11,942 MiB` (`1,547 MiB` libres).
+- **Implementación Acotada (`src/jarvis/llm/` & `src/jarvis/verification/`)**:
+  - **`GpuObserverService` y Contratos (`gpu-observer.types.ts`, `gpu-observer.service.ts`)**: Normalización de snapshots `GpuObserverSnapshot` (ingesta JSON `GPUTaskman` con limpieza de BOM UTF-8 `\uFEFF` y fallback NVML `nvidia-smi` / estático), diferenciando el baseline `shared_bytes` de Ollama (`330–636 MiB`) vs `llama-server` standalone (`102–130 MiB`).
+  - **Calibración Dinámica (`ModelLifecycleService`)**: Incorporación de `estimateVramForModel(model, ctx, slots)` con costos reales por token y protección automática `-c 6144` en `buildOptimizedArgs()` para `14B` (además de corregir la subestimación de `qwen3:8b` a `6,165 MiB` en `16k`).
+  - **Preflight Consultivo y Telemetría (`TelemetryInspectionService`, `EngineeringMissionManagerService`, `InferenceDiagnosticsService`, `JarvisController`)**: Extensión de `GET /api/jarbees/telemetry/budget` con `resourceBudget`, nuevos endpoints protegidos `GET /api/jarbees/telemetry/gpu` (`jarbees:read`) y `POST /api/jarbees/telemetry/gpu/snapshot` (`jarbees:mutate`), y registro consultivo `preflightResourceBudget` previo a cada misión.
+
 ### Knowledge Integration, Gmail Bridge & GPU Lab Telemetry — Radar-Dev & GPUTaskman RTX 5070 (2026-11-10)
 
 - **Conector de Conocimiento Externo (`JarvisKnowledgeService`)**:

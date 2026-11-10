@@ -6,6 +6,7 @@ import {
 import { evaluateInferenceHealth } from './inference-diagnostics-evaluator';
 import { InferenceGatewayService } from './inference-gateway.service';
 import { InferenceSupervisorService } from './inference-supervisor.service';
+import { GpuObserverService } from './gpu-observer.service';
 import { LlamaCppProvider } from './llamacpp.provider';
 
 export type InferenceOverallHealth = 'HEALTHY' | 'DEGRADED' | 'UNAVAILABLE';
@@ -68,6 +69,13 @@ export interface InferenceDiagnosticReport {
     failoverCount: number;
     circuitBreakerOpen: boolean;
   };
+  resourceBudgetSummary?: {
+    source: string;
+    pressureLevel: string;
+    recommendedAction: string;
+    freeVramMiB: number;
+    competingProcessesCount: number;
+  };
   recommendations: string[];
 }
 
@@ -78,6 +86,8 @@ export class InferenceDiagnosticsService {
     private readonly llamaCppProvider: LlamaCppProvider,
     @Optional()
     private readonly supervisor?: InferenceSupervisorService,
+    @Optional()
+    private readonly gpuObserver?: GpuObserverService,
   ) {}
 
   async runDiagnostics(
@@ -231,6 +241,8 @@ export class InferenceDiagnosticsService {
       );
     }
 
+    const budget = this.gpuObserver?.evaluateResourceBudget();
+
     return {
       timestamp: new Date().toISOString(),
       overallStatus,
@@ -259,6 +271,17 @@ export class InferenceDiagnosticsService {
         failoverCount: gatewayHealth.failoverCount,
         circuitBreakerOpen,
       },
+      ...(budget
+        ? {
+            resourceBudgetSummary: {
+              source: budget.gpuSnapshotSource,
+              pressureLevel: budget.pressureLevel,
+              recommendedAction: budget.recommendedAction,
+              freeVramMiB: budget.freeVramMiB,
+              competingProcessesCount: budget.competingGpuProcesses.length,
+            },
+          }
+        : {}),
       recommendations,
     };
   }

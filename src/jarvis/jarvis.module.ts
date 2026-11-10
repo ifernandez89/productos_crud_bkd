@@ -19,6 +19,7 @@ import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { InferenceSupervisorService } from './llm/inference-supervisor.service';
 import { DrainQueueService } from './llm/drain-queue.service';
 import { ModelLifecycleService } from './llm/model-lifecycle.service';
+import { GpuObserverService } from './llm/gpu-observer.service';
 import { ExecutionFeedbackLoopService } from './planner/execution-feedback-loop.service';
 import { LLM_GATEWAY } from './llm/llm-provider.interface';
 import { OllamaRecoveryService } from './llm/ollama.recovery.service';
@@ -187,6 +188,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     InferenceGatewayService,
     DrainQueueService,
     ModelLifecycleService,
+    GpuObserverService,
     ExecutionFeedbackLoopService,
     {
       provide: LLM_GATEWAY,
@@ -341,6 +343,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     SpecialistCapabilityRouterService,
     DrainQueueService,
     ModelLifecycleService,
+    GpuObserverService,
     ExecutionFeedbackLoopService,
     StaticPreValidatorService,
     IsolatedTestRunnerService,
