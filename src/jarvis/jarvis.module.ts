@@ -19,6 +19,7 @@ import { InferenceGatewayService } from './llm/inference-gateway.service';
 import { InferenceSupervisorService } from './llm/inference-supervisor.service';
 import { DrainQueueService } from './llm/drain-queue.service';
 import { ModelLifecycleService } from './llm/model-lifecycle.service';
+import { GpuObserverService } from './llm/gpu-observer.service';
 import { ExecutionFeedbackLoopService } from './planner/execution-feedback-loop.service';
 import { LLM_GATEWAY } from './llm/llm-provider.interface';
 import { OllamaRecoveryService } from './llm/ollama.recovery.service';
@@ -70,10 +71,8 @@ import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.servi
 import { ContextSelectorService } from './context/context-selector.service';
 import { CapabilityRegistry } from './capabilities/capability-registry.service';
 import { CapabilityExecutor } from './capabilities/capability-executor.service';
-import { AuditService } from './security/audit.service';
 import { ActionExecutionGateService } from './security/action-execution-gate.service';
-import { ActionGatekeeperService } from './security/action-gatekeeper.service';
-import { SecurityKernelAuthGuard } from './security/security-kernel-auth.guard';
+import { SecurityKernelModule } from './security/security-kernel.module';
 import { RedactedObservabilityService } from './security/redacted-observability.service';
 import { SpecialistCapabilityRouterService } from './llm/specialist-capability-router.service';
 import { HierarchicalParserService } from './library/hierarchical-parser.service';
@@ -136,6 +135,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
 @Module({
   imports: [
     PrismaModule,
+    SecurityKernelModule,
     forwardRef(() => GoogleModule),
     CognitiveModule,
     JneModule,
@@ -186,6 +186,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     InferenceGatewayService,
     DrainQueueService,
     ModelLifecycleService,
+    GpuObserverService,
     ExecutionFeedbackLoopService,
     {
       provide: LLM_GATEWAY,
@@ -226,10 +227,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
       useFactory: (registry: CapabilityRegistry) => new CapabilityExecutor(registry),
       inject: [CapabilityRegistry],
     },
-    AuditService,
     ActionExecutionGateService,
-    ActionGatekeeperService,
-    SecurityKernelAuthGuard,
     RedactedObservabilityService,
     SpecialistCapabilityRouterService,
     HierarchicalParserService,
@@ -331,15 +329,14 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     LLM_GATEWAY,
     OpenRouterProvider,
     AstrologyTool,
-    ActionGatekeeperService,
-    SecurityKernelAuthGuard,
-    AuditService,
+    SecurityKernelModule,
     MissionCheckpointService,
     MissionRecoveryService,
     RedactedObservabilityService,
     SpecialistCapabilityRouterService,
     DrainQueueService,
     ModelLifecycleService,
+    GpuObserverService,
     ExecutionFeedbackLoopService,
     StaticPreValidatorService,
     IsolatedTestRunnerService,

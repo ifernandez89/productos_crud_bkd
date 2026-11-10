@@ -5,6 +5,9 @@ import {
   evaluateContextWindowBudget,
 } from './inference-context-budget';
 import { InferenceDiagnosticsService } from './inference-diagnostics.service';
+import { GpuObserverService } from './gpu-observer.service';
+import { ResourceBudgetReport } from './gpu-observer.types';
+import { ModelLifecycleService } from './model-lifecycle.service';
 import { EngineeringMissionManagerService } from '../verification/engineering-mission-manager.service';
 
 export interface TokenCallSample {
@@ -72,6 +75,7 @@ export interface BudgetTelemetryReport {
   missionsCount: number;
   missionsExceedingBudget: number;
   missions: MissionBudgetSummaryItem[];
+  resourceBudget?: ResourceBudgetReport;
 }
 
 /**
@@ -96,7 +100,18 @@ export class TelemetryInspectionService {
     private readonly missionManager?: EngineeringMissionManagerService,
     @Optional()
     private readonly diagnosticsService?: InferenceDiagnosticsService,
+    @Optional()
+    private readonly gpuObserver?: GpuObserverService,
+    @Optional()
+    private readonly modelLifecycle?: ModelLifecycleService,
   ) {}
+
+  private resolveEffectiveMaxContextTokens(): number {
+    if (this.modelLifecycle) {
+      return this.modelLifecycle.getEffectiveContextLimit();
+    }
+    return this.defaultMaxContextTokens;
+  }
 
   /**
    * Registra una muestra de consumo de tokens de cualquier llamada de inferencia.
@@ -272,13 +287,14 @@ export class TelemetryInspectionService {
     missionId?: string;
     currentPromptTokens?: number;
   }): BudgetTelemetryReport {
+    const effectiveMaxCtx = this.resolveEffectiveMaxContextTokens();
     const maxSafeInputTokens = Math.max(
       0,
-      this.defaultMaxContextTokens - this.defaultReservedOutputTokens,
+      effectiveMaxCtx - this.defaultReservedOutputTokens,
     );
     const activeEvaluation = evaluateContextWindowBudget(
       options?.currentPromptTokens ?? 0,
-      this.defaultMaxContextTokens,
+      effectiveMaxCtx,
       this.defaultReservedOutputTokens,
     );
 
@@ -317,10 +333,12 @@ export class TelemetryInspectionService {
       (m) => m.budgetExceeded,
     ).length;
 
+    const resourceBudget = this.gpuObserver?.evaluateResourceBudget();
+
     return {
       timestamp: new Date().toISOString(),
       defaultLimits: {
-        maxContextTokens: this.defaultMaxContextTokens,
+        maxContextTokens: effectiveMaxCtx,
         reservedOutputTokens: this.defaultReservedOutputTokens,
         maxSafeInputTokens,
         defaultMissionMaxTokens: 24000,
@@ -331,6 +349,7 @@ export class TelemetryInspectionService {
       missionsCount: missions.length,
       missionsExceedingBudget,
       missions,
+      ...(resourceBudget ? { resourceBudget } : {}),
     };
   }
 

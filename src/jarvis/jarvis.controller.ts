@@ -61,6 +61,10 @@ import {
   ManagedMissionRequest,
 } from './verification/engineering-mission-manager.service';
 import { TelemetryInspectionService } from './llm/telemetry-inspection.service';
+import {
+  GpuObserverService,
+  MAX_SNAPSHOT_PROCESSES,
+} from './llm/gpu-observer.service';
 import { CapabilityRegistryService } from './config/capability-registry.service';
 import { CoreContextService } from './prompt/core-context.service';
 import { TripartiteMemoryService } from './memory/tripartite-memory.service';
@@ -113,6 +117,8 @@ export class JarvisController {
     private readonly tripartiteMemory?: TripartiteMemoryService,
     @Optional()
     private readonly memoryConsolidation?: MemoryConsolidationService,
+    @Optional()
+    private readonly gpuObserver?: GpuObserverService,
   ) {}
 
 
@@ -216,6 +222,68 @@ export class JarvisController {
       currentPromptTokens: Number.isFinite(parsedPrompt) ? parsedPrompt : undefined,
     });
     return { success: true, report };
+  }
+
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 1, requiredScope: 'jarbees:read' })
+  @Get('telemetry/gpu')
+  @ApiOperation({
+    summary: 'Telemetría GPU normalizada (GpuObserverSnapshot) y presupuesto VRAM dinámico en RTX 5070',
+  })
+  getGpuTelemetryObserver(
+    @Query('requestedModel') requestedModel?: string,
+    @Query('requestedCtx') requestedCtx?: string,
+  ) {
+    if (!this.gpuObserver) {
+      throw new BadRequestException('GpuObserverService no está inicializado.');
+    }
+    const parsedCtx = requestedCtx ? parseInt(requestedCtx, 10) : undefined;
+    const validCtx = parsedCtx && Number.isFinite(parsedCtx) ? parsedCtx : undefined;
+    return {
+      success: true,
+      snapshot: this.gpuObserver.getSnapshot(),
+      resourceBudget: this.gpuObserver.evaluateResourceBudget(validCtx),
+      ...(requestedModel
+        ? {
+            missionPreflight: this.gpuObserver.evaluateMissionPreflight({
+              requestedModel,
+              requestedCtxTokens: validCtx,
+            }),
+          }
+        : {}),
+    };
+  }
+
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:mutate' })
+  @Post('telemetry/gpu/snapshot')
+  @ApiOperation({
+    summary: 'Ingesta controlada de captura JSON externa (GPUTaskman --json) hacia el Observer',
+  })
+  ingestGpuSnapshot(@Body() payload: Record<string, any>) {
+    if (!this.gpuObserver) {
+      throw new BadRequestException('GpuObserverService no está inicializado.');
+    }
+    if (!payload || typeof payload !== 'object' || !Array.isArray(payload.processes)) {
+      throw new BadRequestException(
+        'Se requiere un objeto JSON válido de GPUTaskman con arreglo "processes".',
+      );
+    }
+    if (payload.processes.length > MAX_SNAPSHOT_PROCESSES) {
+      throw new BadRequestException(
+        `El arreglo "processes" excede el máximo permitido (${MAX_SNAPSHOT_PROCESSES}).`,
+      );
+    }
+    try {
+      const snapshot = this.gpuObserver.ingestGputaskmanSnapshot(payload);
+      return {
+        success: true,
+        snapshot,
+        resourceBudget: this.gpuObserver.evaluateResourceBudget(),
+      };
+    } catch (err: any) {
+      throw new BadRequestException(err?.message || 'Snapshot GPU inválido.');
+    }
   }
 
   @UseGuards(SecurityKernelAuthGuard)

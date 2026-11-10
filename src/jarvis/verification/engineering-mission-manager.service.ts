@@ -9,6 +9,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { InferenceSupervisorService, GpuTelemetryReport } from '../llm/inference-supervisor.service';
+import { GpuObserverService } from '../llm/gpu-observer.service';
+import { MissionResourcePreflight } from '../llm/gpu-observer.types';
 import { ActionGatekeeperService } from '../security/action-gatekeeper.service';
 import { AuditService } from '../security/audit.service';
 import { CheckpointManagerService } from './checkpoint-manager.service';
@@ -80,6 +82,7 @@ export interface ManagedMissionRecord {
   attemptsHistory: AttemptAuditEntry[];
   llmCallsHistory: LlmCallAuditEntry[];
   finalDiagnostics: StructuredDiagnostic[];
+  preflightResourceBudget?: MissionResourcePreflight;
   gpuTelemetry?: GpuTelemetryReport;
   verificationReport?: VerificationReport;
 }
@@ -121,6 +124,8 @@ export class EngineeringMissionManagerService {
     private readonly supervisor?: InferenceSupervisorService,
     @Optional()
     private readonly auditService?: AuditService,
+    @Optional()
+    private readonly gpuObserver?: GpuObserverService,
   ) {
     this.storageDir = path.resolve(
       process.cwd(),
@@ -179,6 +184,15 @@ export class EngineeringMissionManagerService {
 
     const initialFilesSnapshot = this.captureInitialWorkspaceSnapshot(req);
 
+    const preflightResourceBudget = this.gpuObserver?.evaluateMissionPreflight({
+      requestedModel: req.model,
+    });
+    if (preflightResourceBudget && !preflightResourceBudget.canProceedNormally) {
+      this.logger.warn(
+        `[EngineeringMission] Preflight GPU (${req.missionId}): pressure=${preflightResourceBudget.pressureLevel} action=${preflightResourceBudget.recommendedAction} — ${preflightResourceBudget.warnings.join(' | ')}`,
+      );
+    }
+
     const record: ManagedMissionRecord = {
       missionId: req.missionId,
       objective: req.objective,
@@ -209,6 +223,7 @@ export class EngineeringMissionManagerService {
       attemptsHistory: [],
       llmCallsHistory: [],
       finalDiagnostics: [],
+      ...(preflightResourceBudget ? { preflightResourceBudget } : {}),
     };
 
     this.persistMissionRecord(record);

@@ -735,9 +735,9 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
       });
     };
 
-    it('verifica las 88 rutas de JarvisController: SOLO getInferenceStatus tiene @Public() y las 87 restantes exigen SecurityKernelPermission', () => {
+    it('verifica las 90 rutas de JarvisController: SOLO getInferenceStatus tiene @Public() y las 89 restantes exigen SecurityKernelPermission', () => {
       const routeMethods = getRouteMethods(JarvisController);
-      expect(routeMethods.length).toBe(88);
+      expect(routeMethods.length).toBe(90);
 
       const publicMethods: string[] = [];
       for (const methodName of routeMethods) {

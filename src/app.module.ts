@@ -18,6 +18,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { SecurityKernelAuthGuard } from './jarvis/security/security-kernel-auth.guard';
+import { SecurityKernelModule } from './jarvis/security/security-kernel.module';
 
 import { SharedModule } from './shared/shared.module';
 
@@ -26,6 +27,7 @@ import { SharedModule } from './shared/shared.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     SharedModule,
+    SecurityKernelModule,
     LoggerModule,
     PrismaModule,
     ProductsModule,

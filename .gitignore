@@ -79,3 +79,8 @@ prisma/dev.db
 data/
 /tools/
 *.zip
+
+# Documentos estratégicos y agenda personal (No subir al repositorio)
+docs/ESTRATEGIA_INDEPENDIENTE_JARBEES_RADAR_DEV_PERSONAL.md
+docs/*_PERSONAL.md
+docs/personal/

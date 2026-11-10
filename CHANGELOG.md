@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Resource Awareness & GPU Observability — DEV-001-B2.6 Integración Selectiva con Security Kernel B1 (2026-11-10)
+
+> **Estado:** ✅ Rama candidata aislada (`candidate/b1-b2.6-integration`) preparada sobre `main` (`89993c7`) incorporando exclusivamente `DEV-001-B1` y `DEV-001-B2.6`.
+> **Frontera de Ejecución:** 🔒 `ExecutionBroker` (`B2.1`), `WHPX` (`B2.2–B2.5`), `Gmail`, `Radar-Dev` y módulos de respaldo permanecen excluidos de esta promoción.
+
+- **Desacoplamiento Limpio de DI (`SecurityKernelModule`, `src/app.module.ts`, `src/jarvis/jarvis.module.ts`)**:
+  - Extracción de `@Global() SecurityKernelModule` exportando un único singleton de `ActionGatekeeperService`, `AuditService` y `SecurityKernelAuthGuard` hacia `AppModule`, `AuthModule` y `JarvisModule`, evitando marcar todo `JarvisModule` como global.
+- **Laboratorio de Telemetría GPU — GPUTaskman v0.3.5 en RTX 5070 (`docs/GPUTASKMAN_RTX5070_LAB_REPORT.md` & `docs/DEV_001_B2_6_RESOURCE_AWARENESS_SPEC.md`)**:
+  - Auditoría empírica de VRAM WDDM (`11,942 MiB` utilizables), Experimento A (barrido de estrés en `14B` de `6k` a `32k` tokens detectando spill destructivo a DDR5 en `ctx=32768`: `shared=462 MiB`, `-39.4%` prompt / `-25.3%` gen) y Experimento B (perfilado Ollama y coexistencia residente de `14B @ 6k` + `bge-m3` en `10,395 MiB`).
+- **Observabilidad Pasiva y Presupuesto Dinámico de Recursos (`src/jarvis/llm/`, `src/jarvis/verification/`, `src/jarvis/jarvis.controller.ts`)**:
+  - `GpuObserverService` (`gpu-observer.types.ts`, `gpu-observer.service.ts`): Normalización JSON `GPUTaskman` con limpieza BOM (`\uFEFF`), tope de seguridad `MAX_SNAPSHOT_PROCESSES=256`, advertencia explícita de expiración por `staleMs`, diferenciación anti-falsos-positivos de runners Ollama vs `llama-server` standalone y fallback automático a NVML / perfil estático sin invocar binarios externos.
+  - Calibración dinámica en `ModelLifecycleService` (`estimateVramForModel`, protección `-c 6144` para `14B` y ajuste `qwen3:8b` a `6,165 MiB`), extensión `resourceBudget` en `TelemetryInspectionService` / `InferenceDiagnosticsService`, preflight consultivo `OBSERVE_ONLY` en `EngineeringMissionManagerService`, y endpoints `GET /api/jarbees/telemetry/gpu` (`jarbees:read`) y `POST /api/jarbees/telemetry/gpu/snapshot` (`jarbees:mutate`).
+- **Verificación Integral y Regresión (`dev-001-b1-security-hardening.spec.ts` & `test/candidate-boot.e2e-spec.ts`)**:
+  - Actualización de la aserción de rutas de `JarvisController` de `88` a `90` (`89` protegidas + `getInferenceStatus` `@Public()`) y verificación de arranque real de `AppModule`.
+
 ### Security Hardening & Consolidation — DEV-001-B1 Homologada (B1.3 + B1.3.1): Cierre Integral de Frontera de Autorización, Persistencia Fail-Closed y Exclusión Mutua de Instancia (2026-11-06)
 
 > **Estado:** ✅ Homologada con restricciones operacionales (`DEV-001-B1.3-REVIEW` y `DEV-001-B1.3.1-REVIEW` con dictamen técnico favorable).  
