@@ -20,7 +20,7 @@ La Misión 15 tuvo como premisa estricta **no incorporar nuevas funcionalidades 
 | **Discrepancia de SHA (`87161df` vs `66f092b`)** | `66f092b` es el merge commit de integración de código; `87161df` es el commit que persistió el informe formal en la rama. Cero diferencias de código fuente. | **ACLARADO Y TRAZADO** |
 | **Commit de DI (`527d1de` vs `0717bb3`)** | `0717bb3` fue el punto congelado de Misión 13. `527d1de` aplicó la resolución formal de la Observación B (DI) previo al merge. | **TRAZADO Y HOMOLOGADO** |
 | **Base de Datos Productiva (`jarbees_data` vs `jarbees_prod`)** | La base de datos física real en PostgreSQL es `jarbees_data`. El término `jarbees_prod` fue un alias conceptual. Staging usará `jarbees_stage`. | **CONFIRMADO EN POSTGRES** |
-| **Separación de Procesos (PORT 4000 vs 4001)** | El proceso productivo corre en puerto 4000 (PID `15956`, node bajo `nest start --watch`) conectado a `jarbees_data` y túnel ngrok (PID `6968`). Staging no ha sido iniciado. | **100% AISLADO** |
+| **Separación de Procesos (PORT 4000 vs 4001)** | El proceso productivo corre en puerto 4000 (PID `<redacted>`, node bajo `nest start --watch`) conectado a `jarbees_data` y túnel ngrok (PID `<redacted>`). Staging no ha sido iniciado. | **100% AISLADO** |
 | **Integridad del Código Unificado** | Se verificó que los 49 archivos de la rama pertenecen exclusivamente a JCA-001, JCA Cognitive Fases 0–5 y documentación. | **VERIFICADO** |
 
 ---
@@ -99,9 +99,9 @@ Se consultó el catálogo del cluster local de PostgreSQL (`pg_database`):
 * **Origen de la Denominación:** En los requerimientos y comunicaciones se utilizaba el nombre conceptual `jarbees_prod` para referirse al entorno productivo por oposición a `jarbees_stage`. Técnicamente, la base física siempre ha sido `jarbees_data`.
 
 ### 3.2. Auditoría del Proceso en PORT 4000 y Túnel ngrok
-* **Proceso Backend:** PID `15956` (`node.exe`), ejecutando `node --enable-source-maps dist/main`, gestionado por `nest start --watch` (PID `7340` / `10820`), invocado originalmente por `bun run start:dev`.
+* **Proceso Backend:** PID `<redacted>` (`node.exe`), ejecutando `node --enable-source-maps dist/main`, gestionado por `nest start --watch` (PID `<redacted>` / `10820`), invocado originalmente por `bun run start:dev`.
 * **Puerto y Conexión:** Escuchando en `0.0.0.0:4000`.
-* **Túnel ngrok:** PID `6968` (`ngrok.exe http 4000`), activo desde las 07:01:27, exponiendo el puerto 4000 a la interfaz web de producción.
+* **Túnel ngrok:** PID `<redacted>` (`ngrok.exe http 4000`), activo desde las 07:01:27, exponiendo el puerto 4000 a la interfaz web de producción.
 * **Aislamiento de Staging:**
   - Staging correrá en **PORT 4001** (actualmente libre).
   - Staging se conectará a **`jarbees_stage`** (base que será creada de forma independiente).
@@ -170,6 +170,6 @@ Esta matriz se ejecutará contra el backend activo de staging (puerto 4001) una 
 > **DICTAMEN:** `INTEGRIDAD AUDITADA Y CONFIRMADA — LISTO PARA AUTORIZACIÓN DE DESPLIEGUE EN STAGING`
 > 
 > 1. Se resolvió la trazabilidad de los SHAs: `66f092b` es el commit de fusión técnica de código y `87161df` es el commit de documentación (HEAD actual de `staging/jca-unified`).
-> 2. Se confirmó que la base productiva física en PostgreSQL es `jarbees_data` (puerto 4000, ngrok PID 6968) y que staging operará estrictamente sobre `jarbees_stage` (puerto 4001).
+> 2. Se confirmó que la base productiva física en PostgreSQL es `jarbees_data` (puerto 4000, ngrok PID `<redacted>`) y que staging operará estrictamente sobre `jarbees_stage` (puerto 4001).
 > 3. El entorno productivo se encuentra 100% aislado e inalterado.
 > 4. El protocolo de arranque y la matriz de homologación T1–T4 quedan completamente preparados a la espera de la autorización explícita del usuario.

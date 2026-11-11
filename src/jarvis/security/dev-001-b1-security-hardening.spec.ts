@@ -58,13 +58,20 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
   let actionGatekeeper: ActionGatekeeperService;
   let securityGuard: SecurityKernelAuthGuard;
   let reflector: Reflector;
+  let testStorageDir: string;
 
   beforeEach(() => {
+    testStorageDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'jarbees-b1-hardening-'),
+    );
+    process.env.JARBEES_STORAGE_DIR = testStorageDir;
     process.env.JARBEES_DISABLE_INSTANCE_LOCK = 'true';
     process.env.JWT_SECRET = testJwtSecret;
     process.env.ACTION_GATEKEEPER_SECRET = testGatekeeperSecret;
     process.env.MOBILE_GATEWAY_SECRET =
       'dev-001-b1-disposable-mobile-secret-key-32bytes-long';
+    delete process.env.MASTER_PASSWORD_HASH;
+    delete process.env.REQUIRE_PASSWORD_HASH;
     process.env.MASTER_PASSWORD = testMasterPassword;
     process.env.JARBEES_OPERATOR_ID = testOperatorId;
     delete process.env.SKIP_HITL;
@@ -79,8 +86,12 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
   });
 
   afterEach(() => {
+    authService?.onModuleDestroy();
     actionGatekeeper?.destroy();
     process.env = { ...originalEnv };
+    if (testStorageDir && fs.existsSync(testStorageDir)) {
+      fs.rmSync(testStorageDir, { recursive: true, force: true });
+    }
   });
 
   // ── 1. Login sin credenciales: DENEGADO ─────────────────────────────────────
@@ -1166,7 +1177,7 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
 
       const testRequestId = 'crash-test-req-' + Date.now();
       const hash = crypto.createHash('sha256').update(testRequestId).digest('hex');
-      const storageDir = path.resolve('storage', 'security', 'mobile-replay');
+      const storageDir = path.resolve(testStorageDir, 'security', 'mobile-replay');
       if (!fs.existsSync(storageDir)) {
         fs.mkdirSync(storageDir, { recursive: true });
       }
@@ -1203,7 +1214,7 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
 
       const key = `ip:${testIp}`;
       const hash = crypto.createHash('sha256').update(key).digest('hex');
-      const lockoutDir = path.resolve('storage', 'security', 'auth-lockout');
+      const lockoutDir = path.resolve(testStorageDir, 'security', 'auth-lockout');
       if (!fs.existsSync(lockoutDir)) {
         fs.mkdirSync(lockoutDir, { recursive: true });
       }

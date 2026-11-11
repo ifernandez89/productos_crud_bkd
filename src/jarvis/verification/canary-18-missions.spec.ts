@@ -260,7 +260,7 @@ describe('JarBees Etapa 2 — Canary Operativo de Ingeniería (18 Misiones Reale
 
     try {
       const outPath =
-        'C:\\Users\\xiphos-pc1\\.gemini\\antigravity\\brain\\58e28ba0-d39e-413b-9850-f4d36caf4c2c\\scratch\\senior-benchmark-v1\\canary-18-missions-audit.json';
+        './storage/artifacts';
       fs.mkdirSync(path.dirname(outPath), { recursive: true });
       fs.writeFileSync(
         outPath,

@@ -9,13 +9,13 @@
 
 ## 1. Resumen Ejecutivo y Motivación
 
-El objetivo de este plan es incorporar la filosofía, matemáticas y capacidades de la skill **Anatomy** al subsistema de generación gráfica de JarBees ([`PROCEDURAL_STUDIO_ARCHITECTURE.md`](file:///c:/Projects/productos_crud_bkd/docs/PROCEDURAL_STUDIO_ARCHITECTURE.md)).
+El objetivo de este plan es incorporar la filosofía, matemáticas y capacidades de la skill **Anatomy** al subsistema de generación gráfica de JarBees ([`PROCEDURAL_STUDIO_ARCHITECTURE.md`](docs/PROCEDURAL_STUDIO_ARCHITECTURE.md)).
 
 Mientras que los modelos de difusión neuronal (Midjourney, Flux, SD) fallan sistemáticamente en la creación de infografías técnicas con precisión milimétrica, jerarquías mecánicas limpias y textos nítidos, la arquitectura **Anatomy** introduce un paradigma determinista y vectorial:
 > **"The object is the explanation" (El objeto físico es la explicación):**  
 > Todo concepto abstracto (colas de mensajes, microservicios, caché, render targets) se materializa como una máquina física analógica detallada (plóter gantry, banco de pruebas con resortes, diales de precisión, consolas retro, gabinetes seccionados).
 
-Aprovechando la infraestructura ya validada en JarBees —motor Playwright con GPU dedicada **NVIDIA GeForce RTX 5070**, evaluación desacoplada en [`PosterQualityAssuranceService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/qa/poster-qa.service.ts) y manifiestos `PosterProject`— este subsistema dotará a la plataforma de un generador de **diagramas técnicos e isométricos de altísima fidelidad**.
+Aprovechando la infraestructura ya validada en JarBees —motor Playwright con GPU dedicada **NVIDIA GeForce RTX 5070**, evaluación desacoplada en [`PosterQualityAssuranceService`](src/jarvis/tools/poster/qa/poster-qa.service.ts) y manifiestos `PosterProject`— este subsistema dotará a la plataforma de un generador de **diagramas técnicos e isométricos de altísima fidelidad**.
 
 ---
 
@@ -59,7 +59,7 @@ graph TD
 
 ### 4.1. Motor: `AnatomyIsometricEngine`
 * **Ubicación:** `src/jarvis/tools/poster/engines/anatomy-isometric.engine.ts`
-* **Implementa:** [`PosterEngine`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/engines/poster-engine.interface.ts)
+* **Implementa:** [`PosterEngine`](src/jarvis/tools/poster/engines/poster-engine.interface.ts)
 * **Responsabilidades:**
   1. Transformar una especificación `AnatomyDesignSpec` en geometría isométrica estricta (azimut 45°/35°, elevación 30°/44°).
   2. Implementar el algoritmo de orden de pintor (*Painter's order*) dividiendo ensambles envolventes en capas anterior/posterior.
@@ -84,7 +84,7 @@ graph TD
   * **Gabinete de Cajones y Gavetas:** Para almacenamiento distribuido, bases de datos o asignación de memoria.
 
 ### 4.4. Extensión de Calidad: `AnatomyQaService`
-* **Integración:** Extender [`PosterQualityAssuranceService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/qa/poster-qa.service.ts) con las 4 pruebas de Anatomy:
+* **Integración:** Extender [`PosterQualityAssuranceService`](src/jarvis/tools/poster/qa/poster-qa.service.ts) con las 4 pruebas de Anatomy:
   1. **Tolerancia Angular:** Ángulos isométricos de planos x/y en proyección verdadera (30° respecto a la horizontal).
   2. **Densidad Mecánica:** Conteo mínimo de componentes (Nivel *Figure*: 40–80 piezas; Nivel *Hero*: 80–150 piezas).
   3. **Auditoría de Holguras y Terminales:** Verificar que ningún tubo o cable termine en el vacío y que los elementos pasantes tengan collares/bujes de montaje.
@@ -110,9 +110,9 @@ graph TD
 - [ ] Generación automática de tarjeta descriptiva y telemetría en `_project.json`.
 
 ### Fase 4: QA Automatizado y Endpoints de API (Día 4)
-- [ ] Registrar nuevo motor en [`PosterService`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/poster.service.ts) (`engine: 'anatomy-isometric'`).
-- [ ] Habilitar selector de motor en [`poster.controller.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/poster.controller.ts).
-- [ ] Incorporar checks de auditoría geométrica en [`poster-qa.service.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/qa/poster-qa.service.ts).
+- [ ] Registrar nuevo motor en [`PosterService`](src/jarvis/tools/poster/poster.service.ts) (`engine: 'anatomy-isometric'`).
+- [ ] Habilitar selector de motor en [`poster.controller.ts`](src/jarvis/tools/poster/poster.controller.ts).
+- [ ] Incorporar checks de auditoría geométrica en [`poster-qa.service.ts`](src/jarvis/tools/poster/qa/poster-qa.service.ts).
 
 ---
 

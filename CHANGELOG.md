@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+### Promoted & Operational — DEV-001-B1 + DEV-001-B2.6 Promoción Selectiva a main y Hardening Operativo de Acceso (2026-11-10)
+
+- **Promoción Selectiva Fast-Forward a `main` (`candidate/b1-b2.6-integration` `db19e77`)**:
+  - Superado el *Final Review Gate* (`0` hallazgos `CRITICAL`/`HIGH`, `14/14` suites y `169/169` tests aprobados, compilación `nest build` limpia y verificación E2E de arranque real de `AppModule`).
+  - Consolidado `SecurityKernelModule` (`DEV-001-B1`) junto a `GpuObserverService` / presupuesto dinámico RTX 5070 (`DEV-001-B2.6`), manteniendo fuera Gmail (`15b2b4f`), Radar-Dev, `ExecutionBroker`, WHPX y scripts de respaldo autónomo.
+- **Reconciliación Remota y Activación Fail-Closed de Operador**:
+  - Aislado el entorno de pruebas en `src/jarvis/security/dev-001-b1-security-hardening.spec.ts` mediante `JARBEES_STORAGE_DIR` temporal (`os.tmpdir()`) y limpieza de variables de hash en `beforeEach` para evitar colisiones con el `.env` productivo y `storage/security/` (`44/44 PASS`).
+  - Integrado el commit de sanitización de `origin/main` (`a05f943`) en documentación y pruebas (`redacted-observability.service.spec.ts`), eliminando referencias residuales de usuario local antes de publicar.
+  - Activada verificación estricta `MASTER_PASSWORD_HASH` (`scrypt`) con `REQUIRE_PASSWORD_HASH=true` en el entorno local del servidor y verificada en vivo la frontera de acceso en puerto `4000` (`GET /api/mobile/v1/health` `200`, `GET /api/jarbees/inference/status` `200`, `GET /api/aichat/disciplines` sin JWT `401`, preflight CORS `204`).
+
 ### Resource Awareness & GPU Observability — DEV-001-B2.6 Integración Selectiva con Security Kernel B1 (2026-11-10)
 
 > **Estado:** ✅ Rama candidata aislada (`candidate/b1-b2.6-integration`) preparada sobre `main` (`89993c7`) incorporando exclusivamente `DEV-001-B1` y `DEV-001-B2.6`.
@@ -170,7 +180,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     - Quality Gate cognitivo con alertas automáticas ante desviaciones de intención o falta de evidencia (7/7 PASS).
   - **Validación E2E sobre Interfaz Web en Vivo ([JarBees Frontend](https://ifernandez89.github.io/productos_crud_frd/preguntas/new))**:
     - Ejecución automatizada con Playwright / Microsoft Edge Headless sobre el DOM real.
-    - 3 preguntas ejecutadas con éxito (Identidad, Cinemática Lógica y Biología Celular), HTTP 201 Created a través del túnel ngrok y persistencia atómica en PostgreSQL (`sessionId: a14941d2-eccb-47a4-aa7a-0d6f177798df`, mensajes #767 a #772).
+    - 3 preguntas ejecutadas con éxito (Identidad, Cinemática Lógica y Biología Celular), HTTP 201 Created a través del túnel ngrok y persistencia atómica en PostgreSQL (`sessionId: <session-id-redacted>`, mensajes #767 a #772).
     - 3 capturas de pantalla registradas (`pregunta_turn_1.png`, `pregunta_turn_2.png`, `pregunta_turn_3.png`).
 
 ### Added & Formalized — JarBees Scientific Lab: Historical Media Restoration & Color Engineering Skill (2026-11-03)
@@ -659,35 +669,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Mecanismos de Drenaje (`DrainQueue`) y Escalamiento**: Diseño para conmutación de modelos sin interrupción de streams y escalamiento determinista 4B ➔ 8B ante fallos de sintaxis/tests.
   - **Batería de Validación Empírica**: Hoja de ruta para benchmarking de TTFT, latencia de swapping en NVMe y límites de memoria.
 
-- **🔐 Bóveda Criptográfica en Reposo `CryptoVaultService` (`src/shared/crypto-vault.service.ts` & `src/shared/shared.module.ts`)**:
-  - **Cifrado Simétrico AES-256-GCM**: Cifrado con IV aleatorio de 12 bytes y verificación de etiqueta de autenticación (authTag) de 16 bytes.
-  - **Clave Derivada Segura**: Clave de 256 bits derivada de `CREDENTIALS_ENCRYPTION_KEY` o `JWT_SECRET` con SHA-256 + salt de dominio.
-  - **Retrocompatibilidad Transparente**: Detección de prefijo `enc:v1:`. Datos guardados en texto plano legacy se procesan y devuelven sin romper instancias existentes.
-  - **Enmascaramiento de Logs**: Método `maskSecret()` que previene la fuga accidental de tokens en stdout o logs de excepciones.
+- **🔐 Cifrado en Reposo y Gestión Segura de Credenciales**:
+  - Cifrado autenticado para credenciales almacenadas en base de datos y enmascaramiento preventivo de secretos en trazas y registros de aplicación.
 
-- **🔑 Modo Zero-UI y Cifrado OAuth2 en `GoogleAuthService` (`src/google/google-auth.service.ts` & `src/google/google-auth.controller.ts`)**:
-  - **Configuración Exclusiva por Backend**: Detección y auto-inicialización en `onModuleInit` a partir de variables de entorno (`GOOGLE_REFRESH_TOKEN`, `GOOGLE_ACCESS_TOKEN`, `GOOGLE_SCOPES`). Si existen en `.env`, el backend las sincroniza y cifra automáticamente sin requerir interacción por frontend o navegador.
-  - **Endpoint Headless `POST /api/jarbees/google/configure`**: Permite inyectar o actualizar credenciales mediante scripts, CLI o curl de forma directa.
-  - **Protección Criptográfica en PostgreSQL**: Cifrado con AES-256-GCM tanto para `accessToken` como para `refreshToken` en `upsert` y auto-refresco en segundo plano (`refreshAccessToken`).
-  - **Descifrado Transparente en Memoria**: Solo se descifran los tokens al momento de interactuar con la API oficial de Google (`getAuthenticatedClient`).
+- **🛡️ Autorización Supervisada (HITL) y Protección Anti-Replay**:
+  - Retos de autorización de un solo uso con expiración acotada para operaciones sensibles sobre la biblioteca y acciones supervisadas.
 
-- **🛡️ Retos de Autorización HITL Anti-Replay `ActionGatekeeperService` (`src/jarvis/security/action-gatekeeper.service.ts`)**:
-  - **Sustitución de Confirmación Trivial**: Reemplazo de parámetros vulnerables a inyección (`?confirm=true`) por tokens de autorización criptográficos firmados con HMAC-SHA256.
-  - **Tokens de Un Solo Uso (Single-Use)**: Cada reto (`createChallenge`) cuenta con un nonce UUID y TTL estricto de 60 segundos. Al verificarse (`verifyAndConsumeChallenge`), el nonce se destruye inmediatamente para impedir ataques de repetición.
-  - **Endpoint `POST /api/jarbees/security/challenge`**: Genera un reto explícito vinculado estrictamente al `actionType` y `targetId` específico.
-  - **Protección en `DELETE /api/jarbees/library/document/:id`**: Requiere cabecera `x-action-token` o parámetro `actionToken` validado criptográficamente.
+- **📱 Endurecimiento del Gateway Móvil**:
+  - Validación criptográfica de integridad por solicitud, ventana temporal anti-replay, lista blanca de aplicaciones permitidas y filtrado contra accesos a redes internas (Anti-SSRF).
 
-- **📱 Blindaje del Gateway Móvil `MobileGatewayService` (`src/mobile-gateway/mobile-gateway.service.ts` & `src/mobile-gateway/mobile-gateway.controller.ts`)**:
-  - **Autenticación por Firma HMAC-SHA256**: Cabecera `x-jarbees-signature` con validación de integridad (`requestId:timestamp:intent`) en tiempo constante.
-  - **Ventana Anti-Replay Temporal**: Rechazo estricto de peticiones con desfase de reloj superior a 30 segundos (`drift > 30000ms`) y deduplicación de `requestId` procesados.
-  - **Lista Blanca Estricta de Aplicaciones (`MOBILE_ALLOWED_APPS`)**: `OPEN_APP` solo permite lanzar ejecutables seguros autorizados (`calc`, `notepad`, `code`, `explorer`). Cualquier comando arbitrario o inyección es rechazado de inmediato con `ForbiddenException`.
-  - **Protección Anti-SSRF en `OPEN_URL`**: Filtro estricto que bloquea accesos a `localhost`, `127.0.0.1`, `0.0.0.0`, `169.254.169.254` y subredes privadas RFC 1918 (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`).
-  - **Aislamiento de Ejecución y Teardown Limpio**: Implementación de `OnModuleDestroy` y encapsulación de llamadas a sistema operativo, eliminando fugas de procesos en tests unitarios.
-
-- **🌐 Data Privacy Gate en Inferencia `InferenceGatewayService` (`src/jarvis/llm/inference-gateway.service.ts`)**:
-  - **Confinamiento Local de Datos Privados**: Clasificación de sensibilidad en `LLMGenerateOptions` (`public`, `private`, `confidential`).
-  - **Fail-Closed Ante Fallos Locales**: Si los motores locales (`llamacpp` y `ollama`) fallan, la conmutación a proveedores remotos (`openrouter`) queda **estrictamente bloqueada** (`ForbiddenException`) cuando la solicitud contiene datos privados, documentos de biblioteca o credenciales.
-  - **Heurística de Detección de Secretos**: Bloqueo preventivo de conmutación a la nube si el prompt contiene patrones de credenciales (`token`, `password`, `secret`, `api_key`).
+- **🌐 Compuerta de Privacidad de Datos en Inferencia**:
+  - Confinamiento local (`fail-closed`) para consultas con datos privados o documentos locales, bloqueando la derivación a proveedores externos ante fallos del motor local.
 
 - **🔄 Resiliencia de Misiones y Recuperación tras Caídas (`src/jarvis/planner/mission-recovery.service.ts` & `src/jarvis/planner/mission-checkpoint.service.ts`)**:
   - **Persistencia Incremental en Disco (`MissionCheckpointService`)**: Cada paso ejecutado se guarda atómicamente en `storage/checkpoints/mission_<id>.checkpoint.json` (.tmp + rename) con contexto acumulado, artefactos y estado.
@@ -756,7 +748,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - `POST /jarvis/3d/studio/render/diorama`: Render cinematográfico headless con profundidad de campo (DoF).
 
 - **⚡ Actualización de Blender Headless (`src/jarvis/3d/blender.service.ts`)**:
-  - Incorporación del script [`scripts/blender/generate_jarbees_object.py`](file:///c:/Projects/productos_crud_bkd/scripts/blender/generate_jarbees_object.py) para generación automatizada de modelos en Blender.
+  - Incorporación del script [`scripts/blender/generate_jarbees_object.py`](scripts/blender/generate_jarbees_object.py) para generación automatizada de modelos en Blender.
   - Soporte de inspección transparente para contenedores `.jb3d` descifrados al vuelo en memoria temporal.
 
 - **🧪 Cobertura de Pruebas Unitarias Automatizadas**:
@@ -792,21 +784,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - **🧪 Batería de Pruebas de Caos, Resistencia y Regresión**:
   - **25 Pruebas Unitarias Automatizadas**: Cobertura al 100% en Jest para `llamacpp.provider.spec.ts`, `inference-supervisor.service.spec.ts` e `inference-gateway.service.spec.ts`.
-  - **Suite de Caos Real ([`scratch/test_live_resilience.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_live_resilience.mjs))**:
+  - **Suite de Caos Real ([`scratch/test_live_resilience.mjs`](scratch/test_live_resilience.mjs))**:
     - Servidor apagado -> conmutación inmediata a Ollama sin bloqueo.
     - Caída mid-flight (`taskkill` a mitad de generación) -> captura limpia de `ECONNRESET`, sin solicitudes duplicadas y fallback posterior 100% operativo.
     - Conflicto de puerto 8080 -> detección inmediata por el supervisor sin bucles infinitos.
     - Ping-pong de 20 iteraciones continuas entre `qwen3:8b` y `qwen2.5-coder:7b` -> VRAM oscilando limpiamente entre 6.727 MB y 5.485 MB con 0 MB de fuga de memoria.
-  - **Suite de Validación Avanzada ([`scratch/test_final_four.mjs`](file:///c:/Projects/productos_crud_bkd/scratch/test_final_four.mjs))**:
+  - **Suite de Validación Avanzada ([`scratch/test_final_four.mjs`](scratch/test_final_four.mjs))**:
     - Soak test prolongado con LLM + embeddings paralelos -> varianza de VRAM de solo **4 MB** (7.524 MB con Qwen3, 6.282 MB con Coder).
     - Concurrencia de 6 peticiones con `AbortSignal` -> cancelaciones liberadas en **71 ms**, peticiones en cola resueltas con éxito.
     - Streaming mid-flight -> pre-token conmuta a Ollama limpiamente; corte mid-stream aborta sin mezclar texto corrupto ni duplicado.
     - Blackout total de ambos motores -> respuesta inmediata `HTTP 503` en **2 ms** y auto-recuperación autónoma al restaurar procesos.
 
 - **📖 Documentación Técnica y Contratos**:
-  - [`docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md`](file:///c:/Projects/productos_crud_bkd/docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md): Especificación exhaustiva del contrato de inferencia, interfaces, políticas de cancelación, failover matrix y límites de GPU.
-  - Artefacto de migración completado: [`plan_migracion_llamacpp_jarbees.md`](file:///C:/Users/xiphos-pc1/.gemini/antigravity-ide/brain/7d206e9f-0052-413b-81a3-354587654499/plan_migracion_llamacpp_jarbees.md).
-  - Resultados reproducibles: [`scratch/resilience_results.json`](file:///c:/Projects/productos_crud_bkd/scratch/resilience_results.json) y [`scratch/final_four_results.json`](file:///c:/Projects/productos_crud_bkd/scratch/final_four_results.json).
+  - [`docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md`](docs/INFERENCE_ARCHITECTURE_AND_CONTRACT.md): Especificación exhaustiva del contrato de inferencia, interfaces, políticas de cancelación, failover matrix y límites de GPU.
+  - Artefacto de migración completado: [`plan_migracion_llamacpp_jarbees.md`](#local-artifact).
+  - Resultados reproducibles: [`scratch/resilience_results.json`](scratch/resilience_results.json) y [`scratch/final_four_results.json`](scratch/final_four_results.json).
 
 ### Added & Validated — Sistema de Metadata 3D Inteligente para JarBees Studio (2026-10-18)
 
@@ -831,7 +823,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 - **📊 Ejemplo Práctico: Metadata del Render "Ballena Jorobada - Abismo Oceánico Ecco Style"**:
   - **Package ID**: `bebffbcb-1435-4626-b4d1-b9dc0b7d63f7`
-  - **Archivo**: [`storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json`](file:///c:/Projects/productos_crud_bkd/storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json)
+  - **Archivo**: [`storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json`](storage/assets/metadata/bebffbcb-1435-4626-b4d1-b9dc0b7d63f7_info.json)
   - **Configuración Documentada**: 
     - Geometría: 156,789 vértices, 124,567 faces, bounding box completo
     - Iluminación cinematográfica con volumetrics (density 0.008, anisotropy 0.70), god rays (64 samples), caustics Voronoi (intensity 2.8)
@@ -841,7 +833,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     - Tags: `["whale", "underwater", "cinematic", "volumetric", "god-rays", "caustics", "bioluminescent"]`
     - Style: `["dreamcast-aesthetic", "ecco-the-dolphin", "volumetric-lighting"]`
 
-- **📖 Documentación Técnica Completa ([`docs/ASSET_METADATA_SYSTEM.md`](file:///c:/Projects/productos_crud_bkd/docs/ASSET_METADATA_SYSTEM.md))**:
+- **📖 Documentación Técnica Completa ([`docs/ASSET_METADATA_SYSTEM.md`](docs/ASSET_METADATA_SYSTEM.md))**:
   - Guía de estructura de metadata JSON con esquemas completos
   - Documentación de todos los endpoints API con ejemplos de uso
   - Casos de uso: registro post-render, búsqueda de configuraciones, generación de variantes, pipeline de Product Studio, análisis de rendimiento GPU
@@ -849,10 +841,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Roadmap de desarrollo (Fase 1 completada, Fase 2-3 planificadas)
 
 - **🧪 Suite de Pruebas y Pipeline de Ejemplo**:
-  - [`scripts/test_asset_metadata.js`](file:///c:/Projects/productos_crud_bkd/scripts/test_asset_metadata.js): Suite de pruebas end-to-end para estadísticas, recuperación por ID, filtrado semántico y clonación de variantes.
-  - [`scripts/examples/render_with_metadata_example.ts`](file:///c:/Projects/productos_crud_bkd/scripts/examples/render_with_metadata_example.ts): Ejemplo completo de integración entre `BlenderService` y `AssetMetadataService` para pipelines automatizados.
-  - [`docs/METADATA_SYSTEM_QUICKSTART.md`](file:///c:/Projects/productos_crud_bkd/docs/METADATA_SYSTEM_QUICKSTART.md): Guía de inicio rápido en 5 minutos para desarrolladores.
-  - [`docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md`](file:///c:/Projects/productos_crud_bkd/docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md): Resumen ejecutivo con métricas de ROI e impacto de negocio.
+  - [`scripts/test_asset_metadata.js`](scripts/test_asset_metadata.js): Suite de pruebas end-to-end para estadísticas, recuperación por ID, filtrado semántico y clonación de variantes.
+  - [`scripts/examples/render_with_metadata_example.ts`](scripts/examples/render_with_metadata_example.ts): Ejemplo completo de integración entre `BlenderService` y `AssetMetadataService` para pipelines automatizados.
+  - [`docs/METADATA_SYSTEM_QUICKSTART.md`](docs/METADATA_SYSTEM_QUICKSTART.md): Guía de inicio rápido en 5 minutos para desarrolladores.
+  - [`docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md`](docs/METADATA_SYSTEM_EXECUTIVE_SUMMARY.md): Resumen ejecutivo con métricas de ROI e impacto de negocio.
 
 - **🔗 Integración en JarvisModule (`src/jarvis/jarvis.module.ts`)**:
   - `AssetMetadataService` registrado en providers y exports
@@ -864,7 +856,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added & Validated — Arquitectura JarBees Procedural 3D Studio y Render Submarino 'Ecco the Dolphin' (2026-10-18)
 
-- **🏛️ Arquitectura y Diseño Estratégico de JarBees Procedural 3D Studio ([`docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md))**:
+- **🏛️ Arquitectura y Diseño Estratégico de JarBees Procedural 3D Studio ([`docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md`](docs/JARBEES_PROCEDURAL_3D_STUDIO_ARCHITECTURE.md))**:
   - **4 Pilares Comerciales**:
     1. *Product Studio*: Fotografías de catálogo y publicidad e-commerce B2B (4–12 tomas automatizadas, fondo blanco y temático).
     2. *Game Asset Studio*: Dioramas, iconos, props de inventario y capturas de marketing para indies.
@@ -880,7 +872,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Sombreado Dérmico PBR**: Piel cetácea húmeda con Subsurface Scattering (SSS) sutil en bordes de aletas.
   - **Profundidad y Escala**: Banco de peces secundario (`G:\new models\Banco de peces.glb`) en plano medio y 65 partículas de nieve marina/plancton bioluminiscente con desenfoque Bokeh a $f/2.8$.
   - **Color Management AgX**: Gradiente vertical de abismo zafiro a turquesa caribeño radiante con look `AgX - Medium High Contrast`.
-  - **Rendimiento**: Render 1440p (2560x1440) generado en **4.96 segundos** en GPU local RTX 5070 ([`storage/assets/renders/ecco_whale_cinematic_abyss.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/ecco_whale_cinematic_abyss.png)).
+  - **Rendimiento**: Render 1440p (2560x1440) generado en **4.96 segundos** en GPU local RTX 5070 ([`storage/assets/renders/ecco_whale_cinematic_abyss.png`](storage/assets/renders/ecco_whale_cinematic_abyss.png)).
 
 ### Added & Validated — Pipeline de Cinematografía 3D, Generador de Dioramas Headless y Props CC0 Platformer (2026-10-18)
 
@@ -912,8 +904,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **🧪 Suite de Validación y Render de Alta Fidelidad**:
   - Script de prueba NestJS `scripts/test_cinematic_diorama.js` validando ejecución en 4.4 segundos.
   - Renders de referencia generados en `storage/assets/renders/platformer_cinematic_hero.png` (2048x1536) y `platformer_cinematic_hero_test.png` (1920x1080).
-  - Guía técnica detallada en [`docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md`](file:///c:/Projects/productos_crud_bkd/docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md).
-  - Actualización de patrones de diorama y bokeh en [`.agents/skills/blender-automation/SKILL.md`](file:///c:/Projects/productos_crud_bkd/.agents/skills/blender-automation/SKILL.md).
+  - Guía técnica detallada en [`docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md`](docs/CINEMATOGRAPHY_3D_DIORAMA_PIPELINE.md).
+  - Actualización de patrones de diorama y bokeh en [`.agents/skills/blender-automation/SKILL.md`](.agents/skills/blender-automation/SKILL.md).
 
 - **🔧 Corrección en `JarvisController`**:
   - Renombrado de colisión de método en `src/jarvis/jarvis.controller.ts` (`getCognitiveStats` -> `getGlobalCognitiveStats`) para asegurar compilación estricta de TypeScript en NestJS.
@@ -931,7 +923,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
     - 3 clips de animación nativos estandarizados: `hover` (vuelo estacionario para chat activo), `idle` (reposo/escucha) y `take_off_and_land` (transición cinemática).
     - Normalización geométrica: centrado en `(0, 0, 0)`, escala de cuadro delimitador `1.0` y cabeza orientada hacia la cámara frontal (`+Z` web).
   - **Compresión Web Extrema**: Reducción de 20.1 MB (fuente original) a **4.37 MB** (GLB estándar) y **2.76 MB** (Draco comprimido, **-86.2% de peso**).
-  - **Entrega Lista para UI**: Modelos instalados directamente en [`productos_crud_frd/public/models/jarbee/`](file:///c:/Projects/productos_crud_frd/public/models/jarbee/) y guía técnica completa en [`docs/JARBEE_3D_AVATAR_INTEGRATION.md`](file:///c:/Projects/productos_crud_bkd/docs/JARBEE_3D_AVATAR_INTEGRATION.md).
+  - **Entrega Lista para UI**: Modelos instalados directamente en [`productos_crud_frd/public/models/jarbee/`](public/models/jarbee/) y guía técnica completa en [`docs/JARBEE_3D_AVATAR_INTEGRATION.md`](docs/JARBEE_3D_AVATAR_INTEGRATION.md).
 
 - **🖼️ Lámina Comparativa 2560x1440 (`storage/assets/renders/bee_robot_comparison.png`)**:
   - Comparativa visual lado a lado generada con Playwright Edge (`scripts/blender/create_bee_comparison_poster.js`), exhibiendo vistas en 3/4 y cenitales de la metamorfosis desde el insecto natural hasta el dron robótico.
@@ -943,7 +935,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Micro-expresiones Faciales ARKit & Pose Natural**: Activación en malla `Head_Mesh` de claves de forma (`mouthSmileLeft=0.28`, `mouthSmileRight=0.18`, `eyeSquintLeft/Right=0.26`, `browOuterUpLeft/Right=0.35`, `jawOpen=0.03`) e inclinación ósea del cuello/cabeza (+4.2° roll, +2.5° yaw).
   - **Física de Cabello y Ojos**: Sombreador moreno chocolate con brillo especular anisotrópico y reflexión corneal especular con catchlight.
   - **Iluminación de Estudio Rembrandt**: Teleobjetivo de 95mm f/2.8, Key Light a 45°, Fill frío crepuscular, Rim turquesa de silueta y Hair accent light.
-  - **Entregables**: Modelo GLB [`storage/assets/models/angelina_jolie_blender.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/angelina_jolie_blender.glb) y render 1600x2000 [`storage/assets/renders/angelina_blender_portrait.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/angelina_blender_portrait.png) (5.3 MB).
+  - **Entregables**: Modelo GLB [`storage/assets/models/angelina_jolie_blender.glb`](storage/assets/models/angelina_jolie_blender.glb) y render 1600x2000 [`storage/assets/renders/angelina_blender_portrait.png`](storage/assets/renders/angelina_blender_portrait.png) (5.3 MB).
 
 - **🏛️ Aetheria — Ciudadela Celestial 3D en Blender 5.2 (`scripts/blender/render_aetheria_blender.py`)**:
   - **Geología de Isla Flotante PBR**: Base rocosa con mapas PBR 1K (`rock_boulder_diff/nor/rough`), desplazamiento fractal de estratos, agujas basálticas y meseta superior con césped alpino procedural y sendero ceremonial.
@@ -951,7 +943,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Hidrología y Cascada al Vacío**: Estanque celestial con cauce meandriforme y cascada frontal colosal precipitándose al abismo cósmico sobre un mar de nubes bajas y bruma volumétrica.
   - **Cristales Arcanos y Entorno**: 5 monolitos octaédricos flotantes orbitando la isla con halos cian y fuentes de luz puntual, pebeteros con fuego sagrado encendido y cordillera nevada en el horizonte.
   - **Composición Cinematográfica**: Cámara de 36mm con constraint `Track-To` enfocada a la Acrópolis, iluminación de 3 puntos (Sol dorado, Fill crepuscular, Rim turquesa) y gestión de color `AgX`.
-  - **Entregables**: Modelo GLB [`storage/assets/models/aetheria_celestial_island.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/aetheria_celestial_island.glb) (3.52 MB) y render 2048x1536 [`storage/assets/renders/aetheria_blender_cinematic.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/aetheria_blender_cinematic.png) (4.22 MB).
+  - **Entregables**: Modelo GLB [`storage/assets/models/aetheria_celestial_island.glb`](storage/assets/models/aetheria_celestial_island.glb) (3.52 MB) y render 2048x1536 [`storage/assets/renders/aetheria_blender_cinematic.png`](storage/assets/renders/aetheria_blender_cinematic.png) (4.22 MB).
 
 - **🖼️ Lámina Comparativa de Alta Resolución (`storage/assets/renders/blender_upgrades_showcase.png`)**:
   - Comparador 2560x1440 generado con Playwright Edge (`scripts/blender/create_blender_upgrades_showcase.js`), contrastando lado a lado las versiones WebGL previas frente a los nuevos renders de Blender 5.2 LTS.
@@ -964,22 +956,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **Eficiencia y Velocidad**: Ejecución completa del ciclo (inspección + estudio de luces de 3 puntos + render ANTES a 1024x1024 + síntesis PBR + render DESPUÉS a 1024x1024 + exportación glTF 2.0) en solo **3.5 segundos** en GPU RTX 5070 (motor EEVEE).
 
 - **🧩 Skill de Automatización & Scripts Modulares**:
-  - **Skill Creada**: [`.agents/skills/blender-automation/SKILL.md`](file:///c:/Projects/productos_crud_bkd/.agents/skills/blender-automation/SKILL.md), con especificaciones completas para CLI headless, árboles de nodos en Principled BSDF, máscaras por vector normal y altura $Z$, y exportación validada.
+  - **Skill Creada**: [`.agents/skills/blender-automation/SKILL.md`](.agents/skills/blender-automation/SKILL.md), con especificaciones completas para CLI headless, árboles de nodos en Principled BSDF, máscaras por vector normal y altura $Z$, y exportación validada.
   - `scripts/blender/inspect_glb.py`: Extractor JSON de Bounding Box, recuento de vértices/triángulos, materiales y texturas.
   - `scripts/blender/apply_weathering.py`: Generador procedural de pátina vegetal (musgo con orientación $+Z$ y gradiente de humedad en zócalo), suciedad en oquedades y micro-bump de piedra erosionada.
   - `scripts/blender/create_comparison_poster.js`: Generador de lámina comparativa de alta fidelidad con Playwright.
   - `scripts/test_blender_service.js`: Suite de integración NestJS verificando todo el flujo en el runtime.
 
 - **⚙️ Servicio NestJS `BlenderService`**:
-  - [`src/jarvis/3d/blender.service.ts`](file:///c:/Projects/productos_crud_bkd/src/jarvis/3d/blender.service.ts): Integrado en [`JarvisModule`](file:///c:/Projects/productos_crud_bkd/src/jarvis/jarvis.module.ts) con autodetección de Blender 5.2 / 4.x, tipado estricto y ejecución acotada.
+  - [`src/jarvis/3d/blender.service.ts`](src/jarvis/3d/blender.service.ts): Integrado en [`JarvisModule`](src/jarvis/jarvis.module.ts) con autodetección de Blender 5.2 / 4.x, tipado estricto y ejecución acotada.
 
 - **🔬 Caso Piloto Verificado: Cabeza Olmeca de ArcheoScope (`olmec_head.glb`)**:
   - Vértices: **22.564 preservados al 100%** (0 roturas de malla).
   - Triángulos: **40.000**.
   - Dimensiones conservadas exactamente: **1.45m × 1.62m × 1.95m**.
-  - Modelo exportado: [`storage/assets/models/olmec_head_weathered.glb`](file:///c:/Projects/productos_crud_bkd/storage/assets/models/olmec_head_weathered.glb) (5.8 MB, re-importado en Blender en 0.05s).
-  - Renders y Lámina: [`storage/assets/renders/olmec_head_comparison.png`](file:///c:/Projects/productos_crud_bkd/storage/assets/renders/olmec_head_comparison.png).
-  - Documentación completa en [`docs/BLENDER_3D_PIPELINE.md`](file:///c:/Projects/productos_crud_bkd/docs/BLENDER_3D_PIPELINE.md).
+  - Modelo exportado: [`storage/assets/models/olmec_head_weathered.glb`](storage/assets/models/olmec_head_weathered.glb) (5.8 MB, re-importado en Blender en 0.05s).
+  - Renders y Lámina: [`storage/assets/renders/olmec_head_comparison.png`](storage/assets/renders/olmec_head_comparison.png).
+  - Documentación completa en [`docs/BLENDER_3D_PIPELINE.md`](docs/BLENDER_3D_PIPELINE.md).
 
 ### Added & Validated — Unificación de Chatbot y Razonamiento Dialéctico en Qwen3:8b (2026-10-14)
 
@@ -1228,7 +1220,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added — Arquitectura Modular por Disciplinas & Selector de Especialistas (2026-10-07)
 
-- **🎛️ Catálogo de Especialistas & Disciplinas ([`src/shared/disciplines.ts`](file:///c:/Projects/productos_crud_bkd/src/shared/disciplines.ts))**: Separación formal y desacoplada de capacidades para la UI:
+- **🎛️ Catálogo de Especialistas & Disciplinas ([`src/shared/disciplines.ts`](src/shared/disciplines.ts))**: Separación formal y desacoplada de capacidades para la UI:
   - 💬 `chatbot`: Conversación fluida y razonamiento cotidiano con `qwen2.5:7b` (sin restricciones forzadas de catálogo ni límites de 3 oraciones).
   - 💻 `coder`: Programación, debugging y arquitectura con `qwen2.5-coder:7b`.
   - 🌐 `traductor`: Traducción especializada y liviana con `RogerBen/hy-mt1.5-1.8b:latest`.
@@ -1343,7 +1335,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ### Fixed — Intent Router: Consultas sobre temas de la biblioteca siempre van a RAG (2026-08-05)
 
 - **🐛 Bug detectado**: Preguntas como `"¿Qué podés decirme sobre el plano astral?"` o `"¿Qué dice Monroe sobre la proyección?"` eran enrutadas a `WEB` (noticias) porque el clasificador LLM `gemma3:1b` no tiene conocimiento de la biblioteca personal y usaba `WEB` como fallback.
-- **✅ Fix en** [intent-router.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/intent/intent-router.service.ts): Nuevo bloque de reglas determinísticas de **alta confianza** que matchea términos de la biblioteca antes de llamar al LLM clasificador:
+- **✅ Fix en** [intent-router.service.ts](src/jarvis/tools/intent/intent-router.service.ts): Nuevo bloque de reglas determinísticas de **alta confianza** que matchea términos de la biblioteca antes de llamar al LLM clasificador:
   - **Plano Astral**: `plano astral`, `proyección astral`, `viaje astral`, `cuerpo astral`, `cordón de plata`, `out of body`, `OBE`
   - **Autores OBE**: Monroe, Leadbeater, Muldoon, Ziewe, Oliver Fox
   - **Psicología / Filosofía**: Jung, Freud, Nietzsche, Blavatsky, Grinberg, Krishnamurti, Eliphas Levi
@@ -1382,17 +1374,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - **ID 14** — *El Plano Astral* (Charles Webster Leadbeater) — categoría `teosofía`
   - **ID 15** — *Multi-Dimensional Man* (Jürgen Ziewe) — categoría `plano astral`
 
-- **🔍 Categoría `plano_astral`** añadida en `detectCategoryFromKeywords()` de [document-ingest.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/library/document-ingest.service.ts) para detectar automáticamente términos como `proyección astral`, `cuerpo astral`, `cordón de plata`, `desdoblamiento`, `OBE`.
+- **🔍 Categoría `plano_astral`** añadida en `detectCategoryFromKeywords()` de [document-ingest.service.ts](src/jarvis/library/document-ingest.service.ts) para detectar automáticamente términos como `proyección astral`, `cuerpo astral`, `cordón de plata`, `desdoblamiento`, `OBE`.
 
-- **🎓 Escuela de pensamiento `proyeccion_astral`** añadida a `SCHOOLS_OF_THOUGHT` en [corpus-selector.service.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/knowledge/corpus-selector.service.ts) con todos los autores (Muldoon, Carrington, Fox, Monroe, Leadbeater, Ziewe) y sus palabras clave para precisión en el Corpus Selector.
+- **🎓 Escuela de pensamiento `proyeccion_astral`** añadida a `SCHOOLS_OF_THOUGHT` en [corpus-selector.service.ts](src/jarvis/knowledge/corpus-selector.service.ts) con todos los autores (Muldoon, Carrington, Fox, Monroe, Leadbeater, Ziewe) y sus palabras clave para precisión en el Corpus Selector.
 
-- **📖 Escáner actualizado** ([scan-books.ts](file:///c:/Projects/productos_crud_bkd/scripts/scan-books.ts)): añadida heurística para la carpeta `Plano Astral/` con metadatos completos de los 5 libros. El índice `library-index.json` ahora totaliza 145 documentos catalogados.
+- **📖 Escáner actualizado** ([scan-books.ts](scripts/scan-books.ts)): añadida heurística para la carpeta `Plano Astral/` con metadatos completos de los 5 libros. El índice `library-index.json` ahora totaliza 145 documentos catalogados.
 
 - **📄 Script** `scripts/ingest-plano-astral-db.ts`: Script NestJS de ingesta masiva que procesa los libros de Plano Astral en la base de datos PostgreSQL con monitoreo de progreso en tiempo real.
 
 ### Configured — Configuración Recomendada JarBees + Qwen3:1.7B (2026-08-04)
 
-- **⚡ Configuración Recomendada y Perfiles para Qwen3:1.7B**: Configuración optimizada para reducir alucinaciones, lograr respuestas deterministas y priorizar RAG/herramientas con menor uso de RAM y latencia ultra baja en [ollama-config.ts](file:///c:/Projects/productos_crud_bkd/src/shared/ollama-config.ts), [ollamaModel.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts):
+- **⚡ Configuración Recomendada y Perfiles para Qwen3:1.7B**: Configuración optimizada para reducir alucinaciones, lograr respuestas deterministas y priorizar RAG/herramientas con menor uso de RAM y latencia ultra baja en [ollama-config.ts](src/shared/ollama-config.ts), [ollamaModel.ts](src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](src/jarvis/llm/ollama.provider.ts):
   - **Modelo Base**: `qwen3:1.7b` (`think: false` por defecto, sin razonamiento interno expuesto).
   - **Configuración Base General**: `temperature: 0.10`, `top_p: 0.85`, `top_k: 20`, `repeat_penalty: 1.10`, `presence_penalty: 0`, `frequency_penalty: 0`, `num_ctx: 8192`, `num_predict: 512`, `mirostat: off (0)`.
   - **Perfil Chat Simple 💬**: `temperature: 0.25`, `top_p: 0.90`, `top_k: 30`, `num_predict: 300` (para conversación normal y preguntas simples).
@@ -1401,7 +1393,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Configured — Perfil Intermedio Chat/RAG para JarBees + Qwen3.5:4B (2026-08-04)
 
-- **⚙️ Perfil Intermedio Híbrido (Chat + RAG)**: Configuración equilibrada para el modelo `qwen3.5:4b` ajustada en [ollama-config.ts](file:///c:/Projects/productos_crud_bkd/src/shared/ollama-config.ts), [ollamaModel.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](file:///c:/Projects/productos_crud_bkd/src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](file:///c:/Projects/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts):
+- **⚙️ Perfil Intermedio Híbrido (Chat + RAG)**: Configuración equilibrada para el modelo `qwen3.5:4b` ajustada en [ollama-config.ts](src/shared/ollama-config.ts), [ollamaModel.ts](src/aichat/models/ollamaModel.ts), [ollamaModel_2.ts](src/aichat/models/ollamaModel_2.ts) y [ollama.provider.ts](src/jarvis/llm/ollama.provider.ts):
   - **Modelo**: `qwen3.5:4b` (Thinking Mode `think: false` por defecto; activado únicamente para Planner en tareas complejas).
   - **Temperature**: `0.20` (Equilibrio optimizado entre precisión/baja alucinación de RAG [0.15] y fluidez conversacional de Chat [0.35]).
   - **Top P**: `0.85` (Mantiene naturalidad en las respuestas).
@@ -1414,37 +1406,37 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Added — Ollama Auto-Healing: Recuperación Automática y Circuit Breaker (2026-07-28)
 
-- **🔄 OllamaRecoveryService**: Nuevo servicio singleton ([ollama.recovery.service.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.recovery.service.ts)) que maneja la recuperación automática de Ollama cuando cae. Implementa:
+- **🔄 OllamaRecoveryService**: Nuevo servicio singleton ([ollama.recovery.service.ts](src/jarvis/llm/ollama.recovery.service.ts)) que maneja la recuperación automática de Ollama cuando cae. Implementa:
   - **Spawn controlado**: `spawn('ollama', ['serve'], { shell: true, windowsHide: true })` sin `detached`, guardando referencia al `ChildProcess` para evitar instancias duplicadas en el puerto 11434.
   - **Detección de proceso vivo**: Antes de hacer spawn, verifica si el proceso gestionado por JarBees sigue activo, o si Ollama ya está respondiendo externamente.
   - **Poll de disponibilidad**: Hace requests a `/api/tags` cada 500ms hasta confirmar que Ollama está listo (timeout: 15s).
   - **Circuit Breaker**: Máximo 3 intentos de restart en ventana de 5 minutos. Si se supera, activa estado `FAILED` y emite un mensaje descriptivo al usuario en lugar de un error técnico genérico. La ventana se resetea automáticamente al expirar.
-- **🧠 OllamaState**: Nuevo enum y tipos ([ollama.state.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.state.ts)) que representan el estado interno que JarBees mantiene sobre Ollama (`UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED`). Base para futuros endpoints de diagnóstico y el OllamaHealthService (Fase 2).
-- **⚡ Retry reactivo en OllamaProvider**: Se modificó [ollama.provider.ts](file:///c:/nest/productos_crud_bkd/src/jarvis/llm/ollama.provider.ts) para que ante un `ECONNREFUSED`, en lugar de lanzar error inmediatamente, llame a `OllamaRecoveryService.recover()` y haga un retry único de la request original. El usuario recibe la respuesta normal sin intervención manual.
+- **🧠 OllamaState**: Nuevo enum y tipos ([ollama.state.ts](src/jarvis/llm/ollama.state.ts)) que representan el estado interno que JarBees mantiene sobre Ollama (`UNKNOWN`, `RUNNING`, `RESTARTING`, `FAILED`). Base para futuros endpoints de diagnóstico y el OllamaHealthService (Fase 2).
+- **⚡ Retry reactivo en OllamaProvider**: Se modificó [ollama.provider.ts](src/jarvis/llm/ollama.provider.ts) para que ante un `ECONNREFUSED`, en lugar de lanzar error inmediatamente, llame a `OllamaRecoveryService.recover()` y haga un retry único de la request original. El usuario recibe la respuesta normal sin intervención manual.
 - **💬 Mensajes de error mejorados**: Cuando el circuit breaker se activa (3 fallos), el mensaje al usuario incluye el último error capturado e instrucciones precisas, reemplazando el anterior mensaje genérico de "ejecutá ollama serve".
 
 ### Added & Optimized — Diagnóstico, Resumen Inteligente y Mitigación de Alucinaciones (2026-07-22)
 
 
-- **🤔 Resumen y Detección de Obras sin Prefijo**: Se mejoró [JarvisPromptBuilderService](file:///c:/nest/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) para identificar solicitudes de resúmenes de documentos mediante la coincidencia directa de títulos sin requerir prefijos de acción (ej. escribir solo el nombre de la obra en la biblioteca).
+- **🤔 Resumen y Detección de Obras sin Prefijo**: Se mejoró [JarvisPromptBuilderService](src/jarvis/prompt/jarvis-prompt-builder.service.ts) para identificar solicitudes de resúmenes de documentos mediante la coincidencia directa de títulos sin requerir prefijos de acción (ej. escribir solo el nombre de la obra en la biblioteca).
 - **📝 Instrucción de Resumen de Documento**: Se añadió una directiva estructurada (`docInstruction`) al prompt para guiar al LLM en la generación de resúmenes ejecutivos claros, puntos clave y núcleos temáticos de la obra en cuestión.
-- **🛡️ Mitigación de Alucinaciones en Evidence**: Se actualizó [EvidenceService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/evidence.service.ts) para evitar calificar falsamente términos conceptuales y frases del sistema (como *"resumen ejecutivo"*, *"puntos clave"*, *"esencia del sueño"*, *"inconsciente colectivo"*) como nombres de personas alucinados.
-- **⚙️ Resolución Precisa del Autor**: Corrección en [JarvisPromptBuilderService](file:///c:/nest/productos_crud_bkd/src/jarvis/prompt/jarvis-prompt-builder.service.ts) para resolver correctamente el autor de un documento al formatear el contexto utilizando el índice de la biblioteca o el asignador de escuelas de pensamiento.
+- **🛡️ Mitigación de Alucinaciones en Evidence**: Se actualizó [EvidenceService](src/jarvis/knowledge/evidence.service.ts) para evitar calificar falsamente términos conceptuales y frases del sistema (como *"resumen ejecutivo"*, *"puntos clave"*, *"esencia del sueño"*, *"inconsciente colectivo"*) como nombres de personas alucinados.
+- **⚙️ Resolución Precisa del Autor**: Corrección en [JarvisPromptBuilderService](src/jarvis/prompt/jarvis-prompt-builder.service.ts) para resolver correctamente el autor de un documento al formatear el contexto utilizando el índice de la biblioteca o el asignador de escuelas de pensamiento.
 
 ### Added & Optimized — Coerción de Intents y Robustez del Router (2026-07-22)
 
-- **🔄 Intent Override (Coerción a RAG)**: Si una consulta tiene una alta coincidencia en el índice de biblioteca (score $\ge 2.0$), [JarvisService](file:///c:/nest/productos_crud_bkd/src/jarvis/jarvis.service.ts) anula automáticamente los intents `ASTROLOGY`, `WEB`, o `LOCAL` (de baja confianza) para forzar la ruta `RAG`, garantizando que la respuesta provenga de la documentación local.
+- **🔄 Intent Override (Coerción a RAG)**: Si una consulta tiene una alta coincidencia en el índice de biblioteca (score $\ge 2.0$), [JarvisService](src/jarvis/jarvis.service.ts) anula automáticamente los intents `ASTROLOGY`, `WEB`, o `LOCAL` (de baja confianza) para forzar la ruta `RAG`, garantizando que la respuesta provenga de la documentación local.
 - **🛡️ Fail-Safe en RAG sin Fragmentos**: Si el motor decide ir por la ruta `RAG` pero no se encuentra información en la base de datos (o esta no está disponible), el sistema responde con un mensaje descriptivo y amigable en vez de proceder con el LLM, previniendo alucinaciones severas.
-- **🗣️ Regex mejoradas en el Intent Router**: Se extendieron las reglas de coincidencia rápida de [IntentRouterService](file:///c:/nest/productos_crud_bkd/src/jarvis/tools/intent/intent-router.service.ts) para soportar saludos comunes adicionales ("buen dia", "como estas"), chistes y solicitudes de historial conversacional ("donde quedamos").
+- **🗣️ Regex mejoradas en el Intent Router**: Se extendieron las reglas de coincidencia rápida de [IntentRouterService](src/jarvis/tools/intent/intent-router.service.ts) para soportar saludos comunes adicionales ("buen dia", "como estas"), chistes y solicitudes de historial conversacional ("donde quedamos").
 - **🚫 Filtrado de Ruido en Búsqueda Web**: Se excluyeron los términos genéricos *"hoy"* y *"ayer"* en la detección de `WEB` del router para evitar falsas salidas a internet.
 
 ### Added & Fixed — Ingesta de Carl & Sigmund y Saneamiento de Fichas (2026-07-21)
 
 - **📚 Ingesta de Carl Jung y Sigmund Freud**: Se crearon herramientas de automatización (`scripts/ingest-carl-jung.ts` e `scripts/ingest-author.ts`) para parsear e indexar múltiples obras de Carl Jung y Sigmund Freud en la biblioteca personal.
 - **🧬 Saneamiento de Resúmenes e Indización**:
-  - Detección de Fichas de Conocimiento corruptas u obsoletas (que contienen disculpas o errores de generación anteriores) mediante `isBadSummary` en [DocumentSummaryService](file:///c:/nest/productos_crud_bkd/src/jarvis/library/document-summary.service.ts), forzando su regeneración automática.
+  - Detección de Fichas de Conocimiento corruptas u obsoletas (que contienen disculpas o errores de generación anteriores) mediante `isBadSummary` en [DocumentSummaryService](src/jarvis/library/document-summary.service.ts), forzando su regeneración automática.
   - Parseador mejorado de `keyPoints` en resúmenes para extraer viñetas y listas numéricas de las secciones de *"Núcleos Temáticos"*.
-  - Filtro estricto `matchTerm` en [CorpusSelectorService](file:///c:/nest/productos_crud_bkd/src/jarvis/knowledge/corpus-selector.service.ts) para consultas de términos cortos ($\le 4$ caracteres) empleando límites de palabra (`\b`), eliminando falsos positivos en el indexado y búsqueda.
+  - Filtro estricto `matchTerm` en [CorpusSelectorService](src/jarvis/knowledge/corpus-selector.service.ts) para consultas de términos cortos ($\le 4$ caracteres) empleando límites de palabra (`\b`), eliminando falsos positivos en el indexado y búsqueda.
 
 ### Added — JarBees 3.0: Arquitectura Cognitiva Multidisciplinaria (2026-07-21)
 
@@ -3265,7 +3257,7 @@ Evolución completa de la arquitectura con provider abstraction, observabilidad,
 - La tabla ConversationMessage ahora se crea correctamente en la base de datos PostgreSQL neon.tech.
 - Se actualiz� el script de inicio r�pido para incluir la instalaci�n de ngrok con 
 pm install -g ngrok.
-- El servidor NestJS ya funciona correctamente con Postgres y expone ngrok activo en https://sustained-spree-carnation.ngrok-free.dev.
+- El servidor NestJS ya funciona correctamente con Postgres y expone ngrok activo en https://<tunnel-redacted>.ngrok-free.dev.
 A d d e d   n e w   f e a t u r e :   F i x   f o r   d e v   s e r v e r   s t a r t u p 
  
  

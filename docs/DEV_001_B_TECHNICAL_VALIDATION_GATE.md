@@ -61,7 +61,7 @@ No todos los `@Public()` tienen el mismo impacto. Auditamos los **54 endpoints**
 
 Validamos técnicamente tu observación sobre `SEC-04`:
 - **Por qué `--permission` de Node.js por sí solo NO es un sandbox completo:**
-  1. Aunque `--permission --allow-fs-read=<dir> --allow-fs-write=<dir>` en Node 20+ bloquea `fs` y `child_process` cuando no se otorga `--allow-child-process`, **no aísla la pila de red a nivel de kernel** (un addon nativo `.node` o un fallo de runtime podría abrir sockets), **no limita CPU/hilos a nivel de SO** (un `while(true)` o bomba de memoria satura el host hasta el timeout) y **corre bajo el mismo SID de usuario de Windows (`xiphos-pc1`)**.
+  1. Aunque `--permission --allow-fs-read=<dir> --allow-fs-write=<dir>` en Node 20+ bloquea `fs` y `child_process` cuando no se otorga `--allow-child-process`, **no aísla la pila de red a nivel de kernel** (un addon nativo `.node` o un fallo de runtime podría abrir sockets), **no limita CPU/hilos a nivel de SO** (un `while(true)` o bomba de memoria satura el host hasta el timeout) y **corre bajo el mismo SID de usuario local en Windows**.
   2. Tampoco el bloqueo por expresiones regulares en [`StaticPreValidatorService`](../src/jarvis/verification/static-pre-validator.service.ts#L317-L443) es suficiente, porque en JavaScript existen infinitas formas de ofuscar llamadas (`globalThis[String.fromCharCode(...)]`, `Reflect.get`, constructores dinámicos, prototipos).
 - **Diseño técnico para `B2` (`SEC-04`):**
   - Defensa en 3 capas superpuestas (nunca confiando en una sola):

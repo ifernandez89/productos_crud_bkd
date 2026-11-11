@@ -81,11 +81,11 @@ Se actualizaron los scripts y la configuración de Jest para garantizar **ejecuc
 
 ### 2. Creación de Skill Interna para JarBees (`skills/testing-safety`)
 Se creó e indexó en el motor cognitivo de JarBees la skill:
-* **Archivo de Metadata:** [`skills/testing-safety/metadata.json`](file:///c:/Projects/productos_crud_bkd/skills/testing-safety/metadata.json)
-* **Directivas de Comportamiento:** [`skills/testing-safety/skill.md`](file:///c:/Projects/productos_crud_bkd/skills/testing-safety/skill.md)
+* **Archivo de Metadata:** [`skills/testing-safety/metadata.json`](skills/testing-safety/metadata.json)
+* **Directivas de Comportamiento:** [`skills/testing-safety/skill.md`](skills/testing-safety/skill.md)
 * Contiene instrucciones precisas para que JarBees conozca la diferencia entre memoria física y heap de V8, exija siempre `--runInBand`, aplique mockeos a llamadas de inferencia LLM y realice el teardown adecuado de temporizadores y conexiones.
 
-### 3. Reglas Permanentes de Proyecto ([`.agents/AGENTS.md`](file:///c:/Projects/productos_crud_bkd/.agents/AGENTS.md))
+### 3. Reglas Permanentes de Proyecto ([`.agents/AGENTS.md`](.agents/AGENTS.md))
 Se formalizó la sección `## Testing & Resource Safety Rules (Anti-OOM)` con directivas obligatorias para cualquier modelo o agente de IA que opere sobre el repositorio:
 * Ejecución serial forzosa en tests.
 * Prohibición de volcado indiscriminado de payloads masivos a la terminal.

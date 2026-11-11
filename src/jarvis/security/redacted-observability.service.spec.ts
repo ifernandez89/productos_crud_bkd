@@ -46,10 +46,10 @@ describe('RedactedObservabilityService (Data Sanitization & Token Masking)', () 
 
 
   it('debe ofuscar rutas absolutas de usuarios en Windows', () => {
-    const text = 'Archivo guardado en C:\\Users\\xiphos-pc1\\Documents\\secret.txt';
+    const text = 'Archivo guardado en C:\\Users\\test-user\\Documents\\secret.txt';
     const redacted = service.redactText(text);
 
-    expect(redacted).not.toContain('xiphos-pc1');
+    expect(redacted).not.toContain('test-user');
     expect(redacted).toContain('C:\\Users\\[USER_HOME]\\Documents\\secret.txt');
   });
 

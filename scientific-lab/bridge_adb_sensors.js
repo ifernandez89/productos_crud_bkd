@@ -42,14 +42,18 @@ async function main() {
   console.log('🛰️ JARBEES HARDWARE SENSOR BRIDGE (PHYPHOX HAL -> FIELD LAB)');
   console.log('='.repeat(70));
 
+  const expectedSerial = (process.env.ADB_DEVICE_SERIAL || '').trim();
   const devices = await adb(['devices']);
-  if (!devices.includes('ZT322BX8BF')) {
-    console.log('⚠️ Moto G22 no detectado por ADB.');
-    console.log('   Por favor, verifica la conexión USB.');
+  const hasDevice = expectedSerial
+    ? devices.includes(expectedSerial)
+    : /\bdevice\b/.test(devices.replace('List of devices attached', ''));
+  if (!hasDevice) {
+    console.log('⚠️ Nodo móvil Android no detectado por ADB.');
+    console.log('   Por favor, verifica la conexión USB y la depuración ADB.');
     process.exit(1);
   }
 
-  console.log('✅ Moto G22 conectado por USB ADB.');
+  console.log('✅ Nodo móvil Android conectado por USB ADB.');
   await ensureAdbForward();
   await ensurePhyphoxMeasuring();
 

@@ -85,7 +85,7 @@ Gestionada por `AssetCatalogService`:
 
 ## 6. Banco de Pruebas de Regresión Visual (Golden Cases)
 
-Suite [`scripts/run_visual_benchmark.js`](file:///c:/Projects/productos_crud_bkd/scripts/run_visual_benchmark.js) evaluando 5 casos con semillas fijas:
+Suite [`scripts/run_visual_benchmark.js`](scripts/run_visual_benchmark.js) evaluando 5 casos con semillas fijas:
 
 | Caso | Escena de Referencia | Semilla | Render | Contraste WCAG | Densidad Geométrica | QA Score |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -106,7 +106,7 @@ Los resultados se guardan de forma persistente en `storage/benchmarks/baselines/
 - [x] **3. Crear el benchmark de regresión:** Batería `ocean-001` a `ocean-005` con semillas constantes y líneas base en disco.
 - [x] **4. Validar WebGL en Playwright con la GPU:** Confirmada la detección de la NVIDIA GeForce RTX 5070 bajo ANGLE Direct3D11 con WebGL 2.0.
 - [x] **5. Crear el catálogo de recursos:** `AssetCatalogService` indexando paletas, materiales Fresnel y encuadres en `storage/assets/catalog.json`.
-- [x] **6. Implementar la escena 3D mínima:** Cargar modelo GLB (casco PBR de Khronos y reliquias de ArcheoScope) con materiales PBR, Three.js headless y aceleración por GPU RTX 5070 completada en [`ThreePortraitEngine`](file:///c:/Projects/productos_crud_bkd/src/jarvis/tools/poster/engines/three-portrait.engine.ts).
-- [x] **7. Integrar recursos PBR y HDRIs:** Catálogo de 17 recursos de dominio público indexados por `AssetCatalogService`, descargador automatizado [`scripts/download_pbr_assets.js`](file:///c:/Projects/productos_crud_bkd/scripts/download_pbr_assets.js) y catálogo detallado en [`docs/PBR_ASSET_CATALOG.md`](file:///c:/Projects/productos_crud_bkd/docs/PBR_ASSET_CATALOG.md).
-- [x] **8. Récord de Paisaje 3D Procedural (Sin IA):** Escena completa "Twinkle Tale Aetheria v2" generada de forma 100% determinista con Three.js r165, texturas PBR reales, arquitectura corintia clásica y aceleración RTX 5070 a 2048x1536 px en 2.5s. Documentado formalmente en [`docs/MEJOR_RESULTADO_3D_PROCEDURAL_SIN_IA.md`](file:///c:/Projects/productos_crud_bkd/docs/MEJOR_RESULTADO_3D_PROCEDURAL_SIN_IA.md).
+- [x] **6. Implementar la escena 3D mínima:** Cargar modelo GLB (casco PBR de Khronos y reliquias de ArcheoScope) con materiales PBR, Three.js headless y aceleración por GPU RTX 5070 completada en [`ThreePortraitEngine`](src/jarvis/tools/poster/engines/three-portrait.engine.ts).
+- [x] **7. Integrar recursos PBR y HDRIs:** Catálogo de 17 recursos de dominio público indexados por `AssetCatalogService`, descargador automatizado [`scripts/download_pbr_assets.js`](scripts/download_pbr_assets.js) y catálogo detallado en [`docs/PBR_ASSET_CATALOG.md`](docs/PBR_ASSET_CATALOG.md).
+- [x] **8. Récord de Paisaje 3D Procedural (Sin IA):** Escena completa "Twinkle Tale Aetheria v2" generada de forma 100% determinista con Three.js r165, texturas PBR reales, arquitectura corintia clásica y aceleración RTX 5070 a 2048x1536 px en 2.5s. Documentado formalmente en [`docs/MEJOR_RESULTADO_3D_PROCEDURAL_SIN_IA.md`](docs/MEJOR_RESULTADO_3D_PROCEDURAL_SIN_IA.md).
 

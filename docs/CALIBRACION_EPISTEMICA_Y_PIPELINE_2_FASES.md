@@ -76,7 +76,7 @@ graph TD
 
 ## 4. La Suite de Regresión Epistemológica de 8 Casos
 
-Implementada en [`scripts/epistemic_regression_suite.js`](file:///c:/Projects/productos_crud_bkd/scripts/epistemic_regression_suite.js), evalúa el comportamiento del sistema ante condiciones de estrés extremas:
+Implementada en [`scripts/epistemic_regression_suite.js`](scripts/epistemic_regression_suite.js), evalúa el comportamiento del sistema ante condiciones de estrés extremas:
 
 | Caso | Desafío Epistémico | Objetivo de Verificación | Comportamiento del Pipeline en 2 Fases |
 | :--- | :--- | :--- | :--- |
