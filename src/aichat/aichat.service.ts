@@ -22,6 +22,9 @@ import axios from 'axios';
 import { DateTime } from 'luxon';
 import { resolveOllamaModelName } from '../shared/ollama-config';
 import { normalizeDiscipline } from '../shared/disciplines';
+import { ConversationalContinuityService } from '../jarvis/dialogue/conversational-continuity.service';
+import { TaskContractValidatorService } from '../jarvis/dialogue/task-contract-validator.service';
+import { ResponseNoveltyGuardService } from '../jarvis/dialogue/response-novelty-guard.service';
 
 // ── Caché simple de productos para evitar DB roundtrip en cada mensaje ──────────
 interface ProductCache {
@@ -68,6 +71,12 @@ export class AichatService {
     private readonly qwenModel?: OllamaModelService,
     @Optional()
     private readonly contextManager: ContextManagerService = new ContextManagerService(),
+    @Optional()
+    private readonly continuityService?: ConversationalContinuityService,
+    @Optional()
+    private readonly contractValidator?: TaskContractValidatorService,
+    @Optional()
+    private readonly noveltyGuard?: ResponseNoveltyGuardService,
   ) {}
 
   // ── Caché de productos ────────────────────────────────────────────────────────
@@ -197,21 +206,43 @@ export class AichatService {
     });
     const fechaTexto = now.toFormat("dd 'de' LLLL 'de' yyyy");
 
+    // ── Continuidad conversacional JCA-002 ───────────────────────────────────
+    let promptConstraints: string[] = [];
+    if (this.continuityService) {
+      const sessionHistory = this.getSessionContext(sessionId, 6);
+      const resolution = this.continuityService.resolveTurn(
+        sessionId || 'default',
+        texto,
+        sessionHistory.map((h) => ({ role: h.role, content: h.content })),
+      );
+      if (resolution.injectedPromptConstraints.length > 0) {
+        promptConstraints = resolution.injectedPromptConstraints;
+      }
+    }
+
+    // ── Detección de traducción en prompt o disciplina ───────────────────────
+    const isTranslationRequested =
+      discipline === 'traductor' ||
+      /(?:traduc(?:e|i|ir|ime)|translate)\b/i.test(textoNorm) ||
+      /(?:al ingles|to english|en ingles)\b/i.test(textoNorm);
+
     // ── System prompt personalizado por disciplina ───────────────────────────
     let system = '';
 
-    if (discipline === 'coder') {
+    if (isTranslationRequested) {
+      const isTargetEnglish = /(?:al ingles|to english|en ingles)\b/i.test(textoNorm);
+      system = [
+        metadata,
+        'Eres un Traductor Profesional Especializado.',
+        `Traduce el contenido fielmente ${isTargetEnglish ? 'al inglés' : 'al idioma solicitado'}.`,
+        'Devuelve únicamente la traducción limpia, sin preámbulos, explicaciones ni notas.',
+      ].join('\n');
+    } else if (discipline === 'coder') {
       system = [
         metadata,
         'Eres un Desarrollador Senior y Arquitecto de Software Experto impulsado por Qwen2.5-Coder.',
         'Responde siempre con código limpio, bien tipado y explicaciones técnicas claras.',
         'Genera ejemplos prácticos y enfocados a producción en TypeScript, Python, SQL u otros lenguajes según se requiera.',
-      ].join('\n');
-    } else if (discipline === 'traductor') {
-      system = [
-        'Eres un Traductor Profesional Especializado.',
-        'Traduce el contenido de manera precisa y fluida conservando el formato y la terminología.',
-        'Devuelve únicamente la traducción limpia, sin preámbulos.',
       ].join('\n');
     } else if (discipline === 'reader') {
       system = [
@@ -224,18 +255,29 @@ export class AichatService {
         'Eres un Especialista en Procesamiento de Documentos y OCR.',
         'Extrae y resume la información estructurada de documentos de manera concisa y exacta.',
       ].join('\n');
+    } else if (discipline === 'tools') {
+      system = [
+        metadata,
+        `Hoy es ${fechaTexto}.`,
+        'Eres un Asistente Operativo de Herramientas y Datos en Tiempo Real.',
+        'Si te consultan la hora, fecha o cálculos, responde directamente con la información precisa de inmediato sin evasivas ni ofertas condicionales.',
+      ].join('\n');
     } else {
       // Chatbot general / Auto
       system = [
         metadata,
         `Hoy es ${fechaTexto}.`,
         'Eres un asistente conversacional inteligente, empático y versátil impulsado por Qwen2.5.',
-        'Respondés siempre en español de forma natural, clara y tan detallada como el usuario lo solicite.',
+        'Respondés de forma natural, clara y tan detallada como el usuario lo solicite.',
         'Directrices:',
         '1. Si te preguntan sobre productos, utilizá el catálogo provisto.',
-        '2. Para consultas generales, razonamiento cotidiano o asistencia, brindá respuestas completas y fluidas sin limitaciones artificiales.',
+        '2. Para consultas generales, razonamiento cotidiano o asistencia, brindá respuestas completas y fluidas.',
         '3. Si no sabés algo, indicalo honestamente sin inventar datos.',
       ].join('\n');
+    }
+
+    if (promptConstraints.length > 0) {
+      system += `\n\n${promptConstraints.join('\n\n')}`;
     }
 
     // ── User prompt (contexto + pregunta) ────────────────────────────────────
@@ -282,7 +324,7 @@ export class AichatService {
       return this.lastAssistantMessage;
     }
 
-    const maxAttempts = 1;
+    const maxAttempts = 2;
     const timeout = 60000;
     let attempts = 0;
     let respuesta = '';
@@ -298,7 +340,7 @@ export class AichatService {
             longitude,
           });
           if (toolAnswer) {
-            const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto);
+            const finalToolAnswer = this.validateAnswerContent(toolAnswer, texto, sessionId);
             const activeModel = this.getActiveModelName();
             const finalAnswerWithNotice = this.formatAnswerWithModelNotice(
               finalToolAnswer,
@@ -310,6 +352,10 @@ export class AichatService {
               finalAnswerWithNotice,
             );
             this.lastAssistantMessage = finalAnswerWithNotice;
+            this.continuityService?.recordAssistantOutput(
+              sessionId || 'default',
+              finalAnswerWithNotice,
+            );
             await this.persistSuccessfulQuestion(
               texto,
               finalAnswerWithNotice,
@@ -346,20 +392,26 @@ export class AichatService {
             clearTimeout(timeoutHandle);
           }
         }
-        const finalAnswer = this.validateAnswerContent(respuesta, texto);
+        const finalAnswer = this.validateAnswerContent(respuesta, texto, sessionId);
         this.rememberSessionPair(sessionId, texto, finalAnswer);
         this.lastAssistantMessage = finalAnswer;
+        this.continuityService?.recordAssistantOutput(
+          sessionId || 'default',
+          finalAnswer,
+        );
         await this.persistSuccessfulQuestion(texto, finalAnswer);
         return finalAnswer;
       } catch (error) {
         this.logger.error(
           `Intento ${attempts} fallido: ${this.getErrorMessage(error)}`,
         );
-        await this.persistFailedQuestion(texto, error);
-        throw new HttpException(
-          this.getErrorMessage(error),
-          this.getErrorStatus(error),
-        );
+        if (attempts >= maxAttempts) {
+          await this.persistFailedQuestion(texto, error);
+          throw new HttpException(
+            this.getErrorMessage(error),
+            this.getErrorStatus(error),
+          );
+        }
       }
     }
     throw new Error(
@@ -632,7 +684,11 @@ export class AichatService {
     }
   }
 
-  private validateAnswerContent(answer: string, question: string): string {
+  private validateAnswerContent(
+    answer: string,
+    question: string,
+    sessionId?: string,
+  ): string {
     const normalizedAnswer = answer.trim();
 
     if (!normalizedAnswer) {
@@ -644,6 +700,21 @@ export class AichatService {
       !this.isGreetingQuestion(question)
     ) {
       throw new Error('La IA devolvió una respuesta placeholder no válida');
+    }
+
+    if (this.contractValidator && this.continuityService && sessionId) {
+      const state = this.continuityService.getState(sessionId);
+      const validation = this.contractValidator.validate(
+        normalizedAnswer,
+        state,
+        question,
+      );
+      if (!validation.isValid) {
+        this.logger.warn(
+          `[validateAnswerContent] Violación de contrato detectada: ${validation.violationReason} (${validation.suggestedAction})`,
+        );
+        throw new Error(validation.violationReason);
+      }
     }
 
     return normalizedAnswer;

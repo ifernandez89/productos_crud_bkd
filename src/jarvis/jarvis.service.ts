@@ -48,6 +48,13 @@ import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.servi
 import { ToolResultValidatorService } from './tools/validation/tool-result-validator.service';
 import { ContextSelectorService } from './context/context-selector.service';
 import { ContextPlan } from './context/context-selector.interface';
+import {
+  RagEvidenceSource,
+  ConversationTaskState,
+} from './dialogue/dialogue.types';
+import { ConversationalContinuityService } from './dialogue/conversational-continuity.service';
+import { TaskContractValidatorService } from './dialogue/task-contract-validator.service';
+import { ResponseNoveltyGuardService } from './dialogue/response-novelty-guard.service';
 import { RagRetrievalStatus } from './prompt/jarvis-prompt-builder.service';
 import { CapabilityRegistry } from './capabilities/capability-registry.service';
 import { CapabilityExecutor } from './capabilities/capability-executor.service';
@@ -55,6 +62,13 @@ import { MathCapability } from './capabilities/math.capability';
 import { WebSearchCapability } from './capabilities/web-search.capability';
 import type { MathResultData, WebSearchResultData } from './capabilities/capability.interface';
 import { randomUUID } from 'crypto';
+
+export interface JarvisQueryResult {
+  answer: string;
+  sources?: RagEvidenceSource[];
+  sessionId?: string;
+  mode?: string;
+}
 
 export interface JarvisQueryOptions {
   sessionId?: string;
@@ -74,6 +88,7 @@ export class JarvisService {
   private readonly selector: ContextSelectorService;
   private readonly capabilityRegistry: CapabilityRegistry;
   private readonly capabilityExecutor: CapabilityExecutor;
+  private readonly sessionLastSources = new Map<string, RagEvidenceSource[]>();
 
   constructor(
     private readonly memoryRepo: MemoryRepository,
@@ -128,6 +143,12 @@ export class JarvisService {
     private readonly injectedCapabilityRegistry?: CapabilityRegistry,
     @Optional()
     private readonly injectedCapabilityExecutor?: CapabilityExecutor,
+    @Optional()
+    private readonly continuityService?: ConversationalContinuityService,
+    @Optional()
+    private readonly contractValidator?: TaskContractValidatorService,
+    @Optional()
+    private readonly noveltyGuard?: ResponseNoveltyGuardService,
   ) {
     this.providers = new Map([
       ['gateway', this.inferenceGateway],
@@ -160,6 +181,26 @@ export class JarvisService {
 
   getCapabilityExecutor(): CapabilityExecutor {
     return this.capabilityExecutor;
+  }
+
+  getLastSourcesForSession(sessionId?: string): RagEvidenceSource[] {
+    if (!sessionId) return [];
+    return this.sessionLastSources.get(sessionId) || [];
+  }
+
+  async queryDetailed(
+    userMessage: string,
+    options: JarvisQueryOptions = {},
+  ): Promise<JarvisQueryResult> {
+    const sessionId = options.sessionId || randomUUID();
+    const answer = await this.query(userMessage, { ...options, sessionId });
+    const sources = this.getLastSourcesForSession(sessionId);
+    return {
+      answer,
+      sources,
+      sessionId,
+      mode: options.mode,
+    };
   }
 
   // ── Query principal ─────────────────────────────────────────────────────────
@@ -280,10 +321,16 @@ export class JarvisService {
             ? parseFloat(process.env.RAG_MIN_SIMILARITY)
             : 0.58;
 
+      const isExplicitRagMode =
+        options.mode === 'rag' ||
+        options.mode === 'búsqueda rag' ||
+        /^(?:rag|busqueda rag|búsqueda rag)$/i.test(options.mode || '');
+
       const ragAuthorized =
         useDocuments &&
         (contextPlan.sources.rag === 'REQUESTED' ||
-          contextPlan.sources.rag === 'SELECTED');
+          contextPlan.sources.rag === 'SELECTED' ||
+          isExplicitRagMode);
 
       const memoryAuthorized =
         useMemory &&
@@ -494,6 +541,20 @@ export class JarvisService {
           // Aplicar reranker híbrido con similitud real
           const rerankedChunks = this.rerankChunks(chunks, userMessage);
           retrievedChunksList = rerankedChunks;
+
+          const formattedSources: RagEvidenceSource[] = rerankedChunks
+            .slice(0, 5)
+            .map((c) => ({
+              id: c.document?.id || c.id || 0,
+              title: c.document?.title || c.title || 'Documento',
+              author: c.document?.author || c.author || 'Desconocido',
+              category: c.document?.category || c.category || 'General',
+              page: c.page || c.metadata?.page || 1,
+              similarity:
+                typeof c.score === 'number' ? c.score : c.similarity || 0.85,
+              snippet: (c.content || '').slice(0, 300),
+            }));
+          this.sessionLastSources.set(sessionId, formattedSources);
 
           const formattedParts = rerankedChunks.slice(0, 3).map((c) => {
             const docTitle = c.document?.title || 'Documento';
@@ -1939,6 +2000,7 @@ export class JarvisService {
     intent?: any,
     retrievedChunks: any[] = [],
   ): Promise<void> {
+    this.continuityService?.recordAssistantOutput(sessionId, answer);
     await this.conversationRepo.create({
       sessionId,
       role: 'assistant',

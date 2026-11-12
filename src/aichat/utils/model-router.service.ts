@@ -183,9 +183,34 @@ export class ModelRouterService {
 
     // 4. Modo Automático: Detección heurística por palabras clave
     const lowerPrompt = prompt.toLowerCase();
-    const detectedKeywords = this.TECH_KEYWORDS.filter((keyword) =>
-      lowerPrompt.includes(keyword),
-    );
+    const normalizedPrompt = prompt
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+    // 4.1 Detección automática de traducción en modo AUTO (prioridad máxima antes de palabras técnicas)
+    if (
+      /(?:traduc(?:e|i|ir|ime)|translate)\b/i.test(normalizedPrompt) ||
+      /(?:al ingles|to english|en ingles|al espanol|to spanish|en espanol)\b/i.test(
+        normalizedPrompt,
+      )
+    ) {
+      return {
+        model: generalModel,
+        discipline: 'traductor',
+        reason: 'Solicitud de traducción detectada automáticamente en modo AUTO',
+        keywords: ['traduccion'],
+      };
+    }
+
+    const detectedKeywords = this.TECH_KEYWORDS.filter((keyword) => {
+      // Para keywords cortas (<=4 caracteres), exigir límite de palabra (\b) para evitar falsos positivos
+      if (keyword.length <= 4) {
+        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+        return regex.test(lowerPrompt);
+      }
+      return lowerPrompt.includes(keyword);
+    });
 
     if (detectedKeywords.length > 0) {
       return {

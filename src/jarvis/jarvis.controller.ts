@@ -626,12 +626,18 @@ export class JarvisController {
   ) {
     const requestedProvider =
       body.provider === 'ollama' ? 'gateway' : body.provider;
-    const answer = await this.jarvisService.query(body.message, {
+    const result = await this.jarvisService.queryDetailed(body.message, {
       sessionId: body.sessionId,
       provider: requestedProvider,
       mode: body.mode || body.discipline || body.specialist,
     });
-    return { answer, sessionId: body.sessionId, mode: body.mode || body.discipline };
+    return {
+      answer: result.answer,
+      sources: result.sources || [],
+      sessionId: body.sessionId,
+      mode: body.mode || body.discipline,
+      lastMessage: result.answer,
+    };
   }
 
   // ── Feedback ────────────────────────────────────────────────────────────────

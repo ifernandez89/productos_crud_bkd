@@ -229,7 +229,7 @@ export class AssistantToolsService {
     if (/(dentro de|hace \d+|cuantos dias|cuanto falta|cuánto falta|que fecha sera|que dia cae)/i.test(n)) {
       return false;
     }
-    return /(que hora|qué hora|hora actual|hora local|que hora tiene|qué hora tiene|que dia|qué día|dia es hoy|día es hoy|que fecha|qué fecha|fecha actual|fecha de hoy|dia actual|en que dia|en qué día|en que fecha|en qué fecha|cual es la fecha|cuál es la fecha|sabes que dia|sabes qué día|sabes que fecha|sabes qué fecha|no me dijiste la fecha|dime la fecha|decime la fecha|zona horaria|horario actual)/i.test(
+    return /(que hora|qué hora|hora actual|hora local|que hora tiene|qué hora tiene|mostrame la hora|mostrar la hora|dame la hora|decime la hora|ver la hora|cual es la hora|cuál es la hora|hora exacta|que dia|qué día|dia es hoy|día es hoy|que fecha|qué fecha|fecha actual|fecha de hoy|dia actual|en que dia|en qué día|en que fecha|en qué fecha|cual es la fecha|cuál es la fecha|sabes que dia|sabes qué día|sabes que fecha|sabes qué fecha|no me dijiste la fecha|dime la fecha|decime la fecha|zona horaria|horario actual|ejecuta.*(?:herramienta|hora)|herramienta.*hora|probar herramienta|herramienta de prueba)/i.test(
       n,
     );
   }
