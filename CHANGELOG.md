@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
+
+### Conversational Continuity & Quality Engine — JCA-002 Homologación e Integración a main (2026-11-12)
+
+> **Estado:** ✅ Homologado con 100% de tests unitarios exitosos (`12/12` PASS en suite dedicada + suites satélites intactas, `nest build` exit=0).
+> **Rama:** `feature/jca-002-conversational-continuity` integrada a `main` (`8657507`).
+
+- **Conversational Continuity Engine (`src/jarvis/dialogue/conversational-continuity.service.ts`, `dialogue.types.ts`)**:
+  - Implementación de `ConversationTaskState` para rastrear deterministamente la tarea activa por sesión (`TELL_JOKE`, `TRANSLATE`, `SOLVE_RIDDLE`, `EXECUTE_TOOL`, `RAG_SEARCH`, `CODE`, `GENERAL_CHAT`).
+  - Resolución contextual de modificadores relativos y anáforas de continuación (*"otro"*, *"más gracioso"*, *"en inglés"*, *"más simple"*, *"revisalo"*) diferenciando continuidad de tarea de giros temáticos.
+  - Inyección adaptativa de directivas negativas y guías de deliberación en el prompt del LLM según el estado de la tarea.
+- **Response Novelty Guard (`src/jarvis/dialogue/response-novelty-guard.service.ts`)**:
+  - Métrica híbrida de novedad léxica y semántica: solapamiento de tokens / bigramas Jaccard (60%) y distancia normalizada de Levenshtein (40%).
+  - Detección proactiva de repeticiones contra el historial de salidas del asistente (`threshold=0.60`).
+  - Generación de restricciones negativas obligatorias para el LLM: `[RESTRICCIÓN ESTRICTA DE NOVEDAD Y DIVERSIDAD]`.
+- **Task Contract Validator (`src/jarvis/dialogue/task-contract-validator.service.ts`)**:
+  - Validador posgeneración que audita respuestas antes de persistir o emitir al usuario:
+    - *Contrato de Humor:* Verifica que el nuevo chiste no sea idéntico ni supere el umbral de similitud con el anterior.
+    - *Contrato de Traducción:* Valida que el texto traducido no sea idéntico al de entrada y contenga tokens en el idioma destino.
+    - *Contrato de Razonamiento Lógico:* Detecta falacias superficiales de LLM en acertijos de posición (e.g. el acertijo de adelantar al segundo puesto) y fuerza el paso a paso deductivo.
+    - *Contrato Operativo de Herramientas:* Rechaza ofertas conversacionales evasivas (*"si querés te digo la hora"*) forzando la respuesta factual directa.
+- **Enrutamiento Inteligente en Modo AUTO y Normalización (`src/aichat/utils/model-router.service.ts`, `src/aichat/aichat.service.ts`)**:
+  - Prioridad heurística para solicitudes de traducción en modo `AUTO` (`discipline: 'traductor'`), normalizando diacríticos/tildes y delimitando keywords cortas (`\b`) para evitar falsos positivos técnicos (como detectar `"vue"` dentro de `"vuelva"`).
+  - Eliminación de la directiva coercitiva *"Respondés siempre en español"* del prompt general de `AUTO` cuando se detecta una operación de traducción o asistencia multilingüe.
+  - Soporte de reintento adaptativo (`maxAttempts=2`) con penalización de repetición ante violaciones de contrato.
+- **Exposición de Fuentes RAG & Enriquecimiento Operativo (`src/jarvis/jarvis.service.ts`, `src/jarvis/jarvis.controller.ts`, `src/aichat/utils/assistant-tools.service.ts`)**:
+  - Habilitación forzada de `ragAuthorized` ante selección explícita del modo RAG en la interfaz (`mode === 'rag'`).
+  - Nuevo método `queryDetailed()` en `JarvisService` y respuesta enriquecida en `@Post('query')` con `sources: RagEvidenceSource[]` (título, autor, categoría, página, similitud y fragmento) para que el frontend renderice las citas documentales.
+  - Ampliación de patrones en `AssistantToolsService` (`isTimeQuery`) para cubrir expresiones naturales de consulta horaria (*"mostrame la hora"*, *"ejecutá la herramienta de hora"*, *"dame la hora"*).
+- **Suite de Pruebas Unitarias Homologada (`src/jarvis/dialogue/conversational-continuity.spec.ts`)**:
+  - Cobertura integral de los 5 escenarios empíricos en ejecución serial estricta con `--runInBand` (`12/12 PASS`).
+
 ### Promoted & Operational — DEV-001-B1 + DEV-001-B2.6 Promoción Selectiva a main y Hardening Operativo de Acceso (2026-11-10)
 
 - **Promoción Selectiva Fast-Forward a `main` (`candidate/b1-b2.6-integration` `db19e77`)**:
