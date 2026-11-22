@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project keeps its versioning in `package.json`.
 
 
+
+### Herbario Oficial JarBees & Visión Botánica — Sincronización Viva con PlantasMedicinales y Registro de Cannabis Medicinal (2026-11-22)
+
+> **Estado:** ✅ Sincronizado y verificado con 75 plantas medicinales homologadas (`jarvis-knowledge-herbario.spec.ts` `2/2 PASS`, `tsc` exit=0).
+> **Fuente Maestra:** `G:\Projects2\PlantasMedicinales` ⇄ `src/jarvis/knowledge/plantas_medicinales.json`.
+
+- **Sincronización Automática Viva del Herbario (`src/jarvis/knowledge/jarvis-knowledge.service.ts`, `plantas_medicinales.json`)**:
+  - Implementación de `syncHerbariumFromSource()` con verificación en `onModuleInit` y chequeo automático por `mtimeMs` / conteo de fichas `.md` contra `G:\Projects2\PlantasMedicinales\content\plantas`.
+  - Enriquecimiento completo de las 75 plantas del herbario en `plantas_medicinales.json` (incluyendo `nombreCientifico`, `familia`, `otrosNombres`, `origen`, `distribucion`, `habitat`, `acciones`, `sistemas`, `afecciones`, `principiosActivos`, `usosEtnobotanicos`, `precauciones`, `contraindicaciones`, `toxicidad`, `epocaFloracion`, `tipoCiclo`, `imagen`, `imagenes` y `descripcion`).
+  - Indexación ampliada en `getItemKeywords()` para búsquedas por sinónimos, principios activos (CBD, THC, CBG, terpenos), familia botánica y afecciones clínicas.
+- **Registro Botánico y Láminas Editoriales de Cannabis Medicinal (`G:\Projects2\PlantasMedicinales\content\plantas\cannabis.md`)**:
+  - Incorporación de la ficha integral de *Cannabis sativa* L. (subsp. *sativa*, *indica*, *ruderalis*) con clave morfológica de identificación por biotipo y estadio fenológico, clasificación de quimiotipos (I, II y III), farmacología del sistema endocannabinoide y precauciones clínicas (Ley 27.350).
+  - Generación y optimización en formato `.webp` (Full 1200px + Miniaturas 400px) de 3 láminas botánicas a color con iluminación natural (`/imagenes/cannabis.webp`, `/imagenes/cannabis-sativa-floracion.webp`, `/imagenes/cannabis-hibrido-vegetativo.webp`, `/imagenes/cannabis-sativa-vegetativo.webp`) y soporte de galería multi-lámina en `src/app/plantas/[slug]/page.tsx`.
+- **Diagnóstico Morfológico en Visión Artificial (`src/jarvis/tools/vision/vision.service.ts`)**:
+  - Nuevo preset especializado `botanical` en `VisionService` (Qwen2.5-VL) para identificación taxonómica, ancho y número de foliolos (hoja fina Sativa vs. hoja ancha Indica/Híbrido), distancia internodal y estadio fenológico (vegetativo vs. floración/cogollos).
 ### Conversational Continuity & Quality Engine — JCA-002 Homologación e Integración a main (2026-11-12)
 
 > **Estado:** ✅ Homologado con 100% de tests unitarios exitosos (`12/12` PASS en suite dedicada + suites satélites intactas, `nest build` exit=0).

@@ -1,9 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface HerbariumSyncReport {
+  synced: boolean;
+  sourceDir: string;
+  totalPlants: number;
+  updatedAt: string;
+  reason: string;
+}
+
 @Injectable()
-export class JarvisKnowledgeService {
+export class JarvisKnowledgeService implements OnModuleInit {
   private readonly logger = new Logger(JarvisKnowledgeService.name);
   private readonly knowledgeDir = path.join(
     process.cwd(),
@@ -11,6 +19,20 @@ export class JarvisKnowledgeService {
     'jarvis',
     'knowledge',
   );
+  private readonly herbariumRootDir =
+    process.env.HERBARIO_SOURCE_DIR || 'G:\\Projects2\\PlantasMedicinales';
+  private lastSyncCheckMs = 0;
+  private readonly SYNC_CHECK_TTL_MS = 30_000;
+
+  onModuleInit(): void {
+    try {
+      this.syncHerbariumFromSource(false);
+    } catch (err: any) {
+      this.logger.warn(
+        `[herbario-sync] No se pudo sincronizar al iniciar: ${err.message}`,
+      );
+    }
+  }
 
   private normalizeText(text: string): string {
     return text
@@ -20,7 +42,219 @@ export class JarvisKnowledgeService {
       .trim();
   }
 
+  /**
+   * Sincroniza automáticamente src/jarvis/knowledge/plantas_medicinales.json
+   * a partir del repositorio maestro G:\Projects2\PlantasMedicinales\content\plantas\*.md
+   */
+  syncHerbariumFromSource(force = false): HerbariumSyncReport {
+    const contentPlantasDir = path.join(
+      this.herbariumRootDir,
+      'content',
+      'plantas',
+    );
+    const targetJsonPath = path.join(
+      this.knowledgeDir,
+      'plantas_medicinales.json',
+    );
+
+    if (!fs.existsSync(contentPlantasDir)) {
+      return {
+        synced: false,
+        sourceDir: contentPlantasDir,
+        totalPlants: 0,
+        updatedAt: new Date().toISOString(),
+        reason: 'Directorio fuente de PlantasMedicinales no disponible',
+      };
+    }
+
+    const mdFiles = fs
+      .readdirSync(contentPlantasDir)
+      .filter((f) => f.endsWith('.md'))
+      .sort((a, b) => a.localeCompare(b, 'es'));
+
+    if (mdFiles.length === 0) {
+      return {
+        synced: false,
+        sourceDir: contentPlantasDir,
+        totalPlants: 0,
+        updatedAt: new Date().toISOString(),
+        reason: 'No se encontraron archivos .md en el herbario fuente',
+      };
+    }
+
+    // Verificar si requiere actualización comparando mtime y cantidad de plantas
+    if (!force && fs.existsSync(targetJsonPath)) {
+      try {
+        const targetStat = fs.statSync(targetJsonPath);
+        const latestMdMtime = Math.max(
+          ...mdFiles.map((f) =>
+            fs.statSync(path.join(contentPlantasDir, f)).mtimeMs,
+          ),
+        );
+        const existingJson = JSON.parse(
+          fs.readFileSync(targetJsonPath, 'utf8'),
+        );
+        const existingCount = Array.isArray(existingJson?.plantas)
+          ? existingJson.plantas.length
+          : 0;
+        const hasFullMetadata =
+          existingJson?.metadata?.fuenteRepositorio === this.herbariumRootDir;
+
+        if (
+          hasFullMetadata &&
+          existingCount === mdFiles.length &&
+          targetStat.mtimeMs >= latestMdMtime
+        ) {
+          return {
+            synced: false,
+            sourceDir: contentPlantasDir,
+            totalPlants: existingCount,
+            updatedAt: new Date(targetStat.mtimeMs).toISOString(),
+            reason: 'El herbario local ya está sincronizado y actualizado',
+          };
+        }
+      } catch {
+        // Si falla la lectura del JSON previo, forzar regeneración
+      }
+    }
+
+    const plantas = mdFiles.map((file) => {
+      const slug = file.replace(/\.md$/, '');
+      const raw = fs.readFileSync(path.join(contentPlantasDir, file), 'utf8');
+      return this.parseHerbariumMarkdown(slug, raw);
+    });
+
+    const payload = {
+      metadata: {
+        nombre: 'Herbario Oficial JarBees — Plantas Medicinales',
+        version: 4,
+        fuenteRepositorio: this.herbariumRootDir,
+        actualizadoEn: new Date().toISOString(),
+        totalPlantas: plantas.length,
+        nota: 'Sincronizado automáticamente desde G:\\Projects2\\PlantasMedicinales\\content\\plantas.',
+      },
+      plantas,
+    };
+
+    if (!fs.existsSync(this.knowledgeDir)) {
+      fs.mkdirSync(this.knowledgeDir, { recursive: true });
+    }
+    fs.writeFileSync(
+      targetJsonPath,
+      JSON.stringify(payload, null, 2) + '\n',
+      'utf8',
+    );
+    this.logger.log(
+      `[herbario-sync] Sincronizadas ${plantas.length} plantas desde ${contentPlantasDir}`,
+    );
+
+    return {
+      synced: true,
+      sourceDir: contentPlantasDir,
+      totalPlants: plantas.length,
+      updatedAt: payload.metadata.actualizadoEn,
+      reason: 'Sincronización completada desde repositorio PlantasMedicinales',
+    };
+  }
+
+  /**
+   * Parser ligero y determinista de frontmatter YAML + cuerpo Markdown de cada planta
+   */
+  private parseHerbariumMarkdown(slug: string, raw: string): Record<string, any> {
+    const normalizedRaw = raw.replace(/\r\n/g, '\n');
+    const fmMatch = normalizedRaw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+    const fmText = fmMatch ? fmMatch[1] : '';
+    const bodyText = fmMatch ? fmMatch[2].trim() : normalizedRaw.trim();
+
+    const extractScalar = (key: string): string | null => {
+      const regex = new RegExp(`^${key}:\\s*(.+)$`, 'm');
+      const m = fmText.match(regex);
+      if (!m) return null;
+      const val = m[1].trim().replace(/^["']|["']$/g, '');
+      return val === '[]' || val === 'null' || val === '' ? null : val;
+    };
+
+    const extractList = (key: string): string[] => {
+      const lines = fmText.split('\n');
+      const result: string[] = [];
+      let inList = false;
+
+      for (const line of lines) {
+        if (new RegExp(`^${key}:\\s*\\[\\s*\\]`).test(line)) {
+          return [];
+        }
+        if (new RegExp(`^${key}:\\s*$`).test(line)) {
+          inList = true;
+          continue;
+        }
+        if (inList) {
+          const itemMatch = line.match(/^\s+-\s+(.+)$/);
+          if (itemMatch && !line.match(/^\s+-\s+\w+:/)) {
+            result.push(itemMatch[1].trim().replace(/^["']|["']$/g, ''));
+          } else if (/^\S/.test(line)) {
+            break;
+          }
+        }
+      }
+      return result;
+    };
+
+    // Extraer secciones clave del cuerpo Markdown (Descripción, Clave Morfológica, Formas de uso)
+    const cleanBody = bodyText
+      .replace(/^##\s+/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    const summaryDescription =
+      cleanBody.length > 900 ? `${cleanBody.slice(0, 900)}...` : cleanBody;
+
+    const imagen = extractScalar('imagen');
+    const imagenesAdicionales = extractList('imagenes');
+    const todasLasImagenes = Array.from(
+      new Set([
+        ...(imagen ? [imagen] : []),
+        ...imagenesAdicionales,
+      ]),
+    );
+
+    return {
+      nombre: extractScalar('nombre') || slug,
+      slug: extractScalar('slug') || slug,
+      nombreCientifico: extractScalar('nombreCientifico'),
+      familia: extractScalar('familia'),
+      otrosNombres: extractList('otrosNombres'),
+      origen: extractScalar('origen'),
+      distribucion: extractList('distribucion'),
+      habitat: extractScalar('habitat'),
+      acciones: extractList('acciones'),
+      sistemas: extractList('sistemas'),
+      afecciones: extractList('afecciones'),
+      principiosActivos: extractList('principiosActivos'),
+      usosEtnobotanicos: extractList('usosEtnobotanicos'),
+      precauciones: extractList('precauciones'),
+      contraindicaciones: extractList('contraindicaciones'),
+      toxicidad: extractScalar('toxicidad'),
+      epocaFloracion: extractScalar('epocaFloracion'),
+      epocaFructificacion: extractScalar('epocaFructificacion'),
+      tipoCiclo: extractScalar('tipoCiclo'),
+      imagen,
+      imagenes: todasLasImagenes,
+      descripcion: summaryDescription || null,
+    };
+  }
+
+  private ensureHerbariumFresh(): void {
+    const now = Date.now();
+    if (now - this.lastSyncCheckMs < this.SYNC_CHECK_TTL_MS) return;
+    this.lastSyncCheckMs = now;
+    try {
+      this.syncHerbariumFromSource(false);
+    } catch {
+      // Silenciar en caso de unidad G: desconectada temporalmente
+    }
+  }
+
   private getFiles(): string[] {
+    this.ensureHerbariumFresh();
     try {
       if (!fs.existsSync(this.knowledgeDir)) return [];
       return fs
@@ -67,7 +301,7 @@ export class JarvisKnowledgeService {
 
   /**
    * Extrae keywords de un item: nombre, nombre científico, sinónimos,
-   * acciones terapéuticas, aplicaciones, chakras, efectos.
+   * acciones terapéuticas, afecciones, principios activos, aplicaciones, chakras, efectos.
    */
   private getItemKeywords(item: any): string[] {
     const raw: string[] = [];
@@ -80,17 +314,22 @@ export class JarvisKnowledgeService {
       'nombreAlternativo',
       'slug',
       'nombreCientifico',
+      'familia',
       'categoria',
     ]) {
       if (typeof item[field] === 'string') raw.push(item[field]);
     }
 
-    // Arrays de texto (acciones, aplicaciones, chakras, etc.)
+    // Arrays de texto (acciones, otrosNombres, principiosActivos, afecciones, etc.)
     for (const field of [
+      'otrosNombres',
       'sinonimos',
       'nombres',
       'aliases',
       'acciones',
+      'afecciones',
+      'sistemas',
+      'principiosActivos',
       'aplicacion',
       'chakras',
       'centrosDePoder',
@@ -106,13 +345,19 @@ export class JarvisKnowledgeService {
       }
     }
 
-    // Expandir nombre principal por separadores comunes
-    const primary = item.nombre || item.title || item.titulo;
-    if (primary) {
-      primary.split(/[\(\)\-\—\/,]/).forEach((p: string) => {
-        const t = p.trim();
-        if (t.length >= 3) raw.push(t);
-      });
+    // Expandir nombre principal y nombre científico por separadores comunes
+    for (const compound of [
+      item.nombre,
+      item.title,
+      item.titulo,
+      item.nombreCientifico,
+    ]) {
+      if (typeof compound === 'string') {
+        compound.split(/[\(\)\-\—\/,\.]/).forEach((p: string) => {
+          const t = p.trim();
+          if (t.length >= 3) raw.push(t);
+        });
+      }
     }
 
     return Array.from(new Set(raw))
@@ -122,7 +367,7 @@ export class JarvisKnowledgeService {
 
   /**
    * Verifica si el query hace referencia al conjunto de conocimiento completo.
-   * Ej: "qué es el munay ki", "plantas medicinales", "sanaciones populares".
+   * Ej: "qué es el munay ki", "plantas medicinales", "herbario", "sanaciones populares".
    */
   private matchesWholeDatabase(normalizedQuery: string, file: string): boolean {
     const dbKey = file.replace('.json', '');
@@ -140,6 +385,8 @@ export class JarvisKnowledgeService {
         'hierbas medicinales',
         'herbolaria',
         'fitoterapia',
+        'herbario',
+        'seccion de plantas',
       ],
       sanaciones_populares: [
         'sanacion popular',
@@ -324,7 +571,6 @@ export class JarvisKnowledgeService {
       }
 
       // Estrategia 3: búsqueda por propiedades terapéuticas o características
-      // Ej: "plantas para la digestión", "sanaciones para la ansiedad"
       if (matches.length === 0 && file.includes('plantas')) {
         const therapeuticTerms = [
           'digestión',
@@ -339,6 +585,9 @@ export class JarvisKnowledgeService {
           'inflamación',
           'inflamacion',
           'stress',
+          'dolor',
+          'epilepsia',
+          'convulsiones',
         ];
         const isTherapeuticQuery = therapeuticTerms.some((term) =>
           normalizedQuery.includes(term),

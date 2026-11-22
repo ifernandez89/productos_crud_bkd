@@ -1,306 +1,515 @@
 {
   "metadata": {
-    "nombre": "Base inicial normalizada de plantas medicinales",
-    "version": 3,
-    "nota": "Generada a partir del PDF Acción Terapéutica y Herbario 7. Dataset para Next.js."
+    "nombre": "Herbario Oficial JarBees — Plantas Medicinales",
+    "version": 4,
+    "fuenteRepositorio": "G:\\Projects2\\PlantasMedicinales",
+    "actualizadoEn": "2026-11-22T15:10:57.344Z",
+    "totalPlantas": 75,
+    "nota": "Sincronizado automáticamente desde G:\\Projects2\\PlantasMedicinales\\content\\plantas."
   },
   "plantas": [
     {
       "nombre": "Aguaribay",
       "slug": "aguaribay",
+      "nombreCientifico": "Schinus molle",
+      "familia": "Anacardiaceae",
+      "otrosNombres": [
+        "Molle",
+        "Pimentero falso",
+        "Árbol de la pimienta"
+      ],
+      "origen": "América del Sur (Andes)",
+      "distribucion": [
+        "Argentina",
+        "Perú",
+        "Bolivia",
+        "Chile"
+      ],
+      "habitat": "Zonas áridas y semiáridas, laderas montañosas",
       "acciones": [
         "Antiparasitaria",
         "Digestiva",
         "Expectorante",
         "Repelente"
-      ]
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Parásitos intestinales",
+        "Indigestión",
+        "Tos",
+        "Infecciones respiratorias",
+        "Mosquitos"
+      ],
+      "principiosActivos": [
+        "Taninos",
+        "Terpenos",
+        "Flavonoides",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol sagrado para pueblos andinos",
+        "Uso ritual en ceremonias",
+        "Tinte natural de sus frutos rosados"
+      ],
+      "precauciones": [
+        "No usar en dosis altas durante el embarazo"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": "Los frutos pueden ser tóxicos para aves pequeñas en grandes cantidades",
+      "epocaFloracion": "agosto a noviembre",
+      "epocaFructificacion": "diciembre a marzo",
+      "tipoCiclo": "árbol perennifolio andino",
+      "imagen": "/imagenes/aguaribay.webp",
+      "imagenes": [
+        "/imagenes/aguaribay.webp"
+      ],
+      "descripcion": "Descripción\n\nEl aguaribay es un árbol originario de los Andes, reconocible por sus ramas colgantes y sus pequeños frutos rosados similares a la pimienta. Es uno de los árboles medicinales más importantes de la medicina tradicional andina.\n\nUsos tradicionales\n\n- Parásitos intestinales y lombrices\n- Indigestión y gases\n- Tos y bronquitis\n- Repelente natural de insectos\n\nFormas de uso\n\nInfusión de hojas, resina diluida, baños con ramas hervidas para uso externo.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Ajenjo Dulce",
+      "slug": "ajenjo-dulce",
+      "nombreCientifico": "Artemisia annua",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antiparasitaria",
+        "Antimalárica",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Inmunitario"
+      ],
+      "afecciones": [
+        "Parásitos",
+        "Malaria",
+        "Inapetencia"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Evitar durante el embarazo.",
+        "No consumir por períodos prolongados."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "enero a marzo (fotoperíodo corto)",
+      "epocaFructificacion": "marzo a mayo",
+      "tipoCiclo": "hierba anual de verano",
+      "imagen": "/imagenes/ajenjo_dulce.webp",
+      "imagenes": [
+        "/imagenes/ajenjo_dulce.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta herbácea conocida por sus propiedades medicinales amargas, utilizada ampliamente para combatir afecciones parasitarias y estimular el sistema digestivo.\n\nUsos tradicionales\n\n- Parásitos\n- Malaria\n- Inapetencia\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Ajo",
       "slug": "ajo",
+      "nombreCientifico": "Allium sativum",
+      "familia": "Amaryllidaceae",
+      "otrosNombres": [
+        "Ajo común",
+        "Ajo cultivado"
+      ],
+      "origen": "Asia Central",
+      "distribucion": [
+        "Cultivo mundial",
+        "Argentina",
+        "España",
+        "China"
+      ],
+      "habitat": "Cultivo en huertos y jardines",
       "acciones": [
         "Antibiótica",
         "Antiparasitaria",
         "Cariostático",
         "Estimulante inmune"
-      ]
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Cardiovascular",
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Infecciones bacterianas",
+        "Parásitos intestinales",
+        "Caries",
+        "Resfríos",
+        "Gripe",
+        "Hipertensión",
+        "Colesterol"
+      ],
+      "principiosActivos": [
+        "Alicina",
+        "Alina",
+        "Flavonoides",
+        "Compuestos azufrados",
+        "Vitamina C"
+      ],
+      "usosEtnobotanicos": [
+        "Usado por los egipcios desde hace 5000 años",
+        "Protección ritual en culturas mediterráneas",
+        "Alimento y medicina en toda la historia humana"
+      ],
+      "precauciones": [
+        "En altas dosis puede irritar el estómago",
+        "Interacción con anticoagulantes"
+      ],
+      "contraindicaciones": [
+        "Hipotiroidismo severo (consultar médico)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a febrero",
+      "tipoCiclo": "bulbo herbáceo anual",
+      "imagen": "/imagenes/ajo.webp",
+      "imagenes": [
+        "/imagenes/ajo.webp"
+      ],
+      "descripcion": "Descripción\n\nEl ajo es uno de los remedios naturales más estudiados y utilizados en la historia de la humanidad. Su principio activo principal, la alicina, se libera al triturar o cortar el diente y es responsable de la mayoría de sus propiedades terapéuticas.\n\nUsos tradicionales\n\n- Infecciones respiratorias, resfríos y gripe\n- Parásitos intestinales\n- Prevención de caries e infecciones bucales\n- Fortalecimiento del sistema inmunológico\n- Regulación de la presión arterial y el colesterol\n\nFormas de uso\n\nDiente crudo en ayunas, tintura, aceite macerado, jarabe con miel y limón.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Alcanfor",
+      "slug": "alcanfor",
+      "nombreCientifico": "Cinnamomum camphora",
+      "familia": "Lauraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antiespasmódica",
+        "Analgésica",
+        "Antifúngica"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Musculoesquelético",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Espasmos musculares",
+        "Dolor articular",
+        "Micosis cutáneas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "No ingerir (tóxico por vía oral).",
+        "No aplicar sobre heridas abiertas."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre (primavera)",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "árbol perennifolio subtropical",
+      "imagen": "/imagenes/alcanfor.webp",
+      "imagenes": [
+        "/imagenes/alcanfor.webp"
+      ],
+      "descripcion": "Descripción\n\nÁrbol cuyo compuesto volátil principal, el alcanfor, es altamente valorado en aplicaciones tópicas analgésicas, refrescantes y antiespasmódicas.\n\nUsos tradicionales\n\n- Espasmos musculares\n- Dolor articular\n- Micosis cutáneas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Altamisa",
+      "slug": "altamisa",
+      "nombreCientifico": "Ambrosia tenuifolia",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Digestiva tónica",
+        "Co-antiparasitaria",
+        "Febrífuga"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Fiebre",
+        "Pensamientos rumiantes"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Puede causar alergias en personas sensibles a las asteráceas."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo (verano)",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba anual ruderal",
+      "imagen": "/imagenes/altamisa.webp",
+      "imagenes": [
+        "/imagenes/altamisa.webp"
+      ],
+      "descripcion": "Descripción\n\nHerbácea nativa muy utilizada para enfriar el cuerpo, refrescar el organismo, despejar la mente y tónificar los procesos digestivos lentos.\n\nUsos tradicionales\n\n- Indigestión\n- Fiebre\n- Pensamientos rumiantes\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Ambay",
+      "slug": "ambay",
+      "nombreCientifico": "Cecropia adenopus",
+      "familia": "Urticaceae",
+      "otrosNombres": [],
+      "origen": "Selvas marginales del noreste argentino y Brasil",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antitusiva",
+        "Expectorante",
+        "Espasmolítica"
+      ],
+      "sistemas": [
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Tos",
+        "Catarros",
+        "Resfríos"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a octubre",
+      "epocaFructificacion": "noviembre a febrero",
+      "tipoCiclo": "árbol pionero de selva marginal",
+      "imagen": "/imagenes/ambay.webp",
+      "imagenes": [
+        "/imagenes/ambay.webp"
+      ],
+      "descripcion": "Descripción\n\nEmpleado para tos, catarros y resfríos.\n\nBotánica oculta y mitología\n\nAl albergar hormigas en sus troncos huecos, era visto como un árbol habitado por guardianes invisibles del monte.\n\nUsos tradicionales\n\n- Tos\n- Catarros\n- Resfríos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Amor Seco",
       "slug": "amor-seco",
+      "nombreCientifico": "Desmodium adscendens",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Pega-pega",
+        "Hierba del amor"
+      ],
+      "origen": "América tropical",
+      "distribucion": [
+        "Argentina",
+        "Brasil",
+        "Paraguay",
+        "Perú",
+        "Colombia"
+      ],
+      "habitat": "Bordes de caminos, potreros, zonas húmedas tropicales",
       "acciones": [
         "Adaptógena",
         "Digestiva",
         "Diurética"
-      ]
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Renal",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Estrés",
+        "Fatiga crónica",
+        "Indigestión",
+        "Retención de líquidos",
+        "Infecciones urinarias"
+      ],
+      "principiosActivos": [
+        "Alcaloides",
+        "Flavonoides",
+        "Triterpenos"
+      ],
+      "usosEtnobotanicos": [
+        "Medicina tradicional sudamericana para el estrés",
+        "Uso en rituales de limpieza energética"
+      ],
+      "precauciones": [
+        "No combinar con sedantes sin supervisión"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "febrero a mayo",
+      "epocaFructificacion": "mayo a julio",
+      "tipoCiclo": "hierba anual adaptógena",
+      "imagen": "/imagenes/amor-seco.webp",
+      "imagenes": [
+        "/imagenes/amor-seco.webp"
+      ],
+      "descripcion": "Descripción\n\nEl amor seco es una hierba rastrera cuyas semillas se adhieren a la ropa y el pelaje de los animales, de allí su nombre popular. En la medicina tradicional sudamericana se usa principalmente como adaptógeno y para afecciones del sistema digestivo y renal.\n\nUsos tradicionales\n\n- Estrés, fatiga crónica y agotamiento nervioso\n- Indigestión y cólicos digestivos\n- Retención de líquidos e infecciones urinarias\n\nFormas de uso\n\nInfusión de hojas y tallos, tintura.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Anacahuita",
+      "slug": "anacahuita",
+      "nombreCientifico": "Blepharocalyx salicifolius",
+      "familia": "Myrtaceae",
+      "otrosNombres": [],
+      "origen": "Argentina, Uruguay, Paraguay y sur de Brasil",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Expectorante",
+        "Pectoral",
+        "Antiséptica"
+      ],
+      "sistemas": [
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Problemas respiratorios",
+        "Afecciones pulmonares",
+        "Tos"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "árbol nativo perennifolio",
+      "imagen": "/imagenes/anacahuita.webp",
+      "imagenes": [
+        "/imagenes/anacahuita.webp"
+      ],
+      "descripcion": "Descripción\n\nExcelente remedio para afecciones respiratorias y pulmonares.\n\nBotánica oculta y mitología\n\nConsiderado un árbol sagrado y un regalo directo de Tijuinem. Su nombre chaná significa 'el que da regalos'.\n\nUsos tradicionales\n\n- Problemas respiratorios\n- Afecciones pulmonares\n- Tos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Artemisa Annua",
       "slug": "artemisa-annua",
+      "nombreCientifico": "Artemisia annua",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Ajenjo dulce",
+        "Sweet wormwood",
+        "Qing hao"
+      ],
+      "origen": "Asia (China)",
+      "distribucion": [
+        "China",
+        "India",
+        "África subsahariana",
+        "Argentina",
+        "Europa (cultivada)"
+      ],
+      "habitat": "Zonas templadas, bordes de ríos, terrenos removidos",
       "acciones": [
         "Antimalárica",
         "Antiparasitaria",
         "Digestiva",
         "Estimulante inmune",
         "Reguladora ciclo menstrual"
-      ]
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Reproductor"
+      ],
+      "afecciones": [
+        "Malaria",
+        "Parásitos intestinales",
+        "Fiebre",
+        "Indigestión",
+        "Irregularidades menstruales"
+      ],
+      "principiosActivos": [
+        "Artemisinina",
+        "Flavonoides",
+        "Terpenoides",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Usada en medicina tradicional china por más de 2000 años",
+        "Premio Nobel de Medicina 2015 por descubrimiento de artemisinina"
+      ],
+      "precauciones": [
+        "No usar durante el embarazo",
+        "No administrar a niños menores de 5 años sin supervisión",
+        "Interacciones con medicamentos antipalúdicos"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia"
+      ],
+      "toxicidad": "Neurotóxica en dosis muy altas",
+      "epocaFloracion": "febrero a abril",
+      "epocaFructificacion": "abril a junio",
+      "tipoCiclo": "hierba anual de verano",
+      "imagen": "/imagenes/artemisa-annua.webp",
+      "imagenes": [
+        "/imagenes/artemisa-annua.webp"
+      ],
+      "descripcion": "Descripción\n\nLa Artemisia annua es famosa por contener artemisinina, compuesto del que se derivan los tratamientos más efectivos contra la malaria actualmente. Su descubrimiento le valió el Premio Nobel de Medicina 2015 a la investigadora Tu Youyou.\n\nUsos tradicionales\n\n- Malaria, fiebre y paludismo\n- Parásitos intestinales (especialmente giardia)\n- Indigestión e inapetencia\n- Irregularidades del ciclo menstrual\n\nFormas de uso\n\nInfusión de hojas secas (en frío para preservar artemisinina), tintura, extracto estandarizado.\n\nPrecauciones importantes\n\nNo usar durante el embarazo. Consultar médico antes de usar para malaria; los tratamientos derivados requieren dosificación precisa.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
-      "nombre": "Caléndula",
-      "slug": "calendula",
+      "nombre": "Artemisa Vulgaris",
+      "slug": "artemisa-vulgaris",
+      "nombreCientifico": "Artemisia vulgaris",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
-        "Antibiótica",
-        "Antiviral",
-        "Cicatrizante",
+        "Emenagoga",
         "Digestiva",
-        "Desinflamante",
-        "Protectora UV",
-        "Reguladora ciclo menstrual"
-      ]
-    },
-    {
-      "nombre": "Cardo Mariano",
-      "slug": "cardo-mariano",
-      "acciones": [
-        "Antialérgica",
-        "Cicatrizante",
-        "Desinflamante",
-        "Hepatoprotectora"
-      ]
-    },
-    {
-      "nombre": "Cebolla",
-      "slug": "cebolla",
-      "acciones": [
-        "Antibiótica",
-        "Antifúngica",
-        "Desinflamante",
-        "Diurética",
-        "Expectorante"
-      ]
-    },
-    {
-      "nombre": "Cedrón",
-      "slug": "cedron",
-      "acciones": [
-        "Digestiva",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Ceibo",
-      "slug": "ceibo",
-      "acciones": [
-        "Antitumoral",
-        "Astringente",
-        "Cicatrizante",
-        "Desinflamante",
-        "Expectorante",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Chañar",
-      "slug": "chanar",
-      "acciones": [
-        "Antibiótica",
-        "Antiespasmódica",
-        "Antifúngica",
-        "Antitusiva",
-        "Desinflamante",
-        "Emoliente",
-        "Expectorante"
-      ]
-    },
-    {
-      "nombre": "Cola de Caballo",
-      "slug": "cola-de-caballo",
-      "acciones": [
-        "Astringente",
-        "Cicatrizante",
-        "Diurética",
-        "Hipotensor",
-        "Remineralizante"
-      ]
-    },
-    {
-      "nombre": "Cúrcuma",
-      "slug": "curcuma",
-      "acciones": [
-        "Antibiótica",
-        "Desinflamante",
-        "Estimulante inmune"
-      ]
-    },
-    {
-      "nombre": "Diente de León",
-      "slug": "diente-de-leon",
-      "acciones": [
-        "Depurativa",
-        "Digestiva",
-        "Diurética",
-        "Hepatoprotectora",
-        "Hipoglucemiante"
-      ]
-    },
-    {
-      "nombre": "Equinácea",
-      "slug": "equinacea",
-      "acciones": [
-        "Antiviral",
-        "Desinflamante",
-        "Estimulante inmune"
-      ]
-    },
-    {
-      "nombre": "Escoba Dura",
-      "slug": "escoba-dura",
-      "acciones": [
-        "Adaptógena",
-        "Desinflamante",
-        "Emoliente"
-      ]
-    },
-    {
-      "nombre": "Lapacho",
-      "slug": "lapacho",
-      "acciones": [
-        "Antibiótica",
-        "Antifúngica",
-        "Astringente",
-        "Desinflamante"
-      ]
-    },
-    {
-      "nombre": "Laurel",
-      "slug": "laurel",
-      "acciones": [
-        "Antioxidante",
-        "Desinflamante",
-        "Digestiva",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Lavanda",
-      "slug": "lavanda",
-      "acciones": [
-        "Antiespasmódica",
-        "Antiséptica",
-        "Cicatrizante",
-        "Digestiva",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Llantén",
-      "slug": "llanten",
-      "acciones": [
-        "Antibiótica",
-        "Cicatrizante",
-        "Desinflamante",
-        "Digestiva",
-        "Emoliente",
-        "Expectorante",
-        "Laxante"
-      ]
-    },
-    {
-      "nombre": "Marrubio",
-      "slug": "marrubio",
-      "acciones": [
-        "Digestiva",
-        "Emoliente",
-        "Expectorante"
-      ]
-    },
-    {
-      "nombre": "Melisa",
-      "slug": "melisa",
-      "acciones": [
-        "Digestiva",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Menta",
-      "slug": "menta",
-      "acciones": [
-        "Antibiótica",
-        "Desinflamante",
-        "Digestiva",
-        "Expectorante",
-        "Relajante"
-      ]
-    },
-    {
-      "nombre": "Ortiga",
-      "slug": "ortiga",
-      "acciones": [
-        "Antioxidante",
-        "Diurética",
-        "Desinflamante",
-        "Hepatoprotectora",
-        "Hipoglucemiante"
-      ]
-    },
-    {
-      "nombre": "Paico",
-      "slug": "paico",
-      "acciones": [
-        "Antianémica",
-        "Antibiótica",
-        "Antiparasitaria",
-        "Digestiva",
-        "Desinflamante"
-      ]
-    },
-    {
-      "nombre": "Pezuña de Vaca",
-      "slug": "pezuna-de-vaca",
-      "acciones": [
-        "Antibiótica",
-        "Antitusiva",
-        "Desinflamante",
-        "Fungicida",
-        "Hipoglucemiante"
-      ]
-    },
-    {
-      "nombre": "Ruda",
-      "slug": "ruda",
-      "acciones": [
-        "Antiespasmódica",
-        "Antiparasitaria",
-        "Carminativa",
-        "Desinflamante",
-        "Reguladora ciclo menstrual"
-      ]
-    },
-    {
-      "nombre": "Vara de Oro",
-      "slug": "vara-de-oro",
-      "acciones": [
-        "Antibiótica",
-        "Cicatrizante",
-        "Desinflamante",
-        "Diurética"
-      ]
-    },
-    {
-      "nombre": "Vinca",
-      "slug": "vinca",
-      "acciones": [
-        "Antitumoral",
-        "Hipoglucemiante",
-        "Tonificante"
-      ]
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Reproductor Femenino",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Amenorrea",
+        "Reguladora del ciclo menstrual",
+        "Cólicos digestivos"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Contraindicada strictly en el embarazo."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "enero a abril (verano-otoño)",
+      "epocaFructificacion": "marzo a mayo",
+      "tipoCiclo": "hierba perenne rizomatosa",
+      "imagen": "/imagenes/artemisa_vulgaris.webp",
+      "imagenes": [
+        "/imagenes/artemisa_vulgaris.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta tradicionalmente ligada a la salud femenina por su capacidad de estimular y regular el flujo menstrual, además de aliviar espasmos estomacales.\n\nUsos tradicionales\n\n- Amenorrea\n- Reguladora del ciclo menstrual\n- Cólicos digestivos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Caa Piquí",
       "slug": "caa-piqui",
       "nombreCientifico": "Stella media",
       "familia": "Caryophyllaceae",
+      "otrosNombres": [
+        "Capiquí",
+        "Hierba gallinera",
+        "Chickweed"
+      ],
+      "origen": "Europa (naturalizada en América)",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América del Sur",
+        "Cosmopolita"
+      ],
+      "habitat": "Suelos húmedos, jardines, huertas, zonas perturbadas",
       "acciones": [
         "Demulcente",
         "Remineralizante",
@@ -309,48 +518,2190 @@
       ],
       "sistemas": [
         "Urinario",
-        "Respiratorio"
+        "Respiratorio",
+        "Tegumentario"
       ],
       "afecciones": [
         "Retención de líquidos",
         "Tos",
-        "Congestión respiratoria"
+        "Congestión respiratoria",
+        "Irritaciones de piel",
+        "Picazón"
       ],
-      "descripcion": "Herbácea comestible. Parte usada: planta entera. Utilizada tradicionalmente como demulcente en crudo, remineralizante, diurética y expectorante.",
+      "principiosActivos": [
+        "Saponinas",
+        "Flavonoides",
+        "Vitamina C",
+        "Calcio y magnesio",
+        "Mucílagos"
+      ],
+      "usosEtnobotanicos": [
+        "Planta comestible en crudo, muy usada en ensaladas en Europa",
+        "Alimento tradicional de aves de corral",
+        "Herbario 7 — medicina popular regional"
+      ],
       "precauciones": [],
-      "imagenes": [],
-      "fuentes": [
-        "Herbario 7"
-      ]
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "marzo a mayo (otoño)",
+      "epocaFructificacion": "mayo a julio",
+      "tipoCiclo": "hierba rastrera anual",
+      "imagen": "/imagenes/caa_piqui.webp",
+      "imagenes": [
+        "/imagenes/caa_piqui.webp"
+      ],
+      "descripcion": "Descripción\n\nLa Caa Piquí (o capiquí) es una herbácea rastrera comestible muy común en jardines y huertas. A pesar de ser considerada maleza, es nutritiva y tiene propiedades medicinales suaves, ideal para uso en crudo o en infusión.\n\nUsos tradicionales\n\n- Demulcente para irritaciones de piel y mucosas\n- Diurética para retención de líquidos\n- Expectorante para tos y congestión respiratoria\n- Remineralizante por su contenido en calcio y vitamina C\n\nFormas de uso\n\nPlanta entera en crudo (ensaladas), infusión, cataplasma para uso externo.\n\nReferencias\n\n- Fuente: Herbario 7"
     },
     {
-      "nombre": "Tala de Indio",
-      "slug": "tala-de-indio",
-      "nombreCientifico": "Holmbergia tweedii",
-      "familia": "Amaranthaceae",
+      "nombre": "Caléndula",
+      "slug": "calendula",
+      "nombreCientifico": "Calendula officinalis",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Maravilla",
+        "Flor de todos los meses",
+        "Pot marigold"
+      ],
+      "origen": "Mediterráneo",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América",
+        "Cultivo mundial"
+      ],
+      "habitat": "Jardines, huertas, zonas templadas",
       "acciones": [
-        "Nutritiva",
-        "Alternativa (Sal vegetal)"
+        "Antiinflamatoria",
+        "Cicatrizante",
+        "Antibiótica",
+        "Antifúngica",
+        "Antiviral",
+        "Digestiva",
+        "Desinflamante",
+        "Protectora UV",
+        "Reguladora ciclo menstrual"
       ],
       "sistemas": [
-        "Nutricional"
+        "Tegumentario",
+        "Inmunológico",
+        "Digestivo",
+        "Reproductor"
       ],
       "afecciones": [
-        "Deficiencias minerales",
-        "Sustitución de sodio"
+        "Eccemas",
+        "Dermatitis",
+        "Picaduras",
+        "Heridas",
+        "Quemaduras",
+        "Úlceras",
+        "Acné",
+        "Hongos",
+        "Gastritis",
+        "Irregularidades menstruales"
       ],
-      "descripcion": "Arbusto nativo. Parte usada: parte aérea. Utilizada históricamente por pueblos originarios como sal vegetal. Cuenta con frutos carnosos comestibles.",
+      "principiosActivos": [
+        "Carotenoides",
+        "Flavonoides",
+        "Triterpenos",
+        "Polisacáridos",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Usada en la Edad Media como tinte y alimento",
+        "Pétalos comestibles en ensaladas",
+        "Aceite de caléndula, uno de los primeros cosméticos naturales documentados"
+      ],
+      "precauciones": [
+        "Puede causar alergia en personas sensibles a Asteraceae",
+        "No usar aceite esencial en embarazo sin supervisión"
+      ],
+      "contraindicaciones": [
+        "Alergia a Asteraceae"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "todo el año (primavera-otoño)",
+      "epocaFructificacion": "continua",
+      "tipoCiclo": "hierba anual o bianual",
+      "imagen": "/imagenes/calendula.webp",
+      "imagenes": [
+        "/imagenes/calendula.webp"
+      ],
+      "descripcion": "Descripción\n\nLa caléndula es una planta de flores anaranjadas intensas, ampliamente utilizada en la medicina natural para el cuidado de la piel. Sus propiedades cicatrizantes, antiinflamatorias y antimicrobianas la hacen ideal para uso tópico.\n\nUsos tradicionales\n\n- Eccemas, dermatitis y picaduras\n- Heridas, quemaduras y úlceras\n- Infecciones cutáneas y acné\n- Hongos en piel\n- Gastritis y úlcera gástrica\n\nFormas de uso\n\nCremas, pomadas, aceite macerado, infusión para compresas, tintura.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Cannabis Medicinal",
+      "slug": "cannabis",
+      "nombreCientifico": "Cannabis sativa L. (subsp. sativa, indica, ruderalis)",
+      "familia": "Cannabaceae",
+      "otrosNombres": [
+        "Cáñamo medicinal",
+        "Marihuana medicinal",
+        "Cannabis sativa",
+        "Cannabis indica",
+        "Maconha",
+        "Ganja"
+      ],
+      "origen": "Asia Central y del Sur (Cordillera del Himalaya y estepas euroasiáticas)",
+      "distribucion": [
+        "Argentina",
+        "América Latina",
+        "Asia Central y Meridional",
+        "Europa",
+        "Norteamérica",
+        "Cosmopolita (cultivada)"
+      ],
+      "habitat": "Suelos francos, fértiles y bien drenados con alta exposición solar y ventilación",
+      "acciones": [
+        "Analgésica",
+        "Anticonvulsivante",
+        "Antiinflamatoria",
+        "Ansiolítica",
+        "Antiemética",
+        "Neuroprotectora",
+        "Relajante",
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Musculoesquelético",
+        "Inmunológico",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Dolor crónico y neuropático",
+        "Epilepsia refractaria",
+        "Espasticidad muscular",
+        "Insomnio",
+        "Ansiedad y estrés",
+        "Náuseas y vómitos (quimioterapia)",
+        "Artritis y fibromialgia",
+        "Inapetencia"
+      ],
+      "principiosActivos": [
+        "Cannabidiol (CBD)",
+        "Delta-9-Tetrahidrocannabinol (THC)",
+        "Cannabigerol (CBG)",
+        "Cannabinol (CBN)",
+        "Terpenos (Mirceno, Beta-cariofileno, Limoneno, Pineno, Linalool)",
+        "Flavonoides (Cannflavinas A, B y C)"
+      ],
+      "usosEtnobotanicos": [
+        "Documentada en la farmacopea del emperador Shen Nung (2737 a.C.) para dolor reumático y malaria",
+        "Uso ancestral en medicina ayurvédica de la India para analgesia, sueño y regulación nerviosa",
+        "Incorporada en la medicina fitoterapéutica argentina (Ley 27.350 / REPROCANN) para aceite medicinal, dolor crónico y epilepsia refractaria"
+      ],
+      "precauciones": [
+        "Iniciar siempre con dosis bajas y titulación progresiva ('start low, go slow') bajo seguimiento médico",
+        "Los quimiotipos ricos en THC poseen efecto psicoactivo y pueden causar mareo, taquicardia transitoria o ansiedad en personas sensibles",
+        "Interacción hepática vía citocromo P450 (CYP3A4, CYP2C19) con anticoagulantes, antiepilépticos (clobazam, valproato) y sedantes"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Antecedentes personales o familiares de psicosis o esquizofrenia (para quimiotipos con THC)",
+        "Arritmias cardíacas severas no controladas"
+      ],
+      "toxicidad": "Margen terapéutico amplio sin depresión respiratoria letal; los extractos con alto THC requieren control médico estricto por psicoactividad",
+      "epocaFloracion": "febrero a abril (fotoperiódica en hemisferio sur)",
+      "epocaFructificacion": "abril a mayo",
+      "tipoCiclo": "hierba anual dioica fotoperiódica (o autofloreciente en subsp. ruderalis)",
+      "imagen": "/imagenes/cannabis.webp",
+      "imagenes": [
+        "/imagenes/cannabis.webp",
+        "/imagenes/cannabis-sativa-floracion.webp",
+        "/imagenes/cannabis-hibrido-vegetativo.webp",
+        "/imagenes/cannabis-sativa-vegetativo.webp"
+      ],
+      "descripcion": "Descripción\n\n*Cannabis sativa* L. es una especie herbácea anual dioica de la familia **Cannabaceae**, reconocida por la producción de fitocannabinoides y terpenos en los tricomas glandulares de sus inflorescencias femeninas (*cogollos*). Estos compuestos interactúan de manera específica con el **Sistema Endocannabinoide humano** (receptores $CB_1$ en el sistema nervioso central y $CB_2$ en tejidos periféricos e inmunológicos), modulando el dolor, la inflamación, la excitabilidad neuronal, el sueño y el apetito.\n\nClave Morfológica de Identificación (Ejemplares del Herbario)\n\nLas tres láminas fotográficas registradas en nuestro herbario corresponden a distintos **biotipos morfológicos y estadios fenológicos** de *Cannabis*:\n\n1. **Lámina 1 (`/imagenes/cannabis-sativa-floracion.webp`) — Biotipo *Cannabis sativa* en Floración Avanzada:**\n   - **Morfología foliar:** Hojas palmadas con **foliol..."
+    },
+    {
+      "nombre": "Cardo Mariano",
+      "slug": "cardo-mariano",
+      "nombreCientifico": "Silybum marianum",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Cardo lechero",
+        "Milk thistle"
+      ],
+      "origen": "Mediterráneo",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "Norte de África",
+        "Asia occidental"
+      ],
+      "habitat": "Terrenos pedregosos, bordes de caminos, suelos perturbados",
+      "acciones": [
+        "Antialérgica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Hepatoprotectora"
+      ],
+      "sistemas": [
+        "Hepático",
+        "Inmunológico",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Hepatitis",
+        "Cirrosis",
+        "Intoxicación hepática",
+        "Alergias",
+        "Inflamación",
+        "Heridas"
+      ],
+      "principiosActivos": [
+        "Silimarina",
+        "Silibina",
+        "Flavonoides",
+        "Ácidos grasos"
+      ],
+      "usosEtnobotanicos": [
+        "Usado en Europa desde la Edad Media para enfermedades del hígado",
+        "Las semillas eran comidas como alimento"
+      ],
+      "precauciones": [
+        "Consultar médico en enfermedades hepáticas graves",
+        "Puede tener efecto laxante leve"
+      ],
+      "contraindicaciones": [
+        "Alergia a plantas de la familia Asteraceae"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a febrero",
+      "tipoCiclo": "hierba bianual",
+      "imagen": "/imagenes/cardo-mariano.webp",
+      "imagenes": [
+        "/imagenes/cardo-mariano.webp"
+      ],
+      "descripcion": "Descripción\n\nEl cardo mariano es la planta más estudiada para la salud hepática. Su principio activo, la silimarina, actúa como antioxidante protegiendo las células del hígado y estimulando su regeneración.\n\nUsos tradicionales\n\n- Hepatitis y cirrosis\n- Intoxicación hepática por medicamentos, alcohol o toxinas\n- Alergias y rinitis\n- Eczemas y problemas de piel\n\nFormas de uso\n\nExtracto estandarizado en cápsulas, tintura de semillas, infusión (menos concentrada que el extracto).\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Carqueja",
+      "slug": "carqueja",
+      "nombreCientifico": "Baccharis trimera",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Hepatoprotectora",
+        "Digestiva",
+        "Depurativa"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Hepático",
+        "Excretor"
+      ],
+      "afecciones": [
+        "Insuficiencia hepática",
+        "Digestión lenta",
+        "Retención de toxinas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "No se recomienda su uso prolongado sin supervisión en personas hipotensas o embarazadas."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "enero a mayo (verano-otoño)",
+      "epocaFructificacion": "marzo a junio",
+      "tipoCiclo": "arbusto perenne de tallos alados",
+      "imagen": "/imagenes/carqueja.webp",
+      "imagenes": [
+        "/imagenes/carqueja.webp"
+      ],
+      "descripcion": "Descripción\n\nArbusto perenne sin hojas verdaderas (tallos alados) de sabor marcadamente amargo, excelente para proteger el hígado y depurar el organismo.\n\nUsos tradicionales\n\n- Insuficiencia hepática\n- Digestión lenta\n- Retención de toxinas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Catay",
+      "slug": "catay",
+      "nombreCientifico": "Persicaria hydropiperoides",
+      "familia": "Polygonaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Cicatrizante",
+        "Hemostática",
+        "Antiinflamatoria"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Circulatorio"
+      ],
+      "afecciones": [
+        "Heridas superficiales",
+        "Pequeñas hemorragias",
+        "Inflamación local"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Uso principalmente externo.",
+        "Puede irritar mucosas si se consume en exceso."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a abril (verano-otoño)",
+      "epocaFructificacion": "febrero a mayo",
+      "tipoCiclo": "hierba palustre perenne",
+      "imagen": "/imagenes/catay.webp",
+      "imagenes": [
+        "/imagenes/catay.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta palustre comúnmente llamada 'pimienta de agua' por su sabor picante. Se destaca por detener sangrados menores y favorecer la cicatrización exterior.\n\nUsos tradicionales\n\n- Heridas superficiales\n- Pequeñas hemorragias\n- Inflamación local\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Cebolla",
+      "slug": "cebolla",
+      "nombreCientifico": "Allium cepa",
+      "familia": "Amaryllidaceae",
+      "otrosNombres": [
+        "Cebolla común"
+      ],
+      "origen": "Asia Central",
+      "distribucion": [
+        "Cultivo mundial",
+        "Argentina"
+      ],
+      "habitat": "Huertos y cultivos",
+      "acciones": [
+        "Antibiótica",
+        "Antifúngica",
+        "Desinflamante",
+        "Diurética",
+        "Expectorante"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Inmunológico",
+        "Renal",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Tos",
+        "Bronquitis",
+        "Infecciones respiratorias",
+        "Hongos",
+        "Retención de líquidos",
+        "Sinusitis"
+      ],
+      "principiosActivos": [
+        "Quercetina",
+        "Compuestos azufrados",
+        "Flavonoides",
+        "Vitamina C"
+      ],
+      "usosEtnobotanicos": [
+        "Alimento y medicina en todas las culturas del mundo",
+        "Jarabe de cebolla para la tos, tradición en toda América Latina"
+      ],
+      "precauciones": [
+        "Puede irritar el estómago en personas con gastritis"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a febrero",
+      "tipoCiclo": "bulbo bianual cultivado",
+      "imagen": "/imagenes/cebolla.webp",
+      "imagenes": [
+        "/imagenes/cebolla.webp"
+      ],
+      "descripcion": "Descripción\n\nLa cebolla es uno de los alimentos-medicina más accesibles y efectivos. Comparte muchas propiedades con el ajo por pertenecer a la misma familia, aunque con un perfil de acción diferente, siendo especialmente útil para el sistema respiratorio.\n\nUsos tradicionales\n\n- Tos, bronquitis y mucosidad (jarabe de cebolla con miel)\n- Infecciones respiratorias y sinusitis\n- Hongos en piel y uñas\n- Retención de líquidos\n\nFormas de uso\n\nJarabe con miel, cataplasma en pecho para la tos, jugo, aplicación tópica del jugo para hongos.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Cedrón",
+      "slug": "cedron",
+      "nombreCientifico": "Aloysia citrodora",
+      "familia": "Verbenaceae",
+      "otrosNombres": [
+        "Hierba luisa",
+        "Verbena de las Indias",
+        "Cidronela"
+      ],
+      "origen": "América del Sur",
+      "distribucion": [
+        "Argentina",
+        "Chile",
+        "Perú",
+        "Europa (cultivada)"
+      ],
+      "habitat": "Zonas templadas y subtropicales, jardines y huertas",
+      "acciones": [
+        "Digestiva",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Gases",
+        "Náuseas",
+        "Ansiedad",
+        "Insomnio",
+        "Estrés"
+      ],
+      "principiosActivos": [
+        "Citral",
+        "Linalol",
+        "Limoneno",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Infusión tradicional rioplatense y andina",
+        "Una de las hierbas más cultivadas en jardines sudamericanos"
+      ],
+      "precauciones": [
+        "En dosis muy altas puede causar sedación"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "marzo a abril",
+      "tipoCiclo": "arbusto caducifolio aromático",
+      "imagen": "/imagenes/cedron.webp",
+      "imagenes": [
+        "/imagenes/cedron.webp"
+      ],
+      "descripcion": "Descripción\n\nEl cedrón es una planta aromática con fragancia cítrica característica. Es uno de los remedios caseros más populares de Argentina y el resto de América del Sur, especialmente para problemas digestivos y nerviosos.\n\nUsos tradicionales\n\n- Indigestión, gases y náuseas\n- Ansiedad, insomnio y nerviosismo\n- Espasmos digestivos\n\nFormas de uso\n\nInfusión de hojas frescas o secas. Se puede combinar con manzanilla para potenciar el efecto digestivo.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Ceibo",
+      "slug": "ceibo",
+      "nombreCientifico": "Erythrina crista-galli",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Seibo",
+        "Flor del ceibo",
+        "Bucaré"
+      ],
+      "origen": "América del Sur",
+      "distribucion": [
+        "Argentina",
+        "Uruguay",
+        "Brasil",
+        "Paraguay",
+        "Bolivia"
+      ],
+      "habitat": "Orillas de ríos, lagos y zonas inundables",
+      "acciones": [
+        "Antitumoral",
+        "Astringente",
+        "Cicatrizante",
+        "Desinflamante",
+        "Expectorante",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Tegumentario",
+        "Respiratorio",
+        "Nervioso",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Tos",
+        "Heridas",
+        "Inflamación",
+        "Ansiedad",
+        "Diarrea"
+      ],
+      "principiosActivos": [
+        "Alcaloides (eritrina)",
+        "Flavonoides",
+        "Taninos",
+        "Saponinas"
+      ],
+      "usosEtnobotanicos": [
+        "Flor nacional de Argentina y Uruguay",
+        "Usado por pueblos guaraníes para tratar heridas y la tos",
+        "Madera usada por comunidades originarias"
+      ],
+      "precauciones": [
+        "Los alcaloides pueden ser tóxicos en dosis altas",
+        "No usar semillas sin supervisión"
+      ],
+      "contraindicaciones": [
+        "Embarazo"
+      ],
+      "toxicidad": "Las semillas contienen alcaloides potencialmente tóxicos",
+      "epocaFloracion": "enero a marzo",
+      "epocaFructificacion": "marzo a mayo",
+      "tipoCiclo": "árbol ribereño caducifolio",
+      "imagen": "/imagenes/ceibo.webp",
+      "imagenes": [
+        "/imagenes/ceibo.webp"
+      ],
+      "descripcion": "Descripción\n\nEl ceibo es la flor nacional de Argentina y Uruguay. Además de su belleza ornamental y su valor simbólico, la corteza y las flores tienen uso medicinal en la tradición guaraní y rioplatense.\n\nUsos tradicionales\n\n- Tos y bronquitis\n- Heridas, úlceras y afecciones de piel\n- Diarrea y gastritis\n- Ansiedad e insomnio\n\nPrecauciones\n\nLas semillas contienen alcaloides que pueden ser tóxicos. Solo usar corteza y flores bajo indicación.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Cerraja",
+      "slug": "cerraja",
+      "nombreCientifico": "Sonchus oleraceus",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Depurativa",
+        "Hepática",
+        "Laxante suave"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Excretor"
+      ],
+      "afecciones": [
+        "Estreñimiento leve",
+        "Congestión hepática",
+        "Retención de líquidos"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
       "precauciones": [],
-      "imagenes": [],
-      "fuentes": [
-        "Herbario 7"
-      ]
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "casi todo el año (picos en primavera-verano)",
+      "epocaFructificacion": "continua",
+      "tipoCiclo": "hierba anual o bienal",
+      "imagen": "/imagenes/cerraja.webp",
+      "imagenes": [
+        "/imagenes/cerraja.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta herbácea silvestre comestible con látex blanco. Tradicionalmente consumida en ensaladas y como infusión depurativa para limpiar las vías biliares.\n\nUsos tradicionales\n\n- Estreñimiento leve\n- Congestión hepática\n- Retención de líquidos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Chañar",
+      "slug": "chanar",
+      "nombreCientifico": "Geoffroea decorticans",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Chañar brea"
+      ],
+      "origen": "América del Sur (zonas áridas)",
+      "distribucion": [
+        "Argentina (noroeste, cuyo, patagonia)",
+        "Chile",
+        "Bolivia",
+        "Perú"
+      ],
+      "habitat": "Monte, chaco árido, bosques xerófilos",
+      "acciones": [
+        "Antibiótica",
+        "Antiespasmódica",
+        "Antifúngica",
+        "Antitusiva",
+        "Desinflamante",
+        "Emoliente",
+        "Expectorante"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Tegumentario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Tos",
+        "Bronquitis",
+        "Asma",
+        "Infecciones respiratorias",
+        "Espasmos",
+        "Hongos",
+        "Irritaciones de piel"
+      ],
+      "principiosActivos": [
+        "Alcaloides",
+        "Saponinas",
+        "Taninos",
+        "Goma (brea)"
+      ],
+      "usosEtnobotanicos": [
+        "Frutos comestibles y fermentados para chicha en pueblos originarios",
+        "Madera muy dura, usada para herramientas y construcción",
+        "Uso medicinal ancestral en pueblos del noroeste argentino"
+      ],
+      "precauciones": [
+        "Consultar antes de usar en niños menores de 2 años"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a octubre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "árbol espinoso xerófilo",
+      "imagen": "/imagenes/chanar.webp",
+      "imagenes": [
+        "/imagenes/chanar.webp"
+      ],
+      "descripcion": "Descripción\n\nEl chañar es un árbol nativo de las zonas áridas de Argentina, emblemático del monte y la puna. Sus frutos son comestibles y dulces; su corteza y brea tienen propiedades medicinales destacadas especialmente para el aparato respiratorio.\n\nUsos tradicionales\n\n- Tos seca y crónica\n- Bronquitis y asma\n- Infecciones respiratorias\n- Hongos en piel e irritaciones\n\nFormas de uso\n\nJarabe de brea (resina), infusión de corteza, miel de chañar (producto regional muy valorado).\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Cola de Caballo",
+      "slug": "cola-de-caballo",
+      "nombreCientifico": "Equisetum arvense",
+      "familia": "Equisetaceae",
+      "otrosNombres": [
+        "Equiseto",
+        "Hierba del estaño",
+        "Canela de caballo"
+      ],
+      "origen": "Europa, Asia, América del Norte",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "Asia",
+        "América del Norte",
+        "América del Sur"
+      ],
+      "habitat": "Zonas húmedas, bordes de ríos, suelos arenosos",
+      "acciones": [
+        "Astringente",
+        "Cicatrizante",
+        "Diurética",
+        "Hipotensor",
+        "Remineralizante"
+      ],
+      "sistemas": [
+        "Renal",
+        "Cardiovascular",
+        "Tegumentario",
+        "Osteoarticular"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Infecciones urinarias",
+        "Hipertensión",
+        "Heridas",
+        "Osteoporosis",
+        "Cabello y uñas débiles"
+      ],
+      "principiosActivos": [
+        "Sílice orgánica",
+        "Flavonoides",
+        "Alcaloides (nicotina en trazas)",
+        "Saponinas",
+        "Sales minerales"
+      ],
+      "usosEtnobotanicos": [
+        "Planta de linaje muy antiguo, existía antes de los dinosaurios",
+        "Usada para pulir madera por su contenido en sílice"
+      ],
+      "precauciones": [
+        "No usar en embarazo ni lactancia",
+        "No dar a niños pequeños sin supervisión",
+        "Puede reducir niveles de tiamina (vitamina B1) con uso prolongado"
+      ],
+      "contraindicaciones": [
+        "Insuficiencia renal severa",
+        "Embarazo"
+      ],
+      "toxicidad": "Usar la especie arvense; otras especies del género pueden ser tóxicas",
+      "epocaFloracion": "sin flores (esporófito)",
+      "epocaFructificacion": "agosto a octubre (esporangio)",
+      "tipoCiclo": "helecho equisetofita perenne",
+      "imagen": "/imagenes/cola-de-caballo.webp",
+      "imagenes": [
+        "/imagenes/cola-de-caballo.webp"
+      ],
+      "descripcion": "Descripción\n\nLa cola de caballo es una planta primitiva que lleva más de 300 millones de años en la Tierra. Su alto contenido en sílice orgánica la hace única para el fortalecimiento de tejidos conectivos, huesos, cabello y uñas.\n\nUsos tradicionales\n\n- Retención de líquidos e infecciones urinarias\n- Osteoporosis y fragilidad ósea\n- Cabello y uñas débiles\n- Hipertensión leve\n\nFormas de uso\n\nInfusión o decocción de tallos verdes (parte aérea estéril). También en tinturas y cápsulas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Cucúrbita",
+      "slug": "cucurbita",
+      "nombreCientifico": "Cucurbita pepo",
+      "familia": "Cucurbitaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antiparasitaria",
+        "Diurética",
+        "Emoliente"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Urinario"
+      ],
+      "afecciones": [
+        "Parásitos intestinales (tenias/lombrices)",
+        "Retención de líquidos",
+        "Hiperplasia prostática benigna"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a febrero (primavera-verano)",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "planta trepadora anual cultivada",
+      "imagen": "/imagenes/cucurbita.webp",
+      "imagenes": [
+        "/imagenes/cucurbita.webp"
+      ],
+      "descripcion": "Descripción\n\nLas semillas de esta planta (calabaza/zapallo) contienen cucurbitacina, un principio activo altamente efectivo para paralizar y expulsar parásitos.\n\nUsos tradicionales\n\n- Parásitos intestinales (tenias/lombrices)\n- Retención de líquidos\n- Hiperplasia prostática benigna\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Cúrcuma",
+      "slug": "curcuma",
+      "nombreCientifico": "Curcuma longa",
+      "familia": "Zingiberaceae",
+      "otrosNombres": [
+        "Palillo",
+        "Azafrán de los pobres",
+        "Turmeric"
+      ],
+      "origen": "India, Asia del Sur",
+      "distribucion": [
+        "India",
+        "Sudeste asiático",
+        "América Latina (cultivada)",
+        "Argentina"
+      ],
+      "habitat": "Zonas tropicales y subtropicales húmedas, cultivos",
+      "acciones": [
+        "Antibiótica",
+        "Desinflamante",
+        "Estimulante inmune"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Osteoarticular",
+        "Hepático"
+      ],
+      "afecciones": [
+        "Inflamación",
+        "Artritis",
+        "Artrosis",
+        "Gastritis",
+        "Defensas bajas",
+        "Infecciones"
+      ],
+      "principiosActivos": [
+        "Curcumina",
+        "Turmerona",
+        "Curcuminoides",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Especia sagrada en la India, usada en rituales hindúes",
+        "Tinte natural de telas y alimentos",
+        "5000 años de uso medicinal en Ayurveda"
+      ],
+      "precauciones": [
+        "Puede potenciar el efecto de anticoagulantes",
+        "En dosis muy altas puede irritar el estómago",
+        "Tomar con pimienta negra para mejorar absorción"
+      ],
+      "contraindicaciones": [
+        "Cálculos biliares (dosis altas)",
+        "Embarazo (dosis terapéuticas, no culinarias)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a febrero",
+      "tipoCiclo": "rizoma tropical perenne",
+      "imagen": "/imagenes/curcuma.webp",
+      "imagenes": [
+        "/imagenes/curcuma.webp"
+      ],
+      "descripcion": "Descripción\n\nLa cúrcuma es una de las plantas más investigadas de la fitoterapia moderna. Su curcumina ha demostrado propiedades antiinflamatorias comparables a algunos fármacos de síntesis, con mucho menor toxicidad.\n\nUsos tradicionales\n\n- Artritis, artrosis e inflamación articular\n- Gastritis y colitis\n- Fortalecimiento del sistema inmune\n- Inflamaciones crónicas\n\nFormas de uso\n\nEn polvo como especia (con pimienta negra para absorción), cápsulas de extracto, leche dorada (golden milk), tintura.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Curu Caá",
+      "slug": "curu-caa",
+      "nombreCientifico": "Solanum amygdalifolium",
+      "familia": "Solanaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antiinflamatoria",
+        "Antirreumática"
+      ],
+      "sistemas": [
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Dolores reumáticos",
+        "Inflamación articular",
+        "Artritis"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Perteneciente a las solanáceas; evitar su ingestión interna sin estricto control por potencial toxicidad."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a febrero",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "planta trepadora nativa",
+      "imagen": "/imagenes/curu_caa.webp",
+      "imagenes": [
+        "/imagenes/curu_caa.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta trepadora nativa cuyas hojas se emplean en medicina popular en forma de cataplasmas o baños para calmar inflamaciones óseas y dolores articulares.\n\nUsos tradicionales\n\n- Dolores reumáticos\n- Inflamación articular\n- Artritis\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Curupí",
+      "slug": "curupi",
+      "nombreCientifico": "Sapium haematospermum",
+      "familia": "Euphorbiaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Cicatrizante",
+        "Regenerativa"
+      ],
+      "sistemas": [
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Heridas",
+        "Úlceras cutáneas",
+        "Afecciones de la piel"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "El látex puede ser sumamente irritante para los ojos y mucosas."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a diciembre (primavera)",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol nativo ribereño",
+      "imagen": "/imagenes/curupi.webp",
+      "imagenes": [
+        "/imagenes/curupi.webp"
+      ],
+      "descripcion": "Descripción\n\nÁrbol nativo rioplatense cuyo látex y hojas machacadas son reconocidos popularmente por su potente acción regeneradora y cicatrizante externa.\n\nUsos tradicionales\n\n- Heridas\n- Úlceras cutáneas\n- Afecciones de la piel\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Diente de León",
+      "slug": "diente-de-leon",
+      "nombreCientifico": "Taraxacum officinale",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Amargón",
+        "Achicoria amarga",
+        "Taraxaco",
+        "Dandelion"
+      ],
+      "origen": "Europa y Asia",
+      "distribucion": [
+        "Cosmopolita",
+        "Argentina",
+        "Europa",
+        "América del Norte"
+      ],
+      "habitat": "Praderas, jardines, bordes de caminos, suelos perturbados",
+      "acciones": [
+        "Depurativa",
+        "Digestiva",
+        "Diurética",
+        "Hepatoprotectora",
+        "Hipoglucemiante"
+      ],
+      "sistemas": [
+        "Hepático",
+        "Renal",
+        "Digestivo",
+        "Endocrino"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Digestión lenta",
+        "Hígado graso",
+        "Diabetes tipo 2",
+        "Acné",
+        "Estreñimiento"
+      ],
+      "principiosActivos": [
+        "Taraxacina",
+        "Inulina",
+        "Flavonoides",
+        "Vitaminas A, C, K",
+        "Minerales (calcio, hierro, potasio)"
+      ],
+      "usosEtnobotanicos": [
+        "Las hojas jóvenes son comestibles en ensaladas",
+        "La raíz tostada se usa como sustituto del café",
+        "Considerada maleza, pero es de las plantas medicinales más completas"
+      ],
+      "precauciones": [
+        "Puede interactuar con diuréticos",
+        "Puede potenciar anticoagulantes"
+      ],
+      "contraindicaciones": [
+        "Alergia a Asteraceae",
+        "Cálculos biliares obstructivos"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a mayo (casi todo el año)",
+      "epocaFructificacion": "continua",
+      "tipoCiclo": "hierba perenne roseta",
+      "imagen": "/imagenes/diente-de-leon.webp",
+      "imagenes": [
+        "/imagenes/diente-de-leon.webp"
+      ],
+      "descripcion": "Descripción\n\nEl diente de león es probablemente la planta silvestre más subestimada. Considerada maleza en jardines, es en realidad una de las plantas medicinales más completas disponibles, con acción sobre el hígado, los riñones, el metabolismo y la digestión.\n\nUsos tradicionales\n\n- Hígado graso y hepatitis leve\n- Depuración del organismo y acné\n- Retención de líquidos\n- Digestión lenta y estreñimiento\n- Apoyo en diabetes tipo 2\n\nFormas de uso\n\nInfusión de hojas o raíz, tintura, ensalada de hojas jóvenes, café de raíz tostada.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Doctorcito",
+      "slug": "doctorcito",
+      "nombreCientifico": "Eupatorium inulifolium",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Digestiva",
+        "Hepatoprotectora",
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Hepático"
+      ],
+      "afecciones": [
+        "Empachos",
+        "Malestar estomacal",
+        "Dispepsia"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a enero",
+      "epocaFructificacion": "diciembre a marzo",
+      "tipoCiclo": "arbusto nativo perenne",
+      "imagen": "/imagenes/doctorcito.webp",
+      "imagenes": [
+        "/imagenes/doctorcito.webp"
+      ],
+      "descripcion": "Descripción\n\nArbusto nativo ampliamente utilizado en el Cono Sur como remedio casero digestivo de cabecera para aligerar comidas pesadas y proteger el hígado.\n\nUsos tradicionales\n\n- Empachos\n- Malestar estomacal\n- Dispepsia\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Equinácea",
+      "slug": "equinacea",
+      "nombreCientifico": "Echinacea purpurea",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Echinacea",
+        "Coneflower",
+        "Flor del cono"
+      ],
+      "origen": "América del Norte",
+      "distribucion": [
+        "América del Norte (nativa)",
+        "Argentina (cultivada)",
+        "Europa (cultivada)"
+      ],
+      "habitat": "Praderas, zonas templadas",
+      "acciones": [
+        "Antiviral",
+        "Desinflamante",
+        "Estimulante inmune"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Resfríos",
+        "Gripe",
+        "Infecciones virales",
+        "Defensas bajas",
+        "Herpes"
+      ],
+      "principiosActivos": [
+        "Equinacósidos",
+        "Alquilamidas",
+        "Polisacáridos",
+        "Flavonoides",
+        "Ácido cafeico"
+      ],
+      "usosEtnobotanicos": [
+        "Usada por pueblos nativos de América del Norte desde hace siglos",
+        "Suplemento inmunológico más vendido en Europa"
+      ],
+      "precauciones": [
+        "No usar por más de 8 semanas continuas",
+        "No usar en enfermedades autoinmunes sin supervisión"
+      ],
+      "contraindicaciones": [
+        "Enfermedades autoinmunes (lupus, esclerosis múltiple)",
+        "Alergia a Asteraceae"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne",
+      "imagen": "/imagenes/equinacea.webp",
+      "imagenes": [
+        "/imagenes/equinacea.webp"
+      ],
+      "descripcion": "Descripción\n\nLa equinácea es la planta inmunoestimulante más estudiada del mundo. Cientos de ensayos clínicos respaldan su uso para reducir la duración y severidad de los resfríos y la gripe.\n\nUsos tradicionales\n\n- Prevención y tratamiento de resfríos y gripe\n- Fortalecimiento del sistema inmune\n- Infecciones virales en general\n- Herpes recurrente\n\nFormas de uso\n\nTintura, extracto en cápsulas, infusión. Se recomienda uso en ciclos (8 semanas sí, 2 semanas de descanso).\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Escoba Dura",
+      "slug": "escoba-dura",
+      "nombreCientifico": "Sida rhombifolia",
+      "familia": "Malvaceae",
+      "otrosNombres": [
+        "Malvavisco silvestre",
+        "Guanxuma",
+        "Jute"
+      ],
+      "origen": "América tropical y subtropical",
+      "distribucion": [
+        "Argentina",
+        "Brasil",
+        "Paraguay",
+        "Perú",
+        "Pantropical"
+      ],
+      "habitat": "Bordes de caminos, terrenos perturbados, zonas tropicales",
+      "acciones": [
+        "Adaptógena",
+        "Desinflamante",
+        "Emoliente"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Tegumentario",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Estrés",
+        "Fatiga",
+        "Irritaciones de piel",
+        "Tos",
+        "Inflamación"
+      ],
+      "principiosActivos": [
+        "Alcaloides (efedrina en trazas)",
+        "Flavonoides",
+        "Mucílagos",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Ramas utilizadas para fabricar escobas (de ahí su nombre)",
+        "Fibra usada para textiles en algunas regiones",
+        "Medicina popular en toda América tropical"
+      ],
+      "precauciones": [
+        "Consultar antes de uso prolongado"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "arbusto nativo perenne",
+      "imagen": "/imagenes/escoba-dura.webp",
+      "imagenes": [
+        "/imagenes/escoba-dura.webp"
+      ],
+      "descripcion": "Descripción\n\nLa escoba dura es una hierba o subarbusto muy común en zonas cálidas de Argentina. A pesar de ser tratada como maleza, tiene uso medicinal popular como adaptógeno y para afecciones de la piel.\n\nUsos tradicionales\n\n- Estrés crónico y agotamiento nervioso\n- Irritaciones y quemaduras de piel\n- Tos e irritaciones respiratorias\n\nFormas de uso\n\nInfusión de hojas, cataplasma de hojas para uso externo.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Guaycurú",
+      "slug": "guaycuru",
+      "nombreCientifico": "Limonium brasiliense",
+      "familia": "Plumbaginaceae",
+      "otrosNombres": [],
+      "origen": "Nativa de las zonas costeras y humedales de Argentina",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Astringente",
+        "Antidisentérica",
+        "Hipotensora"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Circulatorio"
+      ],
+      "afecciones": [
+        "Diarrea",
+        "Presión arterial"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "febrero a marzo",
+      "tipoCiclo": "hierba costera perenne",
+      "imagen": "/imagenes/guaycuru.webp",
+      "imagenes": [
+        "/imagenes/guaycuru.webp"
+      ],
+      "descripcion": "Descripción\n\nLa raíz es sumamente cotizada en la medicina popular como un potente astringente, antidisentérico y para regular la presión arterial.\n\nBotánica oculta y mitología\n\nAsociado ancestralmente a la fuerza y la resistencia. Los relatos nativos le asignan una signatura de protección física; se llevaba un trozo de su raíz seca como amuleto para repeler picaduras de víboras y flechas enemigas.\n\nUsos tradicionales\n\n- Diarrea\n- Presión arterial\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Heliotropo",
+      "slug": "heliotropo",
+      "nombreCientifico": "Heliotropium curassavicum",
+      "familia": "Boraginaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Cicatrizante",
+        "Antiséptica"
+      ],
+      "sistemas": [
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Heridas",
+        "Lastimaduras",
+        "Infecciones dérmicas leves"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Contiene alcaloides pirrolizidínicos; no se aconseja su consumo interno prolongado."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a febrero",
+      "epocaFructificacion": "diciembre a abril",
+      "tipoCiclo": "hierba rastrera halófita",
+      "imagen": "/imagenes/heliotropo.webp",
+      "imagenes": [
+        "/imagenes/heliotropo.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta rastrera que crece en suelos salinos. Sus infusiones aplicadas externamente asisten en la desinfección y el cierre rápido de cortes cutáneos.\n\nUsos tradicionales\n\n- Heridas\n- Lastimaduras\n- Infecciones dérmicas leves\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Jacarandá",
+      "slug": "jacaranda",
+      "nombreCientifico": "Jacaranda mimosifolia",
+      "familia": "Bignoniaceae",
+      "otrosNombres": [],
+      "origen": "Argentina, Bolivia, Paraguay y Uruguay",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Purificadora",
+        "Antiséptica"
+      ],
+      "sistemas": [
+        "Circulatorio",
+        "Inmunológico",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Purificación de la sangre",
+        "Heridas",
+        "Infecciones bucales",
+        "Infecciones de garganta"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a noviembre (primavera)",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol caducifolio ornamental",
+      "imagen": "/imagenes/jacaranda.webp",
+      "imagenes": [
+        "/imagenes/jacaranda.webp"
+      ],
+      "descripcion": "Descripción\n\nPurificador de la sangre, desinfectante para heridas, boca y garganta.\n\nBotánica oculta y mitología\n\nSu nombre chaná significa 'cura segura'. Las flores violetas eran asociadas con la restauración del equilibrio y la limpieza espiritual.\n\nUsos tradicionales\n\n- Purificación de la sangre\n- Heridas\n- Infecciones bucales\n- Infecciones de garganta\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Lapacho",
+      "slug": "lapacho",
+      "nombreCientifico": "Handroanthus impetiginosus",
+      "familia": "Bignoniaceae",
+      "otrosNombres": [
+        "Lapacho negro",
+        "Lapacho rosado",
+        "Taheebo",
+        "Pau d'arco",
+        "Ibirá pitá"
+      ],
+      "origen": "América del Sur (Chaco, Amazonía)",
+      "distribucion": [
+        "Argentina (Chaco, Misiones, Formosa)",
+        "Paraguay",
+        "Brasil",
+        "Bolivia"
+      ],
+      "habitat": "Selvas subtropicales, bosques chaqueños",
+      "acciones": [
+        "Antibiótica",
+        "Antifúngica",
+        "Astringente",
+        "Desinflamante"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Tegumentario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Infecciones bacterianas",
+        "Candidiasis",
+        "Hongos",
+        "Inflamación",
+        "Diarrea"
+      ],
+      "principiosActivos": [
+        "Lapachol",
+        "Beta-lapachona",
+        "Xiloidona",
+        "Flavonoides",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol sagrado para los pueblos guaraní y Toba",
+        "La corteza interna usada por culturas precolombinas como medicine",
+        "Madera dura, usada en construcción y herramientas"
+      ],
+      "precauciones": [
+        "No usar durante el embarazo",
+        "No combinar con anticoagulantes",
+        "Altas dosis pueden ser hepatotóxicas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Tratamiento con anticoagulantes"
+      ],
+      "toxicidad": "El lapachol en altas dosis puede ser tóxico",
+      "epocaFloracion": "julio a septiembre (previo a hojarse)",
+      "epocaFructificacion": "octubre a diciembre",
+      "tipoCiclo": "árbol caducifolio subtropical",
+      "imagen": "/imagenes/lapacho.webp",
+      "imagenes": [
+        "/imagenes/lapacho.webp"
+      ],
+      "descripcion": "Descripción\n\nEl lapacho es un árbol imponente del nordeste argentino, conocido por sus flores rosadas o amarillas que aparecen antes que las hojas. La corteza interna (pau d'arco) es uno de los remedios naturales más usados en Sudamérica.\n\nUsos tradicionales\n\n- Candidiasis y hongos en mucosas y piel\n- Infecciones bacterianas\n- Diarrea y enteritis\n\nFormas de uso\n\nDecocción de corteza interna, tintura, cápsulas de extracto seco.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Laurel",
+      "slug": "laurel",
+      "nombreCientifico": "Laurus nobilis",
+      "familia": "Lauraceae",
+      "otrosNombres": [
+        "Laurel de cocina",
+        "Laurel verdadero"
+      ],
+      "origen": "Mediterráneo",
+      "distribucion": [
+        "Mediterráneo",
+        "Argentina (cultivado)",
+        "Europa"
+      ],
+      "habitat": "Zonas mediterráneas, jardines y huertas",
+      "acciones": [
+        "Antioxidante",
+        "Desinflamante",
+        "Digestiva",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso",
+        "Osteoarticular"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Gases",
+        "Dolor de cabeza",
+        "Reumatismo",
+        "Estrés"
+      ],
+      "principiosActivos": [
+        "Cineol (eucaliptol)",
+        "Eugenol",
+        "Linalol",
+        "Flavonoides",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Corona de los héroes en la Antigua Grecia y Roma",
+        "Uso culinario en toda la cocina mediterránea y latinoamericana",
+        "Aceite de laurel usado en Oriente Medio para cuidado de la piel"
+      ],
+      "precauciones": [
+        "No confundir con laurel rosa (Nerium oleander), que es tóxico",
+        "En dosis medicinales altas evitar en embarazo"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "marzo a mayo",
+      "epocaFructificacion": "junio a agosto",
+      "tipoCiclo": "árbol perennifolio mediterráneo",
+      "imagen": "/imagenes/laurel.webp",
+      "imagenes": [
+        "/imagenes/laurel.webp"
+      ],
+      "descripcion": "Descripción\n\nEl laurel es mucho más que una especia de cocina. Sus hojas contienen aceites esenciales con propiedades digestivas, antiinflamatorias y antioxidantes. Una de las plantas medicinales más accesibles por estar presente en casi todos los hogares.\n\nUsos tradicionales\n\n- Indigestión, gases y espasmos digestivos\n- Dolores articulares y reumatismo (uso externo)\n- Dolor de cabeza y tensión muscular\n- Estrés y fatiga\n\nFormas de uso\n\nInfusión de hojas, aceite esencial para uso externo, baños de vapor con hojas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Lavanda",
+      "slug": "lavanda",
+      "nombreCientifico": "Lavandula angustifolia",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Espliego",
+        "Alhucema",
+        "Lavender"
+      ],
+      "origen": "Mediterráneo",
+      "distribucion": [
+        "Mediterráneo",
+        "Argentina (La Rioja, Mendoza)",
+        "Europa",
+        "Cultivo mundial"
+      ],
+      "habitat": "Zonas áridas y rocosas, laderas soleadas",
+      "acciones": [
+        "Antiespasmódica",
+        "Antiséptica",
+        "Cicatrizante",
+        "Digestiva",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Tegumentario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Ansiedad",
+        "Insomnio",
+        "Quemaduras",
+        "Picaduras",
+        "Dolor de cabeza",
+        "Espasmos musculares"
+      ],
+      "principiosActivos": [
+        "Linalol",
+        "Acetato de linalilo",
+        "Cineol",
+        "Alcanfor",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Usada en perfumería y cosméticos desde la Antigua Roma",
+        "Tradición mediterránea para perfumar ropa y ahuyentar polillas",
+        "Sachet de lavanda bajo la almohada para el insomnio"
+      ],
+      "precauciones": [
+        "El aceite esencial puro no debe ingerirse",
+        "Puede causar sedación en dosis altas"
+      ],
+      "contraindicaciones": [
+        "Embarazo (aceite esencial en uso interno)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a febrero",
+      "tipoCiclo": "arbusto perenne aromático",
+      "imagen": "/imagenes/lavanda.webp",
+      "imagenes": [
+        "/imagenes/lavanda.webp"
+      ],
+      "descripcion": "Descripción\n\nLa lavanda es una de las plantas aromáticas más queridas del mundo. Su aceite esencial es uno de los pocos que se puede aplicar directamente sobre la piel sin diluir, y tiene estudios clínicos que respaldan su eficacia para la ansiedad.\n\nUsos tradicionales\n\n- Ansiedad, insomnio y estrés\n- Quemaduras leves y picaduras (aplicación directa)\n- Dolor de cabeza (aplicación en sienes)\n- Espasmos musculares\n\nFormas de uso\n\nAceite esencial (uso interno o aromaterapia), infusión, almohada de lavanda, baños aromáticos.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Llantén",
+      "slug": "llanten",
+      "nombreCientifico": "Plantago major",
+      "familia": "Plantaginaceae",
+      "otrosNombres": [
+        "Llantén mayor",
+        "Llantén común",
+        "Plantain"
+      ],
+      "origen": "Europa y Asia",
+      "distribucion": [
+        "Cosmopolita",
+        "Argentina",
+        "América",
+        "Europa"
+      ],
+      "habitat": "Praderas, bordes de caminos, jardines, zonas pisoteadas",
+      "acciones": [
+        "Antibiótica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Digestiva",
+        "Emoliente",
+        "Expectorante",
+        "Laxante"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Tegumentario",
+        "Digestivo",
+        "Urinario"
+      ],
+      "afecciones": [
+        "Tos",
+        "Bronquitis",
+        "Catarro",
+        "Mucosidad",
+        "Heridas",
+        "Picaduras",
+        "Gastritis",
+        "Hemorroides",
+        "Estreñimiento",
+        "Infecciones respiratorias"
+      ],
+      "principiosActivos": [
+        "Aucubina",
+        "Mucílagos",
+        "Flavonoides",
+        "Taninos",
+        "Vitamina C y K"
+      ],
+      "usosEtnobotanicos": [
+        "Los indígenas americanos lo llamaban 'pisada del hombre blanco' por crecer en caminos",
+        "Hojas jóvenes comestibles en ensaladas",
+        "Una de las plantas medicinales más distribuidas del mundo"
+      ],
+      "precauciones": [
+        "Puede potenciar anticoagulantes por contenido en vitamina K"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a marzo",
+      "epocaFructificacion": "enero a mayo",
+      "tipoCiclo": "hierba perenne de roseta",
+      "imagen": "/imagenes/llanten.webp",
+      "imagenes": [
+        "/imagenes/llanten.webp"
+      ],
+      "descripcion": "Descripción\n\nEl llantén es una planta muy común que crece de forma silvestre en casi todo el mundo. A pesar de su apariencia humilde, tiene propiedades medicinales notables para el aparato respiratorio, la piel y el sistema digestivo.\n\nUsos tradicionales\n\n- Tos, bronquitis y mucosidad\n- Heridas y picaduras de insectos\n- Gastritis y hemorroides\n- Infecciones respiratorias y amigdalitis\n- Estreñimiento leve\n\nFormas de uso\n\nInfusión, jarabe para la tos, compresas de hojas frescas, cataplasmas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Malva",
+      "slug": "malva",
+      "nombreCientifico": "Malva sylvestris",
+      "familia": "Malvaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Demulcente",
+        "Antiinflamatoria",
+        "Emoliente"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Irritación de garganta",
+        "Gastritis",
+        "Inflamaciones de la piel"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a marzo (primavera-verano)",
+      "epocaFructificacion": "diciembre a abril",
+      "tipoCiclo": "hierba bienal o perenne de corta duración",
+      "imagen": "/imagenes/malva.webp",
+      "imagenes": [
+        "/imagenes/malva.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta rica en mucílagos que actúa suavizando, protegiendo y desinflamando cualquier tejido o mucosa irritada, interna o externamente.\n\nUsos tradicionales\n\n- Irritación de garganta\n- Gastritis\n- Inflamaciones de la piel\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Malvisco",
+      "slug": "malvisco",
+      "nombreCientifico": "Sphaeralcea bonariensis",
+      "familia": "Malvaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Demulcente",
+        "Expectorante",
+        "Antiinflamatoria"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Tos seca",
+        "Bronquitis",
+        "Acidez estomacal"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a febrero",
+      "epocaFructificacion": "diciembre a marzo",
+      "tipoCiclo": "malvácea nativa perenne",
+      "imagen": "/imagenes/malvisco.webp",
+      "imagenes": [
+        "/imagenes/malvisco.webp"
+      ],
+      "descripcion": "Descripción\n\nMalvácea nativa excelente para ablandar la tos y expulsar flemas protectoras debido a su gran consistencia mucilaginosa suavizante.\n\nUsos tradicionales\n\n- Tos seca\n- Bronquitis\n- Acidez estomacal\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Manzanilla",
+      "slug": "manzanilla",
+      "nombreCientifico": "Matricaria chamomilla",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Camomila",
+        "Chamomile",
+        "Manzanilla alemana"
+      ],
+      "origen": "Europa y Asia occidental",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América",
+        "Cultivo mundial"
+      ],
+      "habitat": "Praderas, campos cultivados, bordes de caminos",
+      "acciones": [
+        "Antiinflamatoria",
+        "Digestiva",
+        "Relajante",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Cólicos",
+        "Náuseas",
+        "Indigestión",
+        "Diarrea",
+        "Gastritis",
+        "Colitis",
+        "Insomnio",
+        "Ansiedad",
+        "Eccemas",
+        "Heridas",
+        "Quemaduras"
+      ],
+      "principiosActivos": [
+        "Apigenina",
+        "Alfa-bisabolol",
+        "Camazuleno",
+        "Flavonoides",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Mencionada en papiros egipcios como medicina sagrada del sol",
+        "Planta medicinal más usada en Europa durante siglos",
+        "Símbolo de la medicina popular en toda América Latina"
+      ],
+      "precauciones": [
+        "Puede causar reacciones alérgicas en personas sensibles a Asteraceae"
+      ],
+      "contraindicaciones": [
+        "Alergia a plantas de la familia Asteraceae"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a enero",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "hierba anual aromática",
+      "imagen": "/imagenes/manzanilla.webp",
+      "imagenes": [
+        "/imagenes/manzanilla.webp"
+      ],
+      "descripcion": "Descripción\n\nLa manzanilla es una de las plantas medicinales más populares del mundo. Sus flores amarillas con pétalos blancos son reconocibles al instante. Tiene propiedades antiinflamatorias, antiespasmódicas y calmantes bien documentadas.\n\nUsos tradicionales\n\n- Cólicos y náuseas\n- Gastritis y colitis\n- Insomnio y ansiedad\n- Eccemas, dermatitis y picaduras\n- Indigestión y diarrea\n\nFormas de uso\n\nInfusión, compresas para uso externo, cremas y aceites esenciales.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Marcelo (o Marcelita)",
+      "slug": "marcela-marcelita",
+      "nombreCientifico": "Achyrocline satureioides",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": "Nativa del noreste y centro de Argentina",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Digestiva",
+        "Antiinflamatoria",
+        "Hepatoprotectora"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Dolor de estómago",
+        "Digestión lenta",
+        "Inflamación"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "marzo a abril (otoño)",
+      "epocaFructificacion": "mayo a junio",
+      "tipoCiclo": "hierba serrana",
+      "imagen": "/imagenes/marcela_marcelita.webp",
+      "imagenes": [
+        "/imagenes/marcela_marcelita.webp"
+      ],
+      "descripcion": "Descripción\n\nExcelente digestivo, antiinflamatorio y protector hepático. Muy utilizada en infusiones para los dolores de estómago.\n\nBotánica oculta y mitología\n\nSu recolección está fuertemente ligada a rituales astronómicos y religiosos. Tradicionalmente se recoge el Viernes Santo antes de la salida del sol, ya que el folclore local asegura que en ese preciso momento su 'virtud' curativa y protectora contra los males del espíritu alcanza su máximo potencial.\n\nUsos tradicionales\n\n- Dolor de estómago\n- Digestión lenta\n- Inflamación\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Marrubio",
+      "slug": "marrubio",
+      "nombreCientifico": "Marrubium vulgare",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Hierba del sapo",
+        "Horehound"
+      ],
+      "origen": "Mediterráneo, Asia occidental",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "Asia",
+        "América (naturalizada)"
+      ],
+      "habitat": "Bordes de caminos, terrenos secos y pedregosos",
+      "acciones": [
+        "Digestiva",
+        "Emoliente",
+        "Expectorante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Tos",
+        "Bronquitis",
+        "Catarro",
+        "Indigestión",
+        "Inapetencia",
+        "Piel seca"
+      ],
+      "principiosActivos": [
+        "Marrubiina",
+        "Diterpenos",
+        "Flavonoides",
+        "Taninos",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Uno de los expectorantes más usados en la medicina popular argentina",
+        "Mencionado en la Biblia como hierba amarga"
+      ],
+      "precauciones": [
+        "Puede bajar la presión arterial",
+        "No usar en embarazo en dosis altas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Hipotensión"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "hierba perenne",
+      "imagen": "/imagenes/marrubio.webp",
+      "imagenes": [
+        "/imagenes/marrubio.webp"
+      ],
+      "descripcion": "Descripción\n\nEl marrubio es una hierba de sabor amargo muy apreciada en la medicina popular de Argentina para los problemas respiratorios, especialmente la tos crónica y la bronquitis.\n\nUsos tradicionales\n\n- Tos crónica, bronquitis y catarro\n- Indigestión e inapetencia\n- Piel seca e irritaciones\n\nFormas de uso\n\nInfusión de hojas y flores, jarabe expectorante, tintura.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Mburucuyá / Pasionaria",
+      "slug": "mburucuya-pasionaria",
+      "nombreCientifico": "Passiflora caerulea",
+      "familia": "Passifloraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Sedante",
+        "Ansiolítica",
+        "Antitusiva",
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Respiratorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Insomnio",
+        "Ansiedad",
+        "Tos nerviosa",
+        "Palpitaciones"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "No combinar con medicamentos sedantes o ansiolíticos sintéticos.",
+        "Evitar dosis excesivas."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a mayo (primavera a otoño)",
+      "epocaFructificacion": "enero a junio",
+      "tipoCiclo": "enredadera leñosa perenne",
+      "imagen": "/imagenes/mburucuya_pasionaria.webp",
+      "imagenes": [
+        "/imagenes/mburucuya_pasionaria.webp"
+      ],
+      "descripcion": "Descripción\n\nEnredadera nativa sumamente valorada por su capacidad de calmar el sistema nervioso central, inducir un sueño reparador y relajar la musculatura lisa.\n\nUsos tradicionales\n\n- Insomnio\n- Ansiedad\n- Tos nerviosa\n- Palpitaciones\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Melisa",
+      "slug": "melisa",
+      "nombreCientifico": "Melissa officinalis",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Toronjil",
+        "Hierba cidrera",
+        "Lemon balm"
+      ],
+      "origen": "Mediterráneo, Asia occidental",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América del Sur"
+      ],
+      "habitat": "Jardines, huertas, bordes de ríos",
+      "acciones": [
+        "Digestiva",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Insomnio",
+        "Ansiedad",
+        "Indigestión nerviosa",
+        "Palpitaciones",
+        "Herpes labial"
+      ],
+      "principiosActivos": [
+        "Ácido rosmarínico",
+        "Flavonoides",
+        "Terpenoides (citral, citronelal)",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Una de las hierbas más usadas en herboristería europea medieval",
+        "Los árabes la llamaban la hierba de la alegría",
+        "Cultivada por monjes en toda Europa durante la Edad Media"
+      ],
+      "precauciones": [
+        "Puede potenciar sedantes"
+      ],
+      "contraindicaciones": [
+        "Hipotiroidismo (consultar médico)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "hierba perenne aromática",
+      "imagen": "/imagenes/melisa.webp",
+      "imagenes": [
+        "/imagenes/melisa.webp"
+      ],
+      "descripcion": "Descripción\n\nLa melisa es una hierba con aroma suave a limón y propiedades calmantes bien documentadas. Es especialmente útil cuando el sistema digestivo y el sistema nervioso están interconectados en el problema.\n\nUsos tradicionales\n\n- Ansiedad, insomnio y palpitaciones\n- Indigestión nerviosa, gases y náuseas\n- Estrés y nerviosismo\n\nFormas de uso\n\nInfusión de hojas frescas o secas, tintura, extracto en cápsulas. Se puede combinar con valeriana para el insomnio.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Menta",
+      "slug": "menta",
+      "nombreCientifico": "Mentha piperita",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Hierbabuena",
+        "Peppermint",
+        "Menta piperita"
+      ],
+      "origen": "Europa (híbrido natural de Mentha aquatica y Mentha spicata)",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América",
+        "Cultivo mundial"
+      ],
+      "habitat": "Zonas húmedas, bordes de ríos, jardines",
+      "acciones": [
+        "Antibiótica",
+        "Desinflamante",
+        "Digestiva",
+        "Expectorante",
+        "Relajante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Nervioso",
+        "Tegumentario",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Gases",
+        "Flatulencias",
+        "Empacho",
+        "Tos",
+        "Bronquitis",
+        "Mucosidad",
+        "Mal aliento",
+        "Infecciones bucofaríngeas",
+        "Dolor de estómago",
+        "Espasmos",
+        "Estrés"
+      ],
+      "principiosActivos": [
+        "Mentol",
+        "Mentona",
+        "Limoneno",
+        "Flavonoides",
+        "Ácido rosmarínico"
+      ],
+      "usosEtnobotanicos": [
+        "Una de las hierbas más cultivadas en jardines medicinales del mundo",
+        "Usada por los griegos y romanos en baños, perfumes y medicina"
+      ],
+      "precauciones": [
+        "No aplicar aceite esencial puro en la nariz de niños menores de 2 años",
+        "Puede agravar el reflujo gastroesofágico"
+      ],
+      "contraindicaciones": [
+        "Reflujo gastroesofágico severo",
+        "Cálculos biliares (aceite esencial)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "hierba estolonante perenne",
+      "imagen": "/imagenes/menta.webp",
+      "imagenes": [
+        "/imagenes/menta.webp"
+      ],
+      "descripcion": "Descripción\n\nLa menta es una planta aromática perenne ampliamente utilizada en la medicina tradicional de numerosas culturas. Su aroma fresco e intenso proviene del mentol, su principal componente activo.\n\nUsos tradicionales\n\n- Empacho, indigestión y flatulencias\n- Bronquitis y mucosidad\n- Infecciones bucofaríngeas y mal aliento\n- Estrés y nerviosismo\n- Dolor de estómago y espasmos digestivos\n\nFormas de uso\n\nInfusión, tintura, aceite esencial (uso externo), masticar hojas frescas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Níspero",
+      "slug": "nispero",
+      "nombreCientifico": "Eriobotrya japonica",
+      "familia": "Rosaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antitusiva",
+        "Mucolítica",
+        "Diurética"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Urinario"
+      ],
+      "afecciones": [
+        "Tos con flema",
+        "Retención de líquidos",
+        "Irritación bronquial"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Las semillas contienen compuestos cianogénicos y no deben consumirse."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "mayo a julio (otoño-invierno)",
+      "epocaFructificacion": "agosto a octubre",
+      "tipoCiclo": "árbol frutal perennifolio",
+      "imagen": "/imagenes/nispero.webp",
+      "imagenes": [
+        "/imagenes/nispero.webp"
+      ],
+      "descripcion": "Descripción\n\nLas hojas de este árbol frutal son empleadas en la medicina tradicional oriental y sudamericana para calmar afecciones pulmonares y disolver secreciones densas.\n\nUsos tradicionales\n\n- Tos con flema\n- Retención de líquidos\n- Irritación bronquial\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Ñangapirí",
+      "slug": "ñangapiri",
+      "nombreCientifico": "Eugenia uniflora",
+      "familia": "Myrtaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Febrífuga",
+        "Antidiarreica",
+        "Hipotensora"
+      ],
+      "sistemas": [
+        "Circulatorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Diarreas agudas",
+        "Hipertensión arterial leve"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Controlar los niveles de presión si ya se toman antihipertensivos."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "arbusto frutal nativo perennifolio",
+      "imagen": "/imagenes/ñangapiri.webp",
+      "imagenes": [
+        "/imagenes/ñangapiri.webp"
+      ],
+      "descripcion": "Descripción\n\nArbusto nativo (también llamado Pitanga). Sus hojas se usan en infusión para regular la presión, cortar la diarrea y bajar estados febriles.\n\nUsos tradicionales\n\n- Fiebre\n- Diarreas agudas\n- Hipertensión arterial leve\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Oreja de Ratón",
+      "slug": "oreja-de-raton",
+      "nombreCientifico": "Dichondra microcalyx",
+      "familia": "Convolvulaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Diurética",
+        "Depurativa",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Urinario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Retención hídrica",
+        "Sobrecarga de toxinas",
+        "Digestión lenta"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre (primavera)",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "hierba rastrera perenne",
+      "imagen": "/imagenes/oreja_de_raton.webp",
+      "imagenes": [
+        "/imagenes/oreja_de_raton.webp"
+      ],
+      "descripcion": "Descripción\n\nPequeña hierba rastrera usada tradicionalmente en infusiones para estimular la micción y favorecer la eliminación de excedentes metabólicos del cuerpo.\n\nUsos tradicionales\n\n- Retención hídrica\n- Sobrecarga de toxinas\n- Digestión lenta\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Ortiga",
+      "slug": "ortiga",
+      "nombreCientifico": "Urtica dioica",
+      "familia": "Urticaceae",
+      "otrosNombres": [
+        "Ortiga mayor",
+        "Pringamosa",
+        "Nettle"
+      ],
+      "origen": "Europa, Asia",
+      "distribucion": [
+        "Cosmopolita",
+        "Argentina",
+        "Europa",
+        "América del Norte"
+      ],
+      "habitat": "Suelos ricos en nitrógeno, bordes de ríos, zonas húmedas",
+      "acciones": [
+        "Antioxidante",
+        "Diurética",
+        "Desinflamante",
+        "Hepatoprotectora",
+        "Hipoglucemiante"
+      ],
+      "sistemas": [
+        "Renal",
+        "Hepático",
+        "Osteoarticular",
+        "Endocrino",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Artritis",
+        "Anemia",
+        "Diabetes",
+        "Hígado graso",
+        "Caída del cabello",
+        "Alergias"
+      ],
+      "principiosActivos": [
+        "Ácido fórmico",
+        "Histamina",
+        "Flavonoides",
+        "Vitaminas A, C, K",
+        "Hierro, calcio, silicio",
+        "Beta-sitosterol"
+      ],
+      "usosEtnobotanicos": [
+        "Fibra de ortiga usada para textiles en Europa durante siglos",
+        "Las hojas jóvenes son comestibles (rico en hierro y vitaminas)",
+        "Ortiga urticante usada por chamanes para estimular circulación"
+      ],
+      "precauciones": [
+        "Manipular con guantes (pelos urticantes)",
+        "Puede potenciar anticoagulantes"
+      ],
+      "contraindicaciones": [
+        "Embarazo (estimula el útero)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a enero",
+      "epocaFructificacion": "noviembre a marzo",
+      "tipoCiclo": "hierba anual o perenne",
+      "imagen": "/imagenes/ortiga.webp",
+      "imagenes": [
+        "/imagenes/ortiga.webp"
+      ],
+      "descripcion": "Descripción\n\nLa ortiga es otra planta \"maleza\" con un perfil nutricional y medicinal extraordinario. Sus hojas frescas contienen más hierro que las espinacas y niveles altos de vitamina C. Los pelos urticantes desaparecen con la cocción o el secado.\n\nUsos tradicionales\n\n- Retención de líquidos e infecciones urinarias\n- Artritis y dolores articulares\n- Anemia y deficiencias nutricionales\n- Caída del cabello (uso interno y externo)\n- Apoyo en diabetes tipo 2\n\nFormas de uso\n\nInfusión, jugo de hojas frescas, cápsulas, champú de ortiga, sopa de hojas cocinadas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Paico",
+      "slug": "paico",
+      "nombreCientifico": "Dysphania ambrosioides",
+      "familia": "Amaranthaceae",
+      "otrosNombres": [
+        "Epazote",
+        "Hierba santa",
+        "Te de México",
+        "Chenopodio"
+      ],
+      "origen": "América Central y del Sur",
+      "distribucion": [
+        "Argentina",
+        "México",
+        "Perú",
+        "Bolivia",
+        "Brasil",
+        "Pantropical (naturalizada)"
+      ],
+      "habitat": "Bordes de caminos, terrenos perturbados, zonas cálidas",
+      "acciones": [
+        "Antianémica",
+        "Antibiótica",
+        "Antiparasitaria",
+        "Digestiva",
+        "Desinflamante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Hematológico",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Parásitos intestinales",
+        "Anemia",
+        "Indigestión",
+        "Gases",
+        "Infecciones digestivas"
+      ],
+      "principiosActivos": [
+        "Ascaridol",
+        "Aceite esencial",
+        "Hierro",
+        "Flavonoides",
+        "Saponinas"
+      ],
+      "usosEtnobotanicos": [
+        "Usado en la cocina mexicana como condimento (epazote)",
+        "Antiparasitario ancestral en toda América precolombina",
+        "Planta sagrada en rituales de limpieza de comunidades andinas"
+      ],
+      "precauciones": [
+        "No usar en embarazo (abortivo en dosis altas)",
+        "Dosis altas pueden causar toxicidad neurológica",
+        "El aceite esencial no debe ingerirse directamente"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños pequeños sin supervisión médica"
+      ],
+      "toxicidad": "El ascaridol es tóxico en dosis altas; usar dosis moderadas",
+      "epocaFloracion": "enero a abril",
+      "epocaFructificacion": "marzo a junio",
+      "tipoCiclo": "hierba anual ruderal",
+      "imagen": "/imagenes/paico.webp",
+      "imagenes": [
+        "/imagenes/paico.webp"
+      ],
+      "descripcion": "Descripción\n\nEl paico es una de las plantas medicinales más importantes de la medicina tradicional andina. Su uso como antiparasitario es milenario y ha sido validado científicamente por la presencia de ascaridol, potente vermífugo.\n\nUsos tradicionales\n\n- Parásitos intestinales (principal uso)\n- Anemia y deficiencias de hierro\n- Indigestión, gases y flatulencias\n- Infecciones intestinales\n\nFormas de uso\n\nInfusión de hojas frescas o secas, jugo de hojas frescas, condimento culinario.\n\nPrecauciones importantes\n\nNo usar durante el embarazo. Las dosis antiparasitarias deben ser controladas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
       "nombre": "Palo Amarillo / Niño Rupá",
       "slug": "palo-amarillo-nino-rupa",
       "nombreCientifico": "Aloysia gratissima",
       "familia": "Verbenaceae",
+      "otrosNombres": [
+        "Niño rupá",
+        "Azahar del campo",
+        "Palo amarillo",
+        "Burro gateado"
+      ],
+      "origen": "América del Sur",
+      "distribucion": [
+        "Argentina (noroeste, cuyo, litoral)",
+        "Uruguay",
+        "Paraguay",
+        "Bolivia",
+        "Brasil"
+      ],
+      "habitat": "Monte, chaco seco, bordes de ríos, zonas subtropicales",
       "acciones": [
         "Antidepresiva",
         "Antidiarreica",
@@ -368,388 +2719,1056 @@
         "Empachos",
         "Diarrea"
       ],
-      "descripcion": "Arbusto. Parte usada: hojas. Utilizado tradicionalmente por sus marcadas propiedades antidepresivas, reguladoras del aparato digestivo (combate empachos y diarreas) y respiratorio.",
+      "principiosActivos": [
+        "Aceites esenciales",
+        "Flavonoides",
+        "Taninos",
+        "Terpenos"
+      ],
+      "usosEtnobotanicos": [
+        "Uso tradicional en comunidades del noroeste y litoral argentino",
+        "Nombre guaraní Niño Rupá significa 'cama del Niño Jesús'",
+        "Planta aromática muy apreciada en la medicina popular regional",
+        "Herbario 7 — registro etnobotánico"
+      ],
       "precauciones": [],
-      "imagenes": [],
-      "fuentes": [
-        "Herbario 7"
-      ]
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "arbusto nativo aromático",
+      "imagen": "/imagenes/palo_amarillo_nino_rupa.webp",
+      "imagenes": [
+        "/imagenes/palo_amarillo_nino_rupa.webp"
+      ],
+      "descripcion": "Descripción\n\nEl Palo Amarillo, conocido en guaraní como Niño Rupá, es un arbusto aromático nativo de Argentina con flores blancas perfumadas. Destaca por sus propiedades antidepresivas —poco comunes en el mundo vegetal— junto con sus acciones sobre el aparato digestivo y respiratorio.\n\nUsos tradicionales\n\n- Depresión leve, estrés y decaimiento anímico\n- Diarrea y empachos digestivos\n- Resfríos y tos\n\nFormas de uso\n\nInfusión de hojas y ramas finas. También en baños aromáticos.\n\nReferencias\n\n- Fuente: Herbario 7"
     },
     {
-      "nombre": "Ajenjo Dulce",
-      "slug": "ajenjo-dulce",
+      "nombre": "Pezuña de Vaca",
+      "slug": "pezuna-de-vaca",
+      "nombreCientifico": "Bauhinia forficata",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Pata de vaca",
+        "Une de vache",
+        "Casco de vaca"
+      ],
+      "origen": "América del Sur",
+      "distribucion": [
+        "Argentina",
+        "Brasil",
+        "Paraguay",
+        "Uruguay"
+      ],
+      "habitat": "Selvas subtropicales, matorrales, jardines",
       "acciones": [
-        "Antiparasitaria",
-        "Antimalárica",
-        "Digestiva"
-      ]
+        "Antibiótica",
+        "Antitusiva",
+        "Desinflamante",
+        "Fungicida",
+        "Hipoglucemiante"
+      ],
+      "sistemas": [
+        "Endocrino",
+        "Respiratorio",
+        "Tegumentario",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Diabetes",
+        "Tos",
+        "Infecciones",
+        "Hongos",
+        "Inflamación"
+      ],
+      "principiosActivos": [
+        "Flavonoides (quercetina, kaempferol)",
+        "Glucósidos",
+        "Taninos",
+        "Saponinas"
+      ],
+      "usosEtnobotanicos": [
+        "Planta ornamental y medicinal muy popular en jardines del nordeste argentino",
+        "Sus hojas con forma de pezuña son inconfundibles",
+        "Medicina popular brasileña ampliamente estudiada para diabetes"
+      ],
+      "precauciones": [
+        "Monitorear glucemia si se usa junto con medicación para diabetes",
+        "Puede potenciar efecto hipoglucemiante de medicamentos"
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a octubre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "árbol caducifolio tropical",
+      "imagen": "/imagenes/pezuna-de-vaca.webp",
+      "imagenes": [
+        "/imagenes/pezuna-de-vaca.webp"
+      ],
+      "descripcion": "Descripción\n\nLa pezuña de vaca debe su nombre a la curiosa forma bífida de sus hojas. Es uno de los hipoglucemiantes vegetales más estudiados y populares en la medicina tradicional del nordeste argentino y Brasil.\n\nUsos tradicionales\n\n- Diabetes tipo 2 y glucemia elevada (uso principal)\n- Tos e irritación de garganta\n- Hongos e infecciones\n\nFormas de uso\n\nInfusión de hojas, tintura, decocción.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
-      "nombre": "Alcanfor",
-      "slug": "alcanfor",
+      "nombre": "Ruda",
+      "slug": "ruda",
+      "nombreCientifico": "Ruta graveolens",
+      "familia": "Rutaceae",
+      "otrosNombres": [
+        "Ruda común",
+        "Arruda",
+        "Herb of grace"
+      ],
+      "origen": "Mediterráneo, sur de Europa",
+      "distribucion": [
+        "Argentina",
+        "Europa",
+        "América Latina",
+        "África"
+      ],
+      "habitat": "Jardines, terrenos secos y pedregosos",
       "acciones": [
         "Antiespasmódica",
-        "Analgésica",
-        "Antifúngica"
-      ]
-    },
-    {
-      "nombre": "Altamisa",
-      "slug": "altamisa",
-      "acciones": [
-        "Digestiva tónica",
-        "Co-antiparasitaria",
-        "Febrífuga"
-      ]
-    },
-    {
-      "nombre": "Artemisa Vulgaris",
-      "slug": "artemisa-vulgaris",
-      "acciones": [
-        "Emenagoga",
-        "Digestiva",
-        "Antiespasmódica"
-      ]
-    },
-    {
-      "nombre": "Carqueja",
-      "slug": "carqueja",
-      "acciones": [
-        "Hepatoprotectora",
-        "Digestiva",
-        "Depurativa"
-      ]
-    },
-    {
-      "nombre": "Catay",
-      "slug": "catay",
-      "acciones": [
-        "Cicatrizante",
-        "Hemostática",
-        "Antiinflamatoria"
-      ]
-    },
-    {
-      "nombre": "Cerraja",
-      "slug": "cerraja",
-      "acciones": [
-        "Depurativa",
-        "Hepática",
-        "Laxante suave"
-      ]
-    },
-    {
-      "nombre": "Cucúrbita",
-      "slug": "cucurbita",
-      "acciones": [
         "Antiparasitaria",
-        "Diurética",
-        "Emoliente"
-      ]
-    },
-    {
-      "nombre": "Curupí",
-      "slug": "curupi",
-      "acciones": [
-        "Cicatrizante",
-        "Regenerativa"
-      ]
-    },
-    {
-      "nombre": "Curu Caá",
-      "slug": "curu-caa",
-      "acciones": [
-        "Antiinflamatoria",
-        "Antirreumática"
-      ]
-    },
-    {
-      "nombre": "Doctorcito",
-      "slug": "doctorcito",
-      "acciones": [
-        "Digestiva",
-        "Hepatoprotectora",
-        "Antiespasmódica"
-      ]
-    },
-    {
-      "nombre": "Heliotropo",
-      "slug": "heliotropo",
-      "acciones": [
-        "Cicatrizante",
-        "Antiséptica"
-      ]
-    },
-    {
-      "nombre": "Malva",
-      "slug": "malva",
-      "acciones": [
-        "Demulcente",
-        "Antiinflamatoria",
-        "Emoliente"
-      ]
-    },
-    {
-      "nombre": "Malvisco",
-      "slug": "malvisco",
-      "acciones": [
-        "Demulcente",
-        "Expectorante",
-        "Antiinflamatoria"
-      ]
-    },
-    {
-      "nombre": "Mburucuyá / Pasionaria",
-      "slug": "mburucuya-pasionaria",
-      "acciones": [
-        "Sedante",
-        "Ansiolítica",
-        "Antitusiva",
-        "Antiespasmódica"
-      ]
-    },
-    {
-      "nombre": "Níspero",
-      "slug": "nispero",
-      "acciones": [
-        "Antitusiva",
-        "Mucolítica",
-        "Diurética"
-      ]
-    },
-    {
-      "nombre": "Oreja de Ratón",
-      "slug": "oreja-de-raton",
-      "acciones": [
-        "Diurética",
-        "Depurativa",
-        "Digestiva"
-      ]
+        "Carminativa",
+        "Desinflamante",
+        "Reguladora ciclo menstrual"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Reproductor",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Irregularidades menstruales",
+        "Parásitos",
+        "Gases",
+        "Espasmos digestivos",
+        "Dolor de cabeza"
+      ],
+      "principiosActivos": [
+        "Rutina",
+        "Furanocumarinas",
+        "Alcaloides",
+        "Aceites esenciales",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Planta de protección espiritual en muchas culturas latinoamericanas",
+        "Usada en sahumerios y ritos de limpieza",
+        "En la Antigua Roma se usaba como condimento y medicina"
+      ],
+      "precauciones": [
+        "Fotosensibilizante: no exponerse al sol después del uso tópico",
+        "Nunca usar en embarazo (abortiva)",
+        "Tóxica en dosis altas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños",
+        "Personas con coagulopatías"
+      ],
+      "toxicidad": "Tóxica en dosis altas; puede causar nefrotoxicidad y hepatotoxicidad",
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "subarbusto perenne aromático",
+      "imagen": "/imagenes/ruda.webp",
+      "imagenes": [
+        "/imagenes/ruda.webp"
+      ],
+      "descripcion": "Descripción\n\nLa ruda es una planta de uso muy arraigado en la cultura popular latinoamericana, tanto medicinal como espiritual. Sin embargo, es una de las plantas que requiere mayor respeto en cuanto a dosis, ya que puede ser tóxica.\n\nUsos tradicionales\n\n- Irregularidades menstruales y amenorrea\n- Gases, flatulencias y espasmos digestivos\n- Parásitos intestinales\n\nPrecauciones muy importantes\n\n**No usar durante el embarazo** bajo ninguna circunstancia. Dosis altas son tóxicas. No exponer piel tratada al sol.\n\nFormas de uso\n\nInfusión muy diluida, uso externo en pomadas. Siempre en dosis bajas y supervisadas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
       "nombre": "Salvia de Isla",
       "slug": "salvia-de-isla",
+      "nombreCientifico": "Pluchea sagittalis",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Digestiva",
         "Carminativa",
         "Expectorante"
-      ]
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Gases / Flatulencias",
+        "Empacho",
+        "Catarro respiratorio"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a marzo (primavera-verano)",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "hierba perenne aromática de zonas húmedas",
+      "imagen": "/imagenes/salvia_de_isla.webp",
+      "imagenes": [
+        "/imagenes/salvia_de_isla.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta aromática perenne propia de zonas húmedas, con un fuerte olor característico, ideal para combatir la hinchazón estomacal y los gases.\n\nUsos tradicionales\n\n- Gases / Flatulencias\n- Empacho\n- Catarro respiratorio\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Salvia Guaranítica",
       "slug": "salvia-guaranitica",
+      "nombreCientifico": "Salvia guaranitica",
+      "familia": "Lamiaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Sedante suave",
         "Digestiva",
         "Analgésica"
-      ]
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Nerviosismo",
+        "Dolor de cabeza tensional",
+        "Malestar estomacal de origen nervioso"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a mayo",
+      "epocaFructificacion": "enero a junio",
+      "tipoCiclo": "subarbusto perenne nativo",
+      "imagen": "/imagenes/salvia_guaranitica.webp",
+      "imagenes": [
+        "/imagenes/salvia_guaranitica.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta de hermosas flores azules intensas. Se consume en infusiones por su acción reequilibrante del sistema nervioso y digestivo.\n\nUsos tradicionales\n\n- Nerviosismo\n- Dolor de cabeza tensional\n- Malestar estomacal de origen nervioso\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Salvia Morada",
       "slug": "salvia-morada",
+      "nombreCientifico": "Hyptis mutabilis",
+      "familia": "Lamiaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Carminativa",
         "Antiparasitaria",
         "Antiséptica",
         "Diurética"
-      ]
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Urinario"
+      ],
+      "afecciones": [
+        "Gases",
+        "Parásitos",
+        "Infecciones leves digestivas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a abril (primavera a otoño)",
+      "epocaFructificacion": "diciembre a mayo",
+      "tipoCiclo": "hierba perenne aromática",
+      "imagen": "/imagenes/salvia_morada.webp",
+      "imagenes": [
+        "/imagenes/salvia_morada.webp"
+      ],
+      "descripcion": "Descripción\n\nHierba aromática cuyas propiedades asisten en la expulsión de gases y actúan de manera desfavorable frente a agentes parasitarios intestinales.\n\nUsos tradicionales\n\n- Gases\n- Parásitos\n- Infecciones leves digestivas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Sangre de Drago (o Sangre de Grado)",
+      "slug": "sangre-de-drago",
+      "nombreCientifico": "Croton urucurana",
+      "familia": "Euphorbiaceae",
+      "otrosNombres": [],
+      "origen": "Nativa de la cuenca del Río Paraná y selva misionera",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Cicatrizante",
+        "Antiulcerosa",
+        "Antiviral"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Heridas",
+        "Úlceras gástricas",
+        "Infecciones virales"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a octubre",
+      "epocaFructificacion": "noviembre a diciembre",
+      "tipoCiclo": "árbol mediano de selva ribereña",
+      "imagen": "/imagenes/sangre_de_drago.webp",
+      "imagenes": [
+        "/imagenes/sangre_de_drago.webp"
+      ],
+      "descripcion": "Descripción\n\nSu resina de color rojo intenso es un cicatrizante extraordinario de heridas externas y úlceras gástricas, además de un potente antiviral.\n\nBotánica oculta y mitología\n\nPor la teoría de las signaturas (donde la planta anuncia su poder a través de su forma o color), Paracelso la habría clasificado bajo la regencia de Marte debido a su látex rojo similar a la sangre. Se usaba ritualmente para fortalecer el espíritu antes de las batallas y para sanar 'corazones rotos' o penas de amor profundas.\n\nUsos tradicionales\n\n- Heridas\n- Úlceras gástricas\n- Infecciones virales\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Santa Lucía",
       "slug": "santa-lucia",
+      "nombreCientifico": "Commelina erecta",
+      "familia": "Commelinaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Descongestiva ocular",
         "Antiinflamatoria"
-      ]
-    },
-    {
-      "nombre": "Sen de Campo",
-      "slug": "sen-de-campo",
-      "acciones": [
-        "Laxante",
-        "Purgante",
-        "Depurativa"
-      ]
-    },
-    {
-      "nombre": "Suico",
-      "slug": "suico",
-      "acciones": [
-        "Digestiva",
-        "Carminativa",
-        "Antiespasmódica"
-      ]
-    },
-    {
-      "nombre": "Taco de Reina",
-      "slug": "taco-de-reina",
-      "acciones": [
-        "Antimicrobiana",
-        "Expectorante",
-        "Diurética"
-      ]
-    },
-    {
-      "nombre": "Tala",
-      "slug": "tala",
-      "acciones": [
-        "Antiséptica",
-        "Descongestiva",
-        "Digestiva"
-      ]
-    },
-    {
-      "nombre": "Uña de Gato",
-      "slug": "uña-de-gato",
-      "acciones": [
-        "Inmunomoduladora",
-        "Antiinflamatoria",
-        "Antídoto"
-      ]
-    },
-    {
-      "nombre": "Yerba Carnicera",
-      "slug": "yerba-carnicera",
-      "acciones": [
-        "Cicatrizante",
-        "Diurética",
-        "Antiulcerosa",
-        "Digestiva"
-      ]
-    },
-    {
-      "nombre": "Yuyo Colorado",
-      "slug": "yuyo-colorado",
-      "acciones": [
-        "Nutritiva",
-        "Depurativa",
-        "Diurética"
-      ]
-    },
-    {
-      "nombre": "Zarzaparrilla",
-      "slug": "zarzaparrilla",
-      "acciones": [
-        "Depurativa",
-        "Diurética",
-        "Sudorífica"
-      ]
-    },
-    {
-      "nombre": "Ñangapirí",
-      "slug": "ñangapiri",
-      "acciones": [
-        "Febrífuga",
-        "Antidiarreica",
-        "Hipotensora"
-      ]
+      ],
+      "sistemas": [
+        "Visual",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Irritación ocular",
+        "Conjuntivitis leve",
+        "Inflamación cutánea"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Garantizar la higiene absoluta si se aplica cerca o dentro de los ojos."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a marzo (meses cálidos)",
+      "epocaFructificacion": "noviembre a abril",
+      "tipoCiclo": "hierba perenne rizomatosa",
+      "imagen": "/imagenes/santa_lucia.webp",
+      "imagenes": [
+        "/imagenes/santa_lucia.webp"
+      ],
+      "descripcion": "Descripción\n\nHierba nativa caracterizada por recolectar un líquido gelatinoso transparente en sus brácteas que tradicionalmente se usa como colirio natural descongestivo.\n\nUsos tradicionales\n\n- Irritación ocular\n- Conjuntivitis leve\n- Inflamación cutánea\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Sarandí Blanco",
       "slug": "sarandi-blanco",
+      "nombreCientifico": "Cephalanthus glabratus",
+      "familia": "Rubiaceae",
+      "otrosNombres": [],
+      "origen": "Nativa del Litoral argentino (ríos Paraná y Uruguay)",
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Febrífuga",
         "Tónica",
         "Antiséptica",
         "Cicatrizante"
-      ]
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Indigestión",
+        "Heridas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol ribereño",
+      "imagen": "/imagenes/sarandi_blanco.webp",
+      "imagenes": [
+        "/imagenes/sarandi_blanco.webp"
+      ],
+      "descripcion": "Descripción\n\nTradicionalmente utilizado para bajar la fiebre, como tónico estomacal y para lavar heridas de difícil cicatrización por sus propiedades antisépticas.\n\nBotánica oculta y mitología\n\nEn la cultura ribereña y Chaná, se lo considera un guardián de las aguas. Se cree que las ramas recogidas durante el amanecer tienen la virtud de limpiar las malas energías de los hogares si se usan para salpicar agua de río en las esquinas de las habitaciones.\n\nUsos tradicionales\n\n- Fiebre\n- Indigestión\n- Heridas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
-      "nombre": "Guaycurú",
-      "slug": "guaycuru",
+      "nombre": "Sauce",
+      "slug": "sauce",
+      "nombreCientifico": "Salix babylonica",
+      "familia": "Salicaceae",
+      "otrosNombres": [],
+      "origen": "Asia oriental, naturalizado en el litoral argentino",
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
-        "Astringente",
-        "Antidisentérica",
-        "Hipotensora"
-      ]
-    },
-    {
-      "nombre": "Marcelo (o Marcelita)",
-      "slug": "marcela-marcelita",
-      "acciones": [
-        "Digestiva",
-        "Antiinflamatoria",
-        "Hepatoprotectora"
-      ]
-    },
-    {
-      "nombre": "Sangre de Drago (o Sangre de Grado)",
-      "slug": "sangre-de-drago",
-      "acciones": [
-        "Cicatrizante",
-        "Antiulcerosa",
-        "Antiviral"
-      ]
-    },
-    {
-      "nombre": "Ubajay",
-      "slug": "ubajay",
-      "acciones": [
-        "Diurética",
-        "Depurativa"
-      ]
-    },
-    {
-      "nombre": "Jacarandá",
-      "slug": "jacaranda",
-      "acciones": [
-        "Purificadora",
+        "Analgésica",
+        "Antirreumática",
         "Antiséptica"
-      ]
-    },
-    {
-      "nombre": "Totora",
-      "slug": "totora",
-      "acciones": [
-        "Nutritiva",
-        "Reconstituyente"
-      ]
+      ],
+      "sistemas": [
+        "Musculoesquelético",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Dolores reumáticos",
+        "Heridas",
+        "Afecciones cutáneas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a octubre",
+      "epocaFructificacion": "noviembre a diciembre",
+      "tipoCiclo": "árbol ribereño caducifolio",
+      "imagen": "/imagenes/sauce.webp",
+      "imagenes": [
+        "/imagenes/sauce.webp"
+      ],
+      "descripcion": "Descripción\n\nDesinfectante de heridas, calmante para dolores reumáticos y afecciones cutáneas.\n\nBotánica oculta y mitología\n\nSegún la tradición chaná, los primeros sauces crecieron sobre las tumbas de guerreros que defendieron su territorio hasta el final.\n\nUsos tradicionales\n\n- Dolores reumáticos\n- Heridas\n- Afecciones cutáneas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Sauco",
       "slug": "sauco",
+      "nombreCientifico": "Sambucus nigra",
+      "familia": "Adoxaceae",
+      "otrosNombres": [],
+      "origen": "Regiones templadas de ambos hemisferios",
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Febrífuga",
         "Antiinflamatoria",
         "Antidiarreica",
         "Depurativa"
-      ]
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Hepático"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Problemas hepáticos",
+        "Problemas de vesícula",
+        "Diarrea"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto o árbol pequeño",
+      "imagen": "/imagenes/sauco.webp",
+      "imagenes": [
+        "/imagenes/sauco.webp"
+      ],
+      "descripcion": "Descripción\n\nUtilizado para bajar la fiebre, aliviar hígado y vesícula, como antiinflamatorio y antidiarreico.\n\nBotánica oculta y mitología\n\nSus flores blancas simbolizaban la purificación. Era considerado un puente entre el mundo visible y el invisible.\n\nUsos tradicionales\n\n- Fiebre\n- Problemas hepáticos\n- Problemas de vesícula\n- Diarrea\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
-      "nombre": "Ambay",
-      "slug": "ambay",
+      "nombre": "Sen de Campo",
+      "slug": "sen-de-campo",
+      "nombreCientifico": "Senna corymbosa",
+      "familia": "Fabaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
-        "Antitusiva",
-        "Expectorante",
-        "Espasmolítica"
-      ]
+        "Laxante",
+        "Purgante",
+        "Depurativa"
+      ],
+      "sistemas": [
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Estreñimiento crónico o agudo"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "No usar de forma continua.",
+        "Contraindicada en inflamaciones intestinales y embarazo."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "enero a mayo (verano-otoño)",
+      "epocaFructificacion": "marzo a junio",
+      "tipoCiclo": "arbusto perenne o semiperenne",
+      "imagen": "/imagenes/sen_de_campo.webp",
+      "imagenes": [
+        "/imagenes/sen_de_campo.webp"
+      ],
+      "descripcion": "Descripción\n\nArbusto nativo con flores amarillas vistosas. Contiene antraquinonas que aumentan los movimientos peristálticos intestinales facilitando la evacuación.\n\nUsos tradicionales\n\n- Estreñimiento crónico o agudo\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
-      "nombre": "Anacahuita",
-      "slug": "anacahuita",
+      "nombre": "Suico",
+      "slug": "suico",
+      "nombreCientifico": "Tagetes minuta",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
+        "Digestiva",
+        "Carminativa",
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Gases",
+        "Cólicos estomacales",
+        "Digestión pesada"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "En dosis altas puede ser irritante."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "enero a abril (verano)",
+      "epocaFructificacion": "marzo a junio",
+      "tipoCiclo": "hierba anual aromática",
+      "imagen": "/imagenes/suico.webp",
+      "imagenes": [
+        "/imagenes/suico.webp"
+      ],
+      "descripcion": "Descripción\n\nHierba anual fuertemente aromática de gran uso culinario y medicinal, ideal para destrabar empachos y eliminar dolores por gases.\n\nUsos tradicionales\n\n- Gases\n- Cólicos estomacales\n- Digestión pesada\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Taco de Reina",
+      "slug": "taco-de-reina",
+      "nombreCientifico": "Tropaeolum majus",
+      "familia": "Tropaeolaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antimicrobiana",
         "Expectorante",
-        "Pectoral",
-        "Antiséptica"
-      ]
+        "Diurética"
+      ],
+      "sistemas": [
+        "Inmunitario",
+        "Respiratorio",
+        "Urinario"
+      ],
+      "afecciones": [
+        "Infecciones respiratorias",
+        "Tos productiva",
+        "Infecciones urinarias leves"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a marzo",
+      "epocaFructificacion": "diciembre a abril",
+      "tipoCiclo": "hierba anual trepadora",
+      "imagen": "/imagenes/taco_de_reina.webp",
+      "imagenes": [
+        "/imagenes/taco_de_reina.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta rastrera ornamental y comestible de sabor picante. Contiene compuestos azufrados que actúan como antibióticos naturales estables.\n\nUsos tradicionales\n\n- Infecciones respiratorias\n- Tos productiva\n- Infecciones urinarias leves\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Tala de Indio",
+      "slug": "tala-de-indio",
+      "nombreCientifico": "Holmbergia tweedii",
+      "familia": "Amaranthaceae",
+      "otrosNombres": [
+        "Tala del indio",
+        "Sal vegetal"
+      ],
+      "origen": "América del Sur (nativa)",
+      "distribucion": [
+        "Argentina (noroeste, chaco)",
+        "Paraguay",
+        "Bolivia"
+      ],
+      "habitat": "Monte xerófilo, zonas áridas y semiáridas",
+      "acciones": [
+        "Nutritiva",
+        "Alternativa (Sal vegetal)"
+      ],
+      "sistemas": [
+        "Nutricional"
+      ],
+      "afecciones": [
+        "Deficiencias minerales",
+        "Sustitución de sodio"
+      ],
+      "principiosActivos": [
+        "Carbonato de sodio (en cenizas)",
+        "Carbonato de potasio",
+        "Sales minerales"
+      ],
+      "usosEtnobotanicos": [
+        "Pueblos originarios del noroeste argentino la usaban como sustituto de la sal",
+        "Las cenizas de la planta contienen carbonato de sodio y potasio",
+        "Frutos carnosos comestibles usados como alimento fresco",
+        "Herbario 7 — registro etnobotánico regional"
+      ],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "arbusto nativo halófito",
+      "imagen": "/imagenes/tala_de_indio.webp",
+      "imagenes": [
+        "/imagenes/tala_de_indio.webp"
+      ],
+      "descripcion": "Descripción\n\nLa Tala de Indio es un arbusto nativo del Monte y Chaco argentino con un uso etnobotánico singular: sus cenizas se empleaban como sal vegetal por los pueblos originarios de la región. También produce frutos carnosos comestibles.\n\nUsos tradicionales\n\n- Sal vegetal (cenizas usadas como sustituto del cloruro de sodio)\n- Fuente de minerales para comunidades originarias\n- Frutos frescos como alimento\n\nFormas de uso\n\nCenizas de la planta seca como condimento. Frutos consumidos frescos.\n\nReferencias\n\n- Fuente: Herbario 7"
+    },
+    {
+      "nombre": "Tala",
+      "slug": "tala",
+      "nombreCientifico": "Celtis tala",
+      "familia": "Cannabaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Antiséptica",
+        "Descongestiva",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Afecciones de la piel",
+        "Irritaciones corporales"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a octubre",
+      "epocaFructificacion": "octubre a enero",
+      "tipoCiclo": "árbol espinoso nativo perennifolio",
+      "imagen": "/imagenes/tala.webp",
+      "imagenes": [
+        "/imagenes/tala.webp"
+      ],
+      "descripcion": "Descripción\n\nÁrbol nativo espinoso. Sus hojas e infusiones ayudan a reequilibrar digestiones pesadas y se usan tópicamente para desinfectar e hidratar la piel.\n\nUsos tradicionales\n\n- Indigestión\n- Afecciones de la piel\n- Irritaciones corporales\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Totora",
+      "slug": "totora",
+      "nombreCientifico": "Schoenoplectus californicus",
+      "familia": "Cyperaceae",
+      "otrosNombres": [],
+      "origen": "América del Sur",
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Nutritiva",
+        "Reconstituyente"
+      ],
+      "sistemas": [
+        "Nutricional"
+      ],
+      "afecciones": [
+        "Desnutrición",
+        "Falta de nutrientes"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a febrero",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "junco acuático perenne",
+      "imagen": "/imagenes/totora.webp",
+      "imagenes": [
+        "/imagenes/totora.webp"
+      ],
+      "descripcion": "Descripción\n\nSu raíz era utilizada como alimento y recurso nutricional.\n\nBotánica oculta y mitología\n\nSu nombre significa 'Regalo del Agua'. Era considerada una planta bendecida por los espíritus de lagunas, bañados y ríos.\n\nUsos tradicionales\n\n- Desnutrición\n- Falta de nutrientes\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
       "nombre": "Tuna",
       "slug": "tuna",
+      "nombreCientifico": "Nopalea cochenillifera",
+      "familia": "Cactaceae",
+      "otrosNombres": [],
+      "origen": "América",
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
         "Emoliente",
         "Cicatrizante",
         "Antiinflamatoria"
-      ]
+      ],
+      "sistemas": [
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Quemaduras",
+        "Infecciones de la piel",
+        "Heridas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "cactus suculenta perenne",
+      "imagen": "/imagenes/tuna.webp",
+      "imagenes": [
+        "/imagenes/tuna.webp"
+      ],
+      "descripcion": "Descripción\n\nLa pulpa de sus pencas era utilizada para tratar quemaduras e infecciones.\n\nBotánica oculta y mitología\n\nLos chaná la consideraban uno de sus remedios más valiosos, símbolo de resistencia y supervivencia en ambientes hostiles.\n\nUsos tradicionales\n\n- Quemaduras\n- Infecciones de la piel\n- Heridas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
-      "nombre": "Sauce",
-      "slug": "sauce",
+      "nombre": "Ubajay",
+      "slug": "ubajay",
+      "nombreCientifico": "Hexachlamys edulis",
+      "familia": "Myrtaceae",
+      "otrosNombres": [],
+      "origen": "Nativa de las selvas en galería de los ríos Paraná y Uruguay",
+      "distribucion": [],
+      "habitat": null,
       "acciones": [
-        "Analgésica",
-        "Antirreumática",
-        "Antiséptica"
-      ]
+        "Diurética",
+        "Depurativa"
+      ],
+      "sistemas": [
+        "Urinario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Problemas urinarios",
+        "Ácido úrico elevado"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a octubre",
+      "epocaFructificacion": "noviembre a enero",
+      "tipoCiclo": "árbol frutal nativo",
+      "imagen": "/imagenes/ubajay.webp",
+      "imagenes": [
+        "/imagenes/ubajay.webp"
+      ],
+      "descripcion": "Descripción\n\nLas hojas se usan en medicina popular para combatir problemas urinarios y el exceso de ácido úrico. El fruto es comestible y muy ácido.\n\nBotánica oculta y mitología\n\nConocido también como el 'árbol del soplón' debido al olor penetrante de sus hojas al ser frotadas. En el misticismo del litoral, se dice que plantar un ubajay cerca de la entrada de la casa actúa como un filtro energético que aleja a las personas chismosas, envidiosas o con dobles intenciones.\n\nUsos tradicionales\n\n- Problemas urinarios\n- Ácido úrico elevado\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Uña de Gato",
+      "slug": "uña-de-gato",
+      "nombreCientifico": "Uncaria tomentosa",
+      "familia": "Rubiaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Inmunomoduladora",
+        "Antiinflamatoria",
+        "Antídoto"
+      ],
+      "sistemas": [
+        "Inmunitario",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Bajas defensas",
+        "Artritis",
+        "Inflamación crónica"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Contraindicada en pacientes trasplantados o que tomen inmunosupresores."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "agosto a diciembre",
+      "epocaFructificacion": "noviembre a marzo",
+      "tipoCiclo": "liana leñosa de selva tropical",
+      "imagen": "/imagenes/uña_de_gato.webp",
+      "imagenes": [
+        "/imagenes/uña_de_gato.webp"
+      ],
+      "descripcion": "Descripción\n\nPlanta trepadora de la selva amazónica y regiones aledañas, célebre a nivel mundial por sus propiedades potenciadoras de los glóbulos blancos y antiinflamatorias.\n\nUsos tradicionales\n\n- Bajas defensas\n- Artritis\n- Inflamación crónica\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Vara de Oro",
+      "slug": "vara-de-oro",
+      "nombreCientifico": "Solidago chilensis",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Vara de oro del sur",
+        "Goldenrod sudamericana",
+        "Lance de ouro"
+      ],
+      "origen": "América del Sur",
+      "distribucion": [
+        "Argentina",
+        "Uruguay",
+        "Chile",
+        "Brasil",
+        "Paraguay"
+      ],
+      "habitat": "Praderas, bordes de caminos, zonas húmedas",
+      "acciones": [
+        "Antibiótica",
+        "Cicatrizante",
+        "Desinflamante",
+        "Diurética"
+      ],
+      "sistemas": [
+        "Renal",
+        "Tegumentario",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Infecciones urinarias",
+        "Retención de líquidos",
+        "Heridas",
+        "Inflamación"
+      ],
+      "principiosActivos": [
+        "Flavonoides",
+        "Saponinas",
+        "Taninos",
+        "Aceites esenciales",
+        "Ácido cafeico"
+      ],
+      "usosEtnobotanicos": [
+        "Usada en la medicina popular rioplatense para las vías urinarias",
+        "Flores usadas como adorno en arreglos florales"
+      ],
+      "precauciones": [
+        "No usar en insuficiencia renal severa",
+        "Puede potenciar diuréticos"
+      ],
+      "contraindicaciones": [
+        "Insuficiencia cardíaca o renal",
+        "Alergia a Asteraceae"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "enero a abril",
+      "epocaFructificacion": "abril a junio",
+      "tipoCiclo": "hierba perenne invasora",
+      "imagen": "/imagenes/vara-de-oro.webp",
+      "imagenes": [
+        "/imagenes/vara-de-oro.webp"
+      ],
+      "descripcion": "Descripción\n\nLa vara de oro sudamericana es una planta de flores amarillas agrupadas en espigas que crece de forma silvestre en praderas y bordes de caminos. Es especialmente valorada para el tratamiento de infecciones y problemas de las vías urinarias.\n\nUsos tradicionales\n\n- Infecciones urinarias y cistitis\n- Retención de líquidos\n- Cálculos renales (preventivo)\n- Heridas y úlceras cutáneas\n\nFormas de uso\n\nInfusión de partes aéreas floridas, tintura, decocción.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Vinca",
+      "slug": "vinca",
+      "nombreCientifico": "Catharanthus roseus",
+      "familia": "Apocynaceae",
+      "otrosNombres": [
+        "Vicaria",
+        "Chavelita",
+        "Pervinca de Madagascar",
+        "Madagascar periwinkle"
+      ],
+      "origen": "Madagascar",
+      "distribucion": [
+        "Trópicos y subtrópicos mundiales",
+        "Argentina",
+        "Brasil",
+        "México"
+      ],
+      "habitat": "Jardines ornamentales, zonas cálidas",
+      "acciones": [
+        "Antitumoral",
+        "Hipoglucemiante",
+        "Tonificante"
+      ],
+      "sistemas": [
+        "Endocrino",
+        "Inmunológico",
+        "Cardiovascular"
+      ],
+      "afecciones": [
+        "Diabetes",
+        "Leucemia",
+        "Hipertensión",
+        "Glucemia elevada"
+      ],
+      "principiosActivos": [
+        "Vincristina",
+        "Vinblastina",
+        "Alcaloides del indol",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Planta ornamental muy difundida en jardines argentinos",
+        "Fuente de vincristina y vinblastina, dos de los quimioterápicos más importantes",
+        "Medicina popular en toda América tropical para diabetes"
+      ],
+      "precauciones": [
+        "NO usar en automedicación para cáncer",
+        "Los alcaloides son extremadamente potentes",
+        "El uso tradicional para diabetes debe ser supervisado"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Niños"
+      ],
+      "toxicidad": "Planta tóxica; los alcaloides son citotóxicos en dosis no controladas",
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "hierba anual de uso medicinal",
+      "imagen": "/imagenes/vinca.webp",
+      "imagenes": [
+        "/imagenes/vinca.webp"
+      ],
+      "descripcion": "Descripción\n\nLa vinca es una planta ornamental de flores rosadas o blancas muy común en jardines. Su importancia científica es enorme: de ella se obtienen vincristina y vinblastina, dos quimioterápicos fundamentales para el tratamiento de la leucemia.\n\nUsos tradicionales\n\n- Diabetes tipo 2 (uso popular, bajo supervisión)\n- Hipertensión leve\n\nAdvertencia importante\n\nEsta planta contiene alcaloides altamente potentes. **No automedicarse para cáncer ni en dosis altas**. Los medicamentos derivados (vincristina, vinblastina) solo se usan en contexto hospitalario controlado.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Yerba Carnicera",
+      "slug": "yerba-carnicera",
+      "nombreCientifico": "Conyza bonaerensis",
+      "familia": "Asteraceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Cicatrizante",
+        "Diurética",
+        "Antiulcerosa",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Urinario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Gastritis",
+        "Úlceras estomacales",
+        "Psoriasis (uso tópico)",
+        "Heridas"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a febrero",
+      "epocaFructificacion": "noviembre a abril",
+      "tipoCiclo": "hierba anual ruderal",
+      "imagen": "/imagenes/yerba_carnicera.webp",
+      "imagenes": [
+        "/imagenes/yerba_carnicera.webp"
+      ],
+      "descripcion": "Descripción\n\nHierba anual nativa de sabor amargo suave. Excelente protector gástrico y regenerador de tejidos, empleada tópicamente para tratar brotes de psoriasis.\n\nUsos tradicionales\n\n- Gastritis\n- Úlceras estomacales\n- Psoriasis (uso tópico)\n- Heridas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Yuyo Colorado",
+      "slug": "yuyo-colorado",
+      "nombreCientifico": "Amaranthus quitensis",
+      "familia": "Amaranthaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Nutritiva",
+        "Depurativa",
+        "Diurética"
+      ],
+      "sistemas": [
+        "Nutricional",
+        "Excretor"
+      ],
+      "afecciones": [
+        "Anemia",
+        "Retención de líquidos",
+        "Desnutrición mineral"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [
+        "Puede acumular nitratos si crece en suelos sobrefertilizados."
+      ],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a mayo",
+      "tipoCiclo": "hierba anual comestible",
+      "imagen": "/imagenes/yuyo_colorado.webp",
+      "imagenes": [
+        "/imagenes/yuyo_colorado.webp"
+      ],
+      "descripcion": "Descripción\n\nAmarantácea considerada maleza pero con un perfil nutricional excelente. Sus hojas e inflorescencias son altamente remineralizantes.\n\nUsos tradicionales\n\n- Anemia\n- Retención de líquidos\n- Desnutrición mineral\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Zarzaparrilla",
+      "slug": "zarzaparrilla",
+      "nombreCientifico": "Smilax campestris",
+      "familia": "Smilacaceae",
+      "otrosNombres": [],
+      "origen": null,
+      "distribucion": [],
+      "habitat": null,
+      "acciones": [
+        "Depurativa",
+        "Diurética",
+        "Sudorífica"
+      ],
+      "sistemas": [
+        "Excretor",
+        "Linfático"
+      ],
+      "afecciones": [
+        "Acné",
+        "Retención de toxinas",
+        "Gota / Ácido úrico elevado"
+      ],
+      "principiosActivos": [],
+      "usosEtnobotanicos": [],
+      "precauciones": [],
+      "contraindicaciones": [],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "enredadera perenne nativa",
+      "imagen": "/imagenes/zarzaparrilla.webp",
+      "imagenes": [
+        "/imagenes/zarzaparrilla.webp"
+      ],
+      "descripcion": "Descripción\n\nEnredadera cuyas raíces son famosas históricamente por su enorme capacidad depurativa de la sangre, eliminando toxinas a través del sudor y la orina.\n\nUsos tradicionales\n\n- Acné\n- Retención de toxinas\n- Gota / Ácido úrico elevado\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     }
   ]
 }

@@ -51,7 +51,15 @@ Organizá la información en secciones lógicas.
 Incluí títulos, listas, tablas y cualquier dato estructurado que veas.
 Respondé en español argentino.`,
 
+    botanical: `Analizá esta imagen desde una perspectiva botánica y taxonómica experta (Herbario JarBees).
+1. Identificá la especie o género (por ejemplo, Cannabis sativa L., subespecie/biotipo Sativa, Indica o Híbrido, u otra planta medicinal).
+2. Describí la morfología foliar: tipo de hoja (palmada compuesta, simple, etc.), cantidad y ancho de foliolos (angostos/lanceolados tipo Sativa vs. anchos tipo Indica/Híbrido), borde aserrado y distancia internodal.
+3. Determiná el estadio fenológico: fase vegetativa (solo hojas y tallos en desarrollo), prefloración (estiramiento) o floración avanzada (presencia de inflorescencias/cogollos, cálices, pistilos y tricomas resinosos).
+4. Indicá estado sanitario visible y propiedades terapéuticas principales según el Herbario JarBees.
+Respondé en español argentino con rigor botánico.`,
+
     general: `Describí el contenido de esta imagen de forma detallada y útil.
+Si es una planta o ejemplar botánico, identificá su especie, biotipo morfológico (ej. Sativa, Indica o Híbrido por el ancho de sus foliolos y distancia internodal) y su estado fenológico (vegetativo vs. floración/cogollos).
 Si hay texto, transcribílo. Si hay código, identificá el lenguaje.
 Respondé en español argentino.`,
   } as const;
