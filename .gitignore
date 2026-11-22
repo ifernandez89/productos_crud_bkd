@@ -74,6 +74,7 @@ storage/assets/textures/
 storage/assets/three/
 storage/security/
 storage/engineering-missions/
+storage/character-acquisition/
 
 prisma/dev.db
 data/

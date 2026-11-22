@@ -12,6 +12,7 @@ import { CorpusSelectorService } from '../knowledge/corpus-selector.service';
 import { MusicCatalogService } from '../knowledge/music-catalog.service';
 import { GamesCatalogService } from '../knowledge/games-catalog.service';
 import { AudiobookIngestService } from '../library/audiobook-ingest.service';
+import { CharacterAcquisitionService } from '../library/character-acquisition.service';
 import { GeneralIntelligenceTrialsService } from '../library/general-intelligence-trials.service';
 import { resolveOllamaModelName } from '../../shared/ollama-config';
 import { randomUUID } from 'crypto';
@@ -39,6 +40,8 @@ export class JarvisCommandService {
     private readonly audiobookIngest?: AudiobookIngestService,
     @Optional()
     private readonly trialsService?: GeneralIntelligenceTrialsService,
+    @Optional()
+    private readonly characterAcquisition?: CharacterAcquisitionService,
   ) {}
 
   /**
@@ -372,6 +375,54 @@ export class JarvisCommandService {
         success: true,
       });
       return { handled: true, response: backupMsg };
+    }
+
+    // 5f. ADQUISICIÓN AUTÓNOMA DE PERSONAJES HISTÓRICOS (Wikipedia + Wikisource + OpenLibrary + Gutenberg)
+    const acquireCharRequest = this.extractCharacterAcquisitionRequest(trimmedMessage);
+    if (acquireCharRequest && this.characterAcquisition) {
+      let acqReply: string;
+      let acqSuccess = true;
+      try {
+        const acqResult = await this.characterAcquisition.acquireCharacter(
+          acquireCharRequest.name,
+          {
+            autoApprove: true,
+            forceRefresh: acquireCharRequest.forceRefresh,
+            downloadPublicDomainBooks: true,
+          },
+        );
+        acqReply = this.characterAcquisition.formatChatReport(acqResult);
+      } catch (err: any) {
+        acqSuccess = false;
+        acqReply = `⚠️ No pude completar la adquisición de **"${acquireCharRequest.name}"**: ${err?.message ?? err}`;
+      }
+
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'user',
+        content: userMessage,
+      });
+      await this.conversationRepo.create({
+        sessionId,
+        role: 'assistant',
+        content: acqReply,
+        metadata: {
+          source: 'character_acquisition',
+          character: acquireCharRequest.name,
+          success: acqSuccess,
+        },
+      });
+      await this.agentRunRepo.create({
+        sessionId,
+        question: userMessage,
+        answer: acqReply,
+        toolsUsed: ['character_acquisition'],
+        modelUsed: 'none',
+        provider: 'open_knowledge_apis',
+        durationMs: Date.now() - startTime,
+        success: acqSuccess,
+      });
+      return { handled: true, response: acqReply };
     }
 
     // 6. LIBROS POR AUTOR
@@ -773,6 +824,68 @@ export class JarvisCommandService {
   private isVoiceRequest(message: string): boolean {
     const normalized = message.toLowerCase();
     return /voz|audio|habl(a|e|o)|en voz alta|voz alta/.test(normalized);
+  }
+
+  private extractCharacterAcquisitionRequest(
+    message: string,
+  ): { name: string; forceRefresh: boolean } | null {
+    const trimmed = message.trim();
+    if (!trimmed || trimmed.length > 220) return null;
+
+    // Nunca interceptar preguntas puras (¿quién fue...?, ¿qué dijo...?)
+    if (/^[¿?]/.test(trimmed)) return null;
+
+    const forceRefresh = /\b(?:forzar|actualizar|refrescar|--refresh|--force)\b/i.test(
+      trimmed,
+    );
+    const cleanedInput = trimmed
+      .replace(/\b(?:--refresh|--force)\b/gi, '')
+      .trim();
+
+    // 1. Comandos slash directos: /adquirir <nombre>, /incorporar <nombre>, /investigar-personaje <nombre>, /personaje <nombre>
+    const slashMatch = cleanedInput.match(
+      /^\/(?:adquirir|incorporar|investigar[-_]?personaje|personaje)\s+(.+)$/i,
+    );
+    if (slashMatch?.[1]) {
+      const name = this.cleanExtractedCharacterName(slashMatch[1]);
+      return name ? { name, forceRefresh } : null;
+    }
+
+    // 2. Comandos naturales con destino explícito a biblioteca / BD:
+    //    - "investigá y agregá a la biblioteca a Hildegarda de Bingen"
+    //    - "agregá a tu biblioteca a Paracelso"
+    //    - "alimentá tu bd con Hipatia de Alejandría"
+    const patterns: RegExp[] = [
+      /^(?:por\s+favor\s+)?(?:investig[aá]r?|busc[aá]r?|descarg[aá]r?)\s+y\s+(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|guard[aá]r?|ingest[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
+      /^(?:por\s+favor\s+)?(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
+      /^(?:por\s+favor\s+)?(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|al)\s+(.+?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
+      /^(?:por\s+favor\s+)?(?:aliment[aá]r?|nutr[ií]r?)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:con|sobre|de)\s+(.+)$/i,
+      /^(?:por\s+favor\s+)?(?:descarg[aá]r?|busc[aá]r?|investig[aá]r?)\s+(?:informaci[oó]n|info|datos|biograf[ií]a|dossier|obras)\s+(?:de|sobre)\s+(.+?)\s+(?:para|en|a)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
+    ];
+
+    for (const pattern of patterns) {
+      const match = cleanedInput.match(pattern);
+      if (match?.[1]) {
+        const name = this.cleanExtractedCharacterName(match[1]);
+        if (name) return { name, forceRefresh };
+      }
+    }
+
+    return null;
+  }
+
+  private cleanExtractedCharacterName(raw: string): string | null {
+    const cleaned = raw
+      .trim()
+      .replace(/^(?:el\s+personaje|la\s+figura|el\s+autor|la\s+autora|a)\s+/i, '')
+      .replace(/^['"“‘«]+|['"”’».,;:!?]+$/g, '')
+      .trim();
+
+    if (cleaned.length < 3 || cleaned.length > 100) return null;
+    if (/(?:https?:\/\/|\b(?:como|por\s+que|cual\s+es|que\s+dice)\b)/i.test(cleaned)) {
+      return null;
+    }
+    return cleaned;
   }
 
   private extractDeleteDocumentRequest(message: string): string | null {
@@ -1407,6 +1520,14 @@ export class JarvisCommandService {
         ],
       },
       {
+        title: 'Personajes Históricos & Biografías',
+        icon: '🏛️',
+        categories: [
+          'Personajes Históricos',
+          'Biografías e Historia',
+        ],
+      },
+      {
         title: 'Ciencia, Cosmología & Trascendencia',
         icon: '🔬',
         categories: [
@@ -1766,6 +1887,10 @@ export class JarvisCommandService {
       `                           \`dame 10 items de 'Guía de NestJS'\``,
       `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
       `                           \`según mis PDFs, <pregunta>\``,
+      `  Adquirir personaje    →  \`/adquirir <nombre del personaje>\``,
+      `                           \`/incorporar Hildegarda de Bingen\``,
+      `                           \`investigá y agregá a la biblioteca a <nombre>\``,
+      `                           \`alimentá tu bd con <nombre>\``,
       `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
       `  Eliminar por título   →  \`eliminar documento '<título>'\``,
       `                           \`borrar el libro 'Botanica Oculta'\``,

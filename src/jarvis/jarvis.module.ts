@@ -87,6 +87,7 @@ import { MusicCatalogService } from './knowledge/music-catalog.service';
 import { GamesCatalogService } from './knowledge/games-catalog.service';
 import { DisciplinesCatalogService } from './knowledge/disciplines-catalog.service';
 import { AudiobookIngestService } from './library/audiobook-ingest.service';
+import { CharacterAcquisitionService } from './library/character-acquisition.service';
 import { VoiceService } from './tools/voice/voice.service';
 import { DialecticReasoningService } from './cognitive/dialectic-reasoning.service';
 import { CognitiveTraceService } from './cognitive/cognitive-trace.service';
@@ -249,6 +250,8 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     VoiceService,
     // ── Audiobook Ingestion ────────────────────────────────────────────────
     AudiobookIngestService,
+    // ── Autonomous Character Acquisition ─────────────────────────────────────
+    CharacterAcquisitionService,
     // ── 3D & Blender Headless Engine ────────────────────────
     BlenderService,
     AssetMetadataService,
@@ -310,6 +313,7 @@ import { CognitiveEvaluationModule } from './evaluation/cognitive-evaluation.mod
     DisciplinesCatalogService,
     VoiceService,
     AudiobookIngestService,
+    CharacterAcquisitionService,
     DialecticReasoningService,
     CognitiveTraceService,
     ClaimExtractorService,

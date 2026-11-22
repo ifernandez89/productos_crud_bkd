@@ -292,6 +292,33 @@ export class CorpusSelectorService {
     this.loadIndex();
   }
 
+  /**
+   * Registra o actualiza un documento en library-index.json y lo persiste en disco.
+   * Permite que nuevos dossiers o libros adquiridos dinámicamente sean detectables de inmediato.
+   */
+  upsertDocumentEntry(entry: LibraryDocument): void {
+    const index = this.getIndex();
+    const existingIdx = index.documentos.findIndex(
+      (d) =>
+        d.id === entry.id ||
+        d.titulo.toLowerCase().trim() === entry.titulo.toLowerCase().trim(),
+    );
+
+    if (existingIdx >= 0) {
+      index.documentos[existingIdx] = {
+        ...index.documentos[existingIdx],
+        ...entry,
+      };
+    } else {
+      index.documentos.push(entry);
+    }
+
+    this.saveIndexToDisk();
+    this.logger.log(
+      `[corpus] índice actualizado en disco: "${entry.titulo}" (total=${index.documentos.length})`,
+    );
+  }
+
   // ── Selección de corpus relevante ──────────────────────────────────────────
 
   /**

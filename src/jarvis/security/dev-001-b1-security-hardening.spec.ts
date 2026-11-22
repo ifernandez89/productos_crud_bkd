@@ -281,10 +281,11 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
       'updateProfile',
       'ingestAudiobook',
       'ingestAllAudiobooks',
+      'acquireCharacter',
       'evaluateClaim',
     ];
 
-    it('ninguno de los 29 endpoints sensibles/mutantes de JarvisController tiene @Public() y todos exigen SecurityKernelPermission', () => {
+    it('ninguno de los 30 endpoints sensibles/mutantes de JarvisController tiene @Public() y todos exigen SecurityKernelPermission', () => {
       for (const methodName of protectedEndpoints) {
         const handler = JarvisController.prototype[methodName] as Function;
         expect(typeof handler).toBe('function');
@@ -746,9 +747,9 @@ describe('DEV-001-B1 — Security Kernel Block B1 (SEC-01, SEC-02, SEC-03) Homol
       });
     };
 
-    it('verifica las 90 rutas de JarvisController: SOLO getInferenceStatus tiene @Public() y las 89 restantes exigen SecurityKernelPermission', () => {
+    it('verifica las 91 rutas de JarvisController: SOLO getInferenceStatus tiene @Public() y las 90 restantes exigen SecurityKernelPermission', () => {
       const routeMethods = getRouteMethods(JarvisController);
-      expect(routeMethods.length).toBe(90);
+      expect(routeMethods.length).toBe(91);
 
       const publicMethods: string[] = [];
       for (const methodName of routeMethods) {

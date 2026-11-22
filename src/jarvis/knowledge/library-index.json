@@ -4463,6 +4463,52 @@
         "giza",
         "arqueología"
       ]
+    },
+    {
+      "id": "char-hildegarda-de-bingen",
+      "titulo": "Hildegarda de Bingen — Dossier Biográfico y Obra",
+      "tituloAlternativo": "Hildegard of Bingen",
+      "archivo": "characters/hildegarda-de-bingen.md",
+      "tipo": "dossier",
+      "formato": "markdown",
+      "autor": "Hildegarda de Bingen",
+      "idioma": "es",
+      "categorias": [
+        "Personajes Históricos",
+        "Personajes Históricos",
+        "Abades benedictinos en Alemania",
+        "Abadesas benedictinas"
+      ],
+      "conceptosClave": [
+        "Hildegarda de Bingen",
+        "Hildegard of Bingen",
+        "Hildegard Saint",
+        "Hildegarde de Bingen",
+        "Hildegard of Hildegard of Bingen",
+        "1911 Encyclopædia Britannica/Hildegard, St",
+        "Catholic Encyclopedia (1913)/St. Hildegard",
+        "The Acts and Monuments of John Foxe/Volume 3/Hildegard's Prophecy respecting Friars and Monks",
+        "Explanation of the Rule of Benedict",
+        "Weg der Welt Visionen der Hildegard Von Bingen",
+        "SCIVIAS - Wisse Die Wege",
+        "Early works to 1800",
+        "Mysticism",
+        "Medieval Medicine",
+        "Hildegard Saint (1098-1179)"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Hildegarda de Bingen (en alemán: Hildegard von Bingen; Bermersheim vor der Höhe, Sacro Imperio Romano Germánico, verano de 1098-Monasterio de Rupertsberg, 17 de septiembre de 1179) fue una santa abadesa benedictina y polímata alemana, activa como compositora, escritora, filósofa, científica, naturalista, médica, místic",
+      "tags": [
+        "personajes-historicos",
+        "biografia",
+        "hildegarda-de-bingen",
+        "abades benedictinos en alemania",
+        "abadesas benedictinas",
+        "alemanas del siglo xii",
+        "benedictinos de alemania"
+      ],
+      "dbId": 258
     }
   ],
   "pendientesPorAgregar": [

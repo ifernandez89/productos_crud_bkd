@@ -6,6 +6,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 
 
+### Adquisición Autónoma de Personajes Históricos — CharacterAcquisitionService & Dossier Hildegarda de Bingen (2026-11-22)
+
+> **Estado:** ✅ Implementado, verificado y estrenado en producción local (`3/3` suites / `56/56` tests PASS con `--runInBand`, `nest build` exit=0).
+> **Primer Personaje Indexado:** **Hildegarda de Bingen** (`docId=258`, `status=ready`, `12.746` palabras, `5` capítulos, `93/93` chunks vectorizados con `bge-m3`, `12` entidades y `11` relaciones en Knowledge Graph).
+
+- **Motor de Adquisición Autónoma Multi-Fuente (`src/jarvis/library/character-acquisition.service.ts`)**:
+  - Recolección paralela y segura (lista blanca estricta HTTPS — *SSRF-safe*) contra APIs abiertas verificadas: **Wikipedia (ES + EN vía langlinks)**, **Wikisource (ES/EN)**, **OpenLibrary Authors & Works** y **Project Gutenberg / Gutendex**.
+  - Persistencia incremental en disco del caché crudo (`storage/character-acquisition/<slug>.json`) y compilación de dossier Markdown jerárquico (`docs/books/characters/<slug>.md`) optimizado para `HierarchicalParserService`.
+  - Confinamiento estricto de rutas (anti-traversal / anti-symlink), sanitización de nombres y deduplicación automática por título en PostgreSQL.
+  - Descarga acotada de textos completos de dominio público (Project Gutenberg) cuando coinciden con el autor, más siembra automática en el **Grafo de Conocimiento** (`KnowledgeEntity` `PERSON`/`WORK`/`CONCEPT`, `KnowledgeEntitySource` y `KnowledgeRelation` diferenciando obras propias `CREATED` de artículos enciclopédicos `RELATED_TO`).
+- **Comandos de Chat y Catálogo Vivo (`src/jarvis/commands/jarvis-command.service.ts`, `src/jarvis/knowledge/corpus-selector.service.ts`)**:
+  - Nuevos comandos directos y en lenguaje natural en JarBees: `/adquirir <nombre>`, `/incorporar <nombre>`, *"investigá y agregá a la biblioteca a <nombre>"*, *"alimentá tu bd con <nombre>"* (con guardas anti-secuestro para no interceptar preguntas normales).
+  - Nuevo método `CorpusSelectorService.upsertDocumentEntry()` que sincroniza automáticamente `src/jarvis/knowledge/library-index.json` en memoria y disco, más nueva sección temática `🏛️ Personajes Históricos & Biografías` en `mis documentos`.
+- **Frontera REST Zero-Trust y CLI Operativo (`src/jarvis/jarvis.controller.ts`, `scripts/acquire-character.ts`)**:
+  - Nuevo endpoint protegido `POST /api/jarbees/library/acquire-character` (`SecurityKernelAuthGuard`, Nivel 2 `jarbees:research`) que ingesta siempre en cuarentena (`autoApprove: false`) respetando `F-B1-06` hasta aprobación HITL Nivel 3.
+  - Script CLI `scripts/acquire-character.ts` con cierre limpio del proceso (`process.exit(0)`) y suite unitaria dedicada (`src/jarvis/library/character-acquisition.service.spec.ts`) + actualización de cobertura de rutas en `dev-001-b1-security-hardening.spec.ts` (`91` rutas auditadas).
+
 ### Herbario Oficial JarBees & Visión Botánica — Sincronización Viva con PlantasMedicinales y Registro de Cannabis Medicinal (2026-11-22)
 
 > **Estado:** ✅ Sincronizado y verificado con 75 plantas medicinales homologadas (`jarvis-knowledge-herbario.spec.ts` `2/2 PASS`, `tsc` exit=0).

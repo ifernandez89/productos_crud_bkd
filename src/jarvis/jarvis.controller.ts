@@ -43,6 +43,7 @@ import { AuditService } from './security/audit.service';
 import { DocumentSynthesisService } from './library/document-synthesis.service';
 import { VoiceService } from './tools/voice/voice.service';
 import { AudiobookIngestService } from './library/audiobook-ingest.service';
+import { CharacterAcquisitionService } from './library/character-acquisition.service';
 import { randomUUID } from 'crypto';
 import { Public } from '../auth/public.decorator';
 import { getAvailableDisciplines } from '../shared/disciplines';
@@ -119,6 +120,8 @@ export class JarvisController {
     private readonly memoryConsolidation?: MemoryConsolidationService,
     @Optional()
     private readonly gpuObserver?: GpuObserverService,
+    @Optional()
+    private readonly characterAcquisition?: CharacterAcquisitionService,
   ) {}
 
 
@@ -868,6 +871,45 @@ export class JarvisController {
   async ingestUrl(@Body() body: { url: string; category?: string }) {
     if (!body.url) throw new BadRequestException('Se requiere una URL');
     const result = await this.ingestService.ingestUrl(body.url, body.category);
+    return { success: true, ...result };
+  }
+
+  @UseGuards(SecurityKernelAuthGuard)
+  @RequireSecurityPermission({ level: 2, requiredScope: 'jarbees:research' })
+  @Post('library/acquire-character')
+  @ApiOperation({
+    summary:
+      'Adquisición autónoma de dossier de un personaje histórico desde fuentes abiertas verificadas (ingesta en cuarentena)',
+    description:
+      'Consulta Wikipedia (ES/EN), Wikisource, OpenLibrary y Project Gutenberg en lista blanca HTTPS, compila un dossier jerárquico en disco y lo ingesta en cuarentena hasta aprobación HITL.',
+  })
+  async acquireCharacter(
+    @Body()
+    body: {
+      name: string;
+      downloadPublicDomainBooks?: boolean;
+      maxPublicDomainBooks?: number;
+      forceRefresh?: boolean;
+      category?: string;
+    },
+  ) {
+    if (!this.characterAcquisition) {
+      throw new BadRequestException(
+        'CharacterAcquisitionService no está inicializado.',
+      );
+    }
+    if (!body?.name) {
+      throw new BadRequestException('Se requiere el campo "name" con el personaje.');
+    }
+    // Frontera HTTP Zero-Trust: siempre entra en cuarentena (autoApprove: false).
+    // La aprobación e indexación posterior se realiza mediante POST /library/document/:id/approve (HITL Nivel 3).
+    const result = await this.characterAcquisition.acquireCharacter(body.name, {
+      autoApprove: false,
+      downloadPublicDomainBooks: body.downloadPublicDomainBooks,
+      maxPublicDomainBooks: body.maxPublicDomainBooks,
+      forceRefresh: body.forceRefresh,
+      category: body.category,
+    });
     return { success: true, ...result };
   }
 
