@@ -4509,6 +4509,40 @@
         "benedictinos de alemania"
       ],
       "dbId": 258
+    },
+    {
+      "id": "char-pamela-colman-smith-tarot",
+      "titulo": "Pamela Colman Smith (Tarot) — Dossier Temático y Obra",
+      "archivo": "characters/pamela-colman-smith-tarot.md",
+      "tipo": "dossier",
+      "formato": "markdown",
+      "autor": "Pamela Colman Smith",
+      "idioma": "es",
+      "categorias": [
+        "Tarot y Simbolismo",
+        "Tarot",
+        "Personajes Históricos",
+        "Diseñadores gráficos de Estados Unidos",
+        "Fallecidos en 1951"
+      ],
+      "conceptosClave": [
+        "Pamela Colman Smith",
+        "tarot"
+      ],
+      "capitulos": [],
+      "embeddings": "ready",
+      "descripcionBreve": "Pamela Colman Smith, también llamada Pixie (16 de febrero de 1878-18 de septiembre de 1951), fue una artista, ilustradora y escritora. Fue reconocida por ilustrar las populares cartas de tarot conocidas como cartas Waite-Smith, también llamadas cartas Rider Waite o las cartas Rider Waite Smith, del ocultista Arthur Edw",
+      "tags": [
+        "personajes-historicos",
+        "biografia",
+        "pamela-colman-smith-tarot",
+        "tarot",
+        "diseñadores gráficos de estados unidos",
+        "fallecidos en 1951",
+        "feministas de reino unido",
+        "ilustradoras"
+      ],
+      "dbId": 259
     }
   ],
   "pendientesPorAgregar": [

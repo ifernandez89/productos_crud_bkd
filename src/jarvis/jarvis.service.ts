@@ -70,6 +70,15 @@ export interface JarvisQueryResult {
   mode?: string;
 }
 
+export interface JarvisVoiceContext {
+  rawTranscript: string;
+  reconstructedWords?: string[];
+  confidence: number;
+  isCorrectionAttempt?: boolean;
+  engine?: string;
+  device?: string;
+}
+
 export interface JarvisQueryOptions {
   sessionId?: string;
   useMemory?: boolean;
@@ -79,6 +88,7 @@ export interface JarvisQueryOptions {
   provider?: 'gateway' | 'llamacpp' | 'ollama' | 'openrouter' | string;
   mode?: string;
   useDialectic?: boolean;
+  voiceContext?: JarvisVoiceContext;
 }
 
 @Injectable()
@@ -1522,6 +1532,7 @@ export class JarvisService {
         memoryAuthorized,
         ragAuthorized,
         effectiveMaxHistory,
+        options.voiceContext,
       );
     } catch (error: any) {
       const errMsg: string = error?.message ?? String(error);
@@ -1571,6 +1582,7 @@ export class JarvisService {
     useMemory: boolean = true,
     useDocuments: boolean = true,
     maxHistoryMessages: number = 16,
+    voiceContext?: JarvisVoiceContext,
   ): Promise<string> {
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
@@ -1624,6 +1636,23 @@ export class JarvisService {
     if (qicaResult.activated && qicaResult.collapseResult) {
       toolsUsed.push('qica_superposition');
       finalSystemPrompt += `\n=== DIRECTIVAS DE ÁNGULOS COGNITIVOS ===\n${qicaResult.collapseResult.collapsedPromptDirectives}\n`;
+    }
+
+    if (voiceContext) {
+      const spelledInfo =
+        voiceContext.reconstructedWords && voiceContext.reconstructedWords.length > 0
+          ? `Palabras deletreadas reconstruidas: [${voiceContext.reconstructedWords.join(', ')}]. `
+          : '';
+      const correctionInfo = voiceContext.isCorrectionAttempt
+        ? 'El usuario está intentando corregir un malentendido del turno anterior. '
+        : '';
+      finalSystemPrompt +=
+        `\n=== CONTEXTO DE ENTRADA POR VOZ (STT ESPAÑOL RIOPLATENSE) ===\n` +
+        `Esta consulta proviene de reconocimiento de voz (${voiceContext.engine || 'whisper'}, confianza: ${voiceContext.confidence.toFixed(2)}). ` +
+        `${spelledInfo}${correctionInfo}` +
+        `Puede contener errores fonéticos propios del acento argentino/rioplatense (yeísmo/sheísmo donde 'y'/'ll' se transcribe como 's'/'ch', o vocales breves confundidas al deletrear como 'u'↔'o'). ` +
+        `NUNCA asumas que el usuario está confundido: inferí la palabra real combinando fonética + deletreo + historial del turno anterior y respondé directamente. ` +
+        `Solo si persiste una ambigüedad genuina, ofrecé las 1-2 interpretaciones más probables y pedí confirmación breve.\n`;
     }
 
     let response: any;

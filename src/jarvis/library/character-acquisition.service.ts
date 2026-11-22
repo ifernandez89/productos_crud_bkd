@@ -32,6 +32,8 @@ export interface CharacterAcquisitionOptions {
   maxPublicDomainBooks?: number;
   /** Categoría explícita opcional; si se omite se infiere automáticamente. */
   category?: string;
+  /** Enfoque temático específico solicitado por voz o texto (ej. "tarot", "botánica", "alquimia", "música"). */
+  focusTopic?: string;
 }
 
 export interface PublicDomainWork {
@@ -72,8 +74,11 @@ export interface CachedCharacterResearch {
   canonicalName: string;
   slug: string;
   fetchedAt: string;
+  focusTopic?: string;
   wikipediaEs: WikipediaArticleData | null;
   wikipediaEn: WikipediaArticleData | null;
+  focusWikipediaEs?: WikipediaArticleData | null;
+  focusWikipediaEn?: WikipediaArticleData | null;
   wikisourceWorks: PublicDomainWork[];
   openLibrary: OpenLibraryAuthorData | null;
   gutenbergWorks: PublicDomainWork[];
@@ -87,6 +92,7 @@ export interface CharacterAcquisitionResult {
   status: 'ready' | 'indexing' | 'quarantined';
   alreadyExists: boolean;
   category: string;
+  focusTopic?: string;
   filePath: string;
   cachePath: string;
   sourcesUsed: string[];
@@ -196,6 +202,27 @@ export class CharacterAcquisitionService {
     return cleaned;
   }
 
+  sanitizeFocusTopic(rawTopic: string): string | undefined {
+    const cleaned = (rawTopic || '')
+      .replace(/[\x00-\x1F\x7F]/g, ' ')
+      .replace(/^["'“‘«\s]+|["'”’»\s.,;:!?]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 60);
+    if (cleaned.length < 2) return undefined;
+    if (/(?:^|[\\/])\.\.(?:[\\/]|$)|https?:\/\//i.test(cleaned)) {
+      throw new ForbiddenException(
+        'SecurityKernel: enfoque temático inválido o con patrones prohibidos.',
+      );
+    }
+    return cleaned;
+  }
+
+  private capitalizeFirst(text: string): string {
+    if (!text) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
   toSafeSlug(name: string): string {
     const slug = name
       .normalize('NFD')
@@ -270,14 +297,19 @@ export class CharacterAcquisitionService {
     options: CharacterAcquisitionOptions = {},
   ): Promise<CharacterAcquisitionResult> {
     const cleanQuery = this.sanitizeCharacterName(rawName);
-    const querySlug = this.toSafeSlug(cleanQuery);
+    const focusTopic = options.focusTopic
+      ? this.sanitizeFocusTopic(options.focusTopic)
+      : undefined;
+    const querySlug = this.toSafeSlug(
+      focusTopic ? `${cleanQuery}-${focusTopic}` : cleanQuery,
+    );
     const autoApprove = options.autoApprove === true;
     const forceRefresh = options.forceRefresh === true;
     const downloadBooks = options.downloadPublicDomainBooks !== false;
     const maxBooks = Math.min(Math.max(options.maxPublicDomainBooks ?? 1, 0), 2);
 
     this.logger.log(
-      `[character-acq] Iniciando adquisición para "${cleanQuery}" (autoApprove=${autoApprove}, forceRefresh=${forceRefresh})`,
+      `[character-acq] Iniciando adquisición para "${cleanQuery}"${focusTopic ? ` [enfoque: ${focusTopic}]` : ''} (autoApprove=${autoApprove}, forceRefresh=${forceRefresh})`,
     );
 
     // 1. Reunir o reutilizar investigación desde caché incremental en disco
@@ -285,6 +317,7 @@ export class CharacterAcquisitionService {
       cleanQuery,
       querySlug,
       forceRefresh,
+      focusTopic,
     );
 
     if (!research.wikipediaEs && !research.wikipediaEn && !research.openLibrary) {
@@ -295,12 +328,20 @@ export class CharacterAcquisitionService {
 
     const canonicalName = research.canonicalName;
     const slug = research.slug;
-    const docTitle = `${canonicalName} — Dossier Biográfico y Obra`;
-    const category = options.category || this.inferCategory(research);
+    const focusLabel = focusTopic ? this.capitalizeFirst(focusTopic) : undefined;
+    const docTitle = focusLabel
+      ? `${canonicalName} (${focusLabel}) — Dossier Temático y Obra`
+      : `${canonicalName} — Dossier Biográfico y Obra`;
+    const category = options.category || this.inferCategory(research, focusTopic);
 
-    // 2. Comprobar deduplicación en BD (si ya existe y no es forceRefresh)
+    // 2. Comprobar deduplicación ESTRICTA en BD (evitar falsos positivos fuzzy de "Dossier" + "Obra")
     if (!forceRefresh) {
-      const existing = await this.documentRepo.findDocumentByExactTitle(docTitle);
+      const candidate = await this.documentRepo.findDocumentByExactTitle(docTitle);
+      const existing =
+        candidate &&
+        candidate.title.toLowerCase().trim() === docTitle.toLowerCase().trim()
+          ? candidate
+          : null;
       if (existing) {
         this.logger.log(
           `[character-acq] Dossier "${docTitle}" ya existe en BD (ID=${existing.id}, status=${existing.status}).`,
@@ -333,6 +374,7 @@ export class CharacterAcquisitionService {
           status: finalStatus,
           alreadyExists: true,
           category: existing.category || category,
+          focusTopic,
           filePath: dossierFilePath,
           cachePath,
           sourcesUsed,
@@ -447,6 +489,7 @@ export class CharacterAcquisitionService {
       status,
       alreadyExists: false,
       category,
+      focusTopic,
       filePath: dossierFilePath,
       cachePath,
       sourcesUsed,
@@ -466,6 +509,7 @@ export class CharacterAcquisitionService {
     cleanQuery: string,
     querySlug: string,
     forceRefresh: boolean,
+    focusTopic?: string,
   ): Promise<CachedCharacterResearch> {
     this.ensureDir(this.cacheDir);
     const queryCachePath = this.resolveConfinedFilePath(
@@ -499,17 +543,47 @@ export class CharacterAcquisitionService {
 
     const englishTarget = wikiEs?.englishTitle || cleanQuery;
 
-    // 2. En paralelo: Wikipedia EN, Wikisource ES/EN, OpenLibrary y Gutendex
-    const [wikiEnRes, wikisourceEsRes, wikisourceEnRes, openLibRes, gutenbergRes] =
-      await Promise.allSettled([
-        this.fetchWikipediaArticle('en', englishTarget),
-        this.fetchWikisourceWorks('es', wikiEs?.title || cleanQuery),
-        this.fetchWikisourceWorks('en', englishTarget),
-        this.fetchOpenLibraryAuthor(englishTarget, wikiEs?.title || cleanQuery),
-        this.fetchGutenbergWorks(englishTarget, wikiEs?.title || cleanQuery),
-      ]);
+    // 2. En paralelo: Wikipedia EN, Wikisource ES/EN, OpenLibrary, Gutendex y (si hay focusTopic) artículo temático focalizado
+    const [
+      wikiEnRes,
+      wikisourceEsRes,
+      wikisourceEnRes,
+      openLibRes,
+      gutenbergRes,
+      focusWikiEsRes,
+      focusWikiEnRes,
+    ] = await Promise.allSettled([
+      this.fetchWikipediaArticle('en', englishTarget),
+      this.fetchWikisourceWorks('es', wikiEs?.title || cleanQuery),
+      this.fetchWikisourceWorks('en', englishTarget),
+      this.fetchOpenLibraryAuthor(englishTarget, wikiEs?.title || cleanQuery),
+      this.fetchGutenbergWorks(englishTarget, wikiEs?.title || cleanQuery),
+      focusTopic
+        ? this.fetchWikipediaArticle('es', `${wikiEs?.title || cleanQuery} ${focusTopic}`)
+        : Promise.resolve(null),
+      focusTopic
+        ? this.fetchWikipediaArticle('en', `${englishTarget} ${focusTopic}`)
+        : Promise.resolve(null),
+    ]);
 
     const wikiEn = wikiEnRes.status === 'fulfilled' ? wikiEnRes.value : null;
+    const rawFocusEs = focusWikiEsRes.status === 'fulfilled' ? focusWikiEsRes.value : null;
+    const rawFocusEn = focusWikiEnRes.status === 'fulfilled' ? focusWikiEnRes.value : null;
+
+    // Evitar duplicar exactamente el mismo artículo biográfico como artículo focalizado
+    const focusWikipediaEs =
+      rawFocusEs &&
+      this.normalizeSimple(rawFocusEs.title) !==
+        this.normalizeSimple(wikiEs?.title || '')
+        ? rawFocusEs
+        : null;
+    const focusWikipediaEn =
+      rawFocusEn &&
+      this.normalizeSimple(rawFocusEn.title) !==
+        this.normalizeSimple(wikiEn?.title || '')
+        ? rawFocusEn
+        : null;
+
     const wikisourceWorks = [
       ...(wikisourceEsRes.status === 'fulfilled' ? wikisourceEsRes.value : []),
       ...(wikisourceEnRes.status === 'fulfilled' ? wikisourceEnRes.value : []),
@@ -520,15 +594,20 @@ export class CharacterAcquisitionService {
 
     const canonicalName =
       wikiEs?.title || wikiEn?.title || openLibrary?.name || cleanQuery;
-    const canonicalSlug = this.toSafeSlug(canonicalName);
+    const canonicalSlug = this.toSafeSlug(
+      focusTopic ? `${canonicalName}-${focusTopic}` : canonicalName,
+    );
 
     const research: CachedCharacterResearch = {
       queriedName: cleanQuery,
       canonicalName,
       slug: canonicalSlug,
       fetchedAt: new Date().toISOString(),
+      focusTopic,
       wikipediaEs: wikiEs,
       wikipediaEn: wikiEn,
+      focusWikipediaEs,
+      focusWikipediaEn,
       wikisourceWorks,
       openLibrary,
       gutenbergWorks,
@@ -861,7 +940,12 @@ export class CharacterAcquisitionService {
     fs.writeFileSync(filePath, boundedText, 'utf8');
 
     const bookTitle = `${canonicalName} — ${work.title}`;
-    const existing = await this.documentRepo.findDocumentByExactTitle(bookTitle);
+    const existingCand = await this.documentRepo.findDocumentByExactTitle(bookTitle);
+    const existing =
+      existingCand &&
+      existingCand.title.toLowerCase().trim() === bookTitle.toLowerCase().trim()
+        ? existingCand
+        : null;
     if (existing) {
       return {
         title: bookTitle,
@@ -914,16 +998,32 @@ export class CharacterAcquisitionService {
     category: string,
   ): string {
     const lines: string[] = [];
-    const { canonicalName, wikipediaEs, wikipediaEn, openLibrary } = research;
+    const {
+      canonicalName,
+      focusTopic,
+      wikipediaEs,
+      wikipediaEn,
+      focusWikipediaEs,
+      focusWikipediaEn,
+      openLibrary,
+    } = research;
 
     const aliases = this.collectAliases(research);
     const allWorks = this.mergePublicDomainWorks(research);
     const sources = this.collectSourceUrls(research);
+    const focusLabel = focusTopic ? this.capitalizeFirst(focusTopic) : undefined;
 
-    lines.push(`# ${canonicalName} — Dossier Biográfico y Obra`);
+    lines.push(
+      focusLabel
+        ? `# ${canonicalName} (${focusLabel}) — Dossier Temático y Obra`
+        : `# ${canonicalName} — Dossier Biográfico y Obra`,
+    );
     lines.push('');
     lines.push('## Ficha Enciclopédica y Síntesis');
     lines.push(`- **Nombre canónico:** ${canonicalName}`);
+    if (focusLabel) {
+      lines.push(`- **Enfoque temático solicitado:** ${focusLabel}`);
+    }
     if (aliases.length > 0) {
       lines.push(`- **También conocido/a como:** ${aliases.join(', ')}`);
     }
@@ -952,6 +1052,64 @@ export class CharacterAcquisitionService {
     if (leadSummary) {
       lines.push(leadSummary);
       lines.push('');
+    }
+
+    // Capítulo prioritario de Enfoque Temático (cuando el usuario pidió un dominio específico, ej. "tarot")
+    if (focusTopic) {
+      const normTopic = this.normalizeSimple(focusTopic);
+      const topicTokens = normTopic.split(/\s+/).filter((t) => t.length >= 3);
+      const matchesTopic = (s: { title: string; body: string }) => {
+        const hay = this.normalizeSimple(`${s.title} ${s.body}`);
+        return topicTokens.some((tok) => hay.includes(tok));
+      };
+
+      const esMatched = wikipediaEs?.extract
+        ? this.parseWikipediaSections(wikipediaEs.extract).filter(matchesTopic)
+        : [];
+      const enMatched = wikipediaEn?.extract
+        ? this.parseWikipediaSections(wikipediaEn.extract).filter(matchesTopic)
+        : [];
+
+      const hasFocusContent =
+        esMatched.length > 0 ||
+        enMatched.length > 0 ||
+        Boolean(focusWikipediaEs) ||
+        Boolean(focusWikipediaEn);
+
+      if (hasFocusContent) {
+        lines.push(`# Enfoque Temático Prioritario: ${focusLabel} en ${canonicalName}`);
+        lines.push('');
+        for (const sec of esMatched) {
+          lines.push(`## ${sec.title} (${focusLabel})`);
+          lines.push(sec.body);
+          lines.push('');
+        }
+        if (focusWikipediaEs) {
+          lines.push(`## Obra / Referencia Relacionada: ${focusWikipediaEs.title}`);
+          lines.push(focusWikipediaEs.summary);
+          lines.push('');
+          for (const sec of this.parseWikipediaSections(focusWikipediaEs.extract).slice(0, 6)) {
+            lines.push(`## ${focusWikipediaEs.title} — ${sec.title}`);
+            lines.push(sec.body);
+            lines.push('');
+          }
+        }
+        for (const sec of enMatched.slice(0, 6)) {
+          lines.push(`## ${sec.title} (Fuente Internacional — ${focusLabel})`);
+          lines.push(sec.body);
+          lines.push('');
+        }
+        if (focusWikipediaEn) {
+          lines.push(`## Obra / Referencia Internacional: ${focusWikipediaEn.title}`);
+          lines.push(focusWikipediaEn.summary);
+          lines.push('');
+          for (const sec of this.parseWikipediaSections(focusWikipediaEn.extract).slice(0, 6)) {
+            lines.push(`## ${focusWikipediaEn.title} — ${sec.title}`);
+            lines.push(sec.body);
+            lines.push('');
+          }
+        }
+      }
     }
 
     // Secciones de Wikipedia en español
@@ -1160,10 +1318,15 @@ export class CharacterAcquisitionService {
         relationsCount++;
       }
 
-      // 3. Upsert hasta 5 temas/conceptos principales (CONCEPT) de OpenLibrary/Wikipedia
-      const topConcepts = (research.openLibrary?.topSubjects || [])
-        .filter((s) => s.length >= 3 && s.length <= 60)
-        .slice(0, 5);
+      // 3. Upsert hasta 5 temas/conceptos principales (CONCEPT) + focusTopic si fue solicitado
+      const topConcepts = Array.from(
+        new Set([
+          ...(research.focusTopic ? [this.capitalizeFirst(research.focusTopic)] : []),
+          ...(research.openLibrary?.topSubjects || []).filter(
+            (s) => s.length >= 3 && s.length <= 60,
+          ),
+        ]),
+      ).slice(0, 6);
 
       for (const concept of topConcepts) {
         const conceptEntity = await this.entityGraphService.mergeEntity(
@@ -1213,7 +1376,13 @@ export class CharacterAcquisitionService {
       .map((w) => w.title);
 
     const concepts = Array.from(
-      new Set([research.canonicalName, ...aliases.slice(0, 4), ...workTitles, ...subjects]),
+      new Set([
+        research.canonicalName,
+        ...(research.focusTopic ? [research.focusTopic] : []),
+        ...aliases.slice(0, 4),
+        ...workTitles,
+        ...subjects,
+      ]),
     ).slice(0, 15);
 
     const tags = Array.from(
@@ -1221,6 +1390,7 @@ export class CharacterAcquisitionService {
         'personajes-historicos',
         'biografia',
         research.slug,
+        ...(research.focusTopic ? [this.toSafeSlug(research.focusTopic)] : []),
         ...wikiCats.map((c) => c.toLowerCase()).slice(0, 4),
       ]),
     );
@@ -1234,7 +1404,14 @@ export class CharacterAcquisitionService {
       formato: 'markdown',
       autor: research.canonicalName,
       idioma: research.wikipediaEs ? 'es' : 'en',
-      categorias: [category, 'Personajes Históricos', ...wikiCats.slice(0, 2)],
+      categorias: Array.from(
+        new Set([
+          category,
+          ...(research.focusTopic ? [this.capitalizeFirst(research.focusTopic)] : []),
+          'Personajes Históricos',
+          ...wikiCats.slice(0, 2),
+        ]),
+      ),
       conceptosClave: concepts,
       capitulos: [],
       embeddings,
@@ -1244,24 +1421,24 @@ export class CharacterAcquisitionService {
     };
   }
 
-  private inferCategory(research: CachedCharacterResearch): string {
-    const blob = this.normalizeSimple(
-      [
-        research.wikipediaEs?.summary || '',
-        research.wikipediaEn?.summary || '',
-        ...(research.wikipediaEs?.categories || []),
-        ...(research.openLibrary?.topSubjects || []),
-      ].join(' '),
-    );
-
-    if (/(medicina|botanic|herbol|farmac|fitoterap|naturalista|viriditas)/.test(blob)) {
-      return 'Personajes Históricos';
-    }
-    if (/(fisic|matemat|astronom|inventor|ingenier|cientific|quimic)/.test(blob)) {
-      return 'Personajes Históricos';
-    }
-    if (/(filosof|mistic|teolog|antroposof|alquimi|compositor|escritor)/.test(blob)) {
-      return 'Personajes Históricos';
+  private inferCategory(
+    research: CachedCharacterResearch,
+    focusTopic?: string,
+  ): string {
+    if (focusTopic) {
+      const ft = this.normalizeSimple(focusTopic);
+      if (/tarot|simbol|arcano/.test(ft)) return 'Tarot y Simbolismo';
+      if (/planta|botanic|herbol|fitoterap|medicina/.test(ft))
+        return 'Plantas Medicinales';
+      if (/cabala|kabbalah|sefirot/.test(ft)) return 'Cábala';
+      if (/teosof/.test(ft)) return 'Teosofía';
+      if (/alquimi|hermet|esoter|ocult|magia|golden dawn/.test(ft))
+        return 'Esoterismo';
+      if (/psicolog|arquetip|inconsciente|sueno/.test(ft))
+        return 'Psicología Analítica';
+      if (/fisic|astronom|cosmol|cienc|invent/.test(ft))
+        return 'Cosmología y Física';
+      if (/chaman/.test(ft)) return 'Chamanismo';
     }
     return 'Personajes Históricos';
   }
@@ -1301,6 +1478,8 @@ export class CharacterAcquisitionService {
     const urls: string[] = [];
     if (research.wikipediaEs?.url) urls.push(research.wikipediaEs.url);
     if (research.wikipediaEn?.url) urls.push(research.wikipediaEn.url);
+    if (research.focusWikipediaEs?.url) urls.push(research.focusWikipediaEs.url);
+    if (research.focusWikipediaEn?.url) urls.push(research.focusWikipediaEn.url);
     if (research.openLibrary?.key) {
       urls.push(`https://openlibrary.org/authors/${research.openLibrary.key}`);
     }
@@ -1365,6 +1544,9 @@ export class CharacterAcquisitionService {
       ``,
       `- **Documento en BD:** ID \`#${res.documentId}\` — ${statusBadge}`,
       `- **Categoría:** ${res.category}`,
+      ...(res.focusTopic
+        ? [`- **Enfoque temático:** ${this.capitalizeFirst(res.focusTopic)}`]
+        : []),
       `- **Extensión:** ~${res.wordCount.toLocaleString('es-AR')} palabras · ${res.chaptersCount} capítulos estructurados`,
       `- **Archivo local:** \`docs/books/characters/${res.slug}.md\``,
     ];

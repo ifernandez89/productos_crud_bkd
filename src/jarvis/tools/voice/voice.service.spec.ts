@@ -149,5 +149,73 @@ describe('VoiceService', () => {
       expect(service.detectAudioContainer(wavBuf)).toBe('wav');
     });
   });
+
+  describe('analyzeVoiceTranscript & reconstrucción de deletreo español', () => {
+    it('reconstruye deletreo estándar con nombres de letras ("a, y griega, u, ene, o" → AYUNO)', () => {
+      const analysis = service.analyzeVoiceTranscript(
+        'Dije ayuno, a, y griega, u, ene, o',
+        0.84,
+      );
+      expect(analysis.hadSpelling).toBe(true);
+      expect(analysis.isCorrectionAttempt).toBe(true);
+      expect(analysis.reconstructedWords).toContain('AYUNO');
+    });
+
+    it('reconstruye deletreo con letras sueltas en mayúsculas ("A, Y, U, N, A" → AYUNA)', () => {
+      const analysis = service.analyzeVoiceTranscript(
+        'Te lo deletreo letra por letra: A, Y, U, N, A',
+        0.82,
+      );
+      expect(analysis.hadSpelling).toBe(true);
+      expect(analysis.reconstructedWords).toContain('AYUNA');
+      expect(analysis.normalizedText).toContain('AYUNA');
+    });
+
+    it('detecta el patrón real fallido de Whisper base ("Dijé, asu no, ah, y griega, oh, n, oh...") sin basura final', () => {
+      const analysis = service.analyzeVoiceTranscript(
+        'Dijé, asu no, ah, y griega, oh, n, oh, asu no, no, ah, oh, no.',
+        0.749,
+      );
+      expect(analysis.hadSpelling).toBe(true);
+      expect(analysis.isCorrectionAttempt).toBe(true);
+      expect(analysis.lowConfidence).toBe(true);
+      expect(analysis.reconstructedWords).toEqual(['AYONO']);
+    });
+
+    it('NO produce falsos positivos en oraciones normales del español', () => {
+      const normalSentences = [
+        '¿Qué tenemos en nuestra base de datos sobre el ayuno?',
+        'Voy a ir a ver a mi mamá o a mi papá y te aviso después',
+        'Decime de qué trata el libro de Carl Jung y de Sigmund Freud',
+        'Hola JarBees, ¿cómo está el clima hoy en Paraná?',
+      ];
+      for (const s of normalSentences) {
+        const analysis = service.analyzeVoiceTranscript(s, 0.92);
+        expect(analysis.hadSpelling).toBe(false);
+        expect(analysis.reconstructedWords).toEqual([]);
+        expect(analysis.normalizedText).toBe(s);
+      }
+    });
+
+    it('buildVoiceChatQuery enlaza la corrección deletreada con la pregunta previa de base de datos', () => {
+      const query = service.buildVoiceChatQuery(
+        {
+          text: 'Dije A, Y, U, N, O [deletreo detectado: AYUNO]',
+          rawText: 'Dije A, Y, U, N, O',
+          confidence: 0.86,
+          durationMs: 1100,
+          engine: 'faster-whisper-large-v3-turbo',
+          device: 'cuda',
+          reconstructedWords: ['AYUNO'],
+          hadSpelling: true,
+          isCorrectionAttempt: true,
+        },
+        '¿Qué tenemos en nuestra base de datos sobre el A1?',
+      );
+
+      expect(query).toContain('AYUNO');
+      expect(query.toLowerCase()).toContain('base de datos sobre ayuno');
+    });
+  });
 });
 

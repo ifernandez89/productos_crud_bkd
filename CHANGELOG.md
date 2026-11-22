@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 
 
+### Hardening Crítico de Voz (STT Rioplatense en GPU RTX 5070) & Comandos Vocales Temáticos de Ingesta (2026-11-22)
+
+> **Estado:** ✅ Corregido, benchmarkeado en vivo en **NVIDIA GeForce RTX 5070** (`decode: 716–867 ms`, confianza `0.902–0.922`), verificado con `4/4` suites / `72/72` tests PASS (`--runInBand`) y `nest build` exit=0.
+> **Postmortem Forense:** [`docs/INCIDENT_POSTMORTEM_VOICE_STT_RIOPLATENSE.md`](docs/INCIDENT_POSTMORTEM_VOICE_STT_RIOPLATENSE.md).
+> **Nuevo Dossier Indexado:** **Pamela Colman Smith (Tarot)** (`docId=259`, categoría `Tarot y Simbolismo`, `6.538` palabras, `5` capítulos, `55/55` chunks vectorizados con `bge-m3` al `100%`, incluye *Rider–Waite Tarot*).
+
+- **Migración STT a GPU RTX 5070 + `large-v3-turbo` (`src/jarvis/tools/voice/whisper_transcribe.py`, `voice.service.ts`)**:
+  - Reemplazado el modelo `base` (74M en CPU, causante de fallos críticos en yeísmo/sheísmo rioplatense como `"ayuno"` → `"A1"` / `"asu no"` y `"yerba mate"` → `"servamate"`) por **`faster-whisper-large-v3-turbo`** acelerado por hardware en **CUDA `float16`** sobre la RTX 5070 con fallback automático en tiempo de inferencia (`cuda/float16` → `cuda/int8_float16` → `cpu/int8`).
+  - Registro automático de librerías CUDA 12 en Windows (`register_windows_cuda_dll_dirs()` vía `os.add_dll_directory`, resolviendo `cublas64_12.dll` desde site-packages / CUDA Toolkit / runtime de Ollama), carga prioritaria `local_files_only=True` (0 latencia de red) y `HF_HUB_DISABLE_XET=1` contra bloqueos de Hugging Face en Windows.
+  - Incorporación de `initial_prompt` calibrado para español rioplatense + abecedario español completo, `condition_on_previous_text=False`, `temperature=[0.0, 0.2, 0.4]`, VAD tolerante a deletreo (`min_silence_duration_ms=700`, `speech_pad_ms=300`) y reintento sin VAD en audios breves.
+  - Acondicionamiento de banda vocal en FFmpeg (`highpass=f=80,lowpass=f=7600,dynaudnorm=f=150:g=15:p=0.9`) con fallback transparente.
+- **Reconstrucción Determinista de Deletreo y Contexto STT (`voice.service.ts`, `jarvis.controller.ts`, `jarvis.service.ts`)**:
+  - Nuevos métodos `analyzeVoiceTranscript()`, `extractSpelledWords()` y `buildVoiceChatQuery()` para reconstruir deletreos en español (*"a, y griega, u, ene, o"* → `AYUNO`, *"A, Y, U, N, A"* → `AYUNA`) sin falsos positivos en oraciones comunes, enlazando correcciones por voz con la consulta previa de la sesión para reactivar el RAG.
+  - Nuevo `JarvisVoiceContext` en `JarvisService.respondWithLLM()` que inyecta conciencia fonética rioplatense en `finalSystemPrompt` sin contaminar los embeddings vectoriales.
+- **Comandos Vocales de Ingesta con Enfoque Temático y Fix de Deduplicación (`jarvis-command.service.ts`, `character-acquisition.service.ts`, `scripts/acquire-character.ts`)**:
+  - Soporte nativo por voz y texto para solicitudes focalizadas como *"buscá e ingestá información específicamente de tarot sobre Pamela Colman Smith"* (`focusTopic` → mapeo automático de categoría `Tarot y Simbolismo`, capítulo prioritario temático y descarga de artículo enciclopédico relacionado como *Rider–Waite Tarot*).
+  - Corregido falso positivo de deduplicación fuzzy en `CharacterAcquisitionService` (exigiendo coincidencia exacta case-insensitive de título) y espera controlada de embeddings `bge-m3` + salida limpia (`process.exit(0)`) en `scripts/acquire-character.ts`.
+
 ### Adquisición Autónoma de Personajes Históricos — CharacterAcquisitionService & Dossier Hildegarda de Bingen (2026-11-22)
 
 > **Estado:** ✅ Implementado, verificado y estrenado en producción local (`3/3` suites / `56/56` tests PASS con `--runInBand`, `nest build` exit=0).

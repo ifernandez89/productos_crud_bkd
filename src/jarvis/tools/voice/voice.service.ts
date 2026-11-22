@@ -17,13 +17,29 @@ export interface VoiceTranscriptionSegment {
   confidence: number;
 }
 
+export interface VoiceTranscriptAnalysis {
+  rawText: string;
+  normalizedText: string;
+  reconstructedWords: string[];
+  hadSpelling: boolean;
+  isCorrectionAttempt: boolean;
+  lowConfidence: boolean;
+}
+
 export interface VoiceTranscriptionResult {
   text: string;
+  rawText?: string;
   confidence: number;
   durationMs: number;
   engine: string;
+  device?: string;
+  computeType?: string;
   language?: string;
   segments?: VoiceTranscriptionSegment[];
+  reconstructedWords?: string[];
+  hadSpelling?: boolean;
+  isCorrectionAttempt?: boolean;
+  lowConfidence?: boolean;
 }
 
 export interface VoiceStatus {
@@ -34,6 +50,8 @@ export interface VoiceStatus {
   sapiAvailable: boolean;
   ttsAvailable: boolean;
   whisperAvailable: boolean;
+  whisperModel: string;
+  whisperDevicePreference: string;
   edgeTtsAvailable: boolean;
   defaultTtsVoice: string;
   supportedInputFormats: string[];
@@ -248,6 +266,8 @@ export class VoiceService {
       sapiAvailable,
       ttsAvailable: ttsAvailable || !!edgeTtsScript,
       whisperAvailable: !!whisperScript,
+      whisperModel: process.env.JARVIS_WHISPER_MODEL || 'large-v3-turbo',
+      whisperDevicePreference: process.env.JARVIS_WHISPER_DEVICE || 'auto',
       edgeTtsAvailable: !!edgeTtsScript,
       defaultTtsVoice: process.env.JARVIS_TTS_VOICE || 'es-AR-TomasNeural',
       supportedInputFormats: ['.opus', '.ogg', '.webm', '.wav', '.mp4', '.m4a', '.mp3'],
@@ -256,6 +276,8 @@ export class VoiceService {
 
   /**
    * Decodifica un archivo de audio (WebM, OGG, Opus, MP4, MP3, WAV) a PCM WAV a 16kHz mono
+   * aplicando acondicionamiento vocal ligero (pasa-altos 80Hz, pasa-bajos 7.6kHz y normalización dinámica)
+   * para maximizar la nitidez de fricativas rioplatenses y vocales deletreadas.
    */
   async decodeToWav(
     inputPath: string,
@@ -265,6 +287,34 @@ export class VoiceService {
     const ffmpeg = this.getFfmpegPath();
 
     if (ffmpeg) {
+      // 1. Intento principal con acondicionamiento de banda vocal
+      try {
+        await execFileAsync(ffmpeg, [
+          '-y',
+          '-i',
+          inputPath,
+          '-af',
+          'highpass=f=80,lowpass=f=7600,dynaudnorm=f=150:g=15:p=0.9',
+          '-ar',
+          '16000',
+          '-ac',
+          '1',
+          '-c:a',
+          'pcm_s16le',
+          outputPath,
+        ]);
+
+        if (fs.existsSync(outputPath) && fs.statSync(outputPath).size > 44) {
+          return outputPath;
+        }
+        throw new Error('FFmpeg con filtro vocal no generó un WAV válido.');
+      } catch (filterErr: any) {
+        this.logger.warn(
+          `[VoiceService] Falló acondicionamiento vocal FFmpeg (${filterErr.message}). Reintentando decodificación directa...`,
+        );
+      }
+
+      // 2. Reintento directo sin filtro -af
       try {
         await execFileAsync(ffmpeg, [
           '-y',
@@ -337,7 +387,8 @@ export class VoiceService {
   }
 
   /**
-   * Transcribe un archivo de audio con Faster-Whisper (precisión superior en niños, adultos y ruido)
+   * Transcribe un archivo de audio con Faster-Whisper acelerado en GPU RTX 5070 (CUDA float16)
+   * usando large-v3-turbo por defecto para máxima precisión en español rioplatense y deletreo.
    */
   async transcribeWithWhisper(wavPath: string): Promise<VoiceTranscriptionResult | null> {
     const scriptPath = this.resolveVoiceScript('whisper_transcribe.py');
@@ -345,16 +396,17 @@ export class VoiceService {
       return null;
     }
 
+    const whisperModel = process.env.JARVIS_WHISPER_MODEL || 'large-v3-turbo';
     const startTime = Date.now();
     try {
       const { stdout } = await execFileAsync('python', [
         scriptPath,
         wavPath,
-        process.env.JARVIS_WHISPER_MODEL || 'base',
+        whisperModel,
         'es',
       ], {
         encoding: 'utf8',
-        timeout: 30000,
+        timeout: 90000,
         maxBuffer: 10 * 1024 * 1024,
       });
 
@@ -368,22 +420,272 @@ export class VoiceService {
         return null;
       }
 
+      const rawText = parsed.text.trim();
+      const confidence = Number(parsed.confidence) || 0.85;
+      const analysis = this.analyzeVoiceTranscript(rawText, confidence);
+
       this.logger.log(
-        `[VoiceService:Whisper] Transcripción exitosa (${parsed.durationMs}ms, conf: ${parsed.confidence}): "${parsed.text.slice(0, 80)}"`,
+        `[VoiceService:Whisper] Transcripción exitosa (${parsed.durationMs}ms, device=${parsed.device || 'unknown'}/${parsed.computeType || '?'}, model=${parsed.model || whisperModel}, conf=${confidence}${analysis.hadSpelling ? `, deletreo=[${analysis.reconstructedWords.join(',')}]` : ''}): "${rawText.slice(0, 100)}"`,
       );
 
       return {
-        text: parsed.text.trim(),
-        confidence: Number(parsed.confidence) || 0.85,
+        text: analysis.normalizedText,
+        rawText,
+        confidence,
         durationMs: Date.now() - startTime,
-        engine: parsed.engine || 'faster-whisper-base',
+        engine: parsed.engine || `faster-whisper-${whisperModel}`,
+        device: parsed.device,
+        computeType: parsed.computeType,
         language: parsed.language || 'es',
         segments: parsed.segments || [],
+        reconstructedWords: analysis.reconstructedWords,
+        hadSpelling: analysis.hadSpelling,
+        isCorrectionAttempt: analysis.isCorrectionAttempt,
+        lowConfidence: analysis.lowConfidence,
       };
     } catch (err: any) {
       this.logger.warn(`[VoiceService:Whisper] Excepción ejecutando Whisper (${err.message}). Derivando a fallback...`);
       return null;
     }
+  }
+
+  /**
+   * Analiza una transcripción de voz en español para detectar:
+   * 1. Secuencias deletreadas letra por letra (ej. "a, y griega, u, ene, o" → "AYUNO").
+   * 2. Intentos de corrección de un turno previo ("dije...", "no dije...", "deletreo...").
+   * 3. Baja confianza acústica (< 0.78).
+   *
+   * Protegido contra falsos positivos en oraciones normales del español.
+   */
+  analyzeVoiceTranscript(
+    rawText: string,
+    confidence = 0.85,
+  ): VoiceTranscriptAnalysis {
+    const trimmed = (rawText || '').trim();
+    const asciiNormalized = trimmed
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const isCorrectionAttempt =
+      /\b(?:dije|te\s+dije|quise\s+decir|no\s+dije|me\s+referia|deletreo|deletrea|deletreado|letra\s+por\s+letra|se\s+escribe|no\s+es)\b/i.test(
+        asciiNormalized,
+      );
+    const lowConfidence = confidence < 0.78;
+
+    if (!trimmed) {
+      return {
+        rawText: '',
+        normalizedText: '',
+        reconstructedWords: [],
+        hadSpelling: false,
+        isCorrectionAttempt: false,
+        lowConfidence: true,
+      };
+    }
+
+    const reconstructedWords = this.extractSpelledWords(trimmed, isCorrectionAttempt);
+    const hadSpelling = reconstructedWords.length > 0;
+
+    let normalizedText = trimmed;
+    if (hadSpelling) {
+      const uniqueWords = Array.from(new Set(reconstructedWords));
+      const alreadyContainsAll = uniqueWords.every((w) =>
+        trimmed.toLowerCase().includes(w.toLowerCase()),
+      );
+      if (!alreadyContainsAll) {
+        normalizedText = `${trimmed} [deletreo detectado: ${uniqueWords.join(', ')}]`;
+      }
+    }
+
+    return {
+      rawText: trimmed,
+      normalizedText,
+      reconstructedWords,
+      hadSpelling,
+      isCorrectionAttempt,
+      lowConfidence,
+    };
+  }
+
+  /**
+   * Extrae palabras deletreadas en español a partir de secuencias contiguas de >= 3 letras
+   * o nombres de letras ("a", "ah", "y griega", "i griega", "u", "ene", "o", "oh", etc.).
+   */
+  private extractSpelledWords(
+    text: string,
+    hasExplicitCue: boolean,
+  ): string[] {
+    // 1. Pre-normalizar nombres compuestos de letras del español a tokens atómicos
+    const compoundNormalized = text
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\b(?:i|y)\s+griega\b/g, ' __y__ ')
+      .replace(/\bi\s+latina\b/g, ' __i__ ')
+      .replace(/\b(?:be|b)\s+(?:larga|grande)\b/g, ' __b__ ')
+      .replace(/\b(?:ve|v|be|b)\s+corta\b/g, ' __v__ ')
+      .replace(/\b(?:doble\s+ve|doble\s+u|uve\s+doble)\b/g, ' __w__ ');
+
+    // Separar por espacios y puntuación típica de deletreo (, . ; - /)
+    const rawTokens = compoundNormalized
+      .split(/[\s,.;:!?¿¡\-–—/]+/)
+      .filter(Boolean);
+
+    // Mapa de tokens inequívocos vs ambiguos (palabras frecuentes en español)
+    const UNAMBIGUOUS_LETTER_MAP: Record<string, string> = {
+      __y__: 'Y',
+      __i__: 'I',
+      __b__: 'B',
+      __v__: 'V',
+      __w__: 'W',
+      ah: 'A',
+      be: 'B',
+      ce: 'C',
+      eh: 'E',
+      efe: 'F',
+      ge: 'G',
+      hache: 'H',
+      ache: 'H',
+      jota: 'J',
+      ka: 'K',
+      ele: 'L',
+      eme: 'M',
+      ene: 'N',
+      enie: 'Ñ',
+      oh: 'O',
+      pe: 'P',
+      cu: 'Q',
+      erre: 'R',
+      ere: 'R',
+      ese: 'S',
+      uh: 'U',
+      uve: 'V',
+      equis: 'X',
+      ye: 'Y',
+      zeta: 'Z',
+      ceta: 'Z',
+      b: 'B',
+      c: 'C',
+      d: 'D',
+      f: 'F',
+      g: 'G',
+      h: 'H',
+      i: 'I',
+      j: 'J',
+      k: 'K',
+      l: 'L',
+      m: 'M',
+      n: 'N',
+      ñ: 'Ñ',
+      p: 'P',
+      q: 'Q',
+      r: 'R',
+      s: 'S',
+      t: 'T',
+      u: 'U',
+      v: 'V',
+      w: 'W',
+      x: 'X',
+      z: 'Z',
+    };
+
+    // Tokens de 1 letra o homófonos muy comunes en español normal ("a", "e", "o", "y", "de", "te", "se", "la", "ve")
+    const CONTEXTUAL_LETTER_MAP: Record<string, string> = {
+      a: 'A',
+      e: 'E',
+      o: 'O',
+      y: 'Y',
+      de: 'D',
+      te: 'T',
+      ve: 'V',
+    };
+
+    // Palabras comunes que NUNCA deben absorberse dentro de un deletreo
+    const NEVER_LETTER = new Set(['no', 'si', 'en', 'el', 'la', 'lo', 'un', 'al', 'se', 'me', 'mi', 'su', 'es']);
+
+    const results: string[] = [];
+    let currentLetters: string[] = [];
+    let unambiguousCount = 0;
+    let strongLetterNameCount = 0;
+
+    const flushRun = () => {
+      // Exigir >= 3 letras, y al menos 2 tokens inequívocos (o 1 nombre fuerte como "y griega"/"ene" + cue explícito)
+      const isValidRun =
+        currentLetters.length >= 3 &&
+        currentLetters.length <= 24 &&
+        (unambiguousCount >= 2 || (hasExplicitCue && strongLetterNameCount >= 1));
+
+      if (isValidRun) {
+        const candidate = currentLetters.join('');
+        // Evitar secuencias degeneradas repetitivas (ej. "AAA" o "OHOHOH")
+        if (new Set(candidate.split('')).size >= 2) {
+          results.push(candidate);
+        }
+      }
+      currentLetters = [];
+      unambiguousCount = 0;
+      strongLetterNameCount = 0;
+    };
+
+    for (const tok of rawTokens) {
+      if (NEVER_LETTER.has(tok)) {
+        flushRun();
+        continue;
+      }
+
+      if (UNAMBIGUOUS_LETTER_MAP[tok]) {
+        currentLetters.push(UNAMBIGUOUS_LETTER_MAP[tok]);
+        unambiguousCount++;
+        if (tok.length >= 2) strongLetterNameCount++;
+      } else if (CONTEXTUAL_LETTER_MAP[tok]) {
+        currentLetters.push(CONTEXTUAL_LETTER_MAP[tok]);
+      } else {
+        flushRun();
+      }
+    }
+    flushRun();
+
+    return Array.from(new Set(results));
+  }
+
+  /**
+   * Construye la consulta efectiva para JarBees a partir de una transcripción de voz,
+   * resolviendo correcciones y deletreos respecto a la pregunta inmediatamente anterior del usuario.
+   */
+  buildVoiceChatQuery(
+    transcription: VoiceTranscriptionResult,
+    previousUserMessage?: string | null,
+  ): string {
+    const raw = (transcription.rawText || transcription.text || '').trim();
+    const spelled = transcription.reconstructedWords || [];
+
+    // Caso 1: El usuario está corrigiendo o deletreando un término tras una pregunta previa de consulta/BD
+    if (
+      previousUserMessage &&
+      (transcription.hadSpelling || transcription.isCorrectionAttempt)
+    ) {
+      const prevIsDbOrTopicQuery =
+        /\b(?:base\s+de\s+datos|biblioteca|documentos?|libros?|pdfs?|sobre|acerca\s+de|qu[eé]\s+tenemos|qu[eé]\s+hay|busca(?:r)?)\b/i.test(
+          previousUserMessage,
+        );
+
+      if (spelled.length > 0 && prevIsDbOrTopicQuery) {
+        const primaryTerm = spelled[0];
+        return `Sobre mi consulta anterior ("${previousUserMessage}"), la palabra correcta que deletreé es "${primaryTerm}". ¿Qué tenemos en nuestra base de datos sobre ${primaryTerm.toLowerCase()}? (Transcripción original: "${raw}")`;
+      }
+
+      if (spelled.length > 0) {
+        return `${raw} (Palabra deletreada reconstruida: ${spelled.join(', ')})`;
+      }
+    }
+
+    if (spelled.length > 0) {
+      const primary = spelled[0];
+      if (!raw.toLowerCase().includes(primary.toLowerCase())) {
+        return `${raw} (Término deletreado: ${spelled.join(', ')})`;
+      }
+    }
+
+    return raw;
   }
 
   /**

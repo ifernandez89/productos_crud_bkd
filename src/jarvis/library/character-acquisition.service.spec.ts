@@ -317,6 +317,25 @@ describe('CharacterAcquisitionService', () => {
       expect(result.documentId).toBe(888);
       expect(mockIngestService.ingestText).not.toHaveBeenCalled();
     });
+
+    it('NO produce falso positivo de duplicado si findDocumentByExactTitle devuelve otro dossier distinto por coincidencia fuzzy', async () => {
+      setupMockOpenKnowledgeApis();
+      mockDocRepo.findDocumentByExactTitle.mockResolvedValueOnce({
+        id: 258,
+        title: 'Otro Personaje Distinto — Dossier Biográfico y Obra',
+        status: 'ready',
+        category: 'Personajes Históricos',
+        content: '# Otro Personaje\nContenido distinto...',
+      });
+
+      const result = await service.acquireCharacter('Hildegarda de Bingen', {
+        autoApprove: true,
+      });
+
+      expect(result.alreadyExists).toBe(false);
+      expect(result.documentId).toBe(777);
+      expect(mockIngestService.ingestText).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('Enrutamiento de comandos en JarvisCommandService', () => {
@@ -396,6 +415,29 @@ describe('CharacterAcquisitionService', () => {
       expect(mockAcq.acquireCharacter).toHaveBeenCalledWith(
         'Hipatia de Alejandría',
         expect.objectContaining({ autoApprove: true }),
+      );
+
+      // Comando natural por voz con enfoque temático explícito (ej. Pamela Colman Smith + tarot)
+      const rVoice1 = await cmdService.handleCommand(
+        'busca e ingesta informacion especificamente de tarot sobre "pamela coleman smith"',
+        'sess-1',
+        Date.now(),
+      );
+      expect(rVoice1.handled).toBe(true);
+      expect(mockAcq.acquireCharacter).toHaveBeenCalledWith(
+        'pamela coleman smith',
+        expect.objectContaining({ autoApprove: true, focusTopic: 'tarot' }),
+      );
+
+      const rVoice2 = await cmdService.handleCommand(
+        'JarBees, buscá e ingestá información sobre Pamela Colman Smith específicamente de tarot.',
+        'sess-1',
+        Date.now(),
+      );
+      expect(rVoice2.handled).toBe(true);
+      expect(mockAcq.acquireCharacter).toHaveBeenCalledWith(
+        'Pamela Colman Smith',
+        expect.objectContaining({ autoApprove: true, focusTopic: 'tarot' }),
       );
 
       // Pregunta normal NO debe disparar adquisición

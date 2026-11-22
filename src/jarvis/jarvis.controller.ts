@@ -887,6 +887,7 @@ export class JarvisController {
     @Body()
     body: {
       name: string;
+      focusTopic?: string;
       downloadPublicDomainBooks?: boolean;
       maxPublicDomainBooks?: number;
       forceRefresh?: boolean;
@@ -905,6 +906,7 @@ export class JarvisController {
     // La aprobación e indexación posterior se realiza mediante POST /library/document/:id/approve (HITL Nivel 3).
     const result = await this.characterAcquisition.acquireCharacter(body.name, {
       autoApprove: false,
+      focusTopic: body.focusTopic,
       downloadPublicDomainBooks: body.downloadPublicDomainBooks,
       maxPublicDomainBooks: body.maxPublicDomainBooks,
       forceRefresh: body.forceRefresh,
@@ -1909,13 +1911,44 @@ export class JarvisController {
       }
 
       const sessionId = sessionIdBody || sessionIdHeader || randomUUID();
-      const answer = await this.jarvisService.query(transcription.text, {
+
+      // Recuperar el último mensaje del usuario en la sesión para resolver correcciones / deletreos por voz
+      let previousUserMessage: string | null = null;
+      if (transcription.hadSpelling || transcription.isCorrectionAttempt || transcription.lowConfidence) {
+        try {
+          const recent = await this.conversationRepo.getRecentMessages(sessionId, 6);
+          const lastUser = [...recent].reverse().find((m) => m.role === 'user');
+          previousUserMessage = lastUser?.content ?? null;
+        } catch {
+          previousUserMessage = null;
+        }
+      }
+
+      const effectiveQuery = this.voiceService.buildVoiceChatQuery(
+        transcription,
+        previousUserMessage,
+      );
+
+      const answer = await this.jarvisService.query(effectiveQuery, {
         sessionId,
+        voiceContext: {
+          rawTranscript: transcription.rawText || transcription.text,
+          reconstructedWords: transcription.reconstructedWords,
+          confidence: transcription.confidence,
+          isCorrectionAttempt: transcription.isCorrectionAttempt,
+          engine: transcription.engine,
+          device: transcription.device,
+        },
       });
 
       return {
         success: true,
         transcription: transcription.text,
+        rawTranscription: transcription.rawText || transcription.text,
+        reconstructedWords: transcription.reconstructedWords || [],
+        hadSpelling: Boolean(transcription.hadSpelling),
+        engine: transcription.engine,
+        device: transcription.device,
         confidence: transcription.confidence,
         transcriptionDurationMs: transcription.durationMs,
         answer,

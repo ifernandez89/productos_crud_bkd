@@ -377,7 +377,7 @@ export class JarvisCommandService {
       return { handled: true, response: backupMsg };
     }
 
-    // 5f. ADQUISICIÓN AUTÓNOMA DE PERSONAJES HISTÓRICOS (Wikipedia + Wikisource + OpenLibrary + Gutenberg)
+    // 5f. ADQUISICIÓN AUTÓNOMA DE PERSONAJES HISTÓRICOS (Voz y texto: Wikipedia + Wikisource + OpenLibrary + Gutenberg)
     const acquireCharRequest = this.extractCharacterAcquisitionRequest(trimmedMessage);
     if (acquireCharRequest && this.characterAcquisition) {
       let acqReply: string;
@@ -388,6 +388,7 @@ export class JarvisCommandService {
           {
             autoApprove: true,
             forceRefresh: acquireCharRequest.forceRefresh,
+            focusTopic: acquireCharRequest.focusTopic,
             downloadPublicDomainBooks: true,
           },
         );
@@ -409,6 +410,7 @@ export class JarvisCommandService {
         metadata: {
           source: 'character_acquisition',
           character: acquireCharRequest.name,
+          focusTopic: acquireCharRequest.focusTopic,
           success: acqSuccess,
         },
       });
@@ -828,9 +830,9 @@ export class JarvisCommandService {
 
   private extractCharacterAcquisitionRequest(
     message: string,
-  ): { name: string; forceRefresh: boolean } | null {
+  ): { name: string; focusTopic?: string; forceRefresh: boolean } | null {
     const trimmed = message.trim();
-    if (!trimmed || trimmed.length > 220) return null;
+    if (!trimmed || trimmed.length > 260) return null;
 
     // Nunca interceptar preguntas puras (¿quién fue...?, ¿qué dijo...?)
     if (/^[¿?]/.test(trimmed)) return null;
@@ -839,39 +841,110 @@ export class JarvisCommandService {
       trimmed,
     );
     const cleanedInput = trimmed
+      .replace(/^(?:(?:hola|che|oye|ey)[,:\s]+)?(?:jarbees|jarvis)[,:\s]+/i, '')
+      .replace(/^(?:por\s+favor[,:\s]+)?/i, '')
       .replace(/\b(?:--refresh|--force)\b/gi, '')
+      .replace(/[.!?]+$/g, '')
       .trim();
 
-    // 1. Comandos slash directos: /adquirir <nombre>, /incorporar <nombre>, /investigar-personaje <nombre>, /personaje <nombre>
+    // 1. Comandos slash directos:
+    //    /adquirir Pamela Colman Smith
+    //    /adquirir Pamela Colman Smith sobre tarot
     const slashMatch = cleanedInput.match(
-      /^\/(?:adquirir|incorporar|investigar[-_]?personaje|personaje)\s+(.+)$/i,
+      /^\/(?:adquirir|incorporar|investigar[-_]?personaje|personaje|ingestar[-_]?autor)\s+(.+)$/i,
     );
     if (slashMatch?.[1]) {
-      const name = this.cleanExtractedCharacterName(slashMatch[1]);
-      return name ? { name, forceRefresh } : null;
+      return this.parseNameAndFocus(slashMatch[1], forceRefresh);
     }
 
-    // 2. Comandos naturales con destino explícito a biblioteca / BD:
-    //    - "investigá y agregá a la biblioteca a Hildegarda de Bingen"
-    //    - "agregá a tu biblioteca a Paracelso"
-    //    - "alimentá tu bd con Hipatia de Alejandría"
-    const patterns: RegExp[] = [
-      /^(?:por\s+favor\s+)?(?:investig[aá]r?|busc[aá]r?|descarg[aá]r?)\s+y\s+(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|guard[aá]r?|ingest[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
-      /^(?:por\s+favor\s+)?(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
-      /^(?:por\s+favor\s+)?(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|al)\s+(.+?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
-      /^(?:por\s+favor\s+)?(?:aliment[aá]r?|nutr[ií]r?)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:con|sobre|de)\s+(.+)$/i,
-      /^(?:por\s+favor\s+)?(?:descarg[aá]r?|busc[aá]r?|investig[aá]r?)\s+(?:informaci[oó]n|info|datos|biograf[ií]a|dossier|obras)\s+(?:de|sobre)\s+(.+?)\s+(?:para|en|a)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
+    // 2. Comandos naturales por voz o texto CON enfoque temático explícito antes del autor:
+    //    - "busca e ingesta información específicamente de tarot sobre Pamela Colman Smith"
+    //    - "buscá e ingestá info de tarot sobre Pamela Colman Smith"
+    //    - "ingestame información de botánica sobre Hildegarda de Bingen"
+    const topicBeforeAuthorPatterns: RegExp[] = [
+      /^(?:busc[aá]r?|investig[aá]r?|descarg[aá]r?)\s+(?:y|e)\s+(?:ingest[aá]r?|agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|guard[aá]r?)\s+(?:informaci[oó]n|info|datos|material|dossier|biograf[ií]a)?\s*(?:espec[ií]ficamente\s+|enfocad[ao]\s+en\s+)?(?:de|en)\s+([^"'“‘«]+?)\s+(?:sobre|acerca\s+de|del\s+autor|de\s+la\s+autora)\s+['"“‘«]?(.+?)['"”’»]?$/i,
+      /^(?:ingest[aá](?:me|r)?|adquir[ií]r?|incorpor[aá](?:me|r)?)\s+(?:informaci[oó]n|info|datos|material|dossier)?\s*(?:espec[ií]ficamente\s+)?(?:de|en)\s+([^"'“‘«]+?)\s+(?:sobre|acerca\s+de|del\s+autor|de\s+la\s+autora)\s+['"“‘«]?(.+?)['"”’»]?$/i,
     ];
 
-    for (const pattern of patterns) {
+    for (const pattern of topicBeforeAuthorPatterns) {
+      const match = cleanedInput.match(pattern);
+      if (match?.[1] && match?.[2] && !/\b(?:sobre|espec[ií]ficamente)\b/i.test(match[1])) {
+        const rawTopic = match[1]
+          .replace(/^(?:espec[ií]ficamente|enfocad[ao]\s+en|de|sobre|en)\s+/gi, '')
+          .replace(/\s+(?:a|en|para)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i, '')
+          .trim();
+        const rawName = match[2]
+          .replace(/\s+(?:a|en|para)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i, '')
+          .trim();
+        const name = this.cleanExtractedCharacterName(rawName);
+        const focusTopic = this.cleanFocusTopic(rawTopic);
+        if (name) {
+          return { name, focusTopic, forceRefresh };
+        }
+      }
+    }
+
+    // 3. Comandos naturales por voz o texto directos de ingesta/adquisición de personaje/autor (con o sin "a la biblioteca"):
+    //    - "busca e ingesta información sobre Pamela Colman Smith"
+    //    - "investigá e ingestá sobre Pamela Colman Smith específicamente de tarot"
+    //    - "ingestame información sobre Hildegarda de Bingen"
+    //    - "investigá y agregá a la biblioteca a Paracelso"
+    //    - "alimentá tu bd con Hipatia de Alejandría"
+    const directPatterns: RegExp[] = [
+      /^(?:investig[aá]r?|busc[aá]r?|descarg[aá]r?)\s+(?:y|e)\s+(?:ingest[aá]r?|agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|guard[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
+      /^(?:investig[aá]r?|busc[aá]r?|descarg[aá]r?)\s+(?:y|e)\s+(?:ingest[aá]r?|guard[aá]r?\s+en\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos))\s+(?:informaci[oó]n|info|datos|material|biograf[ií]a|dossier|obras)?\s*(?:sobre|acerca\s+de|de|a|al)?\s*(.+)$/i,
+      /^(?:ingest[aá](?:me|r)?|adquir[ií]r?)\s+(?:informaci[oó]n|info|datos|material|biograf[ií]a|dossier|al\s+autor|a\s+la\s+autora|al\s+personaje)?\s*(?:sobre|acerca\s+de|de|a|al)\s+(.+)$/i,
+      /^(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:a|al|sobre|de|con)?\s*(.+)$/i,
+      /^(?:agreg[aá]r?|incorpor[aá]r?|carg[aá]r?|sum[aá]r?|ingest[aá]r?)\s+(?:a|al)\s+(.+?)\s+(?:a|en)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
+      /^(?:aliment[aá]r?|nutr[ií]r?)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)\s+(?:con|sobre|de)\s+(.+)$/i,
+      /^(?:descarg[aá]r?|busc[aá]r?|investig[aá]r?)\s+(?:informaci[oó]n|info|datos|biograf[ií]a|dossier|obras)\s+(?:de|sobre)\s+(.+?)\s+(?:para|en|a)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i,
+    ];
+
+    for (const pattern of directPatterns) {
       const match = cleanedInput.match(pattern);
       if (match?.[1]) {
-        const name = this.cleanExtractedCharacterName(match[1]);
-        if (name) return { name, forceRefresh };
+        const parsed = this.parseNameAndFocus(match[1], forceRefresh);
+        if (parsed) return parsed;
       }
     }
 
     return null;
+  }
+
+  private parseNameAndFocus(
+    rawSegment: string,
+    forceRefresh: boolean,
+  ): { name: string; focusTopic?: string; forceRefresh: boolean } | null {
+    const cleaned = rawSegment
+      .replace(/\s+(?:a|en|para)\s+(?:tu|la)\s+(?:biblioteca|bd|base\s+de\s+datos)$/i, '')
+      .trim();
+
+    // Detectar foco al final: "<autor> específicamente de <tema>" / "<autor> enfocado en <tema>" / "<autor> sobre <tema>" / "<autor> --tema <tema>"
+    const trailingFocusMatch = cleaned.match(
+      /^(.+?)\s+(?:espec[ií]ficamente\s+(?:de|sobre|en)|enfocad[ao]\s+en|--tema|sobre)\s+(.+)$/i,
+    );
+    if (trailingFocusMatch?.[1] && trailingFocusMatch?.[2]) {
+      const name = this.cleanExtractedCharacterName(trailingFocusMatch[1]);
+      const focusTopic = this.cleanFocusTopic(trailingFocusMatch[2]);
+      if (name) return { name, focusTopic, forceRefresh };
+    }
+
+    const name = this.cleanExtractedCharacterName(cleaned);
+    return name ? { name, forceRefresh } : null;
+  }
+
+  private cleanFocusTopic(raw?: string): string | undefined {
+    if (!raw) return undefined;
+    const cleaned = raw
+      .trim()
+      .replace(/^(?:el|la|los|las|tema|temas|sobre|de|en)\s+/i, '')
+      .replace(/^['"“‘«]+|['"”’».,;:!?]+$/g, '')
+      .trim();
+    if (cleaned.length < 3 || cleaned.length > 50) return undefined;
+    if (/^(?:informaci[oó]n|info|datos|biblioteca|bd|base\s+de\s+datos)$/i.test(cleaned)) {
+      return undefined;
+    }
+    return cleaned;
   }
 
   private cleanExtractedCharacterName(raw: string): string | null {
@@ -1888,7 +1961,8 @@ export class JarvisCommandService {
       `  Buscar en docs        →  \`busca en mis documentos <tema>\``,
       `                           \`según mis PDFs, <pregunta>\``,
       `  Adquirir personaje    →  \`/adquirir <nombre del personaje>\``,
-      `                           \`/incorporar Hildegarda de Bingen\``,
+      `    (texto o por voz)      \`/incorporar Hildegarda de Bingen\``,
+      `                           \`buscá e ingestá información específicamente de tarot sobre Pamela Colman Smith\``,
       `                           \`investigá y agregá a la biblioteca a <nombre>\``,
       `                           \`alimentá tu bd con <nombre>\``,
       `  Limpiar duplicados    →  \`eliminar documentos repetidos\``,
