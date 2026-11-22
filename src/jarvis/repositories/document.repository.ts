@@ -402,6 +402,61 @@ export class DocumentRepository {
     return this.mapRowsToChunks(rows);
   }
 
+  /**
+   * Busca chunks semánticamente garantizando representación equilibrada de CADA
+   * documento seleccionado (evita que libros muy extensos eclipsen obras más concisas
+   * o que documentos sin capítulos queden desplazados por el filtro macro).
+   */
+  async searchChunksSemanticBalancedInDocuments(
+    embedding: number[],
+    documentIds: number[],
+    perDocLimit = 6,
+    minSimilarity?: number,
+  ): Promise<ScoredChunk[]> {
+    const uniqueIds = Array.from(new Set(documentIds.filter((id) => Number.isFinite(id))));
+    if (uniqueIds.length === 0) return [];
+
+    const relaxedFloor =
+      typeof minSimilarity === 'number'
+        ? Math.max(0.42, minSimilarity - 0.14)
+        : 0.42;
+
+    const perDocResults = await Promise.all(
+      uniqueIds.map(async (docId) => {
+        let rows = (await this.pgvector.searchChunksSemanticInDocuments(
+          embedding,
+          [docId],
+          perDocLimit,
+          minSimilarity,
+        )) as any[];
+
+        // Si el documento ya fue seleccionado explícitamente por el índice pero el umbral estricto
+        // devolvió 0 fragmentos (p.ej. vocabulario diferente), aplicar un piso suave controlado.
+        if (rows.length === 0 && typeof minSimilarity === 'number' && relaxedFloor < minSimilarity) {
+          rows = (await this.pgvector.searchChunksSemanticInDocuments(
+            embedding,
+            [docId],
+            Math.min(perDocLimit, 4),
+            relaxedFloor,
+          )) as any[];
+        }
+        return this.mapRowsToChunks(rows);
+      }),
+    );
+
+    const merged: ScoredChunk[] = [];
+    const seenIds = new Set<number>();
+    for (const list of perDocResults) {
+      for (const chunk of list) {
+        if (seenIds.has(chunk.id)) continue;
+        seenIds.add(chunk.id);
+        merged.push(chunk);
+      }
+    }
+
+    return merged.sort((a, b) => (b.similarity ?? 0) - (a.similarity ?? 0));
+  }
+
   private mapRowsToChunks(rows: any[]): ScoredChunk[] {
     return rows.map((row) => ({
       id: row.id,
@@ -427,42 +482,73 @@ export class DocumentRepository {
   }
 
   /**
-   * Busca chunks de forma textual filtrando por un conjunto de documentos específicos.
+   * Busca chunks de forma textual filtrando por un conjunto de documentos específicos,
+   * balanceado por documento y rankeado por cantidad de términos coincidentes.
    */
   async searchChunksInDocuments(
     query: string,
     documentIds: number[],
     limit = 10,
   ): Promise<(Chunk & { document: Document })[]> {
-    if (documentIds.length === 0) return [];
+    const uniqueIds = Array.from(new Set(documentIds.filter((id) => Number.isFinite(id))));
+    if (uniqueIds.length === 0) return [];
 
-    const terms = query
+    const stopwords = new Set([
+      'para', 'pero', 'como', 'cada', 'sobre', 'entre', 'segun', 'dame',
+      'cual', 'cuales', 'donde', 'cuando', 'quien', 'todo', 'toda', 'todos',
+      'todas', 'unos', 'unas', 'este', 'esta', 'estos', 'estas', 'tiene',
+      'tienen', 'palabras', 'describan', 'ahora', 'dejemos', 'afuera',
+    ]);
+
+    const normQuery = query
       .toLowerCase()
-      .split(/\s+/)
-      .filter((t) => t.length >= 4);
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+    const terms = Array.from(
+      new Set(
+        normQuery
+          .split(/[^a-z0-9ñ]+/)
+          .filter((t) => t.length >= 4 && !stopwords.has(t)),
+      ),
+    );
     if (terms.length === 0) return [];
 
-    const chunks = (await this.prisma.chunk.findMany({
-      where: {
-        AND: [
-          {
+    const perDocQuota = Math.max(Math.ceil(limit / uniqueIds.length), 4);
+
+    const perDocLists = await Promise.all(
+      uniqueIds.map(async (docId) => {
+        const candidates = (await this.prisma.chunk.findMany({
+          where: {
+            documentId: docId,
+            document: { status: 'ready' },
             OR: terms.map((term) => ({
-              content: { contains: term },
+              content: { contains: term, mode: 'insensitive' as const },
             })),
           },
-          {
-            documentId: { in: documentIds },
-          },
-          {
-            document: { status: 'ready' },
-          },
-        ],
-      },
-      include: { document: true },
-      take: limit,
-    })) as (Chunk & { document: Document })[];
+          include: { document: true },
+          take: 60,
+        })) as (Chunk & { document: Document })[];
 
-    return chunks;
+        return candidates
+          .map((chunk) => {
+            const normContent = (chunk.content || '')
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '');
+            let hitCount = 0;
+            for (const t of terms) {
+              if (normContent.includes(t)) hitCount++;
+            }
+            return { chunk, hitCount };
+          })
+          .sort((a, b) => b.hitCount - a.hitCount)
+          .slice(0, perDocQuota)
+          .map((item) => item.chunk);
+      }),
+    );
+
+    return perDocLists.flat().slice(0, Math.max(limit, uniqueIds.length * perDocQuota));
   }
 
   /**

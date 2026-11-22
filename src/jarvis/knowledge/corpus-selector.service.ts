@@ -116,7 +116,7 @@ export const SCHOOLS_OF_THOUGHT: Record<
     ],
   },
   psicomagia: {
-    authors: ['alejandro jodorowsky', 'jodorowsky'],
+    authors: ['alejandro jodorowsky', 'jodorowsky', 'marianne costa'],
     keywords: [
       'psicomagia',
       'arbol genealogico',
@@ -124,6 +124,35 @@ export const SCHOOLS_OF_THOUGHT: Record<
       'tarot',
       'jodorowsky',
       'psicomagico',
+    ],
+  },
+  tarot_rider_waite_smith: {
+    authors: [
+      'pamela colman smith',
+      'pamela coleman smith',
+      'arthur edward waite',
+      'waite',
+    ],
+    keywords: [
+      'rider-waite',
+      'rider waite',
+      'pamela colman smith',
+      'pamela coleman smith',
+      'pictorial key',
+      'arcanos menores',
+      'arcanos mayores',
+      'tarot',
+    ],
+  },
+  gnosis_cabala: {
+    authors: ['samael aun weor', 'samael'],
+    keywords: [
+      'tarot y kabala',
+      'tarot y cabala',
+      'gnosis',
+      'samael aun weor',
+      'arcanos mayores',
+      'arcanos menores',
     ],
   },
   chamanismo: {
@@ -428,8 +457,14 @@ export class CorpusSelectorService {
 
   private matchTerm(target: string, term: string): boolean {
     if (!target || !term) return false;
-    const normTarget = target.toLowerCase();
-    const normTerm = term.toLowerCase();
+    const normTarget = target
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+    const normTerm = term
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
     if (normTerm.length <= 4) {
       const escaped = normTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       return new RegExp(`\\b${escaped}\\b`, 'i').test(normTarget);

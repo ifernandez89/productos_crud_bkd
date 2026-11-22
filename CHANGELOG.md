@@ -6,6 +6,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 
 
+### RAG Multi-Bibliografía (Tarot), Guía Completa Rider–Waite–Smith (78 Arcanos) & Corrección de Fallos Críticos de Recuperación (2026-11-22)
+
+> **Estado:** ✅ Corregido, verificado con `5/5` suites Jest (`81/81` tests PASS `--runInBand`), `138/138` pruebas JCA-001 PASS, `nest build` exit=0 y pruebas E2E en vivo (`qwen3:8b` + `bge-m3`).
+> **Nuevo Corpus Indexado:** **Tarot Rider–Waite–Smith: Guía Completa de los 56 Arcanos Menores y 22 Arcanos Mayores** (`docId=260`, `status=ready`, `4` capítulos, `27/27` chunks vectorizados con `bge-m3`, Knowledge Graph sembrado con Pamela Colman Smith, A. E. Waite, Arcanos Menores y Arcanos Mayores).
+> **Sincronización de Biblioteca Tarot (`library-index.json`):** 150 obras totales, integrando con `dbId` directo las 3 tradiciones completas disponibles en PostgreSQL: **Pamela Colman Smith & Arthur Edward Waite** (`#260` + dossier `#259`), **Alejandro Jodorowsky & Marianne Costa** (*La Vía del Tarot*, `#23`, 887 chunks) y **Samael Aun Weor** (*Tarot y Kábala*, `#252`, 523 chunks).
+
+- **Gobernanza RAG Auto-Autorizada y Política Multi-Bibliografía vs. Autor Específico (`src/jarvis/knowledge/rag-selection.helper.ts`, `jarvis.service.ts`)**:
+  - Auto-autorización controlada de RAG en `JarvisService` cuando `CorpusSelectorService` detecta coincidencias fuertes en biblioteca local (p. ej. consultas sobre Tarot o autores indexados), respetando estrictamente directivas negativas (`RAG: EXCLUDED`, *"sin documentos"*) e invariantes conceptuales de JCA-001.
+  - Eliminado el bug histórico `dominantMatch` (`score >= 5.0`, siempre verdadero) que aislaba forzosamente toda consulta a un único libro: ahora `selectCorpusTargets()` aísla estrictamente a un autor solo cuando se lo nombra explícitamente (unificando variantes como Pamela Colman Smith / Rider–Waite–Smith), y en consultas generales prioriza diversidad multi-bibliográfica (1 obra principal por cada autor/tradición).
+  - Nueva limpieza de cláusulas de exclusión solo para búsqueda vectorial/léxica (`stripNegativeExclusionsForSearch`, p. ej. *"dejemos afuera los arcanos mayores"*) + refuerzo explícito de exclusiones y citas comparativas en `buildRagContextHeader()`.
+  - Aumento calibrado de ventana RAG (hasta 6 chunks × 1250 chars sin truncar tablas de 14 cartas y `maxTokens: 2048` para listados exhaustivos o síntesis multi-obra dentro del contexto `-c 6144` de `llama-server`).
+- **Corrección de 5 Bugs Ocultos Detectados en Pruebas E2E en Vivo**:
+  - **`JarvisPromptBuilderService` (`isTemporalQuery`)**: corregida regex sin límites de palabra `/(fecha|hora|...)/i` que matcheaba la palabra **"ahora"** y descartaba silenciosamente todo `prefetchedRagContext`.
+  - **`EmbeddingsService`**: inyectado `OllamaRecoveryService` para levantar Ollama automáticamente ante `ECONNREFUSED` y reintentar `bge-m3:latest` en lugar de degradar a búsqueda textual.
+  - **`DocumentRepository`**: nuevo método `searchChunksSemanticBalancedInDocuments()` (búsqueda semántica paralela por documento) y mejora de fallback textual `searchChunksInDocuments()` balanceado por obra y rankeado por coincidencias léxicas.
+  - **`CorpusSelectorService`**: normalización sin acentos (NFD) en `matchTerm()` para que términos sin tilde (*"kabala"*, *"via"*) coincidan con títulos acentuados (*"Kábala"*, *"Vía"*).
+  - **`JarvisCommandService`**: evitado el secuestro de consultas temáticas comparativas iniciadas con *"Explicame..."* hacia resúmenes mono-documento, preservando intactos los comandos explícitos de resumen (`resumen de '...'`, `explicame 'La Vía del Tarot'`).
+
 ### Hardening Crítico de Voz (STT Rioplatense en GPU RTX 5070) & Comandos Vocales Temáticos de Ingesta (2026-11-22)
 
 > **Estado:** ✅ Corregido, benchmarkeado en vivo en **NVIDIA GeForce RTX 5070** (`decode: 716–867 ms`, confianza `0.902–0.922`), verificado con `4/4` suites / `72/72` tests PASS (`--runInBand`) y `nest build` exit=0.

@@ -278,18 +278,28 @@ export class JarvisPromptBuilderService {
       this.disciplinesCatalog?.isDisciplinePanoramicQuery(userMessage);
 
     const isTemporalQuery =
-      /(fecha|hora|dia de hoy|día de hoy|que dia|qué día|que hora|qué hora|en que dia|en qué día|en que año|en qué año|año actual|que mes|qué mes|no me dijiste la fecha)/i.test(
+      /(?:\b(?:que\s+fecha|qué\s+fecha|la\s+fecha\s+(?:de\s+hoy|actual)|que\s+hora|qué\s+hora|la\s+hora\s+actual|hora\s+es|dia\s+de\s+hoy|día\s+de\s+hoy|que\s+dia|qué\s+día|en\s+que\s+dia|en\s+qué\s+día|en\s+que\s+año|en\s+qué\s+año|año\s+actual|que\s+mes|qué\s+mes|no\s+me\s+dijiste\s+la\s+fecha)\b)/i.test(
         userMessage,
       );
 
     if (
       useDocuments &&
       !isDisciplinePanoramic &&
-      !isTemporalQuery &&
+      (!isTemporalQuery || Boolean(prefetchedRagContext)) &&
       !isPersonalOrIdentity &&
       !isAutobiographicalMemoryQuery
     ) {
-      const docSummary = await this.detectDocumentSummaryRequest(userMessage);
+      // Solo activar el atajo de resumen mono-documento si el usuario pidió explícitamente
+      // resumir/sintetizar un libro concreto; si ya existe prefetchedRagContext (p.ej. RAG
+      // multi-bibliografía o consulta temática específica), priorizar los fragmentos recuperados.
+      const isExplicitSummaryIntent =
+        /^(?:hola|buenas|che|jarvis|por\s+favor)?[\s,.!?]*(?:resumen|resumir|resumime|puntos\s*clave|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))\b|\b(?:el|del)\s+(?:libro|pdf|documento|archivo)\b/i.test(
+          userMessage.trim(),
+        );
+      const docSummary =
+        !prefetchedRagContext || isExplicitSummaryIntent
+          ? await this.detectDocumentSummaryRequest(userMessage)
+          : { isRequest: false };
 
       if (docSummary.isRequest && docSummary.title) {
         requestedDocTitle = docSummary.title;

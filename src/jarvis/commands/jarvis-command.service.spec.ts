@@ -318,4 +318,93 @@ describe('JarvisCommandService', () => {
       ),
     ).toBe(true);
   });
+
+  it('does NOT hijack thematic or comparative RAG queries starting with Explicame into a single-book summary', async () => {
+    const conversationRepo = { create: jest.fn().mockResolvedValue(undefined) } as any;
+    const documentRepo = {
+      findDocumentByExactTitle: jest.fn().mockResolvedValue({
+        id: 260,
+        title: 'Tarot Rider–Waite–Smith: Guía Completa de los 56 Arcanos Menores y 22 Arcanos Mayores',
+      }),
+      searchDocumentsByTitle: jest.fn().mockResolvedValue([
+        {
+          id: 260,
+          title: 'Tarot Rider–Waite–Smith: Guía Completa de los 56 Arcanos Menores y 22 Arcanos Mayores',
+        },
+      ]),
+    } as any;
+    const documentSummaryService = {
+      generateDocumentSummary: jest.fn().mockResolvedValue({
+        title: 'La Vía del Tarot',
+        category: 'Tarot y Simbolismo',
+        wordCount: 50000,
+        chunkCount: 887,
+        summary: 'Resumen de prueba',
+        keyPoints: ['Punto 1'],
+      }),
+    } as any;
+    const corpusSelector = {
+      getIndex: jest.fn().mockReturnValue({
+        metadata: { version: 1, descripcion: '', nota: '' },
+        documentos: [
+          {
+            id: 'rws',
+            titulo: 'Tarot Rider–Waite–Smith: Guía Completa de los 56 Arcanos Menores y 22 Arcanos Mayores',
+            autor: 'Pamela Colman Smith & Arthur Edward Waite',
+            categorias: ['tarot'],
+            conceptosClave: ['arcanos mayores', 'arcanos menores'],
+            capitulos: [],
+            embeddings: 'ready',
+            descripcionBreve: '',
+            tags: ['tarot'],
+          },
+          {
+            id: 'jodo',
+            titulo: 'La Vía del Tarot',
+            autor: 'Alejandro Jodorowsky & Marianne Costa',
+            categorias: ['tarot'],
+            conceptosClave: ['arcanos mayores', 'arcanos menores'],
+            capitulos: [],
+            embeddings: 'ready',
+            descripcionBreve: '',
+            tags: ['tarot'],
+          },
+        ],
+      }),
+    } as any;
+
+    const service = new JarvisCommandService(
+      conversationRepo,
+      documentRepo,
+      {} as any,
+      { create: jest.fn().mockResolvedValue(undefined) } as any,
+      {} as any,
+      documentSummaryService,
+      {} as any,
+      {} as any,
+      { handleListCommand: jest.fn().mockResolvedValue(null) } as any,
+      corpusSelector,
+    );
+
+    // Consulta temática comparativa: NO debe ser secuestrada como resumen mono-libro
+    const thematic = await service.handleCommand(
+      'Explicame la relación y diferencia entre los arcanos mayores y menores del tarot',
+      'session-tarot-1',
+      Date.now(),
+    );
+    expect(thematic.handled).toBe(false);
+    expect(documentSummaryService.generateDocumentSummary).not.toHaveBeenCalled();
+
+    // Pedido explícito entrecomillado de libro SÍ debe ser manejado
+    const explicitQuoted = await service.handleCommand(
+      "explicame 'La Vía del Tarot'",
+      'session-tarot-2',
+      Date.now(),
+    );
+    expect(explicitQuoted.handled).toBe(true);
+    expect(documentSummaryService.generateDocumentSummary).toHaveBeenCalledWith(
+      'La Vía del Tarot',
+      10,
+    );
+  });
 });

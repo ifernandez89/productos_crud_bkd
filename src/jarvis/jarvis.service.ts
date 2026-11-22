@@ -35,6 +35,13 @@ import { JarvisWebSearchService } from './tools/web/jarvis-web-search.service';
 import { JarvisPromptBuilderService } from './prompt/jarvis-prompt-builder.service';
 import { EmbeddingsService } from './library/embeddings.service';
 import { CorpusSelectorService } from './knowledge/corpus-selector.service';
+import {
+  buildRagContextHeader,
+  isExhaustiveOrComparativeRagQuery,
+  selectCorpusTargets,
+  selectDiversifiedChunks,
+  stripNegativeExclusionsForSearch,
+} from './knowledge/rag-selection.helper';
 import { DocumentIngestService } from './library/document-ingest.service';
 import { EvidenceService } from './knowledge/evidence.service';
 import { CognitiveOrchestratorService } from './cognitive/cognitive-orchestrator.service';
@@ -336,11 +343,34 @@ export class JarvisService {
         options.mode === 'búsqueda rag' ||
         /^(?:rag|busqueda rag|búsqueda rag)$/i.test(options.mode || '');
 
+      const ragExcluded =
+        !useDocuments ||
+        contextPlan.sources.rag === 'EXCLUDED' ||
+        Boolean(contextPlan.exclusions?.excludeDocuments);
+
+      const corpusPreMatches = ragExcluded
+        ? []
+        : this.corpusSelector.findRelevantDocuments(userMessage, 6);
+
+      const hasStrongCorpusMatch = corpusPreMatches.length > 0;
+
       const ragAuthorized =
-        useDocuments &&
+        !ragExcluded &&
         (contextPlan.sources.rag === 'REQUESTED' ||
           contextPlan.sources.rag === 'SELECTED' ||
-          isExplicitRagMode);
+          isExplicitRagMode ||
+          hasStrongCorpusMatch);
+
+      if (
+        hasStrongCorpusMatch &&
+        contextPlan.sources.rag !== 'REQUESTED' &&
+        contextPlan.sources.rag !== 'SELECTED' &&
+        !isExplicitRagMode
+      ) {
+        this.logger.log(
+          `[context-plan] RAG auto-autorizado por coincidencia fuerte en biblioteca (${corpusPreMatches.length} obra(s): ${corpusPreMatches.map((m) => `"${m.document.titulo}" [${m.score}]`).join(', ')})`,
+        );
+      }
 
       const memoryAuthorized =
         useMemory &&
@@ -440,42 +470,51 @@ export class JarvisService {
 
       if (ragAuthorized) {
         let chunks = [] as any[];
+        const ragSearchQuery = stripNegativeExclusionsForSearch(userMessage);
+        const isExhaustiveRag = isExhaustiveOrComparativeRagQuery(userMessage);
+        let selectionMode: 'explicit_author' | 'multi_bibliography' | 'single_match' =
+          'single_match';
+        let explicitAuthors: string[] = [];
+
         try {
-          libraryMatches = this.corpusSelector.findRelevantDocuments(
-            userMessage,
-            3,
-          );
+          libraryMatches =
+            corpusPreMatches.length > 0
+              ? corpusPreMatches
+              : this.corpusSelector.findRelevantDocuments(ragSearchQuery, 6);
           const targetDocIds: number[] = [];
 
           if (libraryMatches.length > 0) {
+            const selection = selectCorpusTargets(libraryMatches, 4);
+            selectionMode = selection.selectionMode;
+            explicitAuthors = selection.explicitAuthors;
+            const selectedMatches = selection.selectedMatches;
+
             this.logger.log(
-              `[rag] Corpus Selector detectó ${libraryMatches.length} documentos relevantes. Top match: "${libraryMatches[0].document.titulo}" (score: ${libraryMatches[0].score})`,
+              `[rag] Corpus Selector (${selectionMode}) seleccionó ${selectedMatches.length}/${libraryMatches.length} obra(s): ${selectedMatches.map((m) => `"${m.document.titulo}" (autor=${m.document.autor}, score=${m.score})`).join(' | ')}`,
             );
-
-            const dominantMatch =
-              libraryMatches.length === 1 ||
-              libraryMatches[0].score >= 5.0 ||
-              (libraryMatches[1] &&
-                libraryMatches[0].score >= libraryMatches[1].score * 1.5);
-
-            const selectedMatches = dominantMatch ? [libraryMatches[0]] : libraryMatches;
-
-            if (dominantMatch) {
-              this.logger.log(
-                `[rag:isolation] Documento dominante identificado: "${libraryMatches[0].document.titulo}". Aislando búsqueda semántica a document_id único.`,
-              );
-            }
 
             for (const match of selectedMatches) {
               const doc = match.document;
               try {
-                const existing =
-                  await this.documentRepo.findDocumentByExactTitle(doc.titulo);
-                if (existing) {
-                  targetDocIds.push(existing.id);
-                } else {
+                let resolvedId: number | null = null;
+                if (typeof doc.dbId === 'number' && doc.dbId > 0) {
+                  const byId = await this.documentRepo.findById(doc.dbId);
+                  if (byId && byId.status === 'ready') {
+                    resolvedId = byId.id;
+                  }
+                }
+                if (resolvedId === null) {
+                  const existing =
+                    await this.documentRepo.findDocumentByExactTitle(doc.titulo);
+                  if (existing && existing.status === 'ready') {
+                    resolvedId = existing.id;
+                  }
+                }
+                if (resolvedId !== null && !targetDocIds.includes(resolvedId)) {
+                  targetDocIds.push(resolvedId);
+                } else if (resolvedId === null) {
                   this.logger.log(
-                    `[rag] Documento "${doc.titulo}" no está cargado en BD. Se responderá con conocimiento general / búsqueda textual sin disparar ingesta de PDF.`,
+                    `[rag] Documento "${doc.titulo}" no está listo/cargado en BD. Se omite sin disparar ingesta.`,
                   );
                 }
               } catch (err: any) {
@@ -488,18 +527,27 @@ export class JarvisService {
 
           // 2. Ejecutar la búsqueda semántica con minSimilarity configurable
           const queryEmbedding =
-            await this.embeddingsService.generateEmbedding(userMessage);
+            await this.embeddingsService.generateEmbedding(ragSearchQuery);
 
           if (targetDocIds.length > 0) {
+            const perDocLimit =
+              targetDocIds.length === 1
+                ? isExhaustiveRag
+                  ? 12
+                  : 8
+                : isExhaustiveRag
+                  ? 8
+                  : 6;
             this.logger.log(
-              `[rag] Buscando semánticamente en documentos específicos: ${targetDocIds.join(', ')} (minSimilarity: ${minSimilarity})`,
+              `[rag] Buscando semánticamente (balanceado, perDoc=${perDocLimit}) en documentos [${targetDocIds.join(', ')}] (minSimilarity: ${minSimilarity}, searchQuery="${ragSearchQuery.slice(0, 80)}")`,
             );
-            chunks = await this.documentRepo.searchChunksSemanticInDocuments(
-              queryEmbedding,
-              targetDocIds,
-              15,
-              minSimilarity,
-            );
+            chunks =
+              await this.documentRepo.searchChunksSemanticBalancedInDocuments(
+                queryEmbedding,
+                targetDocIds,
+                perDocLimit,
+                minSimilarity,
+              );
           } else {
             this.logger.log(
               `[rag] Sin coincidencias en el índice. Ejecutando búsqueda global (minSimilarity: ${minSimilarity}).`,
@@ -515,12 +563,17 @@ export class JarvisService {
             `[rag:semantic-pre] fallback a búsqueda textual en pre-search: ${err.message}`,
           );
           try {
-            const matches = this.corpusSelector.findRelevantDocuments(
-              userMessage,
-              3,
-            );
+            const matches =
+              corpusPreMatches.length > 0
+                ? corpusPreMatches
+                : this.corpusSelector.findRelevantDocuments(ragSearchQuery, 6);
+            const { selectedMatches } = selectCorpusTargets(matches, 4);
             const targetDocIds: number[] = [];
-            for (const match of matches) {
+            for (const match of selectedMatches) {
+              if (typeof match.document.dbId === 'number') {
+                targetDocIds.push(match.document.dbId);
+                continue;
+              }
               const existing = await this.documentRepo.findDocumentByExactTitle(
                 match.document.titulo,
               );
@@ -529,12 +582,12 @@ export class JarvisService {
 
             if (targetDocIds.length > 0) {
               chunks = await this.documentRepo.searchChunksInDocuments(
-                userMessage,
+                ragSearchQuery,
                 targetDocIds,
                 15,
               );
             } else {
-              chunks = await this.documentRepo.searchChunks(userMessage, 15);
+              chunks = await this.documentRepo.searchChunks(ragSearchQuery, 15);
             }
           } catch (fallbackErr: any) {
             ragRetrievalStatus = 'FAILED';
@@ -548,39 +601,77 @@ export class JarvisService {
           ragRetrievalStatus = 'EXECUTED_WITH_RESULTS';
           hasRagHits = true;
 
-          // Aplicar reranker híbrido con similitud real
-          const rerankedChunks = this.rerankChunks(chunks, userMessage);
-          retrievedChunksList = rerankedChunks;
+          // Aplicar reranker híbrido con similitud real (usando ragSearchQuery sin cláusulas excluidas)
+          const rerankedChunks = this.rerankChunks(chunks, ragSearchQuery);
+          const isMultiAuthorMode =
+            selectionMode === 'multi_bibliography' ||
+            (selectionMode === 'explicit_author' && explicitAuthors.length >= 2);
+          const maxContextChunks =
+            isExhaustiveRag || isMultiAuthorMode ? 6 : 4;
+          const selectedChunks = selectDiversifiedChunks(rerankedChunks, {
+            maxChunks: maxContextChunks,
+            isMultiAuthorMode,
+          });
+          retrievedChunksList = selectedChunks;
 
-          const formattedSources: RagEvidenceSource[] = rerankedChunks
-            .slice(0, 5)
-            .map((c) => ({
-              id: c.document?.id || c.id || 0,
-              title: c.document?.title || c.title || 'Documento',
-              author: c.document?.author || c.author || 'Desconocido',
-              category: c.document?.category || c.category || 'General',
-              page: c.page || c.metadata?.page || 1,
-              similarity:
-                typeof c.score === 'number' ? c.score : c.similarity || 0.85,
-              snippet: (c.content || '').slice(0, 300),
-            }));
+          const formattedSources: RagEvidenceSource[] = selectedChunks
+            .slice(0, 6)
+            .map((c) => {
+              const docTitle = c.document?.title || c.title || 'Documento';
+              const authorInfo =
+                this.corpusSelector.getAuthorAndSchoolByTitle(docTitle);
+              return {
+                id: c.document?.id || c.id || 0,
+                title: docTitle,
+                author:
+                  c.document?.author ||
+                  c.author ||
+                  (authorInfo.author !== 'Autor Desconocido'
+                    ? authorInfo.author
+                    : 'Desconocido'),
+                category: c.document?.category || c.category || 'General',
+                page: c.page || c.metadata?.page || 1,
+                similarity:
+                  typeof c.similarity === 'number'
+                    ? c.similarity
+                    : typeof c.score === 'number'
+                      ? c.score
+                      : 0.85,
+                snippet: (c.content || '').slice(0, 300),
+              };
+            });
           this.sessionLastSources.set(sessionId, formattedSources);
 
-          const formattedParts = rerankedChunks.slice(0, 3).map((c) => {
+          const distinctBookTitles = new Set<string>();
+          const distinctAuthorNames = new Set<string>();
+
+          const formattedParts = selectedChunks.map((c) => {
             const docTitle = c.document?.title || 'Documento';
             const docInIndex = this.corpusSelector.getIndex().documentos.find(
-              (d) => d.titulo.toLowerCase() === docTitle.toLowerCase(),
+              (d) =>
+                (typeof d.dbId === 'number' && d.dbId === c.document?.id) ||
+                d.titulo.toLowerCase() === docTitle.toLowerCase(),
             );
-            
-            const author = docInIndex?.autor || this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
+
+            const author =
+              docInIndex?.autor ||
+              this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).author;
             const language = docInIndex?.idioma || 'es';
-            const school = this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
+            const school =
+              docInIndex?.escuela ||
+              this.corpusSelector.getAuthorAndSchoolByTitle(docTitle).school;
             const category = docInIndex?.categorias?.join(', ') || 'General';
-            const concepts = docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
+            const concepts =
+              docInIndex?.conceptosClave?.slice(0, 6).join(', ') || 'N/A';
             const snippet =
-              c.content && c.content.length > 800
-                ? c.content.slice(0, 800) + '... [fragmento truncado]'
+              c.content && c.content.length > 1250
+                ? c.content.slice(0, 1250) + '... [fragmento truncado]'
                 : c.content;
+
+            distinctBookTitles.add(docTitle);
+            if (author && author !== 'Autor Desconocido') {
+              distinctAuthorNames.add(author);
+            }
 
             return [
               `---`,
@@ -595,11 +686,14 @@ export class JarvisService {
             ].join('\n');
           });
 
-          prefetchedRagContext =
-            `### DOCUMENTOS DE LA BIBLIOTECA PERSONAL (RAG)\n` +
-            `⚠️ IDIOMA OBLIGATORIO: Respondé 100% EN ESPAÑOL. Traducí cualquier fragmento o término que esté en inglés.\n` +
-            `Utilizá el siguiente contenido sutil y contextual para fundamentar tu respuesta. Si hay contradicciones entre autores o escuelas, exponé de forma separada y clara cada perspectiva citando al autor correspondiente.\n\n` +
-            formattedParts.join('\n\n');
+          const header = buildRagContextHeader({
+            userMessage,
+            distinctBooksCount: distinctBookTitles.size,
+            distinctAuthors: Array.from(distinctAuthorNames),
+            selectionMode,
+          });
+
+          prefetchedRagContext = `${header}\n\n${formattedParts.join('\n\n')}`;
         } else {
           if (ragRetrievalStatus !== 'FAILED') {
             ragRetrievalStatus = 'EXECUTED_EMPTY';
@@ -1584,17 +1678,23 @@ export class JarvisService {
     maxHistoryMessages: number = 16,
     voiceContext?: JarvisVoiceContext,
   ): Promise<string> {
+    const effectiveHistoryForPrompt =
+      prefetchedRagContext && prefetchedRagContext.length > 3500
+        ? Math.min(maxHistoryMessages || 16, 6)
+        : maxHistoryMessages || 16;
+
     const { systemPrompt, userPrompt, usedMemory, usedDocs } =
       await this.jarvisPromptBuilder.buildJarvisContext(
         userMessage,
         sessionId,
-        true,
-        true,
-        16,
+        useMemory,
+        useDocuments,
+        effectiveHistoryForPrompt,
         webContext,
         !!webContext,
         prefetchedRagContext,
         disciplineMode,
+        ragRetrievalStatus,
       );
 
     if (usedMemory) toolsUsed.push('memory');
@@ -1655,6 +1755,16 @@ export class JarvisService {
         `Solo si persiste una ambigüedad genuina, ofrecé las 1-2 interpretaciones más probables y pedí confirmación breve.\n`;
     }
 
+    const distinctRagDocIds = new Set(
+      (retrievedChunks || [])
+        .map((c) => c.document?.id ?? c.documentId)
+        .filter(Boolean),
+    );
+    const needsExtendedOutput =
+      this.knowledgeEvolution.isAutobiographicalQuery(userMessage) ||
+      isExhaustiveOrComparativeRagQuery(userMessage) ||
+      distinctRagDocIds.size >= 2;
+
     let response: any;
     try {
       response = await provider.generate({
@@ -1662,9 +1772,7 @@ export class JarvisService {
           { role: 'system', content: finalSystemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        ...(this.knowledgeEvolution.isAutobiographicalQuery(userMessage)
-          ? { maxTokens: 2048 }
-          : {}),
+        ...(needsExtendedOutput ? { maxTokens: 2048 } : {}),
       });
     } catch (genErr: any) {
       this.logger.warn(

@@ -1,15 +1,54 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import axios from 'axios';
+import { OllamaRecoveryService } from '../llm/ollama.recovery.service';
 
 @Injectable()
 export class EmbeddingsService {
   private readonly logger = new Logger(EmbeddingsService.name);
 
-  // Usamos nomic-embed-text o llama3.2 como default.
+  // Usamos bge-m3 como default (1024 dims).
   private readonly OLLAMA_URL = 'http://localhost:11434/api/embeddings';
   private readonly EMBEDDING_MODEL =
     process.env.OLLAMA_EMBEDDING_MODEL ?? 'bge-m3:latest';
   private readonly EMBEDDING_DIMS = 1024; // bge-m3 genera 1024 dimensiones
+
+  constructor(
+    @Optional()
+    private readonly recoveryService?: OllamaRecoveryService,
+  ) {}
+
+  private isConnectionError(error: any): boolean {
+    if (!error) return false;
+    const code = String(error.code || error?.cause?.code || '');
+    const msg = String(error.message || '');
+    if (
+      code === 'ECONNREFUSED' ||
+      code === 'ECONNRESET' ||
+      code === 'ETIMEDOUT' ||
+      /ECONNREFUSED|ECONNRESET|socket hang up|connect/i.test(msg)
+    ) {
+      return true;
+    }
+    if (Array.isArray(error.errors)) {
+      return error.errors.some((sub: any) => this.isConnectionError(sub));
+    }
+    return false;
+  }
+
+  private describeError(error: any): string {
+    if (!error) return 'error desconocido';
+    if (error.message && String(error.message).trim().length > 0) {
+      return String(error.message);
+    }
+    if (error.code) return String(error.code);
+    if (Array.isArray(error.errors) && error.errors.length > 0) {
+      return error.errors
+        .map((e: any) => e?.code || e?.message || String(e))
+        .filter(Boolean)
+        .join(', ');
+    }
+    return String(error);
+  }
 
   private getEmbeddingModelFallbacks(): string[] {
     const configured = process.env.OLLAMA_EMBEDDING_MODEL_FALLBACKS;
@@ -31,7 +70,7 @@ export class EmbeddingsService {
 
   /**
    * Genera un embedding vectorial a partir de un texto.
-   * Retorna un array de números (floats).
+   * Si Ollama está apagado (ECONNREFUSED), dispara recuperación automática una vez y reintenta bge-m3.
    */
   async generateEmbedding(text: string): Promise<number[]> {
     const modelsToTry = [
@@ -41,8 +80,10 @@ export class EmbeddingsService {
       ),
     ];
     let lastError: any;
+    let recoveryAttempted = false;
 
-    for (const model of modelsToTry) {
+    for (let i = 0; i < modelsToTry.length; i++) {
+      const model = modelsToTry[i];
       try {
         const response = await axios.post(
           this.OLLAMA_URL,
@@ -59,16 +100,42 @@ export class EmbeddingsService {
         throw new Error('Respuesta inválida de Ollama embeddings');
       } catch (error: any) {
         lastError = error;
+        const errDesc = this.describeError(error);
+
+        if (
+          !recoveryAttempted &&
+          this.recoveryService &&
+          this.isConnectionError(error)
+        ) {
+          recoveryAttempted = true;
+          this.logger.warn(
+            `[EmbeddingsService] Conexión rechazada con Ollama (${errDesc}) — intentando recuperación automática para ${model}...`,
+          );
+          try {
+            await this.recoveryService.recover();
+            // Reintentar el mismo modelo principal inmediatamente tras levantar Ollama
+            i--;
+            continue;
+          } catch (recoveryErr: any) {
+            this.logger.error(
+              `[EmbeddingsService] Falló la recuperación automática de Ollama: ${this.describeError(recoveryErr)}`,
+            );
+            lastError = recoveryErr;
+            break;
+          }
+        }
+
         this.logger.warn(
-          `[EmbeddingsService] Falló modelo ${model} (${error.message}). Probando alternativo...`,
+          `[EmbeddingsService] Falló modelo ${model} (${errDesc}). Probando alternativo...`,
         );
       }
     }
 
+    const finalMsg = this.describeError(lastError);
     this.logger.error(
-      `[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${lastError?.message}`,
+      `[EmbeddingsService] Error con modelo ${this.EMBEDDING_MODEL}: ${finalMsg}`,
     );
-    throw new Error(`Fallo al generar embedding: ${lastError?.message}`);
+    throw new Error(`Fallo al generar embedding: ${finalMsg}`);
   }
 
   /**

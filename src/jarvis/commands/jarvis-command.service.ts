@@ -1777,12 +1777,14 @@ export class JarvisCommandService {
       ? Math.min(Math.max(parseInt(numMatch[1], 10), 3), 15)
       : 10;
 
-    const ACTION_PREFIXES =
-      /^(?:resumen|resumir|resumime|resumeme|resume|puntos\s*clave|puntos|items|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?)|describe|describime|detalla|detallame|detallar|explica(?:me)?|explicá|profundiza|profundizame|profundizar|profundizá|hablame\s+de|hablame\s+sobre|hablá\s+de|hablá\s+sobre|cuentame\s+de|cuentame\s+sobre|contame\s+de|contame\s+sobre)\b/i;
+    const EXPLICIT_SUMMARY_PREFIXES =
+      /^(?:resumen|resumir|resumime|resumeme|resume|puntos\s*clave|puntos|items|lo\s*(?:mas|más)?\s*importante|dame\s*(?:los?\s*)?(?:\d+\s*)?(?:puntos?|items?|resumenes?|aspectos?))\b/i;
+    const CONVERSATIONAL_PREFIXES =
+      /^(?:describe|describime|detalla|detallame|detallar|explica(?:me)?|explicá|profundiza|profundizame|profundizar|profundizá|hablame\s+de|hablame\s+sobre|hablá\s+de|hablá\s+sobre|cuentame\s+de|cuentame\s+sobre|contame\s+de|contame\s+sobre)\b/i;
+    const BOOK_CONTAINER_CONNECTORS =
+      /^\s*(?:(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo)\s+/i;
     const CONNECTORS =
       /^\s*(?:acerca\s+de|(?:de\s+)?el\s+libro|(?:de\s+)?del\s+libro|(?:de\s+)?el\s+pdf|(?:de\s+)?del\s+pdf|(?:de\s+)?el\s+documento|(?:de\s+)?del\s+documento|(?:de\s+)?el\s+archivo|(?:de\s+)?del\s+archivo|(?:los\s+libros\s+de\s+)?(?:de|del|sobre|en))\s+/i;
-    const GENERIC_STARTERS =
-      /^(?:sobre|acerca|los|las|un|una|el|la|mis|tus|sus|lo|al|del|por|en|para|con|sin|entre|que|cuando|como|donde|quien|cual|todo|toda|todos|todas|algo|nada|mucho|poco|muy|mas|menos|mejor|peor|nuevo|viejo|gran|grande|pequeño)\b/i;
     const GREETINGS =
       /^(?:hola|buenas|buenos\s+dias|buenas\s+tardes|che|jarvis|ia|asistente|por\s+favor)\b\s*[,.!?]?\s*/i;
 
@@ -1792,12 +1794,17 @@ export class JarvisCommandService {
       title = title.substring(match[0].length).trim();
     }
 
-    const actionMatch = title.match(ACTION_PREFIXES);
+    const explicitSummaryMatch = title.match(EXPLICIT_SUMMARY_PREFIXES);
+    const conversationalMatch = explicitSummaryMatch
+      ? null
+      : title.match(CONVERSATIONAL_PREFIXES);
+    const actionMatch = explicitSummaryMatch || conversationalMatch;
     if (!actionMatch) {
       return null;
     }
 
     title = title.substring(actionMatch[0].length).trim();
+    const hasExplicitBookContainer = BOOK_CONTAINER_CONNECTORS.test(title);
     const connMatch = title.match(CONNECTORS);
     if (connMatch) {
       title = title.substring(connMatch[0].length).trim();
@@ -1806,6 +1813,25 @@ export class JarvisCommandService {
     title = title.replace(/^['"“‘«](.*)['"”’»]$/, '$1').trim();
 
     if (title.length >= 2) {
+      const normTitle = this.normalizeText(title);
+
+      // Si el prefijo fue conversacional ("explicame...", "hablame de...", "contame sobre...")
+      // SIN comillas y SIN mencionar explícitamente libro/pdf/documento, NO secuestrar
+      // consultas temáticas, comparativas o conceptuales destinadas al motor RAG multi-bibliografía.
+      if (
+        conversationalMatch &&
+        !isExplicitlyQuoted &&
+        !hasExplicitBookContainer
+      ) {
+        const isConceptualOrComparativeQuestion =
+          /\b(?:diferencia|diferencias|relacion|comparacion|comparar|significado|significados|que\s+es|que\s+son|como\s+funciona|por\s+que|entre\s+.+\s+y\s+|segun\s+)\b/i.test(
+            normTitle,
+          ) || normTitle.split(/\s+/).length > 6;
+        if (isConceptualOrComparativeQuestion) {
+          return null;
+        }
+      }
+
       // Si el título extraído es el nombre de un autor, buscar la obra principal de ese autor
       const authorName = this.findAuthorInIndex(title);
       if (authorName) {
@@ -1825,7 +1851,7 @@ export class JarvisCommandService {
         return { title, maxItems };
       }
 
-      // Para frases en lenguaje natural no entrecomilladas, solo capturar si realmente existe el documento
+      // Para frases en lenguaje natural no entrecomilladas, solo capturar si realmente coincide con un título real
       const hasDoc = await this.dbOrIndexHasDocument(title);
       if (hasDoc) {
         return { title, maxItems };
@@ -1836,13 +1862,15 @@ export class JarvisCommandService {
   }
 
   private async dbOrIndexHasDocument(title: string): Promise<boolean> {
+    const normSearch = title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+    if (normSearch.length < 4) return false;
+
     const index = this.corpusSelector.getIndex();
     if (index && index.documentos) {
-      const normSearch = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
       const inIndex = index.documentos.some((doc) => {
         const normDocTitle = doc.titulo
           .toLowerCase()
@@ -1850,24 +1878,17 @@ export class JarvisCommandService {
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
         return (
-          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+          normDocTitle === normSearch ||
+          (normSearch.length >= 6 && normDocTitle.includes(normSearch))
         );
       });
       if (inIndex) return true;
     }
     try {
-      const existing = await this.documentRepo.findDocumentByExactTitle(title);
-      if (existing) return true;
-
       const candidates = await this.documentRepo.searchDocumentsByTitle(
         title,
-        3,
+        5,
       );
-      const normSearch = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim();
       return candidates.some((doc) => {
         const normDocTitle = doc.title
           .toLowerCase()
@@ -1875,7 +1896,8 @@ export class JarvisCommandService {
           .replace(/[\u0300-\u036f]/g, '')
           .trim();
         return (
-          normDocTitle.includes(normSearch) || normSearch.includes(normDocTitle)
+          normDocTitle === normSearch ||
+          (normSearch.length >= 6 && normDocTitle.includes(normSearch))
         );
       });
     } catch {

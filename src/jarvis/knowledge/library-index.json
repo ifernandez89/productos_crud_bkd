@@ -3400,7 +3400,15 @@
         "arcanos menores",
         "tiradas",
         "lectura de tarot",
-        "simbología"
+        "simbología",
+        "tarot",
+        "tarot de marsella",
+        "bastos",
+        "copas",
+        "espadas",
+        "oros",
+        "alejandro jodorowsky",
+        "marianne costa"
       ],
       "capitulos": [],
       "embeddings": "ready",
@@ -3412,7 +3420,9 @@
         "símbolos",
         "arcanos",
         "cartas"
-      ]
+      ],
+      "dbId": 23,
+      "tituloAlternativo": "Tarot de Marsella — Arcanos Mayores y Arcanos Menores — Alejandro Jodorowsky"
     },
     {
       "id": "lib-la-cocina-vegetariana-de-hare-krisna-198",
@@ -4527,7 +4537,11 @@
       ],
       "conceptosClave": [
         "Pamela Colman Smith",
-        "tarot"
+        "tarot",
+        "Pamela Coleman Smith",
+        "Rider-Waite-Smith",
+        "arcanos menores",
+        "arcanos mayores"
       ],
       "capitulos": [],
       "embeddings": "ready",
@@ -4542,7 +4556,128 @@
         "feministas de reino unido",
         "ilustradoras"
       ],
-      "dbId": 259
+      "dbId": 259,
+      "tituloAlternativo": "Pamela Coleman Smith — Biografía, Obra e Historia del Tarot Rider-Waite-Smith"
+    },
+    {
+      "id": "ref-tarot-rider-waite-smith-78-arcanos",
+      "dbId": 260,
+      "titulo": "Tarot Rider–Waite–Smith: Guía Completa de los 56 Arcanos Menores y 22 Arcanos Mayores",
+      "tituloAlternativo": "The Pictorial Key to the Tarot — Pamela Coleman Smith — Arcanos Menores y Arcanos Mayores — Bastos Copas Espadas Oros Pentáculos",
+      "archivo": "characters/tarot-rider-waite-smith-78-arcanos.md",
+      "tipo": "guia_referencia",
+      "formato": "md",
+      "autor": "Pamela Colman Smith & Arthur Edward Waite",
+      "idioma": "es",
+      "escuela": "TAROT_RIDER_WAITE_SMITH",
+      "categorias": [
+        "Tarot y Simbolismo",
+        "tarot",
+        "arcanos",
+        "simbolismo"
+      ],
+      "conceptosClave": [
+        "tarot",
+        "arcanos menores",
+        "arcanos mayores",
+        "56 arcanos menores",
+        "22 arcanos mayores",
+        "pamela colman smith",
+        "pamela coleman smith",
+        "arthur edward waite",
+        "rider-waite-smith",
+        "bastos",
+        "copas",
+        "espadas",
+        "oros",
+        "pentáculos",
+        "significados del tarot"
+      ],
+      "capitulos": [
+        {
+          "numero": 1,
+          "titulo": "El Tarot Rider–Waite–Smith (1909–1910)",
+          "paginas": "1-2"
+        },
+        {
+          "numero": 2,
+          "titulo": "Tabla Maestra de los 56 Arcanos Menores (2-3 palabras)",
+          "paginas": "3-5"
+        },
+        {
+          "numero": 3,
+          "titulo": "Estudio Iconográfico de los 56 Arcanos Menores",
+          "paginas": "6-12"
+        },
+        {
+          "numero": 4,
+          "titulo": "Los 22 Arcanos Mayores y su Relación con los Menores",
+          "paginas": "13-15"
+        }
+      ],
+      "embeddings": "ready",
+      "descripcionBreve": "Guía completa de las 78 cartas del Tarot Rider–Waite–Smith (56 Arcanos Menores en Bastos, Copas, Espadas y Oros/Pentáculos + 22 Arcanos Mayores), basada en la iconografía de Pamela Colman Smith (1909) y The Pictorial Key to the Tarot de A. E. Waite (1910).",
+      "tags": [
+        "tarot",
+        "rider-waite-smith",
+        "pamela colman smith",
+        "arcanos menores",
+        "arcanos mayores"
+      ]
+    },
+    {
+      "id": "lib-tarot-y-kabala-samael-aun-weor",
+      "dbId": 252,
+      "titulo": "Tarot y Kábala - Samael Aun Weor -",
+      "tituloAlternativo": "Tarot y Cábala — Arcanos Mayores y Arcanos Menores — Samael Aun Weor",
+      "archivo": "Tarot y Kábala - Samael Aun Weor -.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Samael Aun Weor",
+      "idioma": "es",
+      "escuela": "GNOSIS_CABALA",
+      "categorias": [
+        "Gnosis y Cábala",
+        "tarot",
+        "cabala",
+        "arcanos",
+        "simbolismo"
+      ],
+      "conceptosClave": [
+        "tarot",
+        "kábala",
+        "cabala",
+        "arcanos mayores",
+        "arcanos menores",
+        "sefirot",
+        "árbol de la vida",
+        "numerología",
+        "gnosis",
+        "samael aun weor",
+        "alquimia"
+      ],
+      "capitulos": [
+        {
+          "numero": 1,
+          "titulo": "Descripción Esotérica de los 22 Arcanos Mayores",
+          "paginas": "1-120"
+        },
+        {
+          "numero": 2,
+          "titulo": "Cábala, Sefirot y Arcanos Menores",
+          "paginas": "121-240"
+        }
+      ],
+      "embeddings": "ready",
+      "descripcionBreve": "Tratado esotérico de Samael Aun Weor que correlaciona los Arcanos Mayores y Menores del Tarot con la Cábala, el Árbol de la Vida, los Sefirot y la numerología hermética.",
+      "tags": [
+        "tarot",
+        "cabala",
+        "kabala",
+        "samael aun weor",
+        "arcanos mayores",
+        "arcanos menores"
+      ]
     }
   ],
   "pendientesPorAgregar": [
