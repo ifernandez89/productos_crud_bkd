@@ -23,6 +23,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   - Corregido bug en `flushText()` que descartaba todo el contenido anterior al primer encabezado detectado en PDFs o Markdown sin título inicial (había reducido la cobertura del libro oficial MINSAL MHT de 232 páginas al `9%` / 45 chunks). Tras el fix y la re-indexación, la cobertura subió a **`540/540` chunks (`100%`)**.
 - **Fix de Secuestro de Consultas en `JarvisKnowledgeService.handleListCommand()` (`src/jarvis/knowledge/jarvis-knowledge.service.ts`)**:
   - Eliminada la palabra suelta `que` de la regex de listados que secuestraba preguntas explicativas sobre plantas medicinales devolviendo la lista completa de 122 nombres; agregado alias `boticario` y tope de 6 fichas en `extractRelevantContext()` para proteger el presupuesto de tokens.
+- **Fotografías Botánicas Abiertas Optimizada a WEBP (47/47, 100% Cobertura Visual) (`scripts/fetch-patagonia-images.js`, `plantas_medicinales.json`)**:
+  - Descargadas y convertidas a `.webp` (`1200px`, calidad 80 vía `sharp`) las 47 fotografías botánicas reales con licencia abierta (iNaturalist CC / Wikimedia Commons / Wikipedia) para todas las nuevas especies patagónicas, con créditos en `public/imagenes/patagonia-credits.json`.
+  - Herbario sincronizado al `100%` visual (**122/122 plantas con imagen**, `0` faltantes) y build estático Next.js 15 validado (`530/530` páginas exportadas).
 - **Regresión y Validación (`src/jarvis/knowledge/jarvis-knowledge-herbario.spec.ts`)**:
   - Nuevo test automatizado que verifica la integridad del Herbario de `122` plantas, unicidad de slugs y recuperación contextual inmediata de especies y alias patagónicos (*paramela*, *toronjil cuyano*).
 
