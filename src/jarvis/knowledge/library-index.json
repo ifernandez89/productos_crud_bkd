@@ -4678,6 +4678,154 @@
         "arcanos mayores",
         "arcanos menores"
       ]
+    },
+    {
+      "id": "ref-herbario-plantas-medicinales-patagonia-56",
+      "dbId": 261,
+      "titulo": "Herbario de Plantas Medicinales de la Patagonia: Guía Completa de las 56 Especies",
+      "tituloAlternativo": "Plantas Medicinales de la Patagonia — Boticario Patagónico — 56 Especies (Calafate, Canelo, Paramela, Pañil, Maqui, Radal, Bailahuén, Palo Pichi, Ñancolahuén)",
+      "archivo": "herbario-plantas-medicinales-patagonia-56-especies.md",
+      "tipo": "guia_referencia",
+      "formato": "md",
+      "autor": "Herbario Oficial JarBees (SIB Parques Nacionales, CONICET & MINSAL MHT)",
+      "idioma": "es",
+      "escuela": "ETNOBOTANICA_PATAGONICA",
+      "categorias": [
+        "Plantas Medicinales",
+        "plantas medicinales",
+        "patagonia",
+        "etnobotánica",
+        "fitoterapia",
+        "herboristería"
+      ],
+      "conceptosClave": [
+        "plantas medicinales de la patagonia",
+        "patagonia",
+        "boticario",
+        "herbario",
+        "calafate",
+        "canelo",
+        "paramela",
+        "pañil",
+        "matico",
+        "maqui",
+        "maitén",
+        "radal",
+        "palo pichi",
+        "bailahuén",
+        "ñancolahuén",
+        "rosa mosqueta",
+        "jarilla",
+        "neneo",
+        "quinchamalí",
+        "quintral",
+        "notro",
+        "arrayán",
+        "tomillo silvestre",
+        "solupe",
+        "vira vira",
+        "canchalagua",
+        "natre"
+      ],
+      "capitulos": [
+        {
+          "numero": 1,
+          "titulo": "Flora Medicinal de la Patagonia — Panorama y Fuentes",
+          "paginas": "1-2"
+        },
+        {
+          "numero": 2,
+          "titulo": "Índice Maestro de las 47 Especies Incorporadas",
+          "paginas": "3-6"
+        },
+        {
+          "numero": 3,
+          "titulo": "Monografías Botánicas por Ecorregión Patagónica",
+          "paginas": "7-22"
+        },
+        {
+          "numero": 4,
+          "titulo": "Guía de Seguridad Fitoterapéutica y Contraindicaciones",
+          "paginas": "23-24"
+        }
+      ],
+      "embeddings": "ready",
+      "descripcionBreve": "Compendio botánico y etnobotánico de las 56 plantas medicinales de la Patagonia (Bosque Andino-Patagónico, Estepa Patagónica y especies naturalizadas), respaldado en MINSAL MHT, SIB Parques Nacionales y CONICET.",
+      "tags": [
+        "patagonia",
+        "plantas medicinales",
+        "boticario",
+        "herbario",
+        "fitoterapia",
+        "etnobotanica"
+      ]
+    },
+    {
+      "id": "lib-minsal-mht-103-especies-vegetales",
+      "dbId": 262,
+      "titulo": "Medicamentos Herbarios Tradicionales (MHT): 103 Especies Vegetales — MINSAL Chile",
+      "tituloAlternativo": "Libro MHT 2010 — Plantas Medicinales de Chile y Patagonia — Ministerio de Salud (103 Monografías Oficiales)",
+      "archivo": "MINSAL-Medicamentos-Herbarios-Tradicionales-103-Especies.pdf",
+      "tipo": "libro",
+      "formato": "pdf",
+      "autor": "Ministerio de Salud de Chile (MINSAL)",
+      "idioma": "es",
+      "escuela": "FITOTERAPIA_OFICIAL_MHT",
+      "categorias": [
+        "Plantas Medicinales",
+        "plantas medicinales",
+        "fitoterapia",
+        "herboristería",
+        "patagonia",
+        "medicina natural"
+      ],
+      "conceptosClave": [
+        "medicamentos herbarios tradicionales",
+        "mht",
+        "minsal",
+        "plantas medicinales",
+        "patagonia",
+        "monografías",
+        "bailahuén",
+        "canelo",
+        "canchalagua",
+        "maitén",
+        "maqui",
+        "matico",
+        "pañil",
+        "natre",
+        "palo pichi",
+        "quinchamalí",
+        "quintral",
+        "radal",
+        "rosa mosqueta",
+        "sanguinaria",
+        "valeriana",
+        "vira vira",
+        "yerba buena"
+      ],
+      "capitulos": [
+        {
+          "numero": 1,
+          "titulo": "Marco Normativo y Preparación de Medicamentos Herbarios",
+          "paginas": "1-15"
+        },
+        {
+          "numero": 2,
+          "titulo": "103 Monografías Oficiales de Especies Vegetales",
+          "paginas": "16-230"
+        }
+      ],
+      "embeddings": "ready",
+      "descripcionBreve": "Publicación oficial del Ministerio de Salud de Chile (Resolución Exenta N° 548) con 103 monografías oficiales de plantas medicinales andino-patagónicas: botánica, usos tradicionales validados, preparación y precauciones.",
+      "tags": [
+        "minsal",
+        "mht",
+        "plantas medicinales",
+        "fitoterapia",
+        "patagonia",
+        "monografias"
+      ]
     }
   ],
   "pendientesPorAgregar": [

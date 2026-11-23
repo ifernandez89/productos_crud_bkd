@@ -6,6 +6,26 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 
 
+### Ampliación Patagónica del Boticario (75 → 122 Plantas sin Duplicados), MINSAL MHT Oficial (103 Especies) & Fix de Cobertura en Parser PDF (2026-11-23)
+
+> **Estado:** ✅ Completado, auditado sin duplicados taxonómicos, verificado con tests Jest (`--runInBand`), `nest build` exit=0 y consulta RAG en vivo.
+> **Documentación Técnica:** [`docs/BOTICARIO_AMPLIACION_PATAGONIA.md`](docs/BOTICARIO_AMPLIACION_PATAGONIA.md).
+> **Boticario Sincronizado:** `G:\Projects2\PlantasMedicinales\content\plantas` → `src/jarvis/knowledge/plantas_medicinales.json` (**75 → 122 especies únicas**; 47 nuevas fichas patagónicas + 9 preexistentes preservadas sin duplicar, enriqueciendo alias en `marrubio.md` y `vara-de-oro.md`).
+> **Nuevas Obras Vectorizadas en PostgreSQL (`bge-m3`):**
+> - `docId=261`: *Herbario de Plantas Medicinales de la Patagonia: Guía Completa de las 56 Especies* (`75/75` chunks, `100%` embeddings).
+> - `docId=262`: *Medicamentos Herbarios Tradicionales (MHT): 103 Especies Vegetales — MINSAL Chile* (`540/540` chunks, `100%` embeddings, 232 páginas oficiales de acceso público).
+
+- **Ampliación Botánica Patagónica Libre de Duplicados (`scripts/expand-patagonia-boticario.ts`, `scripts/ingest-patagonia-herbarium.ts`)**:
+  - Auditoría automática por **slug** y **binomio científico** contra las 75 plantas existentes del Boticario, evitando duplicar 9 especies ya presentes (incluidos *Marrubio* como *Toronjil cuyano* y *Vara de Oro* como *Vara amarilla*, a los que se agregaron sus alias regionales).
+  - Generación de 47 fichas YAML/Markdown completas (Bosque Andino-Patagónico, Estepa Patagónica, Transición y especies naturalizadas) respaldadas en **MINSAL Chile MHT**, **SIB Parques Nacionales**, **CONICET/INIBIOMA/CENPAT** y **Herbotecnia**, con advertencias explícitas de seguridad/toxicidad (Duraznillo, Jarilla, Charcao, Poleo, Hipérico, Solupe, Natre, Ajenjo).
+  - Registro de ambas obras con `dbId` directo en `src/jarvis/knowledge/library-index.json` (`152` obras totales) y sembrado de entidades y relaciones en el Knowledge Graph.
+- **Corrección Crítica en `HierarchicalParserService` (`src/jarvis/library/hierarchical-parser.service.ts`)**:
+  - Corregido bug en `flushText()` que descartaba todo el contenido anterior al primer encabezado detectado en PDFs o Markdown sin título inicial (había reducido la cobertura del libro oficial MINSAL MHT de 232 páginas al `9%` / 45 chunks). Tras el fix y la re-indexación, la cobertura subió a **`540/540` chunks (`100%`)**.
+- **Fix de Secuestro de Consultas en `JarvisKnowledgeService.handleListCommand()` (`src/jarvis/knowledge/jarvis-knowledge.service.ts`)**:
+  - Eliminada la palabra suelta `que` de la regex de listados que secuestraba preguntas explicativas sobre plantas medicinales devolviendo la lista completa de 122 nombres; agregado alias `boticario` y tope de 6 fichas en `extractRelevantContext()` para proteger el presupuesto de tokens.
+- **Regresión y Validación (`src/jarvis/knowledge/jarvis-knowledge-herbario.spec.ts`)**:
+  - Nuevo test automatizado que verifica la integridad del Herbario de `122` plantas, unicidad de slugs y recuperación contextual inmediata de especies y alias patagónicos (*paramela*, *toronjil cuyano*).
+
 ### RAG Multi-Bibliografía (Tarot), Guía Completa Rider–Waite–Smith (78 Arcanos) & Corrección de Fallos Críticos de Recuperación (2026-11-22)
 
 > **Estado:** ✅ Corregido, verificado con `5/5` suites Jest (`81/81` tests PASS `--runInBand`), `138/138` pruebas JCA-001 PASS, `nest build` exit=0 y pruebas E2E en vivo (`qwen3:8b` + `bge-m3`).

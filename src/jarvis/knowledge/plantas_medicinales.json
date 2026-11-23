@@ -3,8 +3,8 @@
     "nombre": "Herbario Oficial JarBees — Plantas Medicinales",
     "version": 4,
     "fuenteRepositorio": "G:\\Projects2\\PlantasMedicinales",
-    "actualizadoEn": "2026-11-22T15:10:57.344Z",
-    "totalPlantas": 75,
+    "actualizadoEn": "2026-11-23T18:17:29.323Z",
+    "totalPlantas": 122,
     "nota": "Sincronizado automáticamente desde G:\\Projects2\\PlantasMedicinales\\content\\plantas."
   },
   "plantas": [
@@ -108,6 +108,71 @@
         "/imagenes/ajenjo_dulce.webp"
       ],
       "descripcion": "Descripción\n\nPlanta herbácea conocida por sus propiedades medicinales amargas, utilizada ampliamente para combatir afecciones parasitarias y estimular el sistema digestivo.\n\nUsos tradicionales\n\n- Parásitos\n- Malaria\n- Inapetencia\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Ajenjo",
+      "slug": "ajenjo",
+      "nombreCientifico": "Artemisia absinthium L.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Ajenjo común",
+        "Ajenjo mayor",
+        "Hierba santa",
+        "Absenta"
+      ],
+      "origen": "Europa y Asia templada (naturalizada en Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia)",
+        "Chile",
+        "Europa",
+        "América"
+      ],
+      "habitat": "Bordes de caminos, baldíos, huertas y suelos secos soleados de la Patagonia",
+      "acciones": [
+        "Digestiva",
+        "Tónica amarga",
+        "Antiparasitaria",
+        "Carminativa",
+        "Colerética"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Hepático"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Falta de apetito",
+        "Parásitos intestinales",
+        "Gases",
+        "Digestión lenta"
+      ],
+      "principiosActivos": [
+        "Absintina",
+        "Aceites esenciales (tuyona, felandreno)",
+        "Flavonoides",
+        "Lactonas sesquiterpénicas"
+      ],
+      "usosEtnobotanicos": [
+        "Tónico amargo clásico de la herbolaria rural patagónica",
+        "Repelente natural de insectos en jardines y huertas"
+      ],
+      "precauciones": [
+        "Usar en dosis bajas y por períodos cortos (máximo 1 a 2 semanas)",
+        "No consumir aceite esencial puro por vía interna"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Epilepsia",
+        "Úlcera gastroduodenal activa"
+      ],
+      "toxicidad": "El exceso o uso prolongado puede resultar neurotóxico debido a la tuyona",
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "subarbusto perenne aromático plateado",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nSubarbusto perenne muy aromático de hojas verde-plateadas sedosas y profundamente divididas, con sabor intensamente amargo. A diferencia del ajenjo dulce (Artemisia annua), es el clásico ajenjo amargo tónico-digestivo ampliamente aclimatado en la Patagonia.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Bordes de caminos, baldíos, huertas y suelos secos soleados de la Patagonia\n- **Principios activos clave:** Absintina, Aceites esenciales (tuyona, felandreno), Flavonoides, Lactonas sesquiterpénicas\n\nUsos tradicionales\n\n- Indigestión\n- Falta de apetito\n- Parásitos intestinales\n- Gases\n- Digestión lenta\n\nFormas de uso\n\nInfusión suave de 1 cucharadita rasa de hojas secas en 250 ml de agua hirviendo, reposar 5 minutos; tomar antes o después de las comidas por ciclos breves.\n\nSeguridad y precauciones\n\n- Usar en dosis baj..."
     },
     {
       "nombre": "Ajo",
@@ -216,6 +281,129 @@
         "/imagenes/alcanfor.webp"
       ],
       "descripcion": "Descripción\n\nÁrbol cuyo compuesto volátil principal, el alcanfor, es altamente valorado en aplicaciones tópicas analgésicas, refrescantes y antiespasmódicas.\n\nUsos tradicionales\n\n- Espasmos musculares\n- Dolor articular\n- Micosis cutáneas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Alfilerecillo",
+      "slug": "alfilerecillo",
+      "nombreCientifico": "Erodium cicutarium (L.) L'Hér.",
+      "familia": "Geraniaceae",
+      "otrosNombres": [
+        "Alfilerillo",
+        "Peludilla",
+        "Relojito",
+        "Aguja de pastor"
+      ],
+      "origen": "Región mediterránea (ampliamente naturalizada en la estepa patagónica)",
+      "distribucion": [
+        "Argentina (Patagonia y centro)",
+        "Chile",
+        "Europa",
+        "América"
+      ],
+      "habitat": "Suelos arenosos, estepa arbustiva, praderas perturbadas y banquinas",
+      "acciones": [
+        "Astringente",
+        "Hemostática",
+        "Diurética",
+        "Antiinflamatoria",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Renal",
+        "Reproductor Femenino",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Sangrado menstrual abundante",
+        "Retención de líquidos",
+        "Afecciones renales leves",
+        "Heridas superficiales",
+        "Diarrea leve"
+      ],
+      "principiosActivos": [
+        "Taninos",
+        "Flavonoides",
+        "Ácido gálico",
+        "Saponinas",
+        "Vitamina K"
+      ],
+      "usosEtnobotanicos": [
+        "Forrajera temprana en la estepa patagónica",
+        "Empleada popularmente en lavados cicatrizantes y tisanas depurativas"
+      ],
+      "precauciones": [
+        "Consultar profesional ante hemorragias persistentes o anemia"
+      ],
+      "contraindicaciones": [
+        "Embarazo (evitar uso interno sin indicación médica)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a enero",
+      "epocaFructificacion": "octubre a febrero",
+      "tipoCiclo": "hierba anual o bienal rastrera",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba pequeña de hojas pinnadas en roseta basal, flores rosado-violáceas delicadas y frutos alargados en forma de aguja o alfiler que se enroscan en espiral al secarse.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Suelos arenosos, estepa arbustiva, praderas perturbadas y banquinas\n- **Principios activos clave:** Taninos, Flavonoides, Ácido gálico, Saponinas, Vitamina K\n\nUsos tradicionales\n\n- Sangrado menstrual abundante\n- Retención de líquidos\n- Afecciones renales leves\n- Heridas superficiales\n- Diarrea leve\n\nFormas de uso\n\nInfusión de la planta aérea seca (1 cucharada por taza) hasta 2 veces al día, o decocción más concentrada para lavados externos en heridas.\n\nSeguridad y precauciones\n\n- Consultar profesional ante hemorragias persistentes o anemia\n- Contraindicación: Embarazo (evitar uso interno sin indicación ..."
+    },
+    {
+      "nombre": "Aljaba",
+      "slug": "aljaba",
+      "nombreCientifico": "Fuchsia magellanica Lam.",
+      "familia": "Onagraceae",
+      "otrosNombres": [
+        "Chilco",
+        "Aljaba silvestre",
+        "Palo blanco",
+        "Fucsia patagónica"
+      ],
+      "origen": "Bosques templados australes de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia andina)",
+        "Chile (centro-sur y austral)"
+      ],
+      "habitat": "Sotobosque húmedo, márgenes de arroyos, lagos y quebradas sombreadas",
+      "acciones": [
+        "Diurética",
+        "Febrífuga",
+        "Emenagoga",
+        "Refrescante",
+        "Antiinflamatoria"
+      ],
+      "sistemas": [
+        "Renal",
+        "Reproductor Femenino",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Retención de líquidos",
+        "Desórdenes menstruales leves",
+        "Cistitis leve"
+      ],
+      "principiosActivos": [
+        "Antocianinas",
+        "Flavonoides (quercetina, kaempferol)",
+        "Taninos",
+        "Ácidos fenólicos"
+      ],
+      "usosEtnobotanicos": [
+        "Planta emblemática del bosque valdiviano y patagónico",
+        "Sus bayas negras (chilcos) son comestibles en la tradición mapuche",
+        "Usada para bajar la fiebre y regular el ciclo"
+      ],
+      "precauciones": [
+        "No exceder las dosis tradicionales en personas con hipotensión"
+      ],
+      "contraindicaciones": [
+        "Embarazo (por su uso tradicional emenagogo)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a abril",
+      "epocaFructificacion": "enero a mayo",
+      "tipoCiclo": "arbusto nativo caducifolio a semicaducifolio",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo emblemático de los bosques húmedos andino-patagónicos, famoso por sus flores colgantes bicolores de cáliz rojo intenso y corola violácea. Polinizado principalmente por el picaflor rubí.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Sotobosque húmedo, márgenes de arroyos, lagos y quebradas sombreadas\n- **Principios activos clave:** Antocianinas, Flavonoides (quercetina, kaempferol), Taninos, Ácidos fenólicos\n\nUsos tradicionales\n\n- Fiebre\n- Retención de líquidos\n- Desórdenes menstruales leves\n- Cistitis leve\n\nFormas de uso\n\nInfusión de flores y hojas tiernas (1 cucharada por taza de agua hirviendo), 1 a 2 tazas diarias; decocción suave de corteza en usos tradicionales febrífugos.\n\nSeguridad y precauciones\n\n- No exceder las dosis tradicionales en personas con hipotensión\n- Contraindicación: Embarazo (por su uso tradic..."
     },
     {
       "nombre": "Altamisa",
@@ -387,6 +575,67 @@
       "descripcion": "Descripción\n\nExcelente remedio para afecciones respiratorias y pulmonares.\n\nBotánica oculta y mitología\n\nConsiderado un árbol sagrado y un regalo directo de Tijuinem. Su nombre chaná significa 'el que da regalos'.\n\nUsos tradicionales\n\n- Problemas respiratorios\n- Afecciones pulmonares\n- Tos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Arrayán",
+      "slug": "arrayan",
+      "nombreCientifico": "Luma apiculata (DC.) Burret",
+      "familia": "Myrtaceae",
+      "otrosNombres": [
+        "Quetri",
+        "Temu",
+        "Palo colorado",
+        "Arrayán patagónico"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (Valparaíso a Aysén)"
+      ],
+      "habitat": "Riberas de lagos y ríos, bosques húmedos valdivianos y andinos",
+      "acciones": [
+        "Astringente",
+        "Antiséptica",
+        "Balsámica",
+        "Cicatrizante",
+        "Antidiarreica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Diarrea",
+        "Heridas y úlceras cutáneas",
+        "Gingivitis",
+        "Afecciones respiratorias leves",
+        "Inflamación de encías"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (alfa-pineno, cineol, limoneno)",
+        "Taninos",
+        "Flavonoides",
+        "Triterpenos"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol sagrado y medicinal del pueblo mapuche (quetri)",
+        "Frutos morados comestibles usados para dulces y bebidas fermentadas",
+        "Hojas aromáticas usadas en gárgaras y baños"
+      ],
+      "precauciones": [
+        "Recolectar hojas sin dañar la corteza viva del árbol (especie protegida en parques nacionales)"
+      ],
+      "contraindicaciones": [
+        "Estreñimiento crónico severo (por su alta astringencia)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a mayo",
+      "tipoCiclo": "árbol o arbusto perennifolio nativo de corteza canela",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol nativo inconfundible por su corteza lisa color canela-anaranjado con manchas blanquecinas y fría al tacto. Posee hojas aromáticas verde oscuro terminadas en punta aguda (apiculadas) y abundantes flores blancas estivales.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Riberas de lagos y ríos, bosques húmedos valdivianos y andinos\n- **Principios activos clave:** Aceites esenciales (alfa-pineno, cineol, limoneno), Taninos, Flavonoides, Triterpenos\n\nUsos tradicionales\n\n- Diarrea\n- Heridas y úlceras cutáneas\n- Gingivitis\n- Afecciones respiratorias leves\n- Inflamación de encías\n\nFormas de uso\n\nInfusión de 1 cucharadita de hojas por taza para afecciones digestivas leves; decocción concentrada en buches, gárgaras o compresas sobre heridas.\n\nSeguridad y precauciones\n\n- Recolectar hojas sin dañar la corteza viva del árbol (especie pro..."
+    },
+    {
       "nombre": "Artemisa Annua",
       "slug": "artemisa-annua",
       "nombreCientifico": "Artemisia annua",
@@ -493,6 +742,68 @@
       "descripcion": "Descripción\n\nPlanta tradicionalmente ligada a la salud femenina por su capacidad de estimular y regular el flujo menstrual, además de aliviar espasmos estomacales.\n\nUsos tradicionales\n\n- Amenorrea\n- Reguladora del ciclo menstrual\n- Cólicos digestivos\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Bailahuén",
+      "slug": "bailahuen",
+      "nombreCientifico": "Haplopappus baylahuen J. Rémy",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Baylahuén",
+        "Vailahuén",
+        "Chejchra"
+      ],
+      "origen": "Cordillera de los Andes (Argentina y Chile)",
+      "distribucion": [
+        "Argentina (cordillera andina y patagónica)",
+        "Chile (cordillera norte a sur)"
+      ],
+      "habitat": "Laderas rocosas de alta montaña y estepa cordillerana árida",
+      "acciones": [
+        "Hepatoprotectora",
+        "Digestiva",
+        "Antiséptica",
+        "Colerética",
+        "Expectorante"
+      ],
+      "sistemas": [
+        "Hepático",
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Cólicos abdominales",
+        "Digestión difícil",
+        "Trastornos hepáticos leves",
+        "Resfríos",
+        "Heridas superficiales"
+      ],
+      "principiosActivos": [
+        "Flavonoides",
+        "Cumarinas",
+        "Resinas diterpénicas",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Una de las plantas andinas más prestigiosas para el hígado y el estómago",
+        "Incluida en el registro oficial MHT del MINSAL de Chile",
+        "Usada en compresas antisépticas sobre úlceras cutáneas"
+      ],
+      "precauciones": [
+        "En cálculos biliares obstructivos consultar previamente al médico"
+      ],
+      "contraindicaciones": [
+        "Obstrucción de vías biliares",
+        "Embarazo y lactancia (por falta de estudios de seguridad)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a marzo",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "arbusto perenne resinoso aromático",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto bajo y muy resinoso de hojas coriáceas verde brillante y capítulos florales amarillo intenso. Reconocido oficialmente por el MINSAL por su potente acción digestiva, hepatoprotectora y antiséptica externa.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Laderas rocosas de alta montaña y estepa cordillerana árida\n- **Principios activos clave:** Flavonoides, Cumarinas, Resinas diterpénicas, Aceites esenciales\n\nUsos tradicionales\n\n- Cólicos abdominales\n- Digestión difícil\n- Trastornos hepáticos leves\n- Resfríos\n- Heridas superficiales\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas en 1 litro de agua recién hervida (beber 1 taza hasta 3 veces al día). En uso externo, la misma infusión tibia para lavar heridas.\n\nSeguridad y precauciones\n\n- En cálculos biliares obstructivos consultar previamente al médico\n- Contraindicación:..."
+    },
+    {
       "nombre": "Caa Piquí",
       "slug": "caa-piqui",
       "nombreCientifico": "Stella media",
@@ -551,6 +862,128 @@
         "/imagenes/caa_piqui.webp"
       ],
       "descripcion": "Descripción\n\nLa Caa Piquí (o capiquí) es una herbácea rastrera comestible muy común en jardines y huertas. A pesar de ser considerada maleza, es nutritiva y tiene propiedades medicinales suaves, ideal para uso en crudo o en infusión.\n\nUsos tradicionales\n\n- Demulcente para irritaciones de piel y mucosas\n- Diurética para retención de líquidos\n- Expectorante para tos y congestión respiratoria\n- Remineralizante por su contenido en calcio y vitamina C\n\nFormas de uso\n\nPlanta entera en crudo (ensaladas), infusión, cataplasma para uso externo.\n\nReferencias\n\n- Fuente: Herbario 7"
+    },
+    {
+      "nombre": "Cadillo",
+      "slug": "cadillo",
+      "nombreCientifico": "Acaena magellanica (Lam.) Vahl",
+      "familia": "Rosaceae",
+      "otrosNombres": [
+        "Abrojo patagónico",
+        "Cadillo de la Patagonia",
+        "Cepacaballo de cordillera",
+        "Pimpinela silvestre"
+      ],
+      "origen": "Región subantártica y Patagonia (Argentina y Chile)",
+      "distribucion": [
+        "Argentina (Patagonia y Tierra del Fuego)",
+        "Chile",
+        "Islas subantárticas"
+      ],
+      "habitat": "Mallines, vegas húmedas, bordes de arroyos y claros de bosque",
+      "acciones": [
+        "Cicatrizante",
+        "Astringente",
+        "Antiinflamatoria",
+        "Antiséptica",
+        "Diurética"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Digestivo",
+        "Renal"
+      ],
+      "afecciones": [
+        "Heridas y cortes",
+        "Irritaciones cutáneas",
+        "Diarrea leve",
+        "Afecciones urinarias leves"
+      ],
+      "principiosActivos": [
+        "Taninos",
+        "Flavonoides",
+        "Ácidos fenólicos",
+        "Saponinas triterpénicas"
+      ],
+      "usosEtnobotanicos": [
+        "Conocida por sus cabezuelas globosas con espinas ganchudas que se adhieren al pelaje y la ropa",
+        "Usada en la medicina tradicional patagónica en lavados de heridas y tisanas depurativas"
+      ],
+      "precauciones": [
+        "No confundir con Amor Seco tropical (Desmodium adscendens) ni con Cepa Caballo (Xanthium spinosum)"
+      ],
+      "contraindicaciones": [
+        "Embarazo (uso interno prolongado no evaluado)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a febrero",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "hierba perenne rastrera estolonífera",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne rastrera de hojas pinnadas verde-azuladas y cabezuelas globosas rojizas cubiertas de diminutas espinas con ganchos (gloquidios). Muy común en mallines y claros húmedos de toda la Patagonia.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Mallines, vegas húmedas, bordes de arroyos y claros de bosque\n- **Principios activos clave:** Taninos, Flavonoides, Ácidos fenólicos, Saponinas triterpénicas\n\nUsos tradicionales\n\n- Heridas y cortes\n- Irritaciones cutáneas\n- Diarrea leve\n- Afecciones urinarias leves\n\nFormas de uso\n\nDecocción suave de hojas y tallos para lavados o compresas cicatrizantes; infusión ligera en uso interno tradicional astringente.\n\nSeguridad y precauciones\n\n- No confundir con Amor Seco tropical (Desmodium adscendens) ni con Cepa Caballo (Xanthium spinosum)\n- Contraindicación: Embarazo (uso interno prol..."
+    },
+    {
+      "nombre": "Calafate",
+      "slug": "calafate",
+      "nombreCientifico": "Berberis microphylla G. Forst.",
+      "familia": "Berberidaceae",
+      "otrosNombres": [
+        "Michay",
+        "Calafate patagónico",
+        "Berberis buxifolia"
+      ],
+      "origen": "Patagonia argentina y chilena",
+      "distribucion": [
+        "Argentina (Neuquén a Tierra del Fuego)",
+        "Chile (regiones del sur y austral)"
+      ],
+      "habitat": "Estepa arbustiva, ecotono bosque-estepa, bordes de bosques de ñire y lenga",
+      "acciones": [
+        "Antioxidante",
+        "Antimicrobiana",
+        "Febrífuga",
+        "Digestiva",
+        "Astringente"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Cardiovascular",
+        "Metabólico"
+      ],
+      "afecciones": [
+        "Estrés oxidativo",
+        "Fiebre",
+        "Diarrea leve",
+        "Infecciones bacterianas leves",
+        "Inflamación"
+      ],
+      "principiosActivos": [
+        "Berberina (alcaloide en raíz y corteza)",
+        "Antocianinas (delfinidina, malvidina en frutos)",
+        "Polifenoles",
+        "Vitamina C"
+      ],
+      "usosEtnobotanicos": [
+        "Fruto sagrado y alimento ancestral tehuelche y mapuche",
+        "Leyenda patagónica: quien come calafate siempre regresa a la Patagonia",
+        "Raíz y corteza usadas como tinte amarillo natural y remedio febrífugo"
+      ],
+      "precauciones": [
+        "Distinguir el uso alimentario del fruto (muy seguro y antioxidante) del uso medicinal de raíz/corteza rica en berberina (dosis moderadas)"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (especialmente preparaciones con raíz o corteza por contenido de berberina)",
+        "Interacción potencial de berberina con hipoglucemiantes o anticoagulantes"
+      ],
+      "toxicidad": "Frutos completamente comestibles; raíz y corteza en dosis elevadas pueden resultar irritantes o uterotónicas por la berberina",
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto espinoso perennifolio nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto espinoso emblemático de la Patagonia con flores amarillas intensas en primavera y bayas azul-violáceas oscuras en verano, consideradas entre las frutas con mayor capacidad antioxidante del mundo. Su corteza interna amarilla contiene berberina.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Estepa arbustiva, ecotono bosque-estepa, bordes de bosques de ñire y lenga\n- **Principios activos clave:** Berberina (alcaloide en raíz y corteza), Antocianinas (delfinidina, malvidina en frutos), Polifenoles, Vitamina C\n\nUsos tradicionales\n\n- Estrés oxidativo\n- Fiebre\n- Diarrea leve\n- Infecciones bacterianas leves\n- Inflamación\n\nFormas de uso\n\nConsumo directo de frutos frescos, secos o en infusión antioxidante; decocción breve de corteza/raíz en uso etnobotánico puntual y moderado.\n\nSeguridad y precauciones\n\n- Distinguir el uso alim..."
     },
     {
       "nombre": "Caléndula",
@@ -627,6 +1060,135 @@
         "/imagenes/calendula.webp"
       ],
       "descripcion": "Descripción\n\nLa caléndula es una planta de flores anaranjadas intensas, ampliamente utilizada en la medicina natural para el cuidado de la piel. Sus propiedades cicatrizantes, antiinflamatorias y antimicrobianas la hacen ideal para uso tópico.\n\nUsos tradicionales\n\n- Eccemas, dermatitis y picaduras\n- Heridas, quemaduras y úlceras\n- Infecciones cutáneas y acné\n- Hongos en piel\n- Gastritis y úlcera gástrica\n\nFormas de uso\n\nCremas, pomadas, aceite macerado, infusión para compresas, tintura.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Canchalagua",
+      "slug": "canchalagua",
+      "nombreCientifico": "Centaurium cachanlahuen (Molina) B.L. Rob.",
+      "familia": "Gentianaceae",
+      "otrosNombres": [
+        "Cachanlahuen",
+        "Cachanlagua",
+        "Hierba de la fiebre"
+      ],
+      "origen": "Sur de Sudamérica (Argentina y Chile)",
+      "distribucion": [
+        "Argentina (Patagonia y centro)",
+        "Chile",
+        "Perú"
+      ],
+      "habitat": "Praderas húmedas, claros herbáceos y suelos frescos soleados",
+      "acciones": [
+        "Depurativa",
+        "Febrífuga",
+        "Digestiva",
+        "Tónica amarga",
+        "Hipotensora suave"
+      ],
+      "sistemas": [
+        "Hepático",
+        "Digestivo",
+        "Circulatorio",
+        "Inmunológico"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Digestión lenta",
+        "Falta de apetito",
+        "Afecciones cutáneas por depuración",
+        "Hipertensión leve (coadyuvante)"
+      ],
+      "principiosActivos": [
+        "Glucósidos secoiridoides amargos (swerciamarina, genciopicrósido)",
+        "Xantonas",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Hierba medicinal mapuche célebre desde la época colonial (cachanlahuen = hierba para el dolor de costado)",
+        "Monografía oficial en MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Monitorear presión arterial si se combina con antihipertensivos"
+      ],
+      "contraindicaciones": [
+        "Úlcera péptica activa",
+        "Hipotensión severa",
+        "Embarazo"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a febrero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "hierba anual nativa de sabor amargo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nPequeña hierba nativa de tallos delgados cuadrangulares y delicadas flores rosadas en forma de estrella. De intenso sabor amargo, es una de las plantas depurativas y febrífugas más documentadas de la medicina andino-patagónica.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Praderas húmedas, claros herbáceos y suelos frescos soleados\n- **Principios activos clave:** Glucósidos secoiridoides amargos (swerciamarina, genciopicrósido), Xantonas, Flavonoides\n\nUsos tradicionales\n\n- Fiebre\n- Digestión lenta\n- Falta de apetito\n- Afecciones cutáneas por depuración\n- Hipertensión leve (coadyuvante)\n\nFormas de uso\n\nInfusión de 1 cucharada de la planta seca en 1 litro de agua hirviendo; beber 1 taza 2 a 3 veces al día.\n\nSeguridad y precauciones\n\n- Monitorear presión arterial si se combina con antihipertensivos\n- Contraindicación: Úlcera pé..."
+    },
+    {
+      "nombre": "Canelo",
+      "slug": "canelo",
+      "nombreCientifico": "Drimys winteri J.R. Forst. & G. Forst.",
+      "familia": "Winteraceae",
+      "otrosNombres": [
+        "Foye",
+        "Boighe",
+        "Canelo magallánico",
+        "Corteza de Winter"
+      ],
+      "origen": "Bosques templados lluviosos de Patagonia y sur de Chile",
+      "distribucion": [
+        "Argentina (Patagonia andina y Tierra del Fuego)",
+        "Chile (Coquimbo a Cabo de Hornos)"
+      ],
+      "habitat": "Bosques húmedos, pantanosos, quebradas y riberas de lagos y ríos",
+      "acciones": [
+        "Antiséptica",
+        "Antiinflamatoria",
+        "Antiescorbútica",
+        "Cicatrizante",
+        "Analgésica",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Respiratorio",
+        "Digestivo",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Heridas infectadas",
+        "Dolores reumáticos",
+        "Tos y catarro",
+        "Dolor de muelas",
+        "Afecciones de la piel",
+        "Indigestión"
+      ],
+      "principiosActivos": [
+        "Poligodial (sesquiterpeno bioactivo)",
+        "Drimenol",
+        "Vitamina C",
+        "Taninos",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol sagrado (Foye) del pueblo mapuche, símbolo de paz, justicia y sanación en el rewe",
+        "Históricamente empleado por marinos del estrecho de Magallanes contra el escorbuto por su alto contenido de vitamina C"
+      ],
+      "precauciones": [
+        "No usar en dosis concentradas por vía interna de forma prolongada",
+        "Proteger la corteza viva al recolectar (preferir hojas caídas o podas sustentables)"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Tratamiento anticoagulante (precaución)"
+      ],
+      "toxicidad": "Dosis muy altas de corteza pueden resultar irritantes gastrointestinales",
+      "epocaFloracion": "octubre a enero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "árbol perennifolio nativo sagrado",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol siempreverde majestuoso de hojas grandes brillantes por el haz y blanquecinas por el envés, con flores blancas aromáticas. Árbol sagrado del pueblo mapuche (Foye), reconocido por su acción antiséptica, antiinflamatoria y rica en vitamina C.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bosques húmedos, pantanosos, quebradas y riberas de lagos y ríos\n- **Principios activos clave:** Poligodial (sesquiterpeno bioactivo), Drimenol, Vitamina C, Taninos, Aceites esenciales\n\nUsos tradicionales\n\n- Heridas infectadas\n- Dolores reumáticos\n- Tos y catarro\n- Dolor de muelas\n- Afecciones de la piel\n- Indigestión\n\nFormas de uso\n\nInfusión suave de 1 cucharadita de hojas o corteza desmenuzada por taza (máximo 2 tazas/día); decocción más concentrada para baños reumáticos, lavados de heridas y gárgaras.\n\nSeguridad y precauciones\n\n- No usar e..."
     },
     {
       "nombre": "Cannabis Medicinal",
@@ -1044,6 +1606,70 @@
       "descripcion": "Descripción\n\nEl ceibo es la flor nacional de Argentina y Uruguay. Además de su belleza ornamental y su valor simbólico, la corteza y las flores tienen uso medicinal en la tradición guaraní y rioplatense.\n\nUsos tradicionales\n\n- Tos y bronquitis\n- Heridas, úlceras y afecciones de piel\n- Diarrea y gastritis\n- Ansiedad e insomnio\n\nPrecauciones\n\nLas semillas contienen alcaloides que pueden ser tóxicos. Solo usar corteza y flores bajo indicación.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Cepa Caballo",
+      "slug": "cepa-caballo",
+      "nombreCientifico": "Xanthium spinosum L.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Abrojo chico",
+        "Clonqui",
+        "Espina de perro",
+        "Cepa de caballo"
+      ],
+      "origen": "Sudamérica (nativa del Cono Sur, hoy cosmopolita)",
+      "distribucion": [
+        "Argentina (todo el país incluida Patagonia)",
+        "Chile",
+        "Uruguay",
+        "América"
+      ],
+      "habitat": "Terrenos modificados, corrales, caminos rurales y estepa perturbada",
+      "acciones": [
+        "Diurética",
+        "Depurativa",
+        "Antiinflamatoria",
+        "Hepatoprotectora tradicional",
+        "Antiséptica urinaria"
+      ],
+      "sistemas": [
+        "Renal",
+        "Hepático",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Infecciones urinarias leves",
+        "Cálculos renales (coadyuvante)",
+        "Congestión hepática leve"
+      ],
+      "principiosActivos": [
+        "Xantatinas (lactonas sesquiterpénicas)",
+        "Flavonoides",
+        "Saponinas",
+        "Fitosteroles"
+      ],
+      "usosEtnobotanicos": [
+        "Muy difundida en la medicina criolla argentina y chilena para afecciones renales y prostáticas leves",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Usar solo las partes aéreas (hojas y tallos), evitando ingerir semillas o plántulas tiernas",
+        "No exceder ciclos de 2 semanas sin control"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Insuficiencia renal o hepática grave"
+      ],
+      "toxicidad": "Las semillas y cotiledones contienen carboxiatractilósido (tóxico en altas cantidades); emplear únicamente follaje maduro en infusión moderada",
+      "epocaFloracion": "diciembre a abril",
+      "epocaFructificacion": "febrero a mayo",
+      "tipoCiclo": "hierba anual espinosa",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba ramificada de hasta 80 cm con características espinas amarillas trífidas en la base de cada hoja y frutos ovoides cubiertos de ganchos. Tradicionalmente valorada como diurética y depurativa renal.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Terrenos modificados, corrales, caminos rurales y estepa perturbada\n- **Principios activos clave:** Xantatinas (lactonas sesquiterpénicas), Flavonoides, Saponinas, Fitosteroles\n\nUsos tradicionales\n\n- Retención de líquidos\n- Infecciones urinarias leves\n- Cálculos renales (coadyuvante)\n- Congestión hepática leve\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas y tallos secos en 1 litro de agua hirviendo; beber 1 taza 2 a 3 veces al día.\n\nSeguridad y precauciones\n\n- Usar solo las partes aéreas (hojas y tallos), evitando ingerir semillas o plántulas tiernas\n- No exceder ciclos de 2 se..."
+    },
+    {
       "nombre": "Cerraja",
       "slug": "cerraja",
       "nombreCientifico": "Sonchus oleraceus",
@@ -1143,6 +1769,63 @@
         "/imagenes/chanar.webp"
       ],
       "descripcion": "Descripción\n\nEl chañar es un árbol nativo de las zonas áridas de Argentina, emblemático del monte y la puna. Sus frutos son comestibles y dulces; su corteza y brea tienen propiedades medicinales destacadas especialmente para el aparato respiratorio.\n\nUsos tradicionales\n\n- Tos seca y crónica\n- Bronquitis y asma\n- Infecciones respiratorias\n- Hongos en piel e irritaciones\n\nFormas de uso\n\nJarabe de brea (resina), infusión de corteza, miel de chañar (producto regional muy valorado).\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Charcao",
+      "slug": "charcao",
+      "nombreCientifico": "Senecio filaginoides DC.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Mata mora",
+        "Charcao gris",
+        "Yuyo moro",
+        "Romero de la estepa"
+      ],
+      "origen": "Estepa patagónica y andina de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia y Cuyo)",
+        "Chile"
+      ],
+      "habitat": "Estepa árida y semiárida, mesetas pedregosas y suelos arenosos",
+      "acciones": [
+        "Digestiva tradicional",
+        "Antiespasmódica",
+        "Antiinflamatoria externa"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Dolores estomacales (uso folclórico)",
+        "Cólicos",
+        "Dolores musculares (uso externo)"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (alfa-pineno, beta-pineno)",
+        "Flavonoides",
+        "Alcaloides pirrolizidínicos (trazas a niveles variables según quimiotipo)"
+      ],
+      "usosEtnobotanicos": [
+        "Arbusto aromático muy representativo de la meseta patagónica",
+        "Usado históricamente en sahumos, baños y cataplasmas rurales"
+      ],
+      "precauciones": [
+        "PRECAUCIÓN DE SEGURIDAD: las especies del género Senecio pueden contener alcaloides pirrolizidínicos hepatotóxicos; priorizar uso externo y evitar consumo interno frecuente o prolongado"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Enfermedad hepática",
+        "Uso interno crónico"
+      ],
+      "toxicidad": "Potencial hepatotoxicidad acumulativa por alcaloides pirrolizidínicos presentes en el género Senecio",
+      "epocaFloracion": "noviembre a febrero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto perenne aromático grisáceo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto globoso muy común en la estepa patagónica, de follaje ceniciento-plateado densamente tomentoso y aroma resinoso característico. Forma parte del saber etnobotánico patagónico, requiriendo cautela por pertenecer al género Senecio.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa árida y semiárida, mesetas pedregosas y suelos arenosos\n- **Principios activos clave:** Aceites esenciales (alfa-pineno, beta-pineno), Flavonoides, Alcaloides pirrolizidínicos (trazas a niveles variables según quimiotipo)\n\nUsos tradicionales\n\n- Dolores estomacales (uso folclórico)\n- Cólicos\n- Dolores musculares (uso externo)\n\nFormas de uso\n\nPreferentemente uso externo en baños tibios, friegas o cataplasmas; su uso tradicional interno exige máxima prudencia y evitar tratamientos repetidos.\n\nSeguridad y precauciones\n\n- PRECAUCIÓN DE SEGURIDAD: las especi..."
     },
     {
       "nombre": "Cola de Caballo",
@@ -1500,6 +2183,60 @@
       "descripcion": "Descripción\n\nArbusto nativo ampliamente utilizado en el Cono Sur como remedio casero digestivo de cabecera para aligerar comidas pesadas y proteger el hígado.\n\nUsos tradicionales\n\n- Empachos\n- Malestar estomacal\n- Dispepsia\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Duraznillo",
+      "slug": "duraznillo",
+      "nombreCientifico": "Colliguaja integerrima Gillies & Hook.",
+      "familia": "Euphorbiaceae",
+      "otrosNombres": [
+        "Colliguay",
+        "Duraznillo de la estepa",
+        "Lecherón"
+      ],
+      "origen": "Patagonia y región andina de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia, Mendoza, Neuquén, Río Negro, Chubut, Santa Cruz)",
+        "Chile"
+      ],
+      "habitat": "Estepa arbustiva, cañadones pedregosos y faldeos secos",
+      "acciones": [
+        "Queratolítica externa",
+        "Analgésica odontológica tradicional"
+      ],
+      "sistemas": [
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Verrugas (uso externo puntual)",
+        "Callosidades",
+        "Dolor de muelas (uso etnobotánico histórico)"
+      ],
+      "principiosActivos": [
+        "Látex rico en ésteres de diterpenos",
+        "Triterpenos",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Arbusto nativo de la estepa conocido por su látex blanco abundante al quebrar sus ramas",
+        "Documentado por CONICET/CENPAT en la etnobotánica de la meseta patagónica exclusivamente para aplicaciones externas muy puntuales"
+      ],
+      "precauciones": [
+        "USO ESTRICTAMENTE EXTERNO Y PUNTUAL",
+        "Evitar contacto del látex con ojos, mucosas y piel sana"
+      ],
+      "contraindicaciones": [
+        "Uso interno (PROHIBIDO)",
+        "Niños pequeños",
+        "Piel lesionada o sensible"
+      ],
+      "toxicidad": "Látex cáustico e irritante para piel y mucosas; tóxico si se ingiere",
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "arbusto perennifolio nativo laticífero",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo de la estepa patagónica con hojas lineares coriáceas que recuerdan a las del duraznero y frutos tricocos explosivos. Al cortar sus tallos exuda un látex blanco irritante empleado históricamente solo de forma externa contra verrugas.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa arbustiva, cañadones pedregosos y faldeos secos\n- **Principios activos clave:** Látex rico en ésteres de diterpenos, Triterpenos, Taninos\n\nUsos tradicionales\n\n- Verrugas (uso externo puntual)\n- Callosidades\n- Dolor de muelas (uso etnobotánico histórico)\n\nFormas de uso\n\nSolo uso externo tópico puntual (gota mínima sobre verrugas protegiendo la piel circundante). Nunca administrar en infusión ni por vía oral.\n\nSeguridad y precauciones\n\n- USO ESTRICTAMENTE EXTERNO Y PUNTUAL\n- Evitar contacto del látex con ojos, mucosas y piel sana\n- Contraindic..."
+    },
+    {
       "nombre": "Equinácea",
       "slug": "equinacea",
       "nombreCientifico": "Echinacea purpurea",
@@ -1623,6 +2360,69 @@
       "descripcion": "Descripción\n\nLa escoba dura es una hierba o subarbusto muy común en zonas cálidas de Argentina. A pesar de ser tratada como maleza, tiene uso medicinal popular como adaptógeno y para afecciones de la piel.\n\nUsos tradicionales\n\n- Estrés crónico y agotamiento nervioso\n- Irritaciones y quemaduras de piel\n- Tos e irritaciones respiratorias\n\nFormas de uso\n\nInfusión de hojas, cataplasma de hojas para uso externo.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Éter",
+      "slug": "eter",
+      "nombreCientifico": "Artemisia abrotanum L.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Abrótano macho",
+        "Hierba del éter",
+        "Hierba lombriguera"
+      ],
+      "origen": "Europa meridional (cultivada y naturalizada en huertas de la Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia)",
+        "Chile (sur)",
+        "Europa"
+      ],
+      "habitat": "Huertas rurales, jardines patagónicos y bordes soleados bien drenados",
+      "acciones": [
+        "Digestiva",
+        "Antiespasmódica",
+        "Relajante suave",
+        "Antiparasitaria",
+        "Repelente"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Nervioso",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Dolor de estómago",
+        "Indigestión",
+        "Cólicos",
+        "Nerviosismo leve",
+        "Polillas e insectos"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (1,8-cineol, alcanfor, davona)",
+        "Cumarinas (isofraxidina, escopoletina)",
+        "Flavonoides",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Apreciada en los hogares patagónicos por su aroma penetrante alcanforado-cítrico que recuerda al éter",
+        "Ramas secas colocadas en roperos como repelente natural de polillas"
+      ],
+      "precauciones": [
+        "Emplear en dosis moderadas y ciclos breves",
+        "No confundir con Paramela (Adesmia boronioides), que en algunos parajes también recibe el apodo local de éter"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños pequeños"
+      ],
+      "toxicidad": "En dosis altas sus aceites esenciales pueden irritar el sistema nervioso o digestivo",
+      "epocaFloracion": "enero a marzo",
+      "epocaFructificacion": "marzo a abril",
+      "tipoCiclo": "subarbusto perenne aromático",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nSubarbusto perenne de follaje plumoso verde grisáceo y fragancia intensa entre limón, pino y alcanfor. Muy cultivado en patios y chacras de la Patagonia como digestivo casero y repelente natural.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Huertas rurales, jardines patagónicos y bordes soleados bien drenados\n- **Principios activos clave:** Aceites esenciales (1,8-cineol, alcanfor, davona), Cumarinas (isofraxidina, escopoletina), Flavonoides, Taninos\n\nUsos tradicionales\n\n- Dolor de estómago\n- Indigestión\n- Cólicos\n- Nerviosismo leve\n- Polillas e insectos\n\nFormas de uso\n\nInfusión ligera de 1 cucharadita de hojas por taza después de las comidas; baños aromáticos relajantes o saquitos secos en placares.\n\nSeguridad y precauciones\n\n- Emplear en dosis moderadas y ciclos breves\n- No confundir con Paramela (Adesmia boroni..."
+    },
+    {
       "nombre": "Guaycurú",
       "slug": "guaycuru",
       "nombreCientifico": "Limonium brasiliense",
@@ -1696,6 +2496,127 @@
       "descripcion": "Descripción\n\nPlanta rastrera que crece en suelos salinos. Sus infusiones aplicadas externamente asisten en la desinfección y el cierre rápido de cortes cutáneos.\n\nUsos tradicionales\n\n- Heridas\n- Lastimaduras\n- Infecciones dérmicas leves\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Hipérico",
+      "slug": "hiperico",
+      "nombreCientifico": "Hypericum perforatum L.",
+      "familia": "Hypericaceae",
+      "otrosNombres": [
+        "Hierba de San Juan",
+        "Corazoncillo",
+        "Hipericón"
+      ],
+      "origen": "Europa y Asia (ampliamente naturalizada en la Patagonia andina)",
+      "distribucion": [
+        "Argentina (Patagonia andina, Bariloche, El Bolsón, Esquel)",
+        "Chile (sur)",
+        "Europa"
+      ],
+      "habitat": "Praderas soleadas, bordes de caminos, laderas abiertas y claros de bosque",
+      "acciones": [
+        "Antidepresiva leve",
+        "Cicatrizante",
+        "Antiinflamatoria",
+        "Antiviral tópica",
+        "Analgésica nerviosa"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Decaimiento anímico leve a moderado",
+        "Ansiedad leve",
+        "Quemaduras solares leves",
+        "Heridas y contusiones",
+        "Neuralgias (uso externo en oleato)"
+      ],
+      "principiosActivos": [
+        "Hipericina",
+        "Hiperforina",
+        "Flavonoides (rutina, quercetina, hiperósido)",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "El famoso aceite rojo de hipérico (oleato solar de flores en aceite vegetal) es un clásico del botiquín natural patagónico para golpes y quemaduras",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "FOTOSENSIBILIDAD: evitar exposición solar intensa tras aplicar aceite de hipérico sobre la piel o al tomarlo internamente",
+        "INTERACCIONES MEDICAMENTOSAS IMPORTANTES: induce CYP3A4 y reduce eficacia de anticonceptivos, anticoagulantes, inmunosupresores y antidepresivos"
+      ],
+      "contraindicaciones": [
+        "Uso simultáneo con antidepresivos ISRS (riesgo de síndrome serotoninérgico)",
+        "Anticoagulantes orales",
+        "Anticonceptivos hormonales",
+        "Embarazo y lactancia"
+      ],
+      "toxicidad": "Puede provocar fotodermatitis e interacciones farmacológicas relevantes",
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne rizomatosa",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne de flores amarillo oro intenso que al estrujarse tiñen los dedos de rojo violáceo (hipericina). Sus hojas muestran diminutos puntos translúcidos al mirarlas a contraluz (\"perforatum\").\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Praderas soleadas, bordes de caminos, laderas abiertas y claros de bosque\n- **Principios activos clave:** Hipericina, Hiperforina, Flavonoides (rutina, quercetina, hiperósido), Taninos\n\nUsos tradicionales\n\n- Decaimiento anímico leve a moderado\n- Ansiedad leve\n- Quemaduras solares leves\n- Heridas y contusiones\n- Neuralgias (uso externo en oleato)\n\nFormas de uso\n\nUso externo: oleato macerado al sol en aceite de oliva o girasol sobre quemaduras leves y dolores musculares. Uso interno: infusión de 1 cucharadita de sumidades floridas por taza, solo sin medicación incompatible.\n\n..."
+    },
+    {
+      "nombre": "Huautro",
+      "slug": "huautro",
+      "nombreCientifico": "Baccharis magellanica (Lam.) Pers.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Huautro rastrero",
+        "Mosaiquillo",
+        "Chilca rastrera",
+        "Romerillo rastrero"
+      ],
+      "origen": "Patagonia y cordillera austral de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia andina y Tierra del Fuego)",
+        "Chile (sur y austral)"
+      ],
+      "habitat": "Bosques abiertos de ñire y lenga, laderas cordilleranas, turberas y estepa subandina",
+      "acciones": [
+        "Digestiva",
+        "Balsámica",
+        "Antiinflamatoria",
+        "Antiséptica",
+        "Antirreumática externa"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Malestar estomacal",
+        "Resfríos",
+        "Dolores reumáticos",
+        "Contusiones (uso externo)"
+      ],
+      "principiosActivos": [
+        "Diterpenos",
+        "Flavonoides",
+        "Aceites esenciales",
+        "Resinas"
+      ],
+      "usosEtnobotanicos": [
+        "Pequeño arbusto rastrero resinoso empleado en la herbolaria patagónica para infusiones digestivas y baños calientes contra dolores articulares"
+      ],
+      "precauciones": [
+        "No confundir con especies tóxicas del género Baccharis (como el mío-mío, Baccharis coridifolia, de zonas más templadas)"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (por falta de datos clínicos)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "arbusto enano perennifolio rastrero",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto bajo y denso que forma alfombras verdes sobre suelos pedregosos y claros del bosque patagónico. Sus hojas pequeñas y resinosas tienen borde dentado y aroma balsámico.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Bosques abiertos de ñire y lenga, laderas cordilleranas, turberas y estepa subandina\n- **Principios activos clave:** Diterpenos, Flavonoides, Aceites esenciales, Resinas\n\nUsos tradicionales\n\n- Malestar estomacal\n- Resfríos\n- Dolores reumáticos\n- Contusiones (uso externo)\n\nFormas de uso\n\nInfusión ligera de brotes y hojas secas (1 cucharadita por taza) o decocción para baños y compresas locales.\n\nSeguridad y precauciones\n\n- No confundir con especies tóxicas del género Baccharis (como el mío-mío, Baccharis coridifolia, de zonas más templadas)\n- Contraindicación: Embarazo y lactancia (por falta de datos clínicos)..."
+    },
+    {
       "nombre": "Jacarandá",
       "slug": "jacaranda",
       "nombreCientifico": "Jacaranda mimosifolia",
@@ -1732,6 +2653,70 @@
         "/imagenes/jacaranda.webp"
       ],
       "descripcion": "Descripción\n\nPurificador de la sangre, desinfectante para heridas, boca y garganta.\n\nBotánica oculta y mitología\n\nSu nombre chaná significa 'cura segura'. Las flores violetas eran asociadas con la restauración del equilibrio y la limpieza espiritual.\n\nUsos tradicionales\n\n- Purificación de la sangre\n- Heridas\n- Infecciones bucales\n- Infecciones de garganta\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Jarilla",
+      "slug": "jarilla",
+      "nombreCientifico": "Larrea divaricata Cav.",
+      "familia": "Zygophyllaceae",
+      "otrosNombres": [
+        "Jarilla hembra",
+        "Jarilla de la estepa",
+        "Chamanilla"
+      ],
+      "origen": "Regiones áridas y semiáridas de Sudamérica (Monte y Patagonia norte)",
+      "distribucion": [
+        "Argentina (Patagonia norte y estepa, Cuyo, NOA)",
+        "Chile",
+        "Bolivia",
+        "Perú"
+      ],
+      "habitat": "Estepa arbustiva seca, bardas, suelos pedregosos y clima árido soleado",
+      "acciones": [
+        "Antiinflamatoria",
+        "Antirreumática",
+        "Antiséptica",
+        "Antifúngica",
+        "Sudorífica"
+      ],
+      "sistemas": [
+        "Musculoesquelético",
+        "Tegumentario",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Dolores reumáticos y articulares",
+        "Contusiones y torceduras",
+        "Hongos en pies",
+        "Mal olor plantar",
+        "Resfríos (en vahos)"
+      ],
+      "principiosActivos": [
+        "Ácido nordihidroguaiarético (NDGA)",
+        "Resinas fenólicas",
+        "Flavonoides",
+        "Saponinas",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Arbusto emblemático del monte y la Patagonia norte cuyo aroma inunda el aire tras la lluvia",
+        "Ampliamente usado en baños, cataplasmas, tinturas externas y lociones capilares"
+      ],
+      "precauciones": [
+        "PRIORIZAR USO EXTERNO: el consumo interno prolongado o concentrado de Larrea spp. se ha asociado a hepatotoxicidad por NDGA"
+      ],
+      "contraindicaciones": [
+        "Consumo oral prolongado",
+        "Enfermedad hepática o renal",
+        "Embarazo y lactancia"
+      ],
+      "toxicidad": "El ácido nordihidroguaiarético (NDGA) puede generar toxicidad hepática y renal en ingesta oral repetida; muy segura y eficaz por vía tópica",
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "arbusto perennifolio resinoso xerófilo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto emblemático de ramas flexibles y hojas bilobadas resinosas de aroma inconfundible cuando llueve, con abundantes flores amarillas en primavera. Referente de la fitoterapia externa para reuma, golpes y afecciones dérmicas.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa arbustiva seca, bardas, suelos pedregosos y clima árido soleado\n- **Principios activos clave:** Ácido nordihidroguaiarético (NDGA), Resinas fenólicas, Flavonoides, Saponinas, Aceites esenciales\n\nUsos tradicionales\n\n- Dolores reumáticos y articulares\n- Contusiones y torceduras\n- Hongos en pies\n- Mal olor plantar\n- Resfríos (en vahos)\n\nFormas de uso\n\nUso externo recomendado: decocción de ramas y hojas para baños de pies, compresas articulares, lavados o maceración en alcohol para fricciones reumáticas.\n\nSeguridad y precauciones\n\n- PRIORIZAR USO EXTERNO: el consu..."
     },
     {
       "nombre": "Lapacho",
@@ -1801,6 +2786,66 @@
         "/imagenes/lapacho.webp"
       ],
       "descripcion": "Descripción\n\nEl lapacho es un árbol imponente del nordeste argentino, conocido por sus flores rosadas o amarillas que aparecen antes que las hojas. La corteza interna (pau d'arco) es uno de los remedios naturales más usados en Sudamérica.\n\nUsos tradicionales\n\n- Candidiasis y hongos en mucosas y piel\n- Infecciones bacterianas\n- Diarrea y enteritis\n\nFormas de uso\n\nDecocción de corteza interna, tintura, cápsulas de extracto seco.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Laura",
+      "slug": "laura",
+      "nombreCientifico": "Schinus patagonicus (Phil.) I.M. Johnst. ex Cabrera",
+      "familia": "Anacardiaceae",
+      "otrosNombres": [
+        "Laura patagónica",
+        "Litrecillo",
+        "Molle patagónico"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (sur)"
+      ],
+      "habitat": "Bosques húmedos y matorrales andino-patagónicos, laderas soleadas y riberas",
+      "acciones": [
+        "Antiséptica",
+        "Antiinflamatoria",
+        "Balsámica",
+        "Digestiva tradicional",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Respiratorio",
+        "Digestivo",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Heridas leves",
+        "Dolores articulares (compresas)",
+        "Congestión respiratoria (vahos)",
+        "Malestares digestivos leves"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (terpenos, alfa-pineno, limoneno)",
+        "Taninos",
+        "Flavonoides",
+        "Resinas"
+      ],
+      "usosEtnobotanicos": [
+        "Pariente patagónico del aguaribay (Schinus molle), valorado en la etnobotánica cordillerana por sus hojas aromáticas y frutos violáceos",
+        "Sus hojas se emplean en baños aromáticos y vahos"
+      ],
+      "precauciones": [
+        "Personas alérgicas a Anacardiaceae (como litre o molle) deben probar sensibilidad cutánea antes de uso tópico"
+      ],
+      "contraindicaciones": [
+        "Alergia conocida a Anacardiaceae",
+        "Embarazo (uso interno)"
+      ],
+      "toxicidad": "Puede producir dermatitis de contacto en personas sensibles",
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "arbusto o arbolito perennifolio nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto grande o pequeño árbol nativo de la Patagonia andina, sin espinas, de hojas ovaladas coriáceas muy aromáticas al frotarlas, pequeñas flores amarillo-verdosas y frutos esféricos color violáceo-negruzco.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bosques húmedos y matorrales andino-patagónicos, laderas soleadas y riberas\n- **Principios activos clave:** Aceites esenciales (terpenos, alfa-pineno, limoneno), Taninos, Flavonoides, Resinas\n\nUsos tradicionales\n\n- Heridas leves\n- Dolores articulares (compresas)\n- Congestión respiratoria (vahos)\n- Malestares digestivos leves\n\nFormas de uso\n\nVahos respiratorios con hojas, compresas o baños tibios antiinflamatorios; infusión muy suave en usos etnobotánicos puntuales.\n\nSeguridad y precauciones\n\n- Personas alérgicas a Anacardiaceae (como litre o molle) deben probar sensibilidad cutá..."
     },
     {
       "nombre": "Laurel",
@@ -1931,6 +2976,69 @@
       "descripcion": "Descripción\n\nLa lavanda es una de las plantas aromáticas más queridas del mundo. Su aceite esencial es uno de los pocos que se puede aplicar directamente sobre la piel sin diluir, y tiene estudios clínicos que respaldan su eficacia para la ansiedad.\n\nUsos tradicionales\n\n- Ansiedad, insomnio y estrés\n- Quemaduras leves y picaduras (aplicación directa)\n- Dolor de cabeza (aplicación en sienes)\n- Espasmos musculares\n\nFormas de uso\n\nAceite esencial (uso interno o aromaterapia), infusión, almohada de lavanda, baños aromáticos.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Lengua de Vaca",
+      "slug": "lengua-de-vaca",
+      "nombreCientifico": "Rumex crispus L.",
+      "familia": "Polygonaceae",
+      "otrosNombres": [
+        "Romaza crespa",
+        "Acedera crespa",
+        "Romaza",
+        "Lengua de buey"
+      ],
+      "origen": "Europa (ampliamente naturalizada en zonas húmedas de la Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia y todo el país)",
+        "Chile",
+        "Cosmopolita"
+      ],
+      "habitat": "Mallines, bordes de acequias, praderas húmedas y suelos fértiles",
+      "acciones": [
+        "Depurativa",
+        "Laxante suave",
+        "Colagoga",
+        "Astringente",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Hepático",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Estreñimiento leve",
+        "Congestión hepática",
+        "Afecciones cutáneas crónicas (eczemas, acné)",
+        "Heridas y picaduras (hojas frescas en cataplasma)"
+      ],
+      "principiosActivos": [
+        "Derivados antraquinónicos suaves (crisofanol, emodina)",
+        "Taninos",
+        "Oxalatos",
+        "Hierro y vitamina C en hojas"
+      ],
+      "usosEtnobotanicos": [
+        "Las hojas frescas machacadas se aplican en el campo patagónico inmediatamente sobre picaduras de ortiga",
+        "Raíz utilizada como depurativo hepático y cutáneo"
+      ],
+      "precauciones": [
+        "No consumir hojas crudas en exceso por su contenido de ácido oxálico",
+        "No usar la raíz como laxante por períodos prolongados"
+      ],
+      "contraindicaciones": [
+        "Cálculos renales de oxalato de calcio",
+        "Obstrucción intestinal",
+        "Embarazo y lactancia"
+      ],
+      "toxicidad": "Alto contenido de oxalatos en hojas maduras si se ingieren en grandes cantidades",
+      "epocaFloracion": "noviembre a marzo",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "hierba perenne robusta de raíz pivotante",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne vigorosa reconocible por sus grandes hojas basales alargadas de bordes muy ondulados y rizados, y sus espigas florales que viran a marrón rojizo al fructificar.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Mallines, bordes de acequias, praderas húmedas y suelos fértiles\n- **Principios activos clave:** Derivados antraquinónicos suaves (crisofanol, emodina), Taninos, Oxalatos, Hierro y vitamina C en hojas\n\nUsos tradicionales\n\n- Estreñimiento leve\n- Congestión hepática\n- Afecciones cutáneas crónicas (eczemas, acné)\n- Heridas y picaduras (hojas frescas en cataplasma)\n\nFormas de uso\n\nDecocción suave de 1 cucharadita de raíz seca en 250 ml de agua (hervir 5 min) para efecto depurativo/laxante leve; cataplasma de hojas frescas sobre la piel.\n\nSeguridad y precauciones\n\n- No consumir hojas crudas en exceso p..."
+    },
+    {
       "nombre": "Llantén",
       "slug": "llanten",
       "nombreCientifico": "Plantago major",
@@ -2000,6 +3108,67 @@
         "/imagenes/llanten.webp"
       ],
       "descripcion": "Descripción\n\nEl llantén es una planta muy común que crece de forma silvestre en casi todo el mundo. A pesar de su apariencia humilde, tiene propiedades medicinales notables para el aparato respiratorio, la piel y el sistema digestivo.\n\nUsos tradicionales\n\n- Tos, bronquitis y mucosidad\n- Heridas y picaduras de insectos\n- Gastritis y hemorroides\n- Infecciones respiratorias y amigdalitis\n- Estreñimiento leve\n\nFormas de uso\n\nInfusión, jarabe para la tos, compresas de hojas frescas, cataplasmas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Maitén",
+      "slug": "maiten",
+      "nombreCientifico": "Maytenus boaria Molina",
+      "familia": "Celastraceae",
+      "otrosNombres": [
+        "Maitén patagónico",
+        "Horco molle del sur"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia andina, Neuquén a Santa Cruz)",
+        "Chile"
+      ],
+      "habitat": "Valles húmedos, orillas de ríos, praderas de transición bosque-estepa",
+      "acciones": [
+        "Febrífuga",
+        "Antiinflamatoria",
+        "Depurativa",
+        "Analgésica",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Tegumentario",
+        "Digestivo",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Fiebre",
+        "Erupciones cutáneas y alergias (como las del litre)",
+        "Dolores hepáticos leves",
+        "Dolores articulares"
+      ],
+      "principiosActivos": [
+        "Triterpenos",
+        "Flavonoides",
+        "Taninos",
+        "Aceite graso en semillas"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol nativo de gran importancia cultural y forrajera en Patagonia",
+        "Tradicionalmente usado en lavados para aliviar alergias cutáneas y en infusión febrífuga",
+        "Monografía oficial en MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Las semillas tienen efecto purgante fuerte; en fitoterapia se utilizan únicamente las hojas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Ingesta de semillas"
+      ],
+      "toxicidad": "Semillas purgantes/eméticas; hojas de uso tradicional seguro en infusión moderada",
+      "epocaFloracion": "septiembre a noviembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol perennifolio nativo elegante de ramas péndulas",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol nativo de copa redondeada y ramas finas colgantes con hojas verde claro finamente aserradas. Su sombra amable y sus hojas medicinales febrífugas y dermatológicas lo vuelven un ícono del paisaje patagónico.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Valles húmedos, orillas de ríos, praderas de transición bosque-estepa\n- **Principios activos clave:** Triterpenos, Flavonoides, Taninos, Aceite graso en semillas\n\nUsos tradicionales\n\n- Fiebre\n- Erupciones cutáneas y alergias (como las del litre)\n- Dolores hepáticos leves\n- Dolores articulares\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas en 1 litro de agua hirviendo (beber 1 taza 2 a 3 veces al día); la misma infusión tibia en lavados para erupciones cutáneas.\n\nSeguridad y precauciones\n\n- Las semillas tienen efecto purgante fuerte; en fitoterapia se utilizan únicamente las ..."
     },
     {
       "nombre": "Malva",
@@ -2147,6 +3316,70 @@
       "descripcion": "Descripción\n\nLa manzanilla es una de las plantas medicinales más populares del mundo. Sus flores amarillas con pétalos blancos son reconocibles al instante. Tiene propiedades antiinflamatorias, antiespasmódicas y calmantes bien documentadas.\n\nUsos tradicionales\n\n- Cólicos y náuseas\n- Gastritis y colitis\n- Insomnio y ansiedad\n- Eccemas, dermatitis y picaduras\n- Indigestión y diarrea\n\nFormas de uso\n\nInfusión, compresas para uso externo, cremas y aceites esenciales.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Maqui",
+      "slug": "maqui",
+      "nombreCientifico": "Aristotelia chilensis (Molina) Stuntz",
+      "familia": "Elaeocarpaceae",
+      "otrosNombres": [
+        "Queldrón",
+        "Klon",
+        "Clon",
+        "Maquei"
+      ],
+      "origen": "Bosques templados de Patagonia y sur de Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (Coquimbo a Aysén)"
+      ],
+      "habitat": "Claros de bosque húmedo, quebradas, bordes de caminos y riberas",
+      "acciones": [
+        "Antioxidante",
+        "Astringente",
+        "Antiinflamatoria",
+        "Antidiarreica",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Digestivo",
+        "Respiratorio",
+        "Tegumentario",
+        "Metabólico"
+      ],
+      "afecciones": [
+        "Diarrea",
+        "Dolor de garganta y amigdalitis",
+        "Aftas bucales",
+        "Heridas superficiales",
+        "Estrés oxidativo"
+      ],
+      "principiosActivos": [
+        "Antocianinas (delfinidinas en altísima concentración)",
+        "Polifenoles",
+        "Taninos",
+        "Alcaloides indólicos en hojas (aristotelina)",
+        "Vitamina C"
+      ],
+      "usosEtnobotanicos": [
+        "Fruto ancestral mapuche (klon) de altísimo valor nutricional y medicinal",
+        "Hojas usadas en cataplasmas y gárgaras para la garganta",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "En casos de estreñimiento moderar el consumo de infusión de hojas por su efecto astringente"
+      ],
+      "contraindicaciones": [
+        "Estreñimiento crónico severo (uso de hojas astringentes)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "árbol pequeño o arbusto perennifolio nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol pequeño de hojas verde brillante con pecíolos rojizos y pequeñas bayas negras lustrosas que concentran niveles excepcionales de antocianinas antioxidantes. Tanto sus frutos como sus hojas poseen amplio uso tradicional y respaldo fitoquímico.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Claros de bosque húmedo, quebradas, bordes de caminos y riberas\n- **Principios activos clave:** Antocianinas (delfinidinas en altísima concentración), Polifenoles, Taninos, Alcaloides indólicos en hojas (aristotelina), Vitamina C\n\nUsos tradicionales\n\n- Diarrea\n- Dolor de garganta y amigdalitis\n- Aftas bucales\n- Heridas superficiales\n- Estrés oxidativo\n\nFormas de uso\n\nConsumo directo de frutos frescos o liofilizados; infusión de 1 cucharadita de hojas secas o frutos por taza para diarreas leves, gárgaras y lavados de heridas.\n\nSeguridad y pre..."
+    },
+    {
       "nombre": "Marcelo (o Marcelita)",
       "slug": "marcela-marcelita",
       "nombreCientifico": "Achyrocline satureioides",
@@ -2190,7 +3423,9 @@
       "familia": "Lamiaceae",
       "otrosNombres": [
         "Hierba del sapo",
-        "Horehound"
+        "Horehound",
+        "Toronjil cuyano",
+        "Toronjil"
       ],
       "origen": "Mediterráneo, Asia occidental",
       "distribucion": [
@@ -2350,6 +3585,67 @@
       "descripcion": "Descripción\n\nLa melisa es una hierba con aroma suave a limón y propiedades calmantes bien documentadas. Es especialmente útil cuando el sistema digestivo y el sistema nervioso están interconectados en el problema.\n\nUsos tradicionales\n\n- Ansiedad, insomnio y palpitaciones\n- Indigestión nerviosa, gases y náuseas\n- Estrés y nerviosismo\n\nFormas de uso\n\nInfusión de hojas frescas o secas, tintura, extracto en cápsulas. Se puede combinar con valeriana para el insomnio.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Menta Alemana",
+      "slug": "menta-alemana",
+      "nombreCientifico": "Mentha suaveolens Ehrh.",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Menta rizada",
+        "Menta de bosque",
+        "Mastranto",
+        "Mentha rotundifolia",
+        "Menta manzana"
+      ],
+      "origen": "Europa y cuenca mediterránea (naturalizada en zonas húmedas patagónicas)",
+      "distribucion": [
+        "Argentina (Patagonia húmeda)",
+        "Chile (sur)",
+        "Europa"
+      ],
+      "habitat": "Orillas de arroyos, mallines, acequias y praderas húmedas de cordillera",
+      "acciones": [
+        "Digestiva",
+        "Antiespasmódica",
+        "Carminativa",
+        "Expectorante suave",
+        "Antiséptica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Indigestión",
+        "Gases y distensión",
+        "Cólicos estomacales",
+        "Catarro leve",
+        "Congestión nasal"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (óxido de piperitenona, carvona, limoneno)",
+        "Ácido rosmarínico",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Muy común en bordes de arroyos de la Patagonia andina",
+        "Se distingue de la menta piperita por sus hojas redondeadas, rugosas y aterciopeladas de aroma mentolado dulce y suave"
+      ],
+      "precauciones": [
+        "No administrar aceites esenciales puros a niños pequeños"
+      ],
+      "contraindicaciones": [
+        "Reflujo gastroesofágico severo",
+        "Niños menores de 2 años"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne estolonífera aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nMenta naturalizada en arroyos y praderas patagónicas, reconocible por sus hojas anchas, redondeadas, rugosas y pubescentes de fragancia dulce y fresca. Muy apreciada en tisanas digestivas y vahos suaves.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Orillas de arroyos, mallines, acequias y praderas húmedas de cordillera\n- **Principios activos clave:** Aceites esenciales (óxido de piperitenona, carvona, limoneno), Ácido rosmarínico, Flavonoides\n\nUsos tradicionales\n\n- Indigestión\n- Gases y distensión\n- Cólicos estomacales\n- Catarro leve\n- Congestión nasal\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas frescas o secas por taza de agua hirviendo, tapar 5 minutos; tomar después de las comidas o en inhalaciones.\n\nSeguridad y precauciones\n\n- No administrar aceites esenciales puros a niños pequeños\n- Contraindicación: Re..."
+    },
+    {
       "nombre": "Menta",
       "slug": "menta",
       "nombreCientifico": "Mentha piperita",
@@ -2425,6 +3721,256 @@
       "descripcion": "Descripción\n\nLa menta es una planta aromática perenne ampliamente utilizada en la medicina tradicional de numerosas culturas. Su aroma fresco e intenso proviene del mentol, su principal componente activo.\n\nUsos tradicionales\n\n- Empacho, indigestión y flatulencias\n- Bronquitis y mucosidad\n- Infecciones bucofaríngeas y mal aliento\n- Estrés y nerviosismo\n- Dolor de estómago y espasmos digestivos\n\nFormas de uso\n\nInfusión, tintura, aceite esencial (uso externo), masticar hojas frescas.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Milenrama",
+      "slug": "milenrama",
+      "nombreCientifico": "Achillea millefolium L.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Mil hojas",
+        "Hierba de Aquiles",
+        "Cientoenrama",
+        "Plumajillo"
+      ],
+      "origen": "Hemisferio norte (ampliamente naturalizada en la Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia y centro)",
+        "Chile",
+        "Europa",
+        "Norteamérica"
+      ],
+      "habitat": "Praderas, bordes de caminos, pastizales cordilleranos y jardines",
+      "acciones": [
+        "Cicatrizante",
+        "Hemostática",
+        "Antiespasmódica",
+        "Antiinflamatoria",
+        "Emenagoga",
+        "Digestiva"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Digestivo",
+        "Reproductor Femenino",
+        "Circulatorio"
+      ],
+      "afecciones": [
+        "Heridas y sangrados leves",
+        "Cólicos menstruales",
+        "Digestión difícil",
+        "Espasmos gastrointestinales",
+        "Hemorroides (baños de asiento)"
+      ],
+      "principiosActivos": [
+        "Camazuleno (en aceite esencial)",
+        "Aquileína",
+        "Lactonas sesquiterpénicas",
+        "Flavonoides",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Célebre planta cicatrizante de campaña muy abundante en praderas patagónicas",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Puede causar alergia en personas sensibles a la familia Asteraceae"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Tratamiento anticoagulante"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne rizomatosa aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne aromática de hojas finamente recortadas como plumas (\"mil hojas\") y corimbos aplanados de diminutas flores blancas o rosadas. Valiosa tanto en botiquín externo cicatrizante como en tisanas digestivas y menstruales.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Praderas, bordes de caminos, pastizales cordilleranos y jardines\n- **Principios activos clave:** Camazuleno (en aceite esencial), Aquileína, Lactonas sesquiterpénicas, Flavonoides, Taninos\n\nUsos tradicionales\n\n- Heridas y sangrados leves\n- Cólicos menstruales\n- Digestión difícil\n- Espasmos gastrointestinales\n- Hemorroides (baños de asiento)\n\nFormas de uso\n\nInfusión de 1 cucharadita de flores y hojas por taza (hasta 3 veces/día); compresas o baños de asiento con infusión más concentrada.\n\nSeguridad y precauciones\n\n- Puede causar alergia en perso..."
+    },
+    {
+      "nombre": "Ñancolahuén",
+      "slug": "nancolahuen",
+      "nombreCientifico": "Valeriana carnosa Sm.",
+      "familia": "Caprifoliaceae",
+      "otrosNombres": [
+        "Ñanculahuen",
+        "Hierba del aguilucho",
+        "Valeriana patagónica",
+        "Valeriana del sur"
+      ],
+      "origen": "Cordillera y estepa patagónica de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén a Tierra del Fuego)",
+        "Chile (sur y austral)"
+      ],
+      "habitat": "Estepa arbustiva, mallines pedregosos y bosques abiertos de ñire",
+      "acciones": [
+        "Sedante",
+        "Ansiolítica",
+        "Analgésica",
+        "Digestiva",
+        "Hepatoprotectora tradicional"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Digestivo",
+        "Hepático",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Insomnio",
+        "Ansiedad y estrés",
+        "Dolores menstruales y musculares",
+        "Trastornos digestivos nerviosos",
+        "Malestar hepático leve"
+      ],
+      "principiosActivos": [
+        "Ácido valerénico",
+        "Valepotriatos",
+        "Aceites esenciales sesquiterpénicos",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Una de las plantas medicinales más veneradas por los pueblos mapuche y tehuelche (\\\"remedio del aguilucho\\\")",
+        "Sus rizomas carnosos y aromáticos concentran valepotriatos y ácido valerénico, objeto de estudios del CONICET/INIBIOMA"
+      ],
+      "precauciones": [
+        "Especie vulnerable a la sobreexplotación: preferir cultivo doméstico o recolección responsable sin arrancar la población completa",
+        "Puede potenciar somnolencia con sedantes"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Uso simultáneo con depresores del SNC o alcohol"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "hierba perenne nativa de rizoma carnoso",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nValeriana nativa de la Patagonia con hojas carnosas verde-azuladas en roseta y varas florales blanquecino-rosadas. Sus rizomas gruesos poseen el aroma característico de las valerianas y gozan de enorme prestigio en la farmacopea mapuche-tehuelche.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Estepa arbustiva, mallines pedregosos y bosques abiertos de ñire\n- **Principios activos clave:** Ácido valerénico, Valepotriatos, Aceites esenciales sesquiterpénicos, Flavonoides\n\nUsos tradicionales\n\n- Insomnio\n- Ansiedad y estrés\n- Dolores menstruales y musculares\n- Trastornos digestivos nerviosos\n- Malestar hepático leve\n\nFormas de uso\n\nMaceración en frío o infusión tibia (sin hervir en exceso) de 1 cucharadita de rizoma seco triturado por taza antes de acostarse.\n\nSeguridad y precauciones\n\n- Especie vulnerable a la sobreexplotación: p..."
+    },
+    {
+      "nombre": "Natre",
+      "slug": "natre",
+      "nombreCientifico": "Solanum crispum Ruiz & Pav.",
+      "familia": "Solanaceae",
+      "otrosNombres": [
+        "Natri",
+        "Hierba del chavalongo",
+        "Tomatillo",
+        "Solanum gayanum"
+      ],
+      "origen": "Bosques y matorrales de Chile y Patagonia argentina",
+      "distribucion": [
+        "Argentina (Patagonia andina)",
+        "Chile (Atacama a Los Lagos)"
+      ],
+      "habitat": "Bordes de bosques húmedos, matorrales y quebradas soleadas",
+      "acciones": [
+        "Febrífuga",
+        "Antiinflamatoria",
+        "Analgésica",
+        "Hipoglucemiante tradicional"
+      ],
+      "sistemas": [
+        "Inmunológico",
+        "Metabólico",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Fiebre alta",
+        "Cefaleas",
+        "Diabetes tipo 2 (uso popular coadyuvante bajo control médico)"
+      ],
+      "principiosActivos": [
+        "Glicoalcaloides esteroidales (solanina, solasodina)",
+        "Flavonoides",
+        "Saponinas"
+      ],
+      "usosEtnobotanicos": [
+        "Conocido por el dicho popular \\\"más amargo que el natre\\\"",
+        "Clásico febrífugo de la medicina mapuche y campesina del sur",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Usar dosis bajas y por pocos días; NO ingerir los frutos (bayas tóxicas)",
+        "Si se usa medicación hipoglucemiante controlar glucemia"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños pequeños",
+        "Uso prolongado"
+      ],
+      "toxicidad": "Contiene alcaloides solanáceos; los frutos son tóxicos y la sobredosis de hojas/tallos puede causar malestar digestivo o neurológico",
+      "epocaFloracion": "octubre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto nativo trepador o apoyante",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo de flores azul-violáceas con anteras amarillas brillantes (típicas de las solanáceas) y follaje intensamente amargo. Reconocido históricamente en Patagonia y Chile como potente febrífugo.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bordes de bosques húmedos, matorrales y quebradas soleadas\n- **Principios activos clave:** Glicoalcaloides esteroidales (solanina, solasodina), Flavonoides, Saponinas\n\nUsos tradicionales\n\n- Fiebre alta\n- Cefaleas\n- Diabetes tipo 2 (uso popular coadyuvante bajo control médico)\n\nFormas de uso\n\nInfusión muy medida de 1 cucharadita de hojas y ramitas secas en 1 litro de agua hirviendo; beber en pequeñas dosis (máximo 2 tazas/día por pocos días).\n\nSeguridad y precauciones\n\n- Usar dosis bajas y por pocos días; NO ingerir los frutos (bayas tóxicas)\n- Si se usa medicación hipoglucemiante contr..."
+    },
+    {
+      "nombre": "Neneo",
+      "slug": "neneo",
+      "nombreCientifico": "Mulinum spinosum (Cav.) Pers.",
+      "familia": "Apiaceae",
+      "otrosNombres": [
+        "Hierba negra",
+        "Neneo patagónico",
+        "Dichillo"
+      ],
+      "origen": "Estepa patagónica y cordillera andina (Argentina y Chile)",
+      "distribucion": [
+        "Argentina (toda la Patagonia, Mendoza a Santa Cruz)",
+        "Chile"
+      ],
+      "habitat": "Estepa árida y semiárida, mesetas ventosas y laderas pedregosas",
+      "acciones": [
+        "Antiinflamatoria",
+        "Analgésica",
+        "Balsámica",
+        "Expectorante",
+        "Antirreumática"
+      ],
+      "sistemas": [
+        "Musculoesquelético",
+        "Respiratorio",
+        "Renal"
+      ],
+      "afecciones": [
+        "Dolores reumáticos y neuralgias",
+        "Dolor de muelas",
+        "Afecciones bronquiales y tos",
+        "Afecciones renales leves"
+      ],
+      "principiosActivos": [
+        "Diterpenos mulinánicos (ácido mulínico, mulinol)",
+        "Aceites esenciales",
+        "Resinas aromáticas"
+      ],
+      "usosEtnobotanicos": [
+        "Arbusto en cojín emblemático del paisaje estepario patagónico",
+        "Su raíz resinosa aromática ha sido ampliamente utilizada por comunidades mapuche-tehuelche para dolores musculares, fríos y catarros"
+      ],
+      "precauciones": [
+        "Emplear dosis moderadas en decocción de raíz; recolectar con criterio sustentable"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto en cojín espinoso perenne nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nInconfundible arbusto hemisférico en forma de cojín espinoso verde-amarillento que tapiza la estepa patagónica. Sus flores amarillas en umbelas y sus raíces muy resinosas poseen compuestos diterpénicos únicos estudiados por el CONICET.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa árida y semiárida, mesetas ventosas y laderas pedregosas\n- **Principios activos clave:** Diterpenos mulinánicos (ácido mulínico, mulinol), Aceites esenciales, Resinas aromáticas\n\nUsos tradicionales\n\n- Dolores reumáticos y neuralgias\n- Dolor de muelas\n- Afecciones bronquiales y tos\n- Afecciones renales leves\n\nFormas de uso\n\nDecocción suave de un trozo pequeño de raíz (5 g por litro de agua durante 10 min) para afecciones respiratorias o reumáticas, o uso externo en compresas.\n\nSeguridad y precauciones\n\n- Emplear dosis moderadas en decocción de raíz; reco..."
+    },
+    {
       "nombre": "Níspero",
       "slug": "nispero",
       "nombreCientifico": "Eriobotrya japonica",
@@ -2462,6 +4008,65 @@
         "/imagenes/nispero.webp"
       ],
       "descripcion": "Descripción\n\nLas hojas de este árbol frutal son empleadas en la medicina tradicional oriental y sudamericana para calmar afecciones pulmonares y disolver secreciones densas.\n\nUsos tradicionales\n\n- Tos con flema\n- Retención de líquidos\n- Irritación bronquial\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Notro",
+      "slug": "notro",
+      "nombreCientifico": "Embothrium coccineum J.R. Forst. & G. Forst.",
+      "familia": "Proteaceae",
+      "otrosNombres": [
+        "Ciruelillo",
+        "Fosforito",
+        "Notru"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén a Tierra del Fuego)",
+        "Chile (Maule a Cabo de Hornos)"
+      ],
+      "habitat": "Bordes de bosque húmedo, claros soleados, laderas y riberas de lagos",
+      "acciones": [
+        "Cicatrizante",
+        "Astringente",
+        "Antiinflamatoria",
+        "Antiséptica",
+        "Balsámica"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Respiratorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Heridas y úlceras cutáneas",
+        "Dolor de muelas y encías inflamadas",
+        "Afecciones ganglionares e inflamaciones (uso tradicional)",
+        "Gastritis leve"
+      ],
+      "principiosActivos": [
+        "Taninos",
+        "Flavonoides",
+        "Compuestos fenólicos",
+        "Saponinas"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol emblemático de la primavera patagónica por su explosión de flores rojo carmesí",
+        "Tradicionalmente usado por el pueblo mapuche en lavados cicatrizantes y gárgaras",
+        "Sus flores alimentan al picaflor rubí"
+      ],
+      "precauciones": [
+        "No dañar la corteza de ejemplares silvestres (especie nativa protegida en parques nacionales)"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (evitar consumo interno prolongado)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol pequeño o arbusto nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nUno de los árboles más llamativos de la Patagonia, cubierto en primavera de inflorescencias tubulares rojo intenso (\"fosforito\"). Sus hojas y corteza se emplean en la medicina tradicional del sur por su acción astringente y cicatrizante.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bordes de bosque húmedo, claros soleados, laderas y riberas de lagos\n- **Principios activos clave:** Taninos, Flavonoides, Compuestos fenólicos, Saponinas\n\nUsos tradicionales\n\n- Heridas y úlceras cutáneas\n- Dolor de muelas y encías inflamadas\n- Afecciones ganglionares e inflamaciones (uso tradicional)\n- Gastritis leve\n\nFormas de uso\n\nInfusión suave de hojas (1 cucharadita por taza) para uso digestivo leve, o decocción más concentrada para buches, gárgaras y lavados externos de heridas.\n\nSeguridad y precauciones\n\n- No dañar la corteza de ejemplares sil..."
     },
     {
       "nombre": "Ñangapirí",
@@ -2744,6 +4349,310 @@
       "descripcion": "Descripción\n\nEl Palo Amarillo, conocido en guaraní como Niño Rupá, es un arbusto aromático nativo de Argentina con flores blancas perfumadas. Destaca por sus propiedades antidepresivas —poco comunes en el mundo vegetal— junto con sus acciones sobre el aparato digestivo y respiratorio.\n\nUsos tradicionales\n\n- Depresión leve, estrés y decaimiento anímico\n- Diarrea y empachos digestivos\n- Resfríos y tos\n\nFormas de uso\n\nInfusión de hojas y ramas finas. También en baños aromáticos.\n\nReferencias\n\n- Fuente: Herbario 7"
     },
     {
+      "nombre": "Palo Pichi",
+      "slug": "palo-pichi",
+      "nombreCientifico": "Fabiana imbricata Ruiz & Pav.",
+      "familia": "Solanaceae",
+      "otrosNombres": [
+        "Pichi",
+        "Palo piche",
+        "Pichi romero",
+        "Tola patagónica"
+      ],
+      "origen": "Cordillera andina y Patagonia de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Mendoza, Neuquén, Río Negro, Chubut)",
+        "Chile (Atacama a Patagonia)"
+      ],
+      "habitat": "Laderas secas pedregosas, lechos de ríos secos, estepa y ecotono bosque-estepa",
+      "acciones": [
+        "Diurética",
+        "Antiséptica urinaria",
+        "Litotríptica tradicional",
+        "Digestiva",
+        "Balsámica"
+      ],
+      "sistemas": [
+        "Renal",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Infecciones urinarias leves (cistitis)",
+        "Cálculos renales y arenilla",
+        "Retención de líquidos",
+        "Afecciones prostáticas leves"
+      ],
+      "principiosActivos": [
+        "Fabianina",
+        "Escopoletina (cumarina)",
+        "Rutina",
+        "Resinas aromáticas",
+        "Aceites esenciales"
+      ],
+      "usosEtnobotanicos": [
+        "Remedio clásico de la medicina mapuche y andina para las vías urinarias",
+        "Antiguamente incluida incluso en farmacopeas internacionales como \\\"Pichi\\\"",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Acompañar con abundante ingesta de agua",
+        "Consultar médico en cólico renal agudo o infección febril"
+      ],
+      "contraindicaciones": [
+        "Insuficiencia renal o cardíaca con restricción hídrica",
+        "Embarazo y lactancia"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto perennifolio resinoso de aspecto cipresino",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto resinoso nativo cuyas ramitas cubiertas de diminutas hojas imbricadas recuerdan a un ciprés o brezo, salpicado en primavera de pequeñas flores blancas tubulares. Uno de los grandes antisépticos urinarios de la flora sudamericana.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Laderas secas pedregosas, lechos de ríos secos, estepa y ecotono bosque-estepa\n- **Principios activos clave:** Fabianina, Escopoletina (cumarina), Rutina, Resinas aromáticas, Aceites esenciales\n\nUsos tradicionales\n\n- Infecciones urinarias leves (cistitis)\n- Cálculos renales y arenilla\n- Retención de líquidos\n- Afecciones prostáticas leves\n\nFormas de uso\n\nInfusión de 1 cucharada de ramitas con hojas en 1 litro de agua recién hervida; beber 1 taza 3 veces al día.\n\nSeguridad y precauciones\n\n- Acompañar con abundante ingesta de agua\n- Consultar médico..."
+    },
+    {
+      "nombre": "Pañil",
+      "slug": "panil",
+      "nombreCientifico": "Buddleja globosa Hope",
+      "familia": "Scrophulariaceae",
+      "otrosNombres": [
+        "Matico",
+        "Palguín",
+        "Pañil patagónico",
+        "Buddleja araucana (en estepa)"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (Coquimbo a Patagonia)"
+      ],
+      "habitat": "Bordes de bosque húmedo, quebradas, márgenes de arroyos y claros soleados",
+      "acciones": [
+        "Cicatrizante",
+        "Antiinflamatoria",
+        "Antiséptica",
+        "Gastroprotectora",
+        "Analgésica"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Heridas, cortes y quemaduras leves",
+        "Úlceras gástricas y gastritis",
+        "Úlceras cutáneas",
+        "Dolores estomacales",
+        "Inflamaciones bucales"
+      ],
+      "principiosActivos": [
+        "Verbascósido (acteósido)",
+        "Flavonoides (luteolina, apigenina)",
+        "Iridoides (aucubina)",
+        "Triterpenos",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "El gran cicatrizante de la medicina mapuche y patagónica (llamado matico en Chile y pañil en Patagonia argentina)",
+        "Respaldado por estudios farmacológicos sobre proliferación de fibroblastos y efecto antiulceroso",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "En úlcera gástrica diagnosticada usar como coadyuvante junto al seguimiento médico"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (uso interno por precaución; uso tópico seguro)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto perennifolio a semicaducifolio nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo de hojas lanceoladas rugosas verde oscuro por arriba y blanquecino-aterciopeladas por debajo, con características inflorescencias esféricas (cabezuelas) color amarillo-anaranjado fragantes a miel. Cicatrizante por excelencia del sur.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bordes de bosque húmedo, quebradas, márgenes de arroyos y claros soleados\n- **Principios activos clave:** Verbascósido (acteósido), Flavonoides (luteolina, apigenina), Iridoides (aucubina), Triterpenos, Taninos\n\nUsos tradicionales\n\n- Heridas, cortes y quemaduras leves\n- Úlceras gástricas y gastritis\n- Úlceras cutáneas\n- Dolores estomacales\n- Inflamaciones bucales\n\nFormas de uso\n\nInfusión de 1 hoja mediana o 1 cucharada de hojas picadas en 1 litro de agua hirviendo: beber 1 taza 3 veces al día para gastritis o aplicar tibia en compresas y la..."
+    },
+    {
+      "nombre": "Paramela",
+      "slug": "paramela",
+      "nombreCientifico": "Adesmia boronioides Hook. f.",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Té pampa",
+        "Yagneu",
+        "Lonko",
+        "Éter de la estepa"
+      ],
+      "origen": "Endémica de la Patagonia argentina y chilena",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut, Santa Cruz)",
+        "Chile (Aysén y Magallanes)"
+      ],
+      "habitat": "Estepa arbustiva, mesetas patagónicas y faldeos pedregosos secos",
+      "acciones": [
+        "Digestiva",
+        "Balsámica",
+        "Expectorante",
+        "Antiinflamatoria",
+        "Antirreumática",
+        "Tónica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Musculoesquelético",
+        "Reproductor"
+      ],
+      "afecciones": [
+        "Resfríos y bronquitis",
+        "Dolores estomacales e indigestión",
+        "Dolores reumáticos",
+        "Cansancio físico",
+        "Dolores menstruales"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales resinosos (esquiterpenos: esquenanol, esquenona, alfa-pineno)",
+        "Flavonoides",
+        "Compuestos fenólicos"
+      ],
+      "usosEtnobotanicos": [
+        "Joya aromática endémica de la estepa patagónica, venerada por pueblos tehuelche y mapuche",
+        "Su aceite esencial balsámico es estudiado por universidades patagónicas y el CONICET por sus propiedades antiinflamatorias y antimicrobianas"
+      ],
+      "precauciones": [
+        "Recolección sustentable (cortar solo ramitas terminales sin dañar el arbusto; especie de crecimiento lento)"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (evitar dosis altas por falta de estudios clínicos)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto perennifolio resinoso endémico",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto aromático endémico de la Patagonia con pequeñas hojas compuestas cubiertas de glándulas resinosas perfumadas y racimos de flores amarillas intensas. Al frotar sus hojas libera una fragancia balsámica inconfundible.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa arbustiva, mesetas patagónicas y faldeos pedregosos secos\n- **Principios activos clave:** Aceites esenciales resinosos (esquiterpenos: esquenanol, esquenona, alfa-pineno), Flavonoides, Compuestos fenólicos\n\nUsos tradicionales\n\n- Resfríos y bronquitis\n- Dolores estomacales e indigestión\n- Dolores reumáticos\n- Cansancio físico\n- Dolores menstruales\n\nFormas de uso\n\nInfusión de 1 cucharadita de ramitas y hojas secas por taza de agua hirviendo (1 a 2 veces al día), o en vahos respiratorios y baños relajantes.\n\nSeguridad y precauciones\n\n- Recolección sustentable (cortar s..."
+    },
+    {
+      "nombre": "Parrilla",
+      "slug": "parrilla",
+      "nombreCientifico": "Ribes magellanicum Poir.",
+      "familia": "Grossulariaceae",
+      "otrosNombres": [
+        "Parrilla patagónica",
+        "Grosellero silvestre",
+        "Zarzaparrilla patagónica",
+        "Mulul"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén a Tierra del Fuego)",
+        "Chile (Maule a Magallanes)"
+      ],
+      "habitat": "Sotobosque húmedo de lenga y coihue, riberas de arroyos y claros frescos",
+      "acciones": [
+        "Antioxidante",
+        "Depurativa",
+        "Diurética",
+        "Antiinflamatoria",
+        "Astringente"
+      ],
+      "sistemas": [
+        "Renal",
+        "Circulatorio",
+        "Inmunológico",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Retención de líquidos",
+        "Afecciones urinarias leves",
+        "Estrés oxidativo",
+        "Inflamación articular leve"
+      ],
+      "principiosActivos": [
+        "Antocianinas",
+        "Flavonoides (rutina, quercetina)",
+        "Vitamina C",
+        "Taninos",
+        "Ácidos orgánicos"
+      ],
+      "usosEtnobotanicos": [
+        "Sus racimos de bayas negro-violáceas son un fruto silvestre comestible muy apreciado en la Patagonia (dulces y licores)",
+        "Hojas empleadas en infusión depurativa y diurética",
+        "No confundir con la zarzaparrilla liana (Smilax campestris)"
+      ],
+      "precauciones": [
+        "Distinguir claramente de Smilax campestris (zarzaparrilla del litoral)"
+      ],
+      "contraindicaciones": [
+        "No se reportan contraindicaciones relevantes en dosis habituales"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "septiembre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "arbusto caducifolio nativo inerme",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo del sotobosque patagónico sin espinas, de hojas lobuladas fragantes similares a las de la vid o grosellero, racimos colgantes de flores verdoso-rojizas y bayas negras aromáticas comestibles.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Sotobosque húmedo de lenga y coihue, riberas de arroyos y claros frescos\n- **Principios activos clave:** Antocianinas, Flavonoides (rutina, quercetina), Vitamina C, Taninos, Ácidos orgánicos\n\nUsos tradicionales\n\n- Retención de líquidos\n- Afecciones urinarias leves\n- Estrés oxidativo\n- Inflamación articular leve\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas secas por taza (1 a 2 tazas/día) como depurativo suave; frutos consumidos frescos o en preparaciones alimentarias.\n\nSeguridad y precauciones\n\n- Distinguir claramente de Smilax campestris (zarzaparrilla del litoral)\n- Contraindi..."
+    },
+    {
+      "nombre": "Patagua",
+      "slug": "patagua",
+      "nombreCientifico": "Myrceugenia exsucca (DC.) O. Berg",
+      "familia": "Myrtaceae",
+      "otrosNombres": [
+        "Pitra blanca",
+        "Peta",
+        "Temu de agua",
+        "Myrceugenia planipes"
+      ],
+      "origen": "Bosques húmedos de Chile y Patagonia andina argentina",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (Coquimbo a Los Lagos)"
+      ],
+      "habitat": "Suelos anegados, mallines boscosos, orillas de lagos y cursos de agua permanentes",
+      "acciones": [
+        "Astringente",
+        "Digestiva",
+        "Balsámica",
+        "Antirreumática externa",
+        "Antiséptica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Musculoesquelético",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Trastornos estomacales leves",
+        "Diarrea leve",
+        "Dolores reumáticos (baños)",
+        "Afecciones cutáneas leves"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (terpenos aromáticos)",
+        "Taninos",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Mirtácea nativa de ambientes pantanosos (hualves y pitrantos) utilizada en la etnobotánica mapuche en infusiones digestivas y baños calientes para dolores musculares"
+      ],
+      "precauciones": [
+        "Cosechar hojas de forma sustentable sin dañar ecosistemas de humedal"
+      ],
+      "contraindicaciones": [
+        "Estreñimiento severo",
+        "Embarazo (uso interno prolongado no evaluado)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "enero a marzo",
+      "epocaFructificacion": "mayo a agosto",
+      "tipoCiclo": "árbol perennifolio higrófilo nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol siempreverde nativo de lugares pantanosos y riberas húmedas del bosque andino-patagónico, de corteza grisácea clara, hojas coriáceas aromáticas y flores blancas de numerosos estambres.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Suelos anegados, mallines boscosos, orillas de lagos y cursos de agua permanentes\n- **Principios activos clave:** Aceites esenciales (terpenos aromáticos), Taninos, Flavonoides\n\nUsos tradicionales\n\n- Trastornos estomacales leves\n- Diarrea leve\n- Dolores reumáticos (baños)\n- Afecciones cutáneas leves\n\nFormas de uso\n\nInfusión suave de hojas (1 cucharadita por taza) o decocción para baños externos contra dolores articulares.\n\nSeguridad y precauciones\n\n- Cosechar hojas de forma sustentable sin dañar ecosistemas de humedal\n- Contraindicación: Estreñimiento severo\n- Contraindicación: Embarazo (uso inter..."
+    },
+    {
       "nombre": "Pezuña de Vaca",
       "slug": "pezuna-de-vaca",
       "nombreCientifico": "Bauhinia forficata",
@@ -2806,6 +4715,492 @@
         "/imagenes/pezuna-de-vaca.webp"
       ],
       "descripcion": "Descripción\n\nLa pezuña de vaca debe su nombre a la curiosa forma bífida de sus hojas. Es uno de los hipoglucemiantes vegetales más estudiados y populares en la medicina tradicional del nordeste argentino y Brasil.\n\nUsos tradicionales\n\n- Diabetes tipo 2 y glucemia elevada (uso principal)\n- Tos e irritación de garganta\n- Hongos e infecciones\n\nFormas de uso\n\nInfusión de hojas, tintura, decocción.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
+    },
+    {
+      "nombre": "Pitra",
+      "slug": "pitra",
+      "nombreCientifico": "Myrceugenia pitra (Baeza) Kausel",
+      "familia": "Myrtaceae",
+      "otrosNombres": [
+        "Petra",
+        "Pitra del sur",
+        "Patagua de los pantanos"
+      ],
+      "origen": "Bosques templados húmedos de Patagonia y sur de Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile (centro-sur)"
+      ],
+      "habitat": "Humedales boscosos (pitrantos), márgenes de lagos y arroyos sombreados",
+      "acciones": [
+        "Astringente",
+        "Antiséptica",
+        "Digestiva",
+        "Antiinflamatoria tópica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Tegumentario",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Malestar estomacal",
+        "Diarrea leve",
+        "Heridas leves (lavados)",
+        "Afecciones bucales"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (alfa-pineno, cineol)",
+        "Taninos",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Árbol característico de los pitrantos (bosques anegados sagrados en la cosmovisión mapuche)",
+        "Sus hojas aromáticas ricas en aceites esenciales y taninos se usan en tisanas digestivas y lavados"
+      ],
+      "precauciones": [
+        "Respetar los humedales y bosques de pitra (hábitats frágiles)"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (evitar dosis altas)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "abril a junio",
+      "tipoCiclo": "árbol perennifolio nativo de humedal",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nMirtácea nativa de los bosques húmedos andino-patagónicos, muy emparentada con la patagua y el arrayán. Sus hojas brillantes contienen glándulas de aceite esencial aromático y taninos astringentes.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Humedales boscosos (pitrantos), márgenes de lagos y arroyos sombreados\n- **Principios activos clave:** Aceites esenciales (alfa-pineno, cineol), Taninos, Flavonoides\n\nUsos tradicionales\n\n- Malestar estomacal\n- Diarrea leve\n- Heridas leves (lavados)\n- Afecciones bucales\n\nFormas de uso\n\nInfusión ligera de hojas secas (1 cucharadita por taza) para trastornos digestivos leves, o decocción para gárgaras y lavados.\n\nSeguridad y precauciones\n\n- Respetar los humedales y bosques de pitra (hábitats frágiles)\n- Contraindicación: Embarazo y lactancia (evitar dosis altas)\n\nReferencias\n\n- SIB — Sistema d..."
+    },
+    {
+      "nombre": "Poleo",
+      "slug": "poleo",
+      "nombreCientifico": "Mentha pulegium L.",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Menta poleo",
+        "Poleo europeo",
+        "Poleo de arroyo"
+      ],
+      "origen": "Europa y cuenca mediterránea (naturalizada en acequias y mallines patagónicos)",
+      "distribucion": [
+        "Argentina (Patagonia y centro)",
+        "Chile",
+        "Europa"
+      ],
+      "habitat": "Bordes de arroyos, canales, mallines y praderas húmedas",
+      "acciones": [
+        "Digestiva",
+        "Carminativa",
+        "Antiespasmódica",
+        "Expectorante",
+        "Emenagoga"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Reproductor Femenino"
+      ],
+      "afecciones": [
+        "Indigestión y gases",
+        "Cólicos estomacales",
+        "Resfríos y catarro",
+        "Mal aliento"
+      ],
+      "principiosActivos": [
+        "Pulegona (monoterpeno en aceite esencial)",
+        "Mentona",
+        "Flavonoides",
+        "Ácido rosmarínico"
+      ],
+      "usosEtnobotanicos": [
+        "Clásica infusión digestiva de sobremesa muy naturalizada junto a cursos de agua patagónicos",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "NUNCA ingerir aceite esencial puro de poleo (altamente hepatotóxico por pulegona)",
+        "Usar solo infusión suave de hojas en dosis moderadas y ciclos cortos"
+      ],
+      "contraindicaciones": [
+        "Embarazo (ESTRICTAMENTE CONTRAINDICADO — abortivo/uterotónico)",
+        "Lactancia",
+        "Niños pequeños",
+        "Enfermedad hepática o renal"
+      ],
+      "toxicidad": "El aceite esencial concentrado es fuertemente hepatotóxico y neurotóxico por su contenido de pulegona",
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne rastrera aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba rastrera de pequeño porte y aroma mentolado intenso y penetrante, con verticilos globosos de flores lila-rosadas. Muy apreciada en infusiones digestivas suaves, pero estrictamente contraindicada en el embarazo.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Bordes de arroyos, canales, mallines y praderas húmedas\n- **Principios activos clave:** Pulegona (monoterpeno en aceite esencial), Mentona, Flavonoides, Ácido rosmarínico\n\nUsos tradicionales\n\n- Indigestión y gases\n- Cólicos estomacales\n- Resfríos y catarro\n- Mal aliento\n\nFormas de uso\n\nInfusión ligera de 1 cucharadita de hojas por taza de agua recién hervida (máximo 1 a 2 tazas ocasionales). Prohibido el aceite esencial por vía oral.\n\nSeguridad y precauciones\n\n- NUNCA ingerir aceite esencial puro de poleo (altamente hepatotóxico por pulegona)\n- Usar solo i..."
+    },
+    {
+      "nombre": "Quilembai",
+      "slug": "quilembai",
+      "nombreCientifico": "Chuquiraga avellanedae Lorentz",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Quilimbai",
+        "Mataquerosén",
+        "Trayao",
+        "Sombra de toro de la estepa"
+      ],
+      "origen": "Endémica de la estepa patagónica argentina",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut, Santa Cruz)"
+      ],
+      "habitat": "Mesetas áridas y semiáridas de la estepa patagónica extraandina",
+      "acciones": [
+        "Diurética",
+        "Depurativa",
+        "Antioxidante",
+        "Balsámica",
+        "Digestiva tradicional"
+      ],
+      "sistemas": [
+        "Renal",
+        "Respiratorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Afecciones renales y urinarias leves",
+        "Resfríos y tos",
+        "Malestar hepático y digestivo leve"
+      ],
+      "principiosActivos": [
+        "Flavonoides (quercetina, kaempferol)",
+        "Ácidos fenólicos",
+        "Resinas",
+        "Triterpenos"
+      ],
+      "usosEtnobotanicos": [
+        "Arbusto nodriza fundamental para la ecología de la estepa patagónica",
+        "Llamado popularmente mataquerosén porque arde aún verde debido a sus resinas",
+        "Documentado por CENPAT–CONICET en la medicina tradicional de la meseta"
+      ],
+      "precauciones": [
+        "Especie nativa valiosa contra la desertificación: recolectar solo mínimas hojas o flores"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (por falta de estudios de seguridad)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "arbusto espinoso perennifolio endémico",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto globoso nativo de la estepa patagónica con hojas rígidas verde oliva terminadas en espina y capítulos florales amarillo-dorados muy vistosos. Además de su uso etnobotánico depurativo, cumple un rol ecológico clave como planta nodriza.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Mesetas áridas y semiáridas de la estepa patagónica extraandina\n- **Principios activos clave:** Flavonoides (quercetina, kaempferol), Ácidos fenólicos, Resinas, Triterpenos\n\nUsos tradicionales\n\n- Afecciones renales y urinarias leves\n- Resfríos y tos\n- Malestar hepático y digestivo leve\n\nFormas de uso\n\nInfusión suave de flores y hojas tiernas (1 cucharadita por taza) como tónico digestivo o diurético suave.\n\nSeguridad y precauciones\n\n- Especie nativa valiosa contra la desertificación: recolectar solo mínimas hojas o flores\n- Contraindicación: Embarazo y ..."
+    },
+    {
+      "nombre": "Quinchamalí",
+      "slug": "quinchamali",
+      "nombreCientifico": "Quinchamalium chilense Molina",
+      "familia": "Schoepfiaceae",
+      "otrosNombres": [
+        "Quinchamalín",
+        "Hierba del golpe",
+        "Quinchamali andino"
+      ],
+      "origen": "Región andina y patagónica de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Patagonia, Cuyo, NOA)",
+        "Chile",
+        "Perú",
+        "Bolivia"
+      ],
+      "habitat": "Laderas soleadas, suelos pedregosos, estepa subandina y claros secos",
+      "acciones": [
+        "Antiinflamatoria",
+        "Cicatrizante",
+        "Hepatoprotectora",
+        "Depurativa",
+        "Analgésica"
+      ],
+      "sistemas": [
+        "Musculoesquelético",
+        "Hepático",
+        "Tegumentario",
+        "Renal"
+      ],
+      "afecciones": [
+        "Golpes, hematomas y contusiones",
+        "Heridas",
+        "Trastornos hepáticos leves",
+        "Retención de líquidos"
+      ],
+      "principiosActivos": [
+        "Flavonoides (rutina, quercetina)",
+        "Triterpenos",
+        "Saponinas",
+        "Compuestos fenólicos"
+      ],
+      "usosEtnobotanicos": [
+        "Famosa planta andino-patagónica usada tradicionalmente \\\"para golpes internos y externos\\\"",
+        "Planta hemiparásita de raíces que florece en cabezuelas amarillo-anaranjadas",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "No recolectar la raíz (planta hemiparásita difícil de regenerar); cortar solo la parte aérea"
+      ],
+      "contraindicaciones": [
+        "Embarazo y lactancia (por precaución)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a febrero",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "hierba perenne hemiparásita nativa",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba nativa grácil de tallos finos verde-amarillentos y vistosas inflorescencias terminales tubulares de color amarillo intenso a anaranjado. Muy valorada en la fitoterapia patagónica y chilena para hematomas, heridas y cuidado hepático.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Laderas soleadas, suelos pedregosos, estepa subandina y claros secos\n- **Principios activos clave:** Flavonoides (rutina, quercetina), Triterpenos, Saponinas, Compuestos fenólicos\n\nUsos tradicionales\n\n- Golpes, hematomas y contusiones\n- Heridas\n- Trastornos hepáticos leves\n- Retención de líquidos\n\nFormas de uso\n\nInfusión de 1 cucharada de la planta en 1 litro de agua hirviendo (beber 1 taza 2 a 3 veces/día), o compresas tibias sobre golpes y heridas.\n\nSeguridad y precauciones\n\n- No recolectar la raíz (planta hemiparásita difícil de regenerar); c..."
+    },
+    {
+      "nombre": "Quintral",
+      "slug": "quintral",
+      "nombreCientifico": "Tristerix corymbosus (L.) Kuijt",
+      "familia": "Loranthaceae",
+      "otrosNombres": [
+        "Quintral del álamo",
+        "Quintral del maitén",
+        "Liga patagónica",
+        "Muérdago criollo"
+      ],
+      "origen": "Bosques y valles de Chile y Patagonia argentina",
+      "distribucion": [
+        "Argentina (Patagonia andina)",
+        "Chile (Coquimbo a Los Lagos)"
+      ],
+      "habitat": "Especie hemiparásita aérea sobre ramas de maitén, álamo, sauce, maqui y otros árboles",
+      "acciones": [
+        "Hipotensora",
+        "Hipocolesterolemiante tradicional",
+        "Sedante suave",
+        "Antiinflamatoria",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Cardiovascular",
+        "Nervioso",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Hipertensión arterial leve (coadyuvante)",
+        "Colesterol elevado (tradicional)",
+        "Nerviosismo",
+        "Heridas y úlceras (uso externo)"
+      ],
+      "principiosActivos": [
+        "Flavonoides (quercetina, catequinas)",
+        "Proantocianidinas",
+        "Taninos",
+        "Triterpenos"
+      ],
+      "usosEtnobotanicos": [
+        "En invierno ilumina las copas desnudas de álamos y maitenes con sus flores rojo brillante, siendo alimento vital del picaflor rubí y del monito del monte (Dromiciops gliroides)",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "No reemplazar medicación antihipertensiva prescrita; controlar presión arterial regularmente"
+      ],
+      "contraindicaciones": [
+        "Hipotensión",
+        "Embarazo y lactancia"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "marzo a septiembre (floración invernal clave)",
+      "epocaFructificacion": "septiembre a diciembre",
+      "tipoCiclo": "arbusto hemiparásito aéreo nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nPlanta hemiparásita nativa de hojas verde oscuro brillantes y llamativas flores tubulares rojo escarlata que florecen en pleno otoño-invierno patagónico. Reconocida oficialmente por el MINSAL por su acción hipotensora suave y cicatrizante.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Especie hemiparásita aérea sobre ramas de maitén, álamo, sauce, maqui y otros árboles\n- **Principios activos clave:** Flavonoides (quercetina, catequinas), Proantocianidinas, Taninos, Triterpenos\n\nUsos tradicionales\n\n- Hipertensión arterial leve (coadyuvante)\n- Colesterol elevado (tradicional)\n- Nerviosismo\n- Heridas y úlceras (uso externo)\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas y flores picadas en 1 litro de agua hirviendo (beber 1 taza 2 veces al día); lavados externos en heridas.\n\nSeguridad y precauciones\n\n- No reemplazar medicación ant..."
+    },
+    {
+      "nombre": "Radal",
+      "slug": "radal",
+      "nombreCientifico": "Lomatia hirsuta (Lam.) Diels",
+      "familia": "Proteaceae",
+      "otrosNombres": [
+        "Raral",
+        "Nogal silvestre",
+        "Ral-ral"
+      ],
+      "origen": "Bosques andino-patagónicos de Argentina y Chile",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut)",
+        "Chile",
+        "Perú",
+        "Ecuador"
+      ],
+      "habitat": "Bosques templados, laderas húmedas, matorrales y bordes de bosques de ciprés y coihue",
+      "acciones": [
+        "Broncodilatadora tradicional",
+        "Expectorante",
+        "Antitusiva",
+        "Antiséptica respiratoria",
+        "Antiasmática tradicional"
+      ],
+      "sistemas": [
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Tos persistente",
+        "Bronquitis",
+        "Asma leve (coadyuvante tradicional)",
+        "Catarro bronquial"
+      ],
+      "principiosActivos": [
+        "Naftoquinonas (2-metoxijuglona)",
+        "Flavonoides",
+        "Taninos",
+        "Resinas aromáticas"
+      ],
+      "usosEtnobotanicos": [
+        "El gran árbol respiratorio de la Patagonia",
+        "Sus hojas grandes coriáceas y su corteza también se utilizan para teñir lana de tonos castaños",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "No sustituye broncodilatadores de rescate en crisis asmática aguda",
+        "Evitar uso prolongado en dosis altas por las naftoquinonas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños pequeños"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "octubre a diciembre",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "árbol perennifolio nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nÁrbol siempreverde emblemático de la cordillera patagónica, reconocible por sus hojas grandes, ovaladas, brillantes y de bordes aserrados. Es la planta de referencia tradicional del sur argentino-chileno para la tos y la bronquitis.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Bosques templados, laderas húmedas, matorrales y bordes de bosques de ciprés y coihue\n- **Principios activos clave:** Naftoquinonas (2-metoxijuglona), Flavonoides, Taninos, Resinas aromáticas\n\nUsos tradicionales\n\n- Tos persistente\n- Bronquitis\n- Asma leve (coadyuvante tradicional)\n- Catarro bronquial\n\nFormas de uso\n\nInfusión de 1 hoja grande picada (o 1 cucharada) en 1 litro de agua hirviendo; beber 1 taza tibia 3 veces al día en afecciones bronquiales.\n\nSeguridad y precauciones\n\n- No sustituye broncodilatadores de rescate en crisis asmática aguda\n- Evitar..."
+    },
+    {
+      "nombre": "Regaliz Silvestre",
+      "slug": "regaliz-silvestre",
+      "nombreCientifico": "Glycyrrhiza astragalina Gillies ex Hook. & Arn.",
+      "familia": "Fabaceae",
+      "otrosNombres": [
+        "Orozuz patagónico",
+        "Porotillo",
+        "Regaliz criollo",
+        "Palo dulce"
+      ],
+      "origen": "Nativa del Cono Sur (Patagonia, Cuyo y Chile)",
+      "distribucion": [
+        "Argentina (Patagonia, Mendoza, La Pampa, Buenos Aires)",
+        "Chile"
+      ],
+      "habitat": "Vegas húmedas, bordes de ríos, suelos arenosos y estepa salobre",
+      "acciones": [
+        "Expectorante",
+        "Emoliente",
+        "Antiinflamatoria",
+        "Gastroprotectora",
+        "Antitusiva"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Digestivo"
+      ],
+      "afecciones": [
+        "Tos seca e irritación de garganta",
+        "Bronquitis",
+        "Acidez y gastritis leve",
+        "Afonía"
+      ],
+      "principiosActivos": [
+        "Saponinas triterpénicas (similares a glicirricina)",
+        "Flavonoides (pinocembrina)",
+        "Isoflavonas",
+        "Polisacáridos"
+      ],
+      "usosEtnobotanicos": [
+        "Pariente sudamericano nativo del regaliz europeo (Glycyrrhiza glabra)",
+        "Los pobladores rurales patagónicos mascan sus raíces dulces para calmar la sed, la tos y el dolor de garganta"
+      ],
+      "precauciones": [
+        "Por su parentesco con Glycyrrhiza spp., evitar consumo diario prolongado si existe hipertensión o retención de líquidos"
+      ],
+      "contraindicaciones": [
+        "Hipertensión arterial no controlada",
+        "Insuficiencia renal",
+        "Hipopotasemia",
+        "Embarazo"
+      ],
+      "toxicidad": "El uso excesivo y sostenido de especies de Glycyrrhiza puede elevar la presión arterial y reducir el potasio",
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "hierba perenne nativa de raíces dulces profundas",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nLeguminosa nativa de la estepa y valles patagónicos con hojas pinnadas, espigas de flores violáceo-azuladas y raíces largas intensamente dulces. Muy valorada como suavizante de la garganta y la mucosa gástrica.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Vegas húmedas, bordes de ríos, suelos arenosos y estepa salobre\n- **Principios activos clave:** Saponinas triterpénicas (similares a glicirricina), Flavonoides (pinocembrina), Isoflavonas, Polisacáridos\n\nUsos tradicionales\n\n- Tos seca e irritación de garganta\n- Bronquitis\n- Acidez y gastritis leve\n- Afonía\n\nFormas de uso\n\nDecocción breve de 1 cucharadita de raíz seca picada por taza (hervir 5 min), 1 a 2 tazas diarias por ciclos cortos, o masticación puntual de un trocito de raíz limpia.\n\nSeguridad y precauciones\n\n- Por su parentesco con Glycyrrhiza spp., evitar consumo diario prolong..."
+    },
+    {
+      "nombre": "Rosa Mosqueta",
+      "slug": "rosa-mosqueta",
+      "nombreCientifico": "Rosa rubiginosa L.",
+      "familia": "Rosaceae",
+      "otrosNombres": [
+        "Mosqueta",
+        "Rosa eglanteria",
+        "Coral patagónico"
+      ],
+      "origen": "Europa (masivamente naturalizada en la Patagonia andina desde el siglo XIX)",
+      "distribucion": [
+        "Argentina (Neuquén, Río Negro, Chubut, Santa Cruz)",
+        "Chile (sur)",
+        "Europa"
+      ],
+      "habitat": "Valles cordilleranos, bordes de caminos, praderas y zonas de ecotono bosque-estepa",
+      "acciones": [
+        "Regeneradora celular",
+        "Antioxidante",
+        "Inmunoestimulante",
+        "Cicatrizante",
+        "Antiinflamatoria",
+        "Diurética suave"
+      ],
+      "sistemas": [
+        "Tegumentario",
+        "Inmunológico",
+        "Renal",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Cicatrices, estrías y manchas cutáneas",
+        "Resfríos y prevención invernal",
+        "Envejecimiento prematuro de la piel",
+        "Dolores articulares leves (artrosis)"
+      ],
+      "principiosActivos": [
+        "Vitamina C (ácido ascórbico)",
+        "Ácidos grasos esenciales en semillas (omega 3, 6 y 9: linoleico y linolénico)",
+        "Carotenoides (licopeno, betacaroteno)",
+        "Ácido trans-retinoico natural",
+        "Taninos y pectinas"
+      ],
+      "usosEtnobotanicos": [
+        "Ícono productivo y cultural de la Patagonia andina (dulces, infusiones y aceite cosmético de semillas)",
+        "Sus pseudofutos rojos (\\\"escaramujos\\\") multiplican por varias veces la vitamina C de los cítricos",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Al preparar infusión de frutos enteros, colar con filtro fino para retener los pelitos internos irritantes de las semillas",
+        "El aceite vegetal no debe aplicarse sobre acné activo muy graso"
+      ],
+      "contraindicaciones": [
+        "No se reportan contraindicaciones mayores en uso alimentario o tópico habitual"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "febrero a mayo",
+      "tipoCiclo": "arbusto espinoso caducifolio",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto espinoso omnipresente en los valles andino-patagónicos, con flores rosadas fragantes y abundantes frutos rojo coral muy ricos en vitamina C. El aceite prensado en frío de sus semillas es un referente mundial en regeneración dermatológica.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Valles cordilleranos, bordes de caminos, praderas y zonas de ecotono bosque-estepa\n- **Principios activos clave:** Vitamina C (ácido ascórbico), Ácidos grasos esenciales en semillas (omega 3, 6 y 9: linoleico y linolénico), Carotenoides (licopeno, betacaroteno), Ácido trans-retinoico natural, Taninos y pectinas\n\nUsos tradicionales\n\n- Cicatrices, estrías y manchas cutáneas\n- Resfríos y prevención invernal\n- Envejecimiento prematuro de la piel\n- Dolores articulares leves (artrosis)\n\nFormas de uso\n\nInfusión de 1 cucharada de casca..."
     },
     {
       "nombre": "Ruda",
@@ -3027,6 +5422,70 @@
       "descripcion": "Descripción\n\nSu resina de color rojo intenso es un cicatrizante extraordinario de heridas externas y úlceras gástricas, además de un potente antiviral.\n\nBotánica oculta y mitología\n\nPor la teoría de las signaturas (donde la planta anuncia su poder a través de su forma o color), Paracelso la habría clasificado bajo la regencia de Marte debido a su látex rojo similar a la sangre. Se usaba ritualmente para fortalecer el espíritu antes de las batallas y para sanar 'corazones rotos' o penas de amor profundas.\n\nUsos tradicionales\n\n- Heridas\n- Úlceras gástricas\n- Infecciones virales\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Sanguinaria",
+      "slug": "sanguinaria",
+      "nombreCientifico": "Polygonum aviculare L.",
+      "familia": "Polygonaceae",
+      "otrosNombres": [
+        "Sanguinaria menor",
+        "Cien nudos",
+        "Lengua de pájaro",
+        "Siete sangrías (regional)"
+      ],
+      "origen": "Europa y Asia (ampliamente naturalizada en Argentina y Patagonia)",
+      "distribucion": [
+        "Argentina (todo el país incluida Patagonia)",
+        "Chile",
+        "Cosmopolita"
+      ],
+      "habitat": "Caminos, suelos compactados, baldíos, huertas y patios rurales",
+      "acciones": [
+        "Diurética",
+        "Depurativa",
+        "Astringente",
+        "Remineralizante",
+        "Hipotensora suave"
+      ],
+      "sistemas": [
+        "Renal",
+        "Circulatorio",
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Afecciones urinarias leves y arenilla",
+        "Retención de líquidos",
+        "Diarrea leve",
+        "Catarros leves",
+        "Debilidad capilar (por sílice)"
+      ],
+      "principiosActivos": [
+        "Ácido silícico soluble (sílice)",
+        "Flavonoides (avicularina, hiperósido)",
+        "Taninos",
+        "Mucílagos"
+      ],
+      "usosEtnobotanicos": [
+        "Planta rastrera sumamente resistente que crece incluso entre piedras y senderos",
+        "Clásico depurativo sanguíneo y renal de la medicina popular sudamericana",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Acompañar su uso diurético con adecuada hidratación"
+      ],
+      "contraindicaciones": [
+        "Insuficiencia renal o cardíaca avanzada",
+        "Embarazo (evitar dosis concentradas)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a abril",
+      "epocaFructificacion": "enero a mayo",
+      "tipoCiclo": "hierba anual rastrera nudosa",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba rastrera de tallos delgados con nudos muy marcados (de ahí \"cien nudos\"), hojas pequeñas lanceoladas y minúsculas flores verdoso-rosadas en las axilas. Rica en sílice y flavonoides diuréticos.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Caminos, suelos compactados, baldíos, huertas y patios rurales\n- **Principios activos clave:** Ácido silícico soluble (sílice), Flavonoides (avicularina, hiperósido), Taninos, Mucílagos\n\nUsos tradicionales\n\n- Afecciones urinarias leves y arenilla\n- Retención de líquidos\n- Diarrea leve\n- Catarros leves\n- Debilidad capilar (por sílice)\n\nFormas de uso\n\nInfusión de 1 cucharada de la planta seca en 1 litro de agua hirviendo; beber 1 taza 2 a 3 veces al día.\n\nSeguridad y precauciones\n\n- Acompañar su uso diurético con adecuada hidratación\n- Contraindicación: Insuficiencia renal o ..."
+    },
+    {
       "nombre": "Santa Lucía",
       "slug": "santa-lucia",
       "nombreCientifico": "Commelina erecta",
@@ -3218,6 +5677,66 @@
       "descripcion": "Descripción\n\nArbusto nativo con flores amarillas vistosas. Contiene antraquinonas que aumentan los movimientos peristálticos intestinales facilitando la evacuación.\n\nUsos tradicionales\n\n- Estreñimiento crónico o agudo\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Solupe",
+      "slug": "solupe",
+      "nombreCientifico": "Ephedra ochreata Miers",
+      "familia": "Ephedraceae",
+      "otrosNombres": [
+        "Solupe grande",
+        "Pingo-pingo",
+        "Tramonto",
+        "Cola de caballo del monte",
+        "Ephedra chilensis"
+      ],
+      "origen": "Estepa patagónica y Monte argentino-chileno",
+      "distribucion": [
+        "Argentina (Patagonia, Cuyo, La Pampa)",
+        "Chile"
+      ],
+      "habitat": "Estepa árida, médanos, suelos arenosos y pedregosos",
+      "acciones": [
+        "Broncodilatadora tradicional",
+        "Diurética",
+        "Descongestiva",
+        "Antitusiva"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Renal"
+      ],
+      "afecciones": [
+        "Asma y broncoespasmo (uso tradicional)",
+        "Tos y congestión bronquial",
+        "Afecciones urinarias leves"
+      ],
+      "principiosActivos": [
+        "Alcaloides tipo efedrina/pseudoefedrina (en concentraciones variables, generalmente menores que en Ephedra sinica)",
+        "Taninos",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Gimnosperma arbustiva sin hojas verdaderas, de ramas verdes articuladas y falsos frutos rojos carnosos (arilos) comestibles en el campo",
+        "Usada históricamente en decocciones respiratorias y diuréticas por comunidades patagónicas"
+      ],
+      "precauciones": [
+        "PRECAUCIÓN CARDIOVASCULAR: por la posible presencia de alcaloides simpaticomiméticos (efedrina), no usar en personas con hipertensión o arritmias"
+      ],
+      "contraindicaciones": [
+        "Hipertensión arterial",
+        "Enfermedad coronaria o arritmias",
+        "Hipertiroidismo",
+        "Embarazo y lactancia",
+        "Glaucoma"
+      ],
+      "toxicidad": "Puede provocar taquicardia, nerviosismo o elevación de la presión arterial en dosis altas o personas susceptibles",
+      "epocaFloracion": "octubre a diciembre (conos)",
+      "epocaFructificacion": "diciembre a febrero",
+      "tipoCiclo": "arbusto gimnospermo perenne áfilo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nArbusto nativo de aspecto juncoso compuesto por ramas verdes rígidas articuladas, sin hojas visibles, que produce llamativos conos carnosos rojo-anaranjados en verano. Pariente sudamericano de la efedra asiática.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa árida, médanos, suelos arenosos y pedregosos\n- **Principios activos clave:** Alcaloides tipo efedrina/pseudoefedrina (en concentraciones variables, generalmente menores que en Ephedra sinica), Taninos, Flavonoides\n\nUsos tradicionales\n\n- Asma y broncoespasmo (uso tradicional)\n- Tos y congestión bronquial\n- Afecciones urinarias leves\n\nFormas de uso\n\nDecocción muy suave de 1 cucharadita de ramitas secas en 500 ml de agua por períodos breves; solo en adultos sin patología cardiovascular.\n\nSeguridad y precauciones\n\n- PRECAUCIÓN CARDIOVASCULAR: por la posible presencia de alcaloide..."
+    },
+    {
       "nombre": "Suico",
       "slug": "suico",
       "nombreCientifico": "Tagetes minuta",
@@ -3381,6 +5900,62 @@
       "descripcion": "Descripción\n\nÁrbol nativo espinoso. Sus hojas e infusiones ayudan a reequilibrar digestiones pesadas y se usan tópicamente para desinfectar e hidratar la piel.\n\nUsos tradicionales\n\n- Indigestión\n- Afecciones de la piel\n- Irritaciones corporales\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Tomillo Silvestre",
+      "slug": "tomillo-silvestre",
+      "nombreCientifico": "Acantholippia seriphioides (A. Gray) Moldenke",
+      "familia": "Verbenaceae",
+      "otrosNombres": [
+        "Tomillo del campo",
+        "Tomillo andino",
+        "Tomillo de la estepa",
+        "Tomillo patagónico"
+      ],
+      "origen": "Endémica de la estepa patagónica y Monte argentino",
+      "distribucion": [
+        "Argentina (Mendoza, Neuquén, Río Negro, Chubut, Santa Cruz, La Pampa)"
+      ],
+      "habitat": "Estepa arbustiva seca, mesetas pedregosas y suelos áridos soleados",
+      "acciones": [
+        "Antiséptica",
+        "Digestiva",
+        "Expectorante",
+        "Carminativa",
+        "Antiespasmódica"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio"
+      ],
+      "afecciones": [
+        "Indigestión y gases",
+        "Dolores estomacales",
+        "Tos, catarro y dolor de garganta",
+        "Resfríos"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (timol, carvacrol, p-cimeno, gamma-terpineno)",
+        "Flavonoides",
+        "Ácidos fenólicos"
+      ],
+      "usosEtnobotanicos": [
+        "Condimento silvestre insustituible de la cocina patagónica (carnes, guisos y mate)",
+        "Muy apreciado como reemplazo nativo del tomillo europeo (Thymus vulgaris) por su alto contenido de timol y carvacrol"
+      ],
+      "precauciones": [
+        "Recolectar solo ramitas tiernas dejando las raíces intactas para conservar el matorral estepario"
+      ],
+      "contraindicaciones": [
+        "Embarazo (evitar dosis concentradas o aceite esencial puro)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a enero",
+      "epocaFructificacion": "enero a marzo",
+      "tipoCiclo": "subarbusto aromático perenne nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nPequeño arbusto nativo muy fragante de la estepa patagónica, con diminutas hojas verde-grisáceas resinosas y pequeñas flores blancas en espigas. Aunque pertenece a las verbenáceas, comparte el perfil aromático de timol y carvacrol del tomillo mediterráneo.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Estepa Patagónica\n- **Hábitat:** Estepa arbustiva seca, mesetas pedregosas y suelos áridos soleados\n- **Principios activos clave:** Aceites esenciales (timol, carvacrol, p-cimeno, gamma-terpineno), Flavonoides, Ácidos fenólicos\n\nUsos tradicionales\n\n- Indigestión y gases\n- Dolores estomacales\n- Tos, catarro y dolor de garganta\n- Resfríos\n\nFormas de uso\n\nInfusión de 1 cucharadita de hojas y flores secas por taza para afecciones digestivas o catarrales; gárgaras tibias o agregado aromático al mate.\n\nSeguridad y precauciones\n\n- Recolectar solo ramitas tiernas dejando las raíc..."
+    },
+    {
       "nombre": "Totora",
       "slug": "totora",
       "nombreCientifico": "Schoenoplectus californicus",
@@ -3525,12 +6100,79 @@
       "descripcion": "Descripción\n\nPlanta trepadora de la selva amazónica y regiones aledañas, célebre a nivel mundial por sus propiedades potenciadoras de los glóbulos blancos y antiinflamatorias.\n\nUsos tradicionales\n\n- Bajas defensas\n- Artritis\n- Inflamación crónica\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Valeriana",
+      "slug": "valeriana",
+      "nombreCientifico": "Valeriana officinalis L.",
+      "familia": "Caprifoliaceae",
+      "otrosNombres": [
+        "Hierba de los gatos",
+        "Valeriana común",
+        "Valeriana oficinal"
+      ],
+      "origen": "Europa y Asia templada (cultivada y aclimatada en la Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia húmeda y huertas)",
+        "Chile",
+        "Europa"
+      ],
+      "habitat": "Suelos frescos y húmedos, huertas cordilleranas y bordes sombreados",
+      "acciones": [
+        "Sedante",
+        "Ansiolítica",
+        "Inductora del sueño",
+        "Antiespasmódica",
+        "Relajante muscular"
+      ],
+      "sistemas": [
+        "Nervioso",
+        "Digestivo",
+        "Musculoesquelético"
+      ],
+      "afecciones": [
+        "Insomnio",
+        "Ansiedad y nerviosismo",
+        "Estrés",
+        "Taquicardia nerviosa leve",
+        "Espasmos gastrointestinales nerviosos"
+      ],
+      "principiosActivos": [
+        "Ácido valerénico",
+        "Valepotriatos",
+        "Aceites esenciales (acetato de bornilo)",
+        "Ácido gamma-aminobutírico (GABA)",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Referente universal de la fitoterapia relajante, ampliamente cultivada en chacras patagónicas junto a la valeriana nativa (Valeriana carnosa / ñancolahuén)",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "No conducir maquinaria pesada si provoca somnolencia",
+        "Evitar combinar con alcohol o benzodiacepinas"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Niños menores de 3 años",
+        "Uso concomitante con sedantes hipnóticos"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a febrero",
+      "epocaFructificacion": "febrero a marzo",
+      "tipoCiclo": "hierba perenne rizomatosa aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne erecta de hojas pinnadas y umbelas de pequeñas flores blanco-rosadas suavemente perfumadas. Sus raíces y rizomas secos tienen un olor penetrante muy característico y constituyen uno de los sedantes herbales mejor estudiados.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Suelos frescos y húmedos, huertas cordilleranas y bordes sombreados\n- **Principios activos clave:** Ácido valerénico, Valepotriatos, Aceites esenciales (acetato de bornilo), Ácido gamma-aminobutírico (GABA), Flavonoides\n\nUsos tradicionales\n\n- Insomnio\n- Ansiedad y nerviosismo\n- Estrés\n- Taquicardia nerviosa leve\n- Espasmos gastrointestinales nerviosos\n\nFormas de uso\n\nMaceración en frío durante 8 horas o infusión tibia (sin hervir) de 1 cucharadita de raíz seca picada por taza, 30 a 60 minutos antes de dormir.\n\nSeguridad y precauciones..."
+    },
+    {
       "nombre": "Vara de Oro",
       "slug": "vara-de-oro",
       "nombreCientifico": "Solidago chilensis",
       "familia": "Asteraceae",
       "otrosNombres": [
         "Vara de oro del sur",
+        "Vara amarilla",
+        "Romerillo amarillo",
         "Goldenrod sudamericana",
         "Lance de ouro"
       ],
@@ -3655,6 +6297,133 @@
       "descripcion": "Descripción\n\nLa vinca es una planta ornamental de flores rosadas o blancas muy común en jardines. Su importancia científica es enorme: de ella se obtienen vincristina y vinblastina, dos quimioterápicos fundamentales para el tratamiento de la leucemia.\n\nUsos tradicionales\n\n- Diabetes tipo 2 (uso popular, bajo supervisión)\n- Hipertensión leve\n\nAdvertencia importante\n\nEsta planta contiene alcaloides altamente potentes. **No automedicarse para cáncer ni en dosis altas**. Los medicamentos derivados (vincristina, vinblastina) solo se usan en contexto hospitalario controlado.\n\nReferencias\n\n- Fuente: Acción Terapéutica (PDF)"
     },
     {
+      "nombre": "Vira Vira",
+      "slug": "vira-vira",
+      "nombreCientifico": "Pseudognaphalium viravira (Molina) Anderb.",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Hierba de la vida",
+        "Huira-huira",
+        "Gnaphalium viravira",
+        "Marcela blanca del sur"
+      ],
+      "origen": "Sudamérica andina y patagónica (Argentina y Chile)",
+      "distribucion": [
+        "Argentina (Patagonia, Cuyo, centro)",
+        "Chile",
+        "Perú",
+        "Bolivia"
+      ],
+      "habitat": "Laderas secas, claros de bosque, suelos pedregosos y estepa soleada",
+      "acciones": [
+        "Expectorante",
+        "Antitusiva",
+        "Febrífuga",
+        "Sudorífica",
+        "Antiinflamatoria",
+        "Cicatrizante"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Inmunológico",
+        "Tegumentario"
+      ],
+      "afecciones": [
+        "Tos y catarro",
+        "Bronquitis",
+        "Resfríos y estados gripales",
+        "Fiebre leve",
+        "Heridas superficiales"
+      ],
+      "principiosActivos": [
+        "Flavonoides (gnaphalina)",
+        "Diterpenos",
+        "Aceites esenciales",
+        "Mucílagos",
+        "Taninos"
+      ],
+      "usosEtnobotanicos": [
+        "Planta medicinal andino-patagónica de aspecto lanoso plateado usada desde tiempos prehispánicos para afecciones del pecho",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "Distinguir de la marcela del litoral (Achyrocline satureioides), aunque comparten usos respiratorios"
+      ],
+      "contraindicaciones": [
+        "Alergia conocida a Asteraceae",
+        "Embarazo (dosis elevadas)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "noviembre a marzo",
+      "epocaFructificacion": "enero a abril",
+      "tipoCiclo": "hierba perenne o bienal blanquecino-lanosa",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba nativa cubierta de fina lanosidad blanco-plateada con racimos densos de capítulos florales blanquecinos a crema. Muy estimada en toda la cordillera y Patagonia para calmar la tos, el catarro y los resfríos invernales.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque y Estepa / Transición\n- **Hábitat:** Laderas secas, claros de bosque, suelos pedregosos y estepa soleada\n- **Principios activos clave:** Flavonoides (gnaphalina), Diterpenos, Aceites esenciales, Mucílagos, Taninos\n\nUsos tradicionales\n\n- Tos y catarro\n- Bronquitis\n- Resfríos y estados gripales\n- Fiebre leve\n- Heridas superficiales\n\nFormas de uso\n\nInfusión de 1 cucharada de flores y hojas en 1 litro de agua hirviendo; beber 1 taza caliente 3 veces al día (puede endulzarse con miel).\n\nSeguridad y precauciones\n\n- Distinguir de la marcela del litoral (Achyrocline satureioides), aunque comparten usos r..."
+    },
+    {
+      "nombre": "Yerba Buena",
+      "slug": "yerba-buena",
+      "nombreCientifico": "Mentha spicata L.",
+      "familia": "Lamiaceae",
+      "otrosNombres": [
+        "Hierbabuena",
+        "Menta verde",
+        "Menta de jardín",
+        "Spearmint"
+      ],
+      "origen": "Europa y Asia (ampliamente cultivada y naturalizada en la Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia y todo el país)",
+        "Chile",
+        "Cosmopolita"
+      ],
+      "habitat": "Huertas, acequias, suelos húmedos y fértiles a media sombra o sol",
+      "acciones": [
+        "Digestiva",
+        "Carminativa",
+        "Antiespasmódica",
+        "Refrescante",
+        "Antiparasitaria suave"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Respiratorio",
+        "Nervioso"
+      ],
+      "afecciones": [
+        "Indigestión y acidez leve",
+        "Gases y cólicos abdominales",
+        "Náuseas",
+        "Mal aliento",
+        "Resfríos leves"
+      ],
+      "principiosActivos": [
+        "L-carvona (aceite esencial predominante)",
+        "Limoneno",
+        "Ácido rosmarínico",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Diferente de la menta piperita (Mentha piperita): predomina la carvona en lugar del mentol, lo que la hace más dulce, suave y apta para uso cotidiano e infantil moderado",
+        "Monografía oficial MHT MINSAL Chile"
+      ],
+      "precauciones": [
+        "En personas con reflujo gastroesofágico usar con moderación"
+      ],
+      "contraindicaciones": [
+        "Alergia a Lamiaceae",
+        "Reflujo gastroesofágico severo"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "diciembre a marzo",
+      "epocaFructificacion": "febrero a abril",
+      "tipoCiclo": "hierba perenne estolonífera aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba aromática de hojas verde vivo lanceoladas, rugosas y de aroma dulce y fresco sin el picor mentolado intenso de la menta piperita. Infaltable en la cocina, el mate y el botiquín digestivo familiar.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Huertas, acequias, suelos húmedos y fértiles a media sombra o sol\n- **Principios activos clave:** L-carvona (aceite esencial predominante), Limoneno, Ácido rosmarínico, Flavonoides\n\nUsos tradicionales\n\n- Indigestión y acidez leve\n- Gases y cólicos abdominales\n- Náuseas\n- Mal aliento\n- Resfríos leves\n\nFormas de uso\n\nInfusión de 1 cucharada de hojas frescas o secas por taza de agua recién hervida, reposar tapada 5 minutos; tomar después de las comidas.\n\nSeguridad y precauciones\n\n- En personas con reflujo gastroesofágico usar con moderación\n- Contraindicación: Alergia a La..."
+    },
+    {
       "nombre": "Yerba Carnicera",
       "slug": "yerba-carnicera",
       "nombreCientifico": "Conyza bonaerensis",
@@ -3695,6 +6464,67 @@
       "descripcion": "Descripción\n\nHierba anual nativa de sabor amargo suave. Excelente protector gástrico y regenerador de tejidos, empleada tópicamente para tratar brotes de psoriasis.\n\nUsos tradicionales\n\n- Gastritis\n- Úlceras estomacales\n- Psoriasis (uso tópico)\n- Heridas\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
     },
     {
+      "nombre": "Yerba del Lagarto",
+      "slug": "yerba-del-lagarto",
+      "nombreCientifico": "Synammia feuillei (Bertero) Copel.",
+      "familia": "Polypodiaceae",
+      "otrosNombres": [
+        "Calaguala chilena",
+        "Vilcún",
+        "Polypodium feuillei",
+        "Helecho lagarto"
+      ],
+      "origen": "Bosques templados húmedos de Patagonia y sur de Chile",
+      "distribucion": [
+        "Argentina (Patagonia andina húmeda)",
+        "Chile (Coquimbo a Patagonia)"
+      ],
+      "habitat": "Epífito sobre troncos musgosos de árboles nativos y rocas húmedas del bosque",
+      "acciones": [
+        "Expectorante",
+        "Sudorífica",
+        "Depurativa",
+        "Antiinflamatoria",
+        "Emoliente"
+      ],
+      "sistemas": [
+        "Respiratorio",
+        "Tegumentario",
+        "Renal"
+      ],
+      "afecciones": [
+        "Catarros bronquiales",
+        "Tos y afecciones pulmonares leves",
+        "Afecciones cutáneas crónicas (uso depurativo tradicional)",
+        "Retención de líquidos"
+      ],
+      "principiosActivos": [
+        "Saponinas esteroidales",
+        "Polisacáridos mucilaginosos",
+        "Flavonoides",
+        "Ácidos fenólicos"
+      ],
+      "usosEtnobotanicos": [
+        "Helecho nativo cuyo rizoma rastrero grueso y escamoso se asemeja a la piel de un lagarto",
+        "Muy valorado en la etnobotánica mapuche y chilota para catarros bronquiales y depuración"
+      ],
+      "precauciones": [
+        "Especie epífita de crecimiento lento: recolectar con máximo cuidado ambiental o evitar extracción silvestre masiva"
+      ],
+      "contraindicaciones": [
+        "Embarazo",
+        "Lactancia",
+        "Gastritis aguda (dosis altas de rizoma)"
+      ],
+      "toxicidad": null,
+      "epocaFloracion": "no posee flores (esporulación en verano-otoño)",
+      "epocaFructificacion": "esporas en soros dorados en el envés de las frondes",
+      "tipoCiclo": "helecho perenne epífito nativo",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHelecho epífito nativo del bosque valdiviano y andino-patagónico, reconocible por sus rizomas carnosos cubiertos de escamas doradas y sus frondes profundamente lobuladas con soros redondeados anaranjados en el envés.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Bosque Andino-Patagónico\n- **Hábitat:** Epífito sobre troncos musgosos de árboles nativos y rocas húmedas del bosque\n- **Principios activos clave:** Saponinas esteroidales, Polisacáridos mucilaginosos, Flavonoides, Ácidos fenólicos\n\nUsos tradicionales\n\n- Catarros bronquiales\n- Tos y afecciones pulmonares leves\n- Afecciones cutáneas crónicas (uso depurativo tradicional)\n- Retención de líquidos\n\nFormas de uso\n\nDecocción suave de 1 cucharadita de rizoma limpio y trozado en 250 ml de agua (hervir 5 a 8 min); beber 1 a 2 tazas tibias al día.\n\nSeguridad y precauciones\n\n- Especie epífita de crecimiento lento: recolect..."
+    },
+    {
       "nombre": "Yuyo Colorado",
       "slug": "yuyo-colorado",
       "nombreCientifico": "Amaranthus quitensis",
@@ -3732,6 +6562,68 @@
         "/imagenes/yuyo_colorado.webp"
       ],
       "descripcion": "Descripción\n\nAmarantácea considerada maleza pero con un perfil nutricional excelente. Sus hojas e inflorescencias son altamente remineralizantes.\n\nUsos tradicionales\n\n- Anemia\n- Retención de líquidos\n- Desnutrición mineral\n\nFormas de uso\n\nInfusión, decocción o aplicación externa según corresponda."
+    },
+    {
+      "nombre": "Yuyo de San Vicente",
+      "slug": "yuyo-de-san-vicente",
+      "nombreCientifico": "Artemisia verlotiorum Lamotte",
+      "familia": "Asteraceae",
+      "otrosNombres": [
+        "Artemisa china",
+        "Ajenjo silvestre",
+        "San Vicente",
+        "Altamisa de los campos"
+      ],
+      "origen": "Asia oriental (ampliamente naturalizada en Argentina incluida Patagonia)",
+      "distribucion": [
+        "Argentina (Patagonia, Pampa y centro)",
+        "Chile",
+        "Europa",
+        "Asia"
+      ],
+      "habitat": "Terrenos fértiles húmedos, banquinas, huertas y bordes de acequias",
+      "acciones": [
+        "Digestiva",
+        "Emenagoga",
+        "Antiespasmódica",
+        "Antiparasitaria",
+        "Tónica amarga"
+      ],
+      "sistemas": [
+        "Digestivo",
+        "Reproductor Femenino"
+      ],
+      "afecciones": [
+        "Indigestión y pesadez",
+        "Cólicos estomacales",
+        "Menstruación irregular o dolorosa",
+        "Parásitos intestinales leves"
+      ],
+      "principiosActivos": [
+        "Aceites esenciales (1,8-cineol, alcanfor, tuyona en trazas)",
+        "Lactonas sesquiterpénicas",
+        "Flavonoides"
+      ],
+      "usosEtnobotanicos": [
+        "Muy difundida en la medicina popular argentina (distinta de Artemisia vulgaris por sus rizomas largos rastreros, floración otoñal y aroma más intenso alcanforado)",
+        "Usada en tisanas digestivas y sahumos"
+      ],
+      "precauciones": [
+        "Emplear en dosis bajas y ciclos cortos",
+        "Puede desencadenar alergias respiratorias en personas sensibles al polen de Artemisia"
+      ],
+      "contraindicaciones": [
+        "Embarazo (CONTRAINDICADA — efecto emenagogo/uterotónico)",
+        "Lactancia",
+        "Alergia a Asteraceae"
+      ],
+      "toxicidad": "Contiene trazas de tuyona y lactonas amargas; evitar uso prolongado o concentrado",
+      "epocaFloracion": "febrero a mayo",
+      "epocaFructificacion": "abril a junio",
+      "tipoCiclo": "hierba perenne rizomatosa aromática",
+      "imagen": null,
+      "imagenes": [],
+      "descripcion": "Descripción\n\nHierba perenne vigorosa de tallos rojizos, hojas profundamente lobuladas verde oscuro por arriba y blanquecinas por debajo, y aroma intenso algo balsámico. Se propaga mediante largos rizomas subterráneos y florece hacia fines del verano y otoño.\n\nEcorregión patagónica y hábitat\n\n- **Ecorregión:** Introducida / Naturalizada en Patagonia\n- **Hábitat:** Terrenos fértiles húmedos, banquinas, huertas y bordes de acequias\n- **Principios activos clave:** Aceites esenciales (1,8-cineol, alcanfor, tuyona en trazas), Lactonas sesquiterpénicas, Flavonoides\n\nUsos tradicionales\n\n- Indigestión y pesadez\n- Cólicos estomacales\n- Menstruación irregular o dolorosa\n- Parásitos intestinales leves\n\nFormas de uso\n\nInfusión suave de 1 cucharadita de hojas secas por taza de agua hirviendo, reposar 5 minutos; tomar 1 taza tras comidas pesadas por ciclos breves.\n\nSeguridad y precauciones\n\n- Emplear e..."
     },
     {
       "nombre": "Zarzaparrilla",

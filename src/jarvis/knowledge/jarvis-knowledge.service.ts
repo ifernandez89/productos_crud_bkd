@@ -386,6 +386,7 @@ export class JarvisKnowledgeService implements OnModuleInit {
         'herbolaria',
         'fitoterapia',
         'herbario',
+        'boticario',
         'seccion de plantas',
       ],
       sanaciones_populares: [
@@ -444,8 +445,18 @@ export class JarvisKnowledgeService implements OnModuleInit {
 
   async handleListCommand(message: string): Promise<string | null> {
     const normalizedQuery = this.normalizeText(message);
+
+    // No secuestrar consultas explicativas, de propiedades, usos o precauciones
+    if (
+      /\b(?:para\s+que\s+sirv|propiedades|precauciones|contraindicaciones|como\s+se\s+(?:prepara|usa|toma)|dosis|principios\s+activos|beneficios|diferencia|comparar|explica(?:me)?)\b/i.test(
+        normalizedQuery,
+      )
+    ) {
+      return null;
+    }
+
     const isListQuery =
-      /(lista|cuales|que|que clase|que tipo|mostrar|tenemos registradas?|hay registradas?|guardadas?|guardados?)/i.test(
+      /\b(?:lista(?:r|me)?|listado|mostra(?:r|me)?|ver\s+(?:todas?|el|la|los|las)|todas?\s+(?:las|los)|cuantas?\s+(?:plantas|hierbas|especies|ritos|sanaciones)|cuales\s+(?:son\s+(?:las|los)|plantas|hierbas|especies|ritos|sanaciones|tenemos|hay)|que\s+(?:plantas|hierbas|especies|ritos|sanaciones)\s+(?:tenemos|hay|tenes|tengo|registradas?|guardadas?)|tenemos\s+registrad[ao]s?|hay\s+registrad[ao]s?|catalogo\s+de\s+(?:plantas|hierbas))\b/i.test(
         normalizedQuery,
       );
     if (!isListQuery) return null;
@@ -460,6 +471,18 @@ export class JarvisKnowledgeService implements OnModuleInit {
       if (arrays.length === 0) continue;
 
       const main = arrays.sort((a, b) => b.items.length - a.items.length)[0];
+
+      // Si el usuario preguntó por una planta o entidad específica por nombre, dejar pasar al motor RAG/LLM
+      const mentionsSpecificItem = main.items.some((item: any) => {
+        const itemName = this.normalizeText(
+          item.nombre || item.title || item.titulo || '',
+        );
+        if (itemName.length < 4) return false;
+        const escaped = itemName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`\\b${escaped}\\b`, 'i').test(normalizedQuery);
+      });
+      if (mentionsSpecificItem) return null;
+
       const names = main.items
         .map((item: any) => item.nombre || item.title || item.titulo)
         .filter(Boolean);
@@ -528,6 +551,7 @@ export class JarvisKnowledgeService implements OnModuleInit {
 
       if (matchingItems.length > 0) {
         const itemsText = matchingItems
+          .slice(0, 6)
           .map((item) => this.formatItem(item))
           .join('\n\n');
         matches.push(

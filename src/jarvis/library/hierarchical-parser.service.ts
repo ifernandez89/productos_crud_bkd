@@ -107,7 +107,23 @@ export class HierarchicalParserService {
 
     const flushText = () => {
       const text = currentTextBuffer.join('\n').trim();
-      if (text && currentSection) {
+      if (text) {
+        // Preservar texto previo al primer encabezado detectado (evita pérdida masiva de páginas iniciales en PDFs)
+        if (!currentChapter) {
+          currentChapter = {
+            title: 'Contenido Inicial / Monografías',
+            order: chapterOrder++,
+            sections: [],
+          };
+          chapters.push(currentChapter);
+        }
+        if (!currentSection) {
+          currentSection = {
+            title: 'Contenido Principal',
+            chunks: [],
+          };
+          currentChapter.sections.push(currentSection);
+        }
         currentSection.chunks.push(...this.splitIntoChunks(text));
       }
       currentTextBuffer = [];
@@ -175,7 +191,23 @@ export class HierarchicalParserService {
 
     const flushText = () => {
       const text = currentTextBuffer.join('\n').trim();
-      if (text && currentSection) {
+      if (text) {
+        // Preservar texto previo al primer encabezado detectado (evita pérdida masiva de páginas iniciales en PDFs)
+        if (!currentChapter) {
+          currentChapter = {
+            title: 'Contenido Inicial / Monografías',
+            order: chapterOrder++,
+            sections: [],
+          };
+          chapters.push(currentChapter);
+        }
+        if (!currentSection) {
+          currentSection = {
+            title: 'Contenido Principal',
+            chunks: [],
+          };
+          currentChapter.sections.push(currentSection);
+        }
         currentSection.chunks.push(...this.splitIntoChunks(text));
       }
       currentTextBuffer = [];
